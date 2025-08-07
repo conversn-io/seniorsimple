@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export default async function ArticlesPage() {
   const { articles, error } = await getPublishedArticles()
-  const { categories } = await getCategories()
+  // const { categories } = await getCategories() // TODO: Use for filtering
 
   if (error) {
     console.error('Error fetching articles:', error)

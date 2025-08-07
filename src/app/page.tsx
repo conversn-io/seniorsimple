@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { signUpForNewsletter } from '../lib/newsletter'
-import { getFeaturedArticles } from '../lib/articles'
+// import { getFeaturedArticles } from '../lib/articles' // TODO: Use for homepage featured articles
 import TopicCard from '../components/TopicCard'
 
 // Icons (using simple SVG icons)
@@ -140,7 +141,7 @@ export default function HomePage() {
             <h1 className="text-[#36596A] text-2xl font-semibold">SeniorSimple</h1>
             <nav className="flex items-center space-x-8">
               <a href="#about" className="text-gray-700 hover:text-[#36596A] transition-colors">About</a>
-              <a href="/articles" className="text-gray-700 hover:text-[#36596A] transition-colors">Articles</a>
+              <Link href="/articles" className="text-gray-700 hover:text-[#36596A] transition-colors">Articles</Link>
               <a href="#resources" className="text-gray-700 hover:text-[#36596A] transition-colors">Resources</a>
               <a href="#contact" className="text-gray-700 hover:text-[#36596A] transition-colors">Contact</a>
             </nav>
@@ -164,7 +165,7 @@ export default function HomePage() {
                   Take the Retirement Quiz
                 </button>
                 <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-colors">
-                  I'm a Financial Advisor
+                  I&apos;m a Financial Advisor
                 </button>
               </div>
               <div className="flex flex-wrap gap-6 text-sm opacity-80">
@@ -369,9 +370,9 @@ export default function HomePage() {
               </p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>Coming Soon</span>
-                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
                   Read More →
-                </a>
+                </Link>
               </div>
             </article>
 
@@ -389,9 +390,9 @@ export default function HomePage() {
               </p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>Coming Soon</span>
-                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
                   Read More →
-                </a>
+                </Link>
               </div>
             </article>
 
@@ -409,20 +410,20 @@ export default function HomePage() {
               </p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>Coming Soon</span>
-                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
                   Read More →
-                </a>
+                </Link>
               </div>
             </article>
           </div>
 
           <div className="text-center">
-            <a 
+            <Link 
               href="/articles"
               className="inline-block bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors"
             >
               View All Articles
-            </a>
+            </Link>
           </div>
         </div>
       </section>

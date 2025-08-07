@@ -35,7 +35,7 @@ export interface ArticleWithCategory extends Article {
 }
 
 // Get all published articles
-export async function getPublishedArticles(limit?: number): Promise<{ articles: ArticleWithCategory[], error: any }> {
+export async function getPublishedArticles(limit?: number): Promise<{ articles: ArticleWithCategory[], error: Error | null }> {
   try {
     let query = supabase
       .from('articles')
@@ -62,7 +62,7 @@ export async function getPublishedArticles(limit?: number): Promise<{ articles: 
 }
 
 // Get a single article by slug
-export async function getArticle(slug: string): Promise<{ article: ArticleWithCategory | null, error: any }> {
+export async function getArticle(slug: string): Promise<{ article: ArticleWithCategory | null, error: Error | null }> {
   try {
     const { data, error } = await supabase
       .from('articles')
@@ -84,7 +84,7 @@ export async function getArticle(slug: string): Promise<{ article: ArticleWithCa
 }
 
 // Get articles by category
-export async function getArticlesByCategory(categorySlug: string, limit?: number): Promise<{ articles: ArticleWithCategory[], error: any }> {
+export async function getArticlesByCategory(categorySlug: string, limit?: number): Promise<{ articles: ArticleWithCategory[], error: Error | null }> {
   try {
     let query = supabase
       .from('articles')
@@ -112,7 +112,7 @@ export async function getArticlesByCategory(categorySlug: string, limit?: number
 }
 
 // Get all categories
-export async function getCategories(): Promise<{ categories: Category[], error: any }> {
+export async function getCategories(): Promise<{ categories: Category[], error: Error | null }> {
   try {
     const { data, error } = await supabase
       .from('article_categories')
@@ -129,7 +129,7 @@ export async function getCategories(): Promise<{ categories: Category[], error: 
 }
 
 // Get related articles (same category, excluding current article)
-export async function getRelatedArticles(currentArticleId: string, categoryId?: string, limit: number = 3): Promise<{ articles: Article[], error: any }> {
+export async function getRelatedArticles(currentArticleId: string, categoryId?: string, limit: number = 3): Promise<{ articles: Article[], error: Error | null }> {
   try {
     let query = supabase
       .from('articles')
@@ -155,7 +155,7 @@ export async function getRelatedArticles(currentArticleId: string, categoryId?: 
 }
 
 // Search articles
-export async function searchArticles(searchTerm: string, limit: number = 10): Promise<{ articles: Article[], error: any }> {
+export async function searchArticles(searchTerm: string, limit: number = 10): Promise<{ articles: Article[], error: Error | null }> {
   try {
     const { data, error } = await supabase
       .from('articles')
@@ -178,7 +178,7 @@ export async function searchArticles(searchTerm: string, limit: number = 10): Pr
 }
 
 // Get featured articles (for homepage)
-export async function getFeaturedArticles(limit: number = 6): Promise<{ articles: Article[], error: any }> {
+export async function getFeaturedArticles(limit: number = 6): Promise<{ articles: Article[], error: Error | null }> {
   try {
     const { data, error } = await supabase
       .from('articles')

@@ -26,8 +26,8 @@ export default function NotFound() {
             Article Not Found
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            The article you're looking for doesn't exist or may have been moved. 
-            Let's get you back to exploring our retirement planning resources.
+            The article you&apos;re looking for doesn&apos;t exist or may have been moved. 
+            Let&apos;s get you back to exploring our retirement planning resources.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
