@@ -10,11 +10,22 @@ export interface NewsletterSignup {
 
 export async function signUpForNewsletter(email: string, source: string = "website") {
   try {
-    const { data: existing } = await supabase
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { success: false, message: "Please enter a valid email address." }
+    }
+
+    const { data: existing, error: existingError } = await supabase
       .from("newsletter_signups")
       .select("id, status")
       .eq("email", email)
       .single()
+
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error("Error checking existing subscription:", existingError)
+      throw existingError
+    }
 
     if (existing) {
       if (existing.status === "unsubscribed") {
@@ -26,7 +37,10 @@ export async function signUpForNewsletter(email: string, source: string = "websi
           })
           .eq("id", existing.id)
 
-        if (error) throw error
+        if (error) {
+          console.error("Error reactivating subscription:", error)
+          throw error
+        }
         return { success: true, message: "Welcome back! Your subscription has been reactivated." }
       } else {
         return { success: false, message: "You are already subscribed to our newsletter!" }
@@ -42,7 +56,10 @@ export async function signUpForNewsletter(email: string, source: string = "websi
         created_at: new Date().toISOString()
       })
 
-    if (error) throw error
+    if (error) {
+      console.error("Error inserting new subscription:", error)
+      throw error
+    }
 
     return { success: true, message: "Thank you for subscribing to our newsletter!" }
   } catch (error) {

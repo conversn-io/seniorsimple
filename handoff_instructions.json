@@ -1,0 +1,134 @@
+{
+    "project_name": "SeniorSimple - Retirement Planning Platform",
+    "repository_path": "/Users/funkyfortress/Documents/GitHub/annuity-truth-seeker-site/seniorsimple",
+    "current_status": {
+      "framework": "Next.js 14 with App Router",
+      "styling": "Tailwind CSS",
+      "backend": "Supabase (PostgreSQL)",
+      "deployment": "Vercel (frontend), Railway (backend)",
+      "current_issue": "Module resolution error preventing server startup"
+    },
+    "immediate_issue": {
+      "error": "Module not found: Can't resolve '../../lib/newsletter'",
+      "location": "src/app/page.tsx",
+      "status": "Partially resolved - missing articles.ts file was recreated",
+      "server_status": "Not starting due to import path issues"
+    },
+    "file_structure": {
+      "src/": {
+        "app/": {
+          "page.tsx": "Main homepage with newsletter signup and featured articles",
+          "articles/": {
+            "page.tsx": "Articles listing page",
+            "[slug]/page.tsx": "Individual article page"
+          },
+          "category/": {
+            "[slug]/page.tsx": "Category-specific articles page"
+          }
+        },
+        "lib/": {
+          "supabase.ts": "Supabase client configuration",
+          "newsletter.ts": "Newsletter signup functions",
+          "articles.ts": "Article data layer (recently recreated)"
+        },
+        "components/": {
+          "TopicCard.tsx": "Reusable topic card component"
+        }
+      },
+      "public/images/": {
+        "webp/": "Optimized WebP images",
+        "hero/": "Hero section images",
+        "topics/": "Topic card images"
+      }
+    },
+    "environment_variables": {
+      "required": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      ],
+      "supabase_url": "https://vpysqshhafthuxvokwqj.supabase.co",
+      "supabase_anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZweXNxc2hoYWZ0aHV4dm9rd3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTY3ODcsImV4cCI6MjA2NTkzMjc4N30.fza16gc2qHpGzzMFa1H3O6W-YIsVTsCLH9uYy9pR31I"
+    },
+    "database_setup": {
+      "status": "Complete",
+      "tables": [
+        "newsletter_signups",
+        "articles",
+        "article_categories"
+      ],
+      "setup_script": "supabase-setup.sql (if needed)"
+    },
+    "recent_changes": {
+      "image_optimization": "Converted PNG to WebP format for 90-95% file size reduction",
+      "newsletter_integration": "Full Supabase integration with signup/unsubscribe",
+      "articles_system": "Complete data layer for CMS integration",
+      "component_creation": "TopicCard component for homepage"
+    },
+    "immediate_tasks": [
+      {
+        "priority": "critical",
+        "task": "Fix import path in src/app/page.tsx",
+        "description": "Change '../../lib/newsletter' to '../lib/newsletter'",
+        "expected_location": "Line with import statement"
+      },
+      {
+        "priority": "critical", 
+        "task": "Start development server",
+        "description": "Run 'npm run dev' after fixing import paths",
+        "command": "npm run dev"
+      },
+      {
+        "priority": "high",
+        "task": "Test local development",
+        "description": "Verify site loads at http://localhost:3000"
+      }
+    ],
+    "next_priorities": [
+      {
+        "task": "Connect to existing CMS articles table",
+        "description": "Test article fetching from Supabase",
+        "files_involved": ["src/lib/articles.ts", "src/app/articles/page.tsx"]
+      },
+      {
+        "task": "Deploy to Vercel",
+        "description": "Set up continuous deployment",
+        "files_involved": ["vercel.json", ".github/workflows/ci-cd.yml"]
+      },
+      {
+        "task": "Configure custom domain",
+        "description": "Set up seniorsimple.org domain",
+        "files_involved": ["docs/DEPLOYMENT_GUIDE.md"]
+      }
+    ],
+    "long_term_goals": [
+      "Quiz functionality for lead generation",
+      "Advisor-side lead intake system", 
+      "Persona matching system",
+      "Scale CMS to multiple sites (scalesimple.org, parentsimple.org)"
+    ],
+    "key_files_to_review": [
+      "src/app/page.tsx",
+      "src/lib/articles.ts", 
+      "src/lib/newsletter.ts",
+      "src/lib/supabase.ts",
+      "package.json",
+      "vercel.json"
+    ],
+    "troubleshooting_notes": {
+      "import_paths": "Use relative paths (../lib/) not absolute (@/lib/)",
+      "server_startup": "Check for missing files in src/lib/ directory",
+      "environment_vars": "Ensure .env.local has Supabase credentials",
+      "build_errors": "Common ESLint issues with apostrophes (use &apos;)"
+    },
+    "deployment_status": {
+      "vercel": "Configured but not deployed",
+      "railway": "Not set up yet",
+      "github_actions": "CI/CD workflow exists"
+    },
+    "performance_optimizations": {
+      "images": "WebP conversion complete",
+      "next_image": "Using Next.js Image component",
+      "caching": "Vercel headers configured"
+    }
+  }
+  

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { signUpForNewsletter } from '../lib/newsletter'
+import { getFeaturedArticles } from '../lib/articles'
 import TopicCard from '../components/TopicCard'
 
 // Icons (using simple SVG icons)
@@ -103,17 +104,30 @@ const IconClipboard = () => (
 export default function HomePage() {
   const [email, setEmail] = useState('')
   const [newsletterStatus, setNewsletterStatus] = useState<{ success?: boolean; message?: string }>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleNewsletterSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
 
+    setIsSubmitting(true)
     setNewsletterStatus({})
-    const result = await signUpForNewsletter(email, 'seniorsimple-homepage')
-    setNewsletterStatus(result)
     
-    if (result.success) {
-      setEmail('')
+    try {
+      const result = await signUpForNewsletter(email, 'seniorsimple-homepage')
+      setNewsletterStatus(result)
+      
+      if (result.success) {
+        setEmail('')
+      }
+    } catch (error) {
+      console.error('Newsletter signup error:', error)
+      setNewsletterStatus({
+        success: false,
+        message: 'An unexpected error occurred. Please try again.'
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -126,6 +140,7 @@ export default function HomePage() {
             <h1 className="text-[#36596A] text-2xl font-semibold">SeniorSimple</h1>
             <nav className="flex items-center space-x-8">
               <a href="#about" className="text-gray-700 hover:text-[#36596A] transition-colors">About</a>
+              <a href="/articles" className="text-gray-700 hover:text-[#36596A] transition-colors">Articles</a>
               <a href="#resources" className="text-gray-700 hover:text-[#36596A] transition-colors">Resources</a>
               <a href="#contact" className="text-gray-700 hover:text-[#36596A] transition-colors">Contact</a>
             </nav>
@@ -149,7 +164,7 @@ export default function HomePage() {
                   Take the Retirement Quiz
                 </button>
                 <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-colors">
-                  I&apos;m a Financial Advisor
+                  I'm a Financial Advisor
                 </button>
               </div>
               <div className="flex flex-wrap gap-6 text-sm opacity-80">
@@ -325,6 +340,93 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Featured Articles */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif font-semibold text-[#36596A] mb-4">
+              Latest Retirement Insights
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Stay informed with our latest articles on retirement planning, annuities, and financial security.
+            </p>
+          </div>
+          
+          {/* Featured Articles Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            {/* This will be populated with actual articles from CMS */}
+            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                  Annuities
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                Understanding Fixed Index Annuities
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Learn how fixed index annuities can provide guaranteed income while protecting your principal from market downturns.
+              </p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>Coming Soon</span>
+                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  Read More →
+                </a>
+              </div>
+            </article>
+
+            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                  Tax Planning
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                Tax-Efficient Retirement Strategies
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Discover strategies to minimize taxes in retirement and maximize your income.
+              </p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>Coming Soon</span>
+                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  Read More →
+                </a>
+              </div>
+            </article>
+
+            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                  Estate Planning
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                Protecting Your Legacy
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Essential steps to ensure your assets are protected and passed on according to your wishes.
+              </p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>Coming Soon</span>
+                <a href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  Read More →
+                </a>
+              </div>
+            </article>
+          </div>
+
+          <div className="text-center">
+            <a 
+              href="/articles"
+              className="inline-block bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors"
+            >
+              View All Articles
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Newsletter */}
       <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
         <div className="max-w-4xl mx-auto text-center">
@@ -341,10 +443,15 @@ export default function HomePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="flex-1 px-4 py-3 rounded-lg border-0 text-gray-900"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 rounded-lg border-0 text-gray-900 disabled:opacity-50"
             />
-            <button type="submit" className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-              Subscribe Now
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
             </button>
           </form>
           {newsletterStatus.message && (
