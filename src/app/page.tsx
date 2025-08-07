@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { signUpForNewsletter } from '../../lib/newsletter'
+import { signUpForNewsletter } from '../lib/newsletter'
 import TopicCard from '../components/TopicCard'
 
 // Icons (using simple SVG icons)
@@ -149,7 +149,7 @@ export default function HomePage() {
                   Take the Retirement Quiz
                 </button>
                 <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-colors">
-                  I'm a Financial Advisor
+                  I&apos;m a Financial Advisor
                 </button>
               </div>
               <div className="flex flex-wrap gap-6 text-sm opacity-80">
