@@ -57,7 +57,7 @@ export async function getPublishedArticles(limit?: number): Promise<{ articles: 
       error 
     }
   } catch (error) {
-    return { articles: [], error }
+    return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -79,7 +79,7 @@ export async function getArticle(slug: string): Promise<{ article: ArticleWithCa
       error 
     }
   } catch (error) {
-    return { article: null, error }
+    return { article: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -107,7 +107,7 @@ export async function getArticlesByCategory(categorySlug: string, limit?: number
       error 
     }
   } catch (error) {
-    return { articles: [], error }
+    return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -124,7 +124,7 @@ export async function getCategories(): Promise<{ categories: Category[], error: 
       error 
     }
   } catch (error) {
-    return { categories: [], error }
+    return { categories: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -150,7 +150,7 @@ export async function getRelatedArticles(currentArticleId: string, categoryId?: 
       error 
     }
   } catch (error) {
-    return { articles: [], error }
+    return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -173,7 +173,7 @@ export async function searchArticles(searchTerm: string, limit: number = 10): Pr
       error 
     }
   } catch (error) {
-    return { articles: [], error }
+    return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -192,6 +192,6 @@ export async function getFeaturedArticles(limit: number = 6): Promise<{ articles
       error 
     }
   } catch (error) {
-    return { articles: [], error }
+    return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
