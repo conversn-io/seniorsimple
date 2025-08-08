@@ -32,12 +32,6 @@ export function Header() {
           {/* CTA Button */}
           <div className="flex items-center space-x-4">
             <Link
-              href="/articles"
-              className="hidden sm:block text-gray-600 hover:text-[#36596A] transition-colors"
-            >
-              Articles
-            </Link>
-            <Link
               href="/contact"
               className="hidden sm:block bg-[#36596A] text-white px-4 py-2 rounded-lg hover:bg-[#2a4a5a] transition-colors"
             >

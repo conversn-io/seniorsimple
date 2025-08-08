@@ -125,13 +125,6 @@ export function MobileMenu() {
               <div className="p-4 border-t border-gray-200">
                 <div className="space-y-2">
                   <Link
-                    href="/articles"
-                    className="block py-2 text-sm text-gray-600 hover:text-[#36596A] transition-colors"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Articles
-                  </Link>
-                  <Link
                     href="/contact"
                     className="block w-full bg-[#36596A] text-white py-2 px-4 rounded-lg text-center hover:bg-[#2a4a5a] transition-colors"
                     onClick={() => setIsOpen(false)}
