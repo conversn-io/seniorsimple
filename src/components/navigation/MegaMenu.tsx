@@ -301,21 +301,32 @@ export function MegaMenu() {
       <NavigationMenuList>
         {menuItems.map((item) => (
           <NavigationMenuItem key={item.title}>
-            <NavigationMenuTrigger className="h-auto px-2 sm:px-3 lg:px-4 py-2 text-gray-600 hover:text-[#36596A] transition-colors whitespace-nowrap">
-              {item.title}
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className={`${item.contentWidth} ${item.contentPadding}`}>
-                {/* Header Section */}
-                <div className="mb-6">
-                  <Link
-                    href={item.href}
-                    className="text-xl font-bold text-[#36596A] group-hover:text-[#2a4a5a] transition-colors"
-                  >
-                    {item.title}
-                  </Link>
-                  <p className="text-gray-600 mt-1">{item.description}</p>
-                </div>
+            <div className="relative group">
+              <div className="flex items-center">
+                <Link
+                  href={item.href}
+                  className="px-2 sm:px-3 lg:px-4 py-2 text-gray-600 hover:text-[#36596A] transition-colors whitespace-nowrap"
+                >
+                  {item.title}
+                </Link>
+                <NavigationMenuTrigger className="h-auto px-1 py-2 text-gray-600 hover:text-[#36596A] transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </NavigationMenuTrigger>
+              </div>
+              <NavigationMenuContent>
+                <div className={`${item.contentWidth} ${item.contentPadding}`}>
+                  {/* Header Section */}
+                  <div className="mb-6">
+                    <Link
+                      href={item.href}
+                      className="text-xl font-bold text-[#36596A] hover:text-[#2a4a5a] transition-colors"
+                    >
+                      {item.title}
+                    </Link>
+                    <p className="text-gray-600 mt-1">{item.description}</p>
+                  </div>
 
                 {/* Content Grid */}
                 <div className="grid grid-cols-2 gap-8">
@@ -347,7 +358,8 @@ export function MegaMenu() {
                 </div>
               </div>
             </NavigationMenuContent>
-          </NavigationMenuItem>
+          </div>
+        </NavigationMenuItem>
         ))}
       </NavigationMenuList>
     </NavigationMenu>
