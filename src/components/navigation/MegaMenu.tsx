@@ -305,11 +305,11 @@ export function MegaMenu() {
               <div className="flex items-center">
                 <Link
                   href={item.href}
-                  className="px-2 sm:px-3 lg:px-4 py-2 text-gray-600 hover:text-[#36596A] transition-colors whitespace-nowrap"
+                  className="px-3 sm:px-4 lg:px-6 py-2 text-gray-600 hover:text-[#36596A] transition-colors whitespace-nowrap"
                 >
                   {item.title}
                 </Link>
-                <NavigationMenuTrigger className="h-auto px-1 py-2 text-gray-600 hover:text-[#36596A] transition-colors">
+                <NavigationMenuTrigger className="h-auto px-2 py-2 text-gray-600 hover:text-[#36596A] transition-colors">
                   <span className="sr-only">Open menu</span>
                 </NavigationMenuTrigger>
               </div>
