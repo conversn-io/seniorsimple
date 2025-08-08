@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export default async function ArticlesPage() {
   const { articles, error } = await getPublishedArticles()
-  // const { categories } = await getCategories() // TODO: Use for filtering
+  const { categories } = await getCategories()
 
   if (error) {
     console.error('Error fetching articles:', error)
@@ -39,6 +39,26 @@ export default async function ArticlesPage() {
           </p>
         </div>
       </section>
+
+      {/* Category Filter */}
+      {categories && categories.length > 0 && (
+        <section className="py-8 px-6 bg-white border-b">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-wrap gap-3">
+              <span className="text-[#36596A] font-medium mr-2">Filter by:</span>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  className="px-4 py-2 bg-[#F5F5F0] text-[#36596A] rounded-full text-sm font-medium hover:bg-[#E4CDA1] transition-colors"
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Articles Grid */}
       <section className="py-16 px-6">

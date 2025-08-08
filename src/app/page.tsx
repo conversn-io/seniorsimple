@@ -1,11 +1,8 @@
-'use client'
-
-import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { signUpForNewsletter } from '../lib/newsletter'
-// import { getFeaturedArticles } from '../lib/articles' // TODO: Use for homepage featured articles
+import { getFeaturedArticles } from '../lib/articles'
 import TopicCard from '../components/TopicCard'
+import NewsletterSignup from '../components/NewsletterSignup'
 
 // Icons (using simple SVG icons)
 const IconQuiz = () => (
@@ -102,35 +99,9 @@ const IconClipboard = () => (
   </svg>
 )
 
-export default function HomePage() {
-  const [email, setEmail] = useState('')
-  const [newsletterStatus, setNewsletterStatus] = useState<{ success?: boolean; message?: string }>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleNewsletterSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-
-    setIsSubmitting(true)
-    setNewsletterStatus({})
-    
-    try {
-      const result = await signUpForNewsletter(email, 'seniorsimple-homepage')
-      setNewsletterStatus(result)
-      
-      if (result.success) {
-        setEmail('')
-      }
-    } catch (error) {
-      console.error('Newsletter signup error:', error)
-      setNewsletterStatus({
-        success: false,
-        message: 'An unexpected error occurred. Please try again.'
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+export default async function HomePage() {
+  // Fetch featured articles for the homepage
+  const { articles: featuredArticles, error } = await getFeaturedArticles(3)
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
@@ -355,66 +326,104 @@ export default function HomePage() {
           
           {/* Featured Articles Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-            {/* This will be populated with actual articles from CMS */}
-            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
-                  Annuities
-                </span>
+            {error ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-600">Unable to load featured articles at this time.</p>
               </div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
-                Understanding Fixed Index Annuities
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Learn how fixed index annuities can provide guaranteed income while protecting your principal from market downturns.
-              </p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>Coming Soon</span>
-                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
-                  Read More →
-                </Link>
-              </div>
-            </article>
+            ) : featuredArticles && featuredArticles.length > 0 ? (
+              featuredArticles.map((article) => (
+                <article key={article.id} className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                      {article.category || 'Retirement'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                    <Link href={`/articles/${article.slug}`} className="hover:underline">
+                      {article.title}
+                    </Link>
+                  </h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>
+                      {new Date(article.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
+                    <Link href={`/articles/${article.slug}`} className="text-[#36596A] font-medium hover:underline">
+                      Read More →
+                    </Link>
+                  </div>
+                </article>
+              ))
+            ) : (
+              // Fallback articles when no featured articles are available
+              <>
+                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                      Annuities
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                    Understanding Fixed Index Annuities
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Learn how fixed index annuities can provide guaranteed income while protecting your principal from market downturns.
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                      Read More →
+                    </Link>
+                  </div>
+                </article>
 
-            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
-                  Tax Planning
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
-                Tax-Efficient Retirement Strategies
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Discover strategies to minimize taxes in retirement and maximize your income.
-              </p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>Coming Soon</span>
-                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
-                  Read More →
-                </Link>
-              </div>
-            </article>
+                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                      Tax Planning
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                    Tax-Efficient Retirement Strategies
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Discover strategies to minimize taxes in retirement and maximize your income.
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                      Read More →
+                    </Link>
+                  </div>
+                </article>
 
-            <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
-                  Estate Planning
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-3">
-                Protecting Your Legacy
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Essential steps to ensure your assets are protected and passed on according to your wishes.
-              </p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>Coming Soon</span>
-                <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
-                  Read More →
-                </Link>
-              </div>
-            </article>
+                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                      Estate Planning
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                    Protecting Your Legacy
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Essential steps to ensure your assets are protected and passed on according to your wishes.
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                      Read More →
+                    </Link>
+                  </div>
+                </article>
+              </>
+            )}
           </div>
 
           <div className="text-center">
@@ -437,29 +446,9 @@ export default function HomePage() {
           <p className="text-xl text-white mb-8 opacity-90">
             Weekly insights on income, taxes, healthcare, and more.
           </p>
-          <form onSubmit={handleNewsletterSignup} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-3 rounded-lg border-0 text-gray-900 disabled:opacity-50"
-            />
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
-            </button>
-          </form>
-          {newsletterStatus.message && (
-            <p className={`mt-4 text-sm font-medium ${newsletterStatus.success ? 'text-[#E4CDA1]' : 'text-red-300'}`}>
-              {newsletterStatus.message}
-            </p>
-          )}
+          <div className="max-w-md mx-auto">
+            <NewsletterSignup />
+          </div>
           <p className="text-sm text-white mt-4 opacity-80">
             Free download: The Retirement Planning Essentials Checklist
           </p>
