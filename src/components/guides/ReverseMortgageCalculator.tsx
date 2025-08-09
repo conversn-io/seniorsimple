@@ -1,210 +1,203 @@
 import React, { useState } from 'react';
 
-interface ReverseMortgageCalculatorProps {
-  // Add props as needed
-}
+const ReverseMortgageCalculator: React.FC = () => {
+  const [homeValue, setHomeValue] = useState<number>(400000);
+  const [borrowerAge, setBorrowerAge] = useState<number>(65);
+  const [spouseAge, setSpouseAge] = useState<number>(0);
+  const [mortgageBalance, setMortgageBalance] = useState<number>(0);
+  
+  const calculateReverseMortgage = () => {
+    // Simplified calculation - actual rates vary by lender and market conditions
+    const youngestAge = spouseAge > 0 ? Math.min(borrowerAge, spouseAge) : borrowerAge;
+    
+    // Principal Limit Factor (PLF) - simplified based on age
+    let plf = 0;
+    if (youngestAge >= 62 && youngestAge < 65) plf = 0.52;
+    else if (youngestAge >= 65 && youngestAge < 70) plf = 0.56;
+    else if (youngestAge >= 70 && youngestAge < 75) plf = 0.60;
+    else if (youngestAge >= 75 && youngestAge < 80) plf = 0.64;
+    else if (youngestAge >= 80) plf = 0.68;
+    
+    const principalLimit = homeValue * plf;
+    const availableProceeds = Math.max(0, principalLimit - mortgageBalance);
+    const closingCosts = homeValue * 0.05; // Estimate 5% for closing costs
+    const netProceeds = Math.max(0, availableProceeds - closingCosts);
+    
+    return {
+      principalLimit,
+      availableProceeds,
+      closingCosts,
+      netProceeds,
+      monthlyPayment: netProceeds / 120 // If taken as monthly payments over 10 years
+    };
+  };
 
-const ReverseMortgageCalculator: React.FC<ReverseMortgageCalculatorProps> = () => {
-  const [activeTab, setActiveTab] = useState(0);
+  const results = calculateReverseMortgage();
 
   return (
-    <div className="container mx-auto p-6">
-
-        let loanGrowthChart;
-
-        function calculateReverseMortgage() {
-            const homeValue = parseFloat(document.getElementById('homeValue').value) || 0;
-            const borrowerAge = parseInt(document.getElementById('borrowerAge').value) || 62;
-            const spouseAge = parseInt(document.getElementById('spouseAge').value) || 0;
-            const mortgageBalance = parseFloat(document.getElementById('mortgageBalance').value) || 0;
-            const state = document.getElementById('state').value;
-
-            // Use youngest age for calculation if spouse exists
-            const effectiveAge = spouseAge > 0 ? Math.min(borrowerAge, spouseAge) : borrowerAge;
-
-            // Calculate principal limit factor based on age
-            const principalLimitFactor = calculatePrincipalLimitFactor(effectiveAge);
-            
-            // Calculate gross principal limit
-            const grossPrincipalLimit = homeValue * principalLimitFactor;
-            
-            // Calculate net principal limit (after paying off existing mortgage)
-            const netPrincipalLimit = Math.max(0, grossPrincipalLimit - mortgageBalance);
-
-            // Calculate available funds (after closing costs)
-            const closingCosts = Math.min(homeValue * 0.02, 6000); // Estimate 2% or $6,000 max
-            const availableFunds = Math.max(0, netPrincipalLimit - closingCosts);
-
-            displayResults(homeValue, effectiveAge, grossPrincipalLimit, netPrincipalLimit, availableFunds, mortgageBalance, closingCosts);
-            showPaymentOptions(availableFunds);
-            showLoanGrowthChart(availableFunds);
-        }
-
-        function calculatePrincipalLimitFactor(age) {
-            // Simplified principal limit factor calculation
-            // In reality, this varies by interest rates and is more complex
-            const baseFactor = 0.3; // 30% at age 62
-            const ageBonus = (age - 62) * 0.01; // 1% per year
-            return Math.min(baseFactor + ageBonus, 0.65); // Cap at 65%
-        }
-
-        function displayResults(homeValue, age, grossLimit, netLimit, availableFunds, mortgageBalance, closingCosts) {
-            const resultsPanel = document.getElementById('resultsPanel');
-            
-            resultsPanel.innerHTML = `
-                <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h3 className="text-lg font-semibold text-green-800 mb-2">
-                            <i className="fas fa-money-bill-wave mr-2"></i>
-                            Estimated Available Funds
-                        </h3>
-                        <p className="text-3xl font-bold text-green-600">$${availableFunds.toLocaleString()}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h4 className="font-semibold text-blue-800 mb-1">Home Value</h4>
-                            <p className="text-xl text-primary">$${homeValue.toLocaleString()}</p>
-                        </div>
-                        
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                            <h4 className="font-semibold text-purple-800 mb-1">Effective Age</h4>
-                            <p className="text-xl text-purple-600">${age} years</p>
-                        </div>
-                        
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <h4 className="font-semibold text-yellow-800 mb-1">Gross Principal Limit</h4>
-                            <p className="text-xl text-yellow-600">$${grossLimit.toLocaleString()}</p>
-                        </div>
-                        
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <h4 className="font-semibold text-red-800 mb-1">Less: Existing Mortgage</h4>
-                            <p className="text-xl text-red-600">$${mortgageBalance.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-background border border-border rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-800 mb-2">Calculation Breakdown</h4>
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                            <div className="flex justify-between">
-                                <span>Gross Principal Limit:</span>
-                                <span>$${grossLimit.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Less: Existing Mortgage:</span>
-                                <span>-$${mortgageBalance.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Less: Estimated Closing Costs:</span>
-                                <span>-$${closingCosts.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between border-t pt-1 font-semibold text-gray-800">
-                                <span>Available to You:</span>
-                                <span>$${availableFunds.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-[#36596A] mb-4">
+              Reverse Mortgage Calculator
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Estimate how much you might be able to borrow with a reverse mortgage (HECM).
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Input Section */}
+            <div className="bg-white rounded-lg shadow-md p-8">
+              <h2 className="text-xl font-semibold text-[#36596A] mb-6">Enter Your Information</h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Home Value
+                  </label>
+                  <input
+                    type="number"
+                    value={homeValue}
+                    onChange={(e) => setHomeValue(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="400000"
+                  />
                 </div>
-            `;
-        }
-
-        function showPaymentOptions(availableFunds) {
-            const section = document.getElementById('paymentOptionsSection');
-            const table = document.getElementById('paymentOptionsTable');
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Age
+                  </label>
+                  <input
+                    type="number"
+                    value={borrowerAge}
+                    onChange={(e) => setBorrowerAge(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="62"
+                    max="100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Must be 62 or older to qualify
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Spouse Age (if applicable)
+                  </label>
+                  <input
+                    type="number"
+                    value={spouseAge}
+                    onChange={(e) => setSpouseAge(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="0"
+                    max="100"
+                    placeholder="Leave blank if no spouse"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Calculation based on younger spouse's age
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Mortgage Balance
+                  </label>
+                  <input
+                    type="number"
+                    value={mortgageBalance}
+                    onChange={(e) => setMortgageBalance(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Must be paid off with reverse mortgage proceeds
+                  </p>
+                </div>
+              </div>
+            </div>
             
-            const monthlyPayment = (availableFunds * 0.05) / 12; // Rough estimate
-            const lineOfCredit = availableFunds * 0.9; // 90% as line of credit
-            
-            table.innerHTML = `
-                <tr>
-                    <td className="border border-border px-4 py-3 font-semibold text-primary">Lump Sum</td>
-                    <td className="border border-border px-4 py-3">Receive all funds at closing</td>
-                    <td className="border border-border px-4 py-3 font-semibold">$${availableFunds.toLocaleString()}</td>
-                    <td className="border border-border px-4 py-3">Large immediate expenses, debt payoff</td>
-                </tr>
-                <tr className="bg-background">
-                    <td className="border border-border px-4 py-3 font-semibold text-green-600">Monthly Payments</td>
-                    <td className="border border-border px-4 py-3">Fixed monthly income for life</td>
-                    <td className="border border-border px-4 py-3 font-semibold">$${monthlyPayment.toLocaleString(undefined, {maximumFractionDigits: 0})}/month</td>
-                    <td className="border border-border px-4 py-3">Supplementing retirement income</td>
-                </tr>
-                <tr>
-                    <td className="border border-border px-4 py-3 font-semibold text-purple-600">Line of Credit</td>
-                    <td className="border border-border px-4 py-3">Access funds as needed, unused portion grows</td>
-                    <td className="border border-border px-4 py-3 font-semibold">Up to $${lineOfCredit.toLocaleString()}</td>
-                    <td className="border border-border px-4 py-3">Financial flexibility, future needs</td>
-                </tr>
-                <tr className="bg-background">
-                    <td className="border border-border px-4 py-3 font-semibold text-orange-600">Combination</td>
-                    <td className="border border-border px-4 py-3">Mix of lump sum, monthly payments, and credit line</td>
-                    <td className="border border-border px-4 py-3 font-semibold">Customizable</td>
-                    <td className="border border-border px-4 py-3">Balanced approach for multiple needs</td>
-                </tr>
-            `;
-            
-            section.style.display = 'block';
-        }
-
-        function showLoanGrowthChart(initialAmount) {
-            const section = document.getElementById('chartSection');
-            const ctx = document.getElementById('loanGrowthChart').getContext('2d');
-            
-            // Calculate loan growth over 20 years at 5% interest
-            const years = Array.from({length: 21}, (_, i) => i);
-            const loanBalance = years.map(year => initialAmount * Math.pow(1.05, year));
-            
-            // Destroy existing chart if it exists
-            if (loanGrowthChart) {
-                loanGrowthChart.destroy();
-            }
-            
-            loanGrowthChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years.map(year => `Year ${year}`),
-                    datasets: [{
-                        label: 'Loan Balance',
-                        data: loanBalance,
-                        borderColor: 'rgb(239, 68, 68)',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        fill: true,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Loan Balance: $' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            section.style.display = 'block';
-        }
-
-        // Initialize with default calculation
-        document.addEventListener('DOMContentLoaded', function() {
-            calculateReverseMortgage();
-        });
-    
-</div>
+            {/* Results Section */}
+            <div className="bg-white rounded-lg shadow-md p-8">
+              <h2 className="text-xl font-semibold text-[#36596A] mb-6">Estimated Results</h2>
+              
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    ${results.netProceeds.toLocaleString()}
+                  </div>
+                  <div className="text-gray-600">
+                    Estimated Net Proceeds
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Principal Limit:</span>
+                    <span className="font-medium">${results.principalLimit.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Mortgage Payoff:</span>
+                    <span className="font-medium">-${mortgageBalance.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Estimated Closing Costs:</span>
+                    <span className="font-medium">-${results.closingCosts.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-t-2 border-gray-300">
+                    <span className="text-gray-800 font-semibold">Available to You:</span>
+                    <span className="font-bold text-green-600">${results.netProceeds.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-900 mb-2">Payment Options</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Lump Sum:</span>
+                      <span className="font-medium">${results.netProceeds.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Monthly for 10 years:</span>
+                      <span className="font-medium">${Math.round(results.monthlyPayment).toLocaleString()}/month</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Line of Credit:</span>
+                      <span className="font-medium">Available as needed</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-yellow-900 mb-2">Important Notes</h4>
+                  <ul className="text-yellow-800 text-sm space-y-1">
+                    <li>• This is a simplified estimate for illustration only</li>
+                    <li>• Actual amounts depend on current interest rates</li>
+                    <li>• You must continue paying property taxes and insurance</li>
+                    <li>• The home must be your primary residence</li>
+                    <li>• Loan becomes due when you sell, move, or pass away</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-8 bg-white rounded-lg shadow-md p-8 text-center">
+            <h3 className="text-lg font-semibold text-[#36596A] mb-4">
+              Considering a Reverse Mortgage?
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Get personalized guidance and accurate quotes from licensed reverse mortgage specialists.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+              Get Reverse Mortgage Information
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
