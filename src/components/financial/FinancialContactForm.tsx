@@ -1,8 +1,7 @@
 
+'use client';
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, Mail, Phone, User } from "lucide-react";
 
 interface FinancialContactFormProps {
@@ -44,8 +43,8 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
     return (
       <section className="py-8 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
         <div className="max-w-2xl mx-auto w-full">
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-12 text-center">
+          <div className="shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-lg">
+            <div className="p-12 text-center">
               <div className="animate-scale-in">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="w-12 h-12 text-green-600" />
@@ -63,8 +62,8 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </section>
     );
@@ -73,17 +72,16 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
   return (
     <section className="py-8 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
       <div className="max-w-2xl mx-auto w-full">
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-8">
+        <div className="shadow-xl border-0 bg-white/80 backdrop-blur-sm rounded-lg">
+          <div className="p-8">
             <div className="mb-6">
-              <Button
-                variant="ghost"
+              <button
                 onClick={onBack}
-                className="mb-4"
+                className="mb-4 flex items-center text-blue-600 hover:text-blue-700 bg-transparent hover:bg-blue-50 p-2 rounded transition-colors"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
-              </Button>
+              </button>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Get Your Financial Health Report
               </h2>
@@ -99,13 +97,13 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                     <User className="h-4 w-4 inline mr-2" />
                     Full Name *
                   </label>
-                  <Input
+                  <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     placeholder="Your full name"
                     required
-                    className="h-12"
+                    className="h-12 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
@@ -114,13 +112,13 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                     <Mail className="h-4 w-4 inline mr-2" />
                     Email Address *
                   </label>
-                  <Input
+                  <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="your.email@example.com"
                     required
-                    className="h-12"
+                    className="h-12 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
@@ -129,12 +127,12 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                     <Phone className="h-4 w-4 inline mr-2" />
                     Phone Number (Optional)
                   </label>
-                  <Input
+                  <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     placeholder="(888) 440-9669"
-                    className="h-12"
+                    className="h-12 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -149,20 +147,20 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                 </ul>
               </div>
 
-              <Button
+              <button
                 type="submit"
                 disabled={isSubmitting || !formData.name || !formData.email}
-                className="w-full h-12 text-lg font-semibold"
+                className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Generating Report..." : "Get My Financial Report"}
-              </Button>
+              </button>
 
               <p className="text-xs text-gray-500 text-center">
                 By submitting, you agree to receive your financial assessment and follow-up communications.
               </p>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </section>
   );

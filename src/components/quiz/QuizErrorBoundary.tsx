@@ -1,7 +1,7 @@
 
+'use client';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -38,8 +38,8 @@ class QuizErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
-          <Card className="max-w-md w-full shadow-xl">
-            <CardContent className="p-8 text-center space-y-6">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-xl">
+            <div className="p-8 text-center space-y-6">
               <div className="flex justify-center">
                 <AlertTriangle className="h-16 w-16 text-red-500" />
               </div>
@@ -51,16 +51,15 @@ class QuizErrorBoundary extends Component<Props, State> {
                   We encountered an unexpected error. Please try refreshing the quiz.
                 </p>
               </div>
-              <Button
+              <button
                 onClick={this.handleReset}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                size="lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Restart Quiz
-              </Button>
-            </CardContent>
-          </Card>
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
