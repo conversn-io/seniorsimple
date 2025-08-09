@@ -12,20 +12,7 @@ export default async function ArticlesPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
-      {/* Header */}
-      <header className="bg-white p-8">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-[#36596A] text-2xl font-semibold">SeniorSimple</h1>
-            <nav className="flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-[#36596A] transition-colors">Home</Link>
-              <Link href="/articles" className="text-[#36596A] font-medium">Articles</Link>
-              <Link href="#resources" className="text-gray-700 hover:text-[#36596A] transition-colors">Resources</Link>
-              <Link href="#contact" className="text-gray-700 hover:text-[#36596A] transition-colors">Contact</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+
 
       {/* Hero Section */}
       <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>

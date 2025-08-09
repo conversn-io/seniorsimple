@@ -28,8 +28,6 @@ const menuItems = [
     title: "Retirement",
     href: "/retirement",
     description: "Plan your retirement with confidence",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Calculators",
@@ -77,8 +75,6 @@ const menuItems = [
     title: "Estate Planning",
     href: "/estate",
     description: "Protect your legacy and loved ones",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Tools & Checklists",
@@ -121,8 +117,6 @@ const menuItems = [
     title: "Health & Medicare",
     href: "/health",
     description: "Navigate healthcare in retirement",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Medicare Tools",
@@ -165,8 +159,6 @@ const menuItems = [
     title: "Housing",
     href: "/housing",
     description: "Your home in retirement",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Housing Calculators",
@@ -209,8 +201,6 @@ const menuItems = [
     title: "Tax Planning",
     href: "/tax",
     description: "Optimize your tax strategy",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Tax Tools",
@@ -253,8 +243,6 @@ const menuItems = [
     title: "Insurance",
     href: "/insurance",
     description: "Protect what matters most",
-    contentWidth: "w-[800px]",
-    contentPadding: "p-6",
     sections: [
       {
         title: "Insurance Tools",
@@ -303,18 +291,14 @@ export function MegaMenu() {
           <NavigationMenuItem key={item.title}>
             <div className="relative group">
               <div className="flex items-center">
-                <Link
-                  href={item.href}
-                  className="px-3 sm:px-4 lg:px-6 py-2 text-gray-600 hover:text-[#36596A] transition-colors whitespace-nowrap"
-                >
-                  {item.title}
-                </Link>
-                <NavigationMenuTrigger className="h-auto px-2 py-2 text-gray-600 hover:text-[#36596A] transition-colors">
-                  <span className="sr-only">Open menu</span>
+                <NavigationMenuTrigger className="h-8 px-4 py-2 text-sm text-gray-600 hover:text-[#36596A] transition-colors font-medium data-[state=open]:text-[#36596A]">
+                  <Link href={item.href} className="hover:text-[#36596A]">
+                    {item.title}
+                  </Link>
                 </NavigationMenuTrigger>
               </div>
               <NavigationMenuContent>
-                <div className={`${item.contentWidth} ${item.contentPadding}`}>
+                <div className="w-[800px] p-6">
                   {/* Header Section */}
                   <div className="mb-6">
                     <Link
@@ -340,7 +324,7 @@ export function MegaMenu() {
                             <li key={menuItem.name}>
                               <Link
                                 href={menuItem.href}
-                                className="flex items-center space-x-3 p-2 rounded-md hover:bg-[#F5F5F0] transition-colors group"
+                                className="flex items-center space-x-3 p-2 rounded-md hover:bg-[#F5F5F0] transition-colors group h-8"
                               >
                                 <IconComponent className="h-4 w-4 text-[#36596A]" />
                                 <span className="text-sm text-gray-600 group-hover:text-[#36596A]">

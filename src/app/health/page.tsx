@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calculator, BookOpen, Shield, Heart, DollarSign } from 'lucide-react'
+import Footer from '../../components/Footer'
 
 export default function HealthPage() {
   return (
@@ -281,6 +282,8 @@ export default function HealthPage() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }
