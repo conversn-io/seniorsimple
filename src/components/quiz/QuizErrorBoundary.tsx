@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
@@ -16,7 +15,7 @@ interface State {
 
 class QuizErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -24,7 +23,7 @@ class QuizErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Quiz Error Boundary caught an error:', error, errorInfo);
+    console.error('Quiz error:', error, errorInfo);
   }
 
   public handleReset = () => {
