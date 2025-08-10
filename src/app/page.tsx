@@ -293,24 +293,41 @@ export default async function HomePage() {
       </section>
 
       {/* Tools & Resources */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Tools & Resources</h2>
+      <section className="py-16 px-6 bg-white relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-3">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2336596A' fill-opacity='0.05'%3E%3Cpath d='M30 30c0 16.569-13.431 30-30 30s-30-13.431-30-30 13.431-30 30-30 30 13.431 30 30zm0 0c0-16.569 13.431-30 30-30s30 13.431 30 30-13.431 30-30 30-30-13.431-30-30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-semibold mb-4 text-[#36596A]">Tools & Resources</h2>
+            <div className="w-24 h-1 bg-[#E4CDA1] mx-auto mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Interactive tools and downloadable resources to help you plan your retirement
+            </p>
+          </div>
+          
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { title: 'Retirement Income Estimator', desc: 'Get a sense of your monthly cash flow after retiring.', icon: <TrendingUp className="w-6 h-6" /> },
-              { title: 'Estate Planning Checklist', desc: 'Download your 10-step estate checklist today.', icon: <ClipboardList className="w-6 h-6" /> },
-              { title: 'Reverse Mortgage Calculator', desc: 'See how much equity you can access.', icon: <Calculator className="w-6 h-6" /> }
+              { title: 'Retirement Income Estimator', desc: 'Get a sense of your monthly cash flow after retiring.', icon: <TrendingUp className="w-6 h-6" />, color: 'from-blue-500 to-blue-600' },
+              { title: 'Estate Planning Checklist', desc: 'Download your 10-step estate checklist today.', icon: <ClipboardList className="w-6 h-6" />, color: 'from-green-500 to-green-600' },
+              { title: 'Reverse Mortgage Calculator', desc: 'See how much equity you can access.', icon: <Calculator className="w-6 h-6" />, color: 'from-purple-500 to-purple-600' }
             ].map((tool, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-sm text-center border hover:shadow-md transition-shadow group">
-                <div className="w-12 h-12 bg-[#36596A] rounded-lg flex items-center justify-center mx-auto mb-6 text-white group-hover:scale-105 transition-transform">
+              <div key={index} className="bg-white p-8 rounded-xl shadow-sm text-center border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                {/* Background Accent */}
+                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${tool.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                
+                <div className={`w-12 h-12 bg-gradient-to-br ${tool.color} rounded-lg flex items-center justify-center mx-auto mb-6 text-white group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                   {tool.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-[#36596A]">{tool.title}</h3>
-                <p className="text-gray-600 mb-4">{tool.desc}</p>
-                <button className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-2 group">
+                <h3 className="text-xl font-semibold mb-4 text-[#36596A] group-hover:text-[#2a4a5a] transition-colors duration-300">{tool.title}</h3>
+                <p className="text-gray-600 mb-6">{tool.desc}</p>
+                <button className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-2 group/btn">
                   Try Tool
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
                 </button>
               </div>
             ))}
@@ -319,12 +336,20 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Articles */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-semibold text-[#36596A] mb-4">
+      <section className="py-16 px-6 bg-white relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-3">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2336596A' fill-opacity='0.05'%3E%3Cpath d='M25 25c0 13.807-11.193 25-25 25s-25-11.193-25-25 11.193-25 25-25 25 11.193 25 25zm0 0c0-13.807 11.193-25 25-25s25 11.193 25 25-11.193 25-25 25-25-11.193-25-25z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-semibold mb-4 text-[#36596A]">
               Latest Retirement Insights
             </h2>
+            <div className="w-24 h-1 bg-[#E4CDA1] mx-auto mb-6"></div>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Stay informed with our latest articles on retirement planning, annuities, and financial security.
             </p>
@@ -334,17 +359,23 @@ export default async function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {error ? (
               <div className="col-span-full text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-8 h-8 text-gray-400" />
+                </div>
                 <p className="text-gray-600">Unable to load featured articles at this time.</p>
               </div>
             ) : featuredArticles && featuredArticles.length > 0 ? (
               featuredArticles.map((article) => (
-                <article key={article.id} className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow group">
+                <article key={article.id} className="bg-[#F5F5F0] rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                  {/* Background Accent */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
                   <div className="mb-4">
                     <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
                       {article.category || 'Retirement'}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3 group-hover:text-[#2a4a5a] transition-colors duration-300">
                     <Link href={`/articles/${article.slug}`} className="hover:underline">
                       {article.title}
                     </Link>
@@ -361,9 +392,9 @@ export default async function HomePage() {
                         day: 'numeric'
                       })}
                     </span>
-                    <Link href={`/articles/${article.slug}`} className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group">
+                    <Link href={`/articles/${article.slug}`} className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group/link">
                       Read More
-                      <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
                 </article>
@@ -371,13 +402,15 @@ export default async function HomePage() {
             ) : (
               // Fallback articles when no featured articles are available
               <>
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow group">
+                <article className="bg-[#F5F5F0] rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
                   <div className="mb-4">
                     <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
                       Annuities
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3 group-hover:text-[#2a4a5a] transition-colors duration-300">
                     Understanding Fixed Index Annuities
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -385,20 +418,22 @@ export default async function HomePage() {
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group">
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group/link">
                       Read More
-                      <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
                 </article>
 
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow group">
+                <article className="bg-[#F5F5F0] rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
                   <div className="mb-4">
                     <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
                       Tax Planning
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3 group-hover:text-[#2a4a5a] transition-colors duration-300">
                     Tax-Efficient Retirement Strategies
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -406,20 +441,22 @@ export default async function HomePage() {
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group">
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group/link">
                       Read More
-                      <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
                 </article>
 
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow group">
+                <article className="bg-[#F5F5F0] rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
                   <div className="mb-4">
                     <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
                       Estate Planning
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-lg font-semibold text-[#36596A] mb-3 group-hover:text-[#2a4a5a] transition-colors duration-300">
                     Protecting Your Legacy
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -427,9 +464,9 @@ export default async function HomePage() {
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group">
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline inline-flex items-center gap-1 group/link">
                       Read More
-                      <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
                 </article>
@@ -440,28 +477,43 @@ export default async function HomePage() {
           <div className="text-center">
             <Link 
               href="/articles"
-              className="inline-block bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors inline-flex items-center gap-2 group"
+              className="inline-block bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-all duration-300 inline-flex items-center gap-2 group shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               View All Articles
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-serif font-semibold text-white mb-4">
-            Join 50,000+ Seniors Getting Retirement Smart
-          </h2>
-          <p className="text-xl text-white mb-8 opacity-90">
-            Weekly insights on income, taxes, healthcare, and more.
-          </p>
-          <div className="max-w-md mx-auto">
+      <section className="py-16 px-6 relative" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M40 40c0 22.091-17.909 40-40 40s-40-17.909-40-40 17.909-40 40-40 40 17.909 40 40zm0 0c0-22.091 17.909-40 40-40s40 17.909 40 40-17.909 40-40 40-40-17.909-40-40z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+              <Mail className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-serif font-semibold text-white mb-4">
+              Join 50,000+ Seniors Getting Retirement Smart
+            </h2>
+            <div className="w-24 h-1 bg-white bg-opacity-30 mx-auto mb-6"></div>
+            <p className="text-xl text-white mb-8 opacity-90">
+              Weekly insights on income, taxes, healthcare, and more.
+            </p>
+          </div>
+          
+          <div className="max-w-md mx-auto mb-8">
             <NewsletterSignup />
           </div>
-          <p className="text-sm text-white mt-4 opacity-80 flex items-center justify-center gap-2">
+          
+          <p className="text-sm text-white opacity-80 flex items-center justify-center gap-2">
             <Download className="w-4 h-4" />
             Free download: The Retirement Planning Essentials Checklist
           </p>
@@ -469,54 +521,74 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-6xl mx-auto">
+      <footer className="py-12 px-6 bg-gray-50 border-t border-gray-200 relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2336596A' fill-opacity='0.05'%3E%3Cpath d='M50 50c0 27.614-22.386 50-50 50s-50-22.386-50-50 22.386-50 50-50 50 22.386 50 50zm0 0c0-27.614 22.386-50 50-50s50 22.386 50 50-22.386 50-50 50-50-22.386-50-50z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Get in Touch</h3>
-              <div className="space-y-2 text-gray-600">
-                <p className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
+              <h3 className="text-lg font-semibold text-[#36596A] mb-4 flex items-center gap-2">
+                <Phone className="w-5 h-5" />
+                Get in Touch
+              </h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="flex items-center gap-2 hover:text-[#36596A] transition-colors duration-300 cursor-pointer">
+                  <Users className="w-4 h-4" />
                   Contact Us
                 </p>
-                <p className="flex items-center gap-2">
+                <p className="flex items-center gap-2 hover:text-[#36596A] transition-colors duration-300 cursor-pointer">
                   <Phone className="w-4 h-4" />
                   Phone: 800-555-2040
                 </p>
-                <p className="flex items-center gap-2">
+                <p className="flex items-center gap-2 hover:text-[#36596A] transition-colors duration-300 cursor-pointer">
                   <Mail className="w-4 h-4" />
                   Email: support@seniorsimple.org
                 </p>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Resources</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Annuities</p>
-                <p>Estate Planning</p>
-                <p>Health</p>
-                <p>Housing</p>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-4 flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                Resources
+              </h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Annuities</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Estate Planning</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Health</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Housing</p>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">About</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Mission</p>
-                <p>Team</p>
-                <p>Press</p>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-4 flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                About
+              </h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Mission</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Team</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Press</p>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Privacy Policy</p>
-                <p>Terms of Service</p>
-                <p>Disclaimers</p>
+              <h3 className="text-lg font-semibold text-[#36596A] mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Legal
+              </h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Privacy Policy</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Terms of Service</p>
+                <p className="hover:text-[#36596A] transition-colors duration-300 cursor-pointer">Disclaimers</p>
               </div>
             </div>
           </div>
           <div className="text-center mt-8 pt-8 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+              <Globe className="w-4 h-4" />
               © 2024 SeniorSimple. All rights reserved.
             </p>
           </div>
