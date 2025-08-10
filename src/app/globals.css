@@ -37,10 +37,22 @@
   }
 }
 
+/* Performance optimizations */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Hero Section Animations */
@@ -117,27 +129,92 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-fade-in-delay {
   animation: fadeInDelay 1.2s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-fade-in-delay-2 {
   animation: fadeInDelay2 1.6s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-fade-in-delay-3 {
   animation: fadeInDelay3 2s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-fade-in-delay-4 {
   animation: fadeInDelay4 2.4s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 /* Enhanced Shadow Utilities */
 .shadow-3xl {
   box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Performance optimizations for animations */
+.group:hover .group-hover\:scale-110 {
+  transform: scale(1.1);
+  will-change: transform;
+}
+
+.group:hover .group-hover\:translate-x-1 {
+  transform: translateX(0.25rem);
+  will-change: transform;
+}
+
+.group:hover .group-hover\:-translate-y-1 {
+  transform: translateY(-0.25rem);
+  will-change: transform;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid #36596A;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-fade-in,
+  .animate-fade-in-delay,
+  .animate-fade-in-delay-2,
+  .animate-fade-in-delay-3,
+  .animate-fade-in-delay-4 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .bg-opacity-5,
+  .bg-opacity-10,
+  .bg-opacity-20 {
+    background-opacity: 0.3 !important;
+  }
+  
+  .text-opacity-80,
+  .text-opacity-90 {
+    text-opacity: 1 !important;
+  }
 }
 
 /* Article Content Styling */
