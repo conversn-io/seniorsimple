@@ -151,27 +151,27 @@ export default async function HomePage() {
       {/* How It Works */}
       <section className="py-16 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12">How It Works</h2>
+          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
               <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
                 <IconQuiz />
               </div>
-              <h3 className="text-xl font-semibold mb-4">1. Take a Quick Quiz</h3>
+              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">1. Take a Quick Quiz</h3>
               <p className="text-gray-600">Answer 5–7 questions about your retirement needs.</p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
               <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
                 <IconLightbulb />
               </div>
-              <h3 className="text-xl font-semibold mb-4">2. Get Personalized Guidance</h3>
+              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">2. Get Personalized Guidance</h3>
               <p className="text-gray-600">Receive educational content tailored to you.</p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
               <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
                 <IconHandshake />
               </div>
-              <h3 className="text-xl font-semibold mb-4">3. Connect with Trusted Experts</h3>
+              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">3. Connect with Trusted Experts</h3>
               <p className="text-gray-600">Optionally speak with a vetted professional.</p>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default async function HomePage() {
       {/* Topics Grid */}
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12">Explore Retirement Topics</h2>
+          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Explore Retirement Topics</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { 
@@ -280,7 +280,7 @@ export default async function HomePage() {
       {/* Tools & Resources */}
       <section className="py-16 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12">Tools & Resources</h2>
+          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Tools & Resources</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { title: 'Retirement Income Estimator', desc: 'Get a sense of your monthly cash flow after retiring.', icon: <IconGraph /> },
@@ -291,7 +291,7 @@ export default async function HomePage() {
                 <div className="w-12 h-12 bg-[#36596A] rounded-lg flex items-center justify-center mx-auto mb-6 text-white">
                   {tool.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-4">{tool.title}</h3>
+                <h3 className="text-xl font-semibold mb-4 text-[#36596A]">{tool.title}</h3>
                 <p className="text-gray-600">{tool.desc}</p>
               </div>
             ))}
