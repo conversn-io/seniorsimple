@@ -38,7 +38,7 @@ export default function TopicCard({
       )}
       
       {/* Content */}
-      <h3 className="text-xl font-semibold mb-4">{title}</h3>
+      <h3 className="text-xl font-semibold mb-4 text-[#36596A]">{title}</h3>
       <p className="text-gray-600 mb-6">{description}</p>
       
       {/* Link */}
