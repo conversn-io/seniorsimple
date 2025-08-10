@@ -291,43 +291,43 @@ export function MegaMenu() {
           <NavigationMenuItem key={item.title}>
             <div className="relative group">
               <div className="flex items-center">
-                <NavigationMenuTrigger className="h-8 px-4 py-2 text-sm text-gray-600 hover:text-[#36596A] transition-colors font-medium data-[state=open]:text-[#36596A]">
-                  <Link href={item.href} className="hover:text-[#36596A]">
+                <NavigationMenuTrigger className="touch-target px-6 py-3 text-base text-gray-600 hover:text-[#36596A] transition-all duration-300 font-medium data-[state=open]:text-[#36596A] focus-visible-enhanced rounded-lg hover:bg-gray-50 senior-friendly-text">
+                  <Link href={item.href} className="hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded">
                     {item.title}
                   </Link>
                 </NavigationMenuTrigger>
               </div>
               <NavigationMenuContent>
-                <div className="w-[800px] p-6">
+                <div className="w-[850px] p-8 card-enhanced">
                   {/* Header Section */}
-                  <div className="mb-6">
+                  <div className="mb-8">
                     <Link
                       href={item.href}
-                      className="text-xl font-bold text-[#36596A] hover:text-[#2a4a5a] transition-colors"
+                      className="text-2xl font-bold text-[#36596A] hover:text-[#2a4a5a] transition-colors focus-visible-enhanced p-2 -m-2 rounded-lg senior-friendly-text"
                     >
                       {item.title}
                     </Link>
-                    <p className="text-gray-600 mt-1">{item.description}</p>
+                    <p className="text-gray-600 mt-3 senior-friendly-text text-lg">{item.description}</p>
                   </div>
 
                 {/* Content Grid */}
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-2 gap-10">
                   {item.sections.map((section) => (
                     <div key={section.title}>
-                      <h3 className="font-semibold text-[#36596A] mb-3 text-sm uppercase tracking-wide">
+                      <h3 className="font-semibold text-[#36596A] mb-5 text-base uppercase tracking-wide senior-friendly-text">
                         {section.title}
                       </h3>
-                      <ul className="space-y-2">
+                      <ul className="space-y-3">
                         {section.items.map((menuItem) => {
                           const IconComponent = menuItem.icon
                           return (
                             <li key={menuItem.name}>
                               <Link
                                 href={menuItem.href}
-                                className="flex items-center space-x-3 p-2 rounded-md hover:bg-[#F5F5F0] transition-colors group h-8"
+                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-[#F5F5F0] transition-all duration-300 group touch-target focus-visible-enhanced hover:shadow-sm"
                               >
-                                <IconComponent className="h-4 w-4 text-[#36596A]" />
-                                <span className="text-sm text-gray-600 group-hover:text-[#36596A]">
+                                <IconComponent className="h-5 w-5 text-[#36596A] transition-transform duration-300 group-hover:scale-110" />
+                                <span className="text-base text-gray-600 group-hover:text-[#36596A] senior-friendly-text transition-colors duration-300">
                                   {menuItem.name}
                                 </span>
                               </Link>

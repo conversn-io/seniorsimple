@@ -106,40 +106,39 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
 
-
       {/* Hero Section */}
-      <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
+      <section className="py-20 px-6 gradient-trust">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-20 items-center">
             <div className="text-white">
-              <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-6">
+              <h1 className="text-4xl md:text-6xl font-serif font-semibold mb-8 leading-tight">
                 Simplify Your Retirement Journey
               </h1>
-              <p className="text-xl mb-8 opacity-90">
+              <p className="text-xl md:text-2xl mb-10 opacity-90 senior-friendly-text">
                 No-cost education on annuities, taxes, estate planning, reverse mortgages, regenerative medicine, and housing.
               </p>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <button className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+              <div className="flex flex-wrap gap-6 mb-10">
+                <button className="btn-accessible bg-white text-[#36596A] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#36596A] text-lg px-10 py-4">
                   Take the Retirement Quiz
                 </button>
-                <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-colors">
+                <button className="btn-accessible border-2 border-white text-white hover:bg-white hover:text-[#36596A] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#36596A] text-lg px-10 py-4">
                   I&apos;m a Financial Advisor
                 </button>
               </div>
-              <div className="flex flex-wrap gap-6 text-sm opacity-80">
+              <div className="flex flex-wrap gap-8 text-base opacity-80 senior-friendly-text">
                 <span>As seen on Forbes</span>
                 <span>Partnered with AARP</span>
                 <span>Fiduciary Alliance Approved</span>
               </div>
             </div>
             <div className="text-center">
-              <div className="w-full h-96 bg-white bg-opacity-10 rounded-xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden">
+              <div className="w-full h-[28rem] bg-white bg-opacity-10 rounded-2xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden shadow-2xl">
                 {/* Hero Image */}
                 <Image
                   src="/images/webp/hero/couple-share-coffee-meeting-home-couch.webp"
                   alt="Senior couple sharing coffee and planning retirement at home"
                   fill
-                  className="object-cover rounded-xl"
+                  className="object-cover rounded-2xl"
                   priority={true}
                 />
               </div>
@@ -149,40 +148,40 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-16 text-[#36596A] senior-friendly-text">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-10">
+            <div className="card-enhanced text-center extra-generous-spacing">
+              <div className="w-20 h-20 bg-[#E4CDA1] rounded-2xl flex items-center justify-center mx-auto mb-8 text-[#36596A] transition-transform duration-300 hover:scale-110">
                 <IconQuiz />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">1. Take a Quick Quiz</h3>
-              <p className="text-gray-600">Answer 5–7 questions about your retirement needs.</p>
+              <h3 className="text-xl font-semibold mb-6 text-[#36596A] senior-friendly-text">1. Take a Quick Quiz</h3>
+              <p className="text-gray-600 senior-friendly-text">Answer 5–7 questions about your retirement needs.</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
+            <div className="card-enhanced text-center extra-generous-spacing">
+              <div className="w-20 h-20 bg-[#E4CDA1] rounded-2xl flex items-center justify-center mx-auto mb-8 text-[#36596A] transition-transform duration-300 hover:scale-110">
                 <IconLightbulb />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">2. Get Personalized Guidance</h3>
-              <p className="text-gray-600">Receive educational content tailored to you.</p>
+              <h3 className="text-xl font-semibold mb-6 text-[#36596A] senior-friendly-text">2. Get Personalized Guidance</h3>
+              <p className="text-gray-600 senior-friendly-text">Receive educational content tailored to you.</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A]">
+            <div className="card-enhanced text-center extra-generous-spacing">
+              <div className="w-20 h-20 bg-[#E4CDA1] rounded-2xl flex items-center justify-center mx-auto mb-8 text-[#36596A] transition-transform duration-300 hover:scale-110">
                 <IconHandshake />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-[#36596A]">3. Connect with Trusted Experts</h3>
-              <p className="text-gray-600">Optionally speak with a vetted professional.</p>
+              <h3 className="text-xl font-semibold mb-6 text-[#36596A] senior-friendly-text">3. Connect with Trusted Experts</h3>
+              <p className="text-gray-600 senior-friendly-text">Optionally speak with a vetted professional.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Topics Grid */}
-      <section className="py-16 px-6">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Explore Retirement Topics</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-16 text-[#36596A] senior-friendly-text">Explore Retirement Topics</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
             {[
               { 
                 title: 'Annuities', 
@@ -242,34 +241,34 @@ export default async function HomePage() {
       </section>
 
       {/* Why SeniorSimple */}
-      <section className="py-16 px-6 bg-[#E4CDA1]">
+      <section className="py-20 px-6 gradient-warm">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-3xl font-serif font-semibold mb-8">Why Choose SeniorSimple?</h2>
-              <div className="space-y-8">
+              <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-10 text-[#36596A] senior-friendly-text">Why Choose SeniorSimple?</h2>
+              <div className="space-y-10">
                 <div>
-                  <h3 className="text-xl font-semibold text-[#36596A] mb-2">Fiduciary-Aligned</h3>
-                  <p className="text-gray-700">We only partner with licensed professionals who act in your best interest.</p>
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">Fiduciary-Aligned</h3>
+                  <p className="text-gray-700 senior-friendly-text">We only partner with licensed professionals who act in your best interest.</p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-[#36596A] mb-2">Senior-Centered Education</h3>
-                  <p className="text-gray-700">Everything is built with the 55+ audience in mind—simple, jargon-free, and valuable.</p>
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">Senior-Centered Education</h3>
+                  <p className="text-gray-700 senior-friendly-text">Everything is built with the 55+ audience in mind—simple, jargon-free, and valuable.</p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-[#36596A] mb-2">No Obligation, Ever</h3>
-                  <p className="text-gray-700">Our service is always free. You choose what happens next.</p>
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">No Obligation, Ever</h3>
+                  <p className="text-gray-700 senior-friendly-text">Our service is always free. You choose what happens next.</p>
                 </div>
               </div>
             </div>
             <div className="text-center">
-              <div className="w-full h-96 bg-white bg-opacity-30 rounded-xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden">
+              <div className="w-full h-[28rem] bg-white bg-opacity-30 rounded-2xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden shadow-2xl">
                 {/* Value Proposition Image */}
                 <Image
                   src="/images/webp/hero/gray-hair-short-brunette-beach-breeze.webp"
                   alt="Senior enjoying retirement with confidence and freedom"
                   fill
-                  className="object-cover rounded-xl"
+                  className="object-cover rounded-2xl"
                 />
               </div>
             </div>
@@ -278,21 +277,21 @@ export default async function HomePage() {
       </section>
 
       {/* Tools & Resources */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Tools & Resources</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-16 text-[#36596A] senior-friendly-text">Tools & Resources</h2>
+          <div className="grid md:grid-cols-3 gap-10">
             {[
               { title: 'Retirement Income Estimator', desc: 'Get a sense of your monthly cash flow after retiring.', icon: <IconGraph /> },
               { title: 'Estate Planning Checklist', desc: 'Download your 10-step estate checklist today.', icon: <IconClipboard /> },
               { title: 'Reverse Mortgage Calculator', desc: 'See how much equity you can access.', icon: <IconCalculator /> }
             ].map((tool, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-sm text-center border">
-                <div className="w-12 h-12 bg-[#36596A] rounded-lg flex items-center justify-center mx-auto mb-6 text-white">
+              <div key={index} className="card-enhanced text-center extra-generous-spacing">
+                <div className="w-16 h-16 bg-[#36596A] rounded-2xl flex items-center justify-center mx-auto mb-8 text-white transition-transform duration-300 hover:scale-110">
                   {tool.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-[#36596A]">{tool.title}</h3>
-                <p className="text-gray-600">{tool.desc}</p>
+                <h3 className="text-xl font-semibold mb-6 text-[#36596A] senior-friendly-text">{tool.title}</h3>
+                <p className="text-gray-600 senior-friendly-text">{tool.desc}</p>
               </div>
             ))}
           </div>
@@ -300,48 +299,48 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Articles */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-semibold text-[#36596A] mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-[#36596A] mb-6 senior-friendly-text">
               Latest Retirement Insights
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto senior-friendly-text">
               Stay informed with our latest articles on retirement planning, annuities, and financial security.
             </p>
           </div>
           
           {/* Featured Articles Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
             {error ? (
               <div className="col-span-full text-center py-8">
                 <p className="text-gray-600">Unable to load featured articles at this time.</p>
               </div>
             ) : featuredArticles && featuredArticles.length > 0 ? (
               featuredArticles.map((article) => (
-                <article key={article.id} className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-                  <div className="mb-4">
-                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                <article key={article.id} className="card-enhanced generous-spacing">
+                  <div className="mb-6">
+                    <span className="inline-block px-4 py-2 bg-[#E4CDA1] text-[#36596A] text-base font-medium rounded-full">
                       {article.category || 'Retirement'}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
-                    <Link href={`/articles/${article.slug}`} className="hover:underline">
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">
+                    <Link href={`/articles/${article.slug}`} className="hover:underline focus-visible-enhanced p-1 -m-1 rounded">
                       {article.title}
                     </Link>
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-gray-600 mb-6 line-clamp-3 senior-friendly-text">
                     {article.excerpt}
                   </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>
+                  <div className="flex items-center justify-between text-base text-gray-500">
+                    <span className="senior-friendly-text">
                       {new Date(article.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                       })}
                     </span>
-                    <Link href={`/articles/${article.slug}`} className="text-[#36596A] font-medium hover:underline">
+                    <Link href={`/articles/${article.slug}`} className="text-[#36596A] font-medium hover:underline focus-visible-enhanced p-2 -m-2 rounded touch-target senior-friendly-text">
                       Read More →
                     </Link>
                   </div>
@@ -350,61 +349,61 @@ export default async function HomePage() {
             ) : (
               // Fallback articles when no featured articles are available
               <>
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-                  <div className="mb-4">
-                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                <article className="card-enhanced generous-spacing">
+                  <div className="mb-6">
+                    <span className="inline-block px-4 py-2 bg-[#E4CDA1] text-[#36596A] text-base font-medium rounded-full">
                       Annuities
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">
                     Understanding Fixed Index Annuities
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-6 senior-friendly-text">
                     Learn how fixed index annuities can provide guaranteed income while protecting your principal from market downturns.
                   </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  <div className="flex items-center justify-between text-base text-gray-500">
+                    <span className="senior-friendly-text">Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline focus-visible-enhanced p-2 -m-2 rounded touch-target senior-friendly-text">
                       Read More →
                     </Link>
                   </div>
                 </article>
 
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-                  <div className="mb-4">
-                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                <article className="card-enhanced generous-spacing">
+                  <div className="mb-6">
+                    <span className="inline-block px-4 py-2 bg-[#E4CDA1] text-[#36596A] text-base font-medium rounded-full">
                       Tax Planning
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">
                     Tax-Efficient Retirement Strategies
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-6 senior-friendly-text">
                     Discover strategies to minimize taxes in retirement and maximize your income.
                   </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  <div className="flex items-center justify-between text-base text-gray-500">
+                    <span className="senior-friendly-text">Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline focus-visible-enhanced p-2 -m-2 rounded touch-target senior-friendly-text">
                       Read More →
                     </Link>
                   </div>
                 </article>
 
-                <article className="bg-[#F5F5F0] rounded-lg p-6 border border-gray-200">
-                  <div className="mb-4">
-                    <span className="inline-block px-3 py-1 bg-[#E4CDA1] text-[#36596A] text-sm font-medium rounded-full">
+                <article className="card-enhanced generous-spacing">
+                  <div className="mb-6">
+                    <span className="inline-block px-4 py-2 bg-[#E4CDA1] text-[#36596A] text-base font-medium rounded-full">
                       Estate Planning
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#36596A] mb-3">
+                  <h3 className="text-xl font-semibold text-[#36596A] mb-4 senior-friendly-text">
                     Protecting Your Legacy
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-6 senior-friendly-text">
                     Essential steps to ensure your assets are protected and passed on according to your wishes.
                   </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>Coming Soon</span>
-                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline">
+                  <div className="flex items-center justify-between text-base text-gray-500">
+                    <span className="senior-friendly-text">Coming Soon</span>
+                    <Link href="/articles" className="text-[#36596A] font-medium hover:underline focus-visible-enhanced p-2 -m-2 rounded touch-target senior-friendly-text">
                       Read More →
                     </Link>
                   </div>
@@ -416,7 +415,7 @@ export default async function HomePage() {
           <div className="text-center">
             <Link 
               href="/articles"
-              className="inline-block bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors"
+              className="btn-accessible bg-[#36596A] text-white hover:bg-[#2a4a5a] focus-visible:ring-2 focus-visible:ring-[#36596A] focus-visible:ring-offset-2 text-lg px-10 py-4"
             >
               View All Articles
             </Link>
@@ -425,63 +424,63 @@ export default async function HomePage() {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
+      <section className="py-20 px-6 gradient-trust">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-serif font-semibold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-white mb-6 senior-friendly-text">
             Join 50,000+ Seniors Getting Retirement Smart
           </h2>
-          <p className="text-xl text-white mb-8 opacity-90">
+          <p className="text-xl md:text-2xl text-white mb-10 opacity-90 senior-friendly-text">
             Weekly insights on income, taxes, healthcare, and more.
           </p>
-          <div className="max-w-md mx-auto">
+          <div className="max-w-lg mx-auto mb-6">
             <NewsletterSignup />
           </div>
-          <p className="text-sm text-white mt-4 opacity-80">
+          <p className="text-base text-white opacity-80 senior-friendly-text">
             Free download: The Retirement Planning Essentials Checklist
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-50 border-t border-gray-200">
+      <footer className="py-16 px-6 bg-gray-50 border-t border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-10">
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Get in Touch</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Contact Us</p>
-                <p>Phone: 800-555-2040</p>
-                <p>Email: support@seniorsimple.org</p>
+              <h3 className="text-xl font-semibold text-[#36596A] mb-6 senior-friendly-text">Get in Touch</h3>
+              <div className="space-y-4 text-gray-600">
+                <p className="senior-friendly-text">Contact Us</p>
+                <p className="senior-friendly-text">Phone: 800-555-2040</p>
+                <p className="senior-friendly-text">Email: support@seniorsimple.org</p>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Resources</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Annuities</p>
-                <p>Estate Planning</p>
-                <p>Health</p>
-                <p>Housing</p>
+              <h3 className="text-xl font-semibold text-[#36596A] mb-6 senior-friendly-text">Resources</h3>
+              <div className="space-y-4 text-gray-600">
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Annuities</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Estate Planning</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Health</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Housing</a>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">About</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Mission</p>
-                <p>Team</p>
-                <p>Press</p>
+              <h3 className="text-xl font-semibold text-[#36596A] mb-6 senior-friendly-text">About</h3>
+              <div className="space-y-4 text-gray-600">
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Mission</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Team</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Press</a>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Privacy Policy</p>
-                <p>Terms of Service</p>
-                <p>Disclaimers</p>
+              <h3 className="text-xl font-semibold text-[#36596A] mb-6 senior-friendly-text">Legal</h3>
+              <div className="space-y-4 text-gray-600">
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Privacy Policy</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Terms of Service</a>
+                <a href="#" className="block senior-friendly-text hover:text-[#36596A] focus-visible-enhanced p-1 -m-1 rounded touch-target transition-colors">Disclaimers</a>
               </div>
             </div>
           </div>
-          <div className="text-center mt-8 pt-8 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
+          <div className="text-center mt-12 pt-8 border-t border-gray-200">
+            <p className="text-base text-gray-500 senior-friendly-text">
               © 2024 SeniorSimple. All rights reserved.
             </p>
           </div>

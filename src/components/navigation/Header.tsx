@@ -7,25 +7,25 @@ export function Header() {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center touch-target p-2 -m-2 rounded-lg focus-visible-enhanced transition-all duration-300 hover:bg-gray-50">
               <Image
                 src="/images/logos/seniorsimplelogo-sq.png"
                 alt="SeniorSimple"
-                width={40}
-                height={40}
-                className="h-10 w-auto"
+                width={44}
+                height={44}
+                className="h-11 w-auto"
               />
-              <span className="ml-2 text-xl font-bold text-[#36596A]">
+              <span className="ml-3 text-xl font-bold text-[#36596A] senior-friendly-text">
                 SeniorSimple
               </span>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-2">
             <MegaMenu />
           </nav>
 
@@ -33,7 +33,7 @@ export function Header() {
           <div className="flex items-center space-x-4">
             <Link
               href="/contact"
-              className="hidden sm:block bg-[#36596A] text-white px-4 py-2 rounded-lg hover:bg-[#2a4a5a] transition-colors h-9"
+              className="hidden sm:flex btn-accessible bg-[#36596A] text-white hover:bg-[#2a4a5a] focus-visible:ring-2 focus-visible:ring-[#36596A] focus-visible:ring-offset-2"
             >
               Get Started
             </Link>

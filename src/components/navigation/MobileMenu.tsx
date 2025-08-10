@@ -70,46 +70,57 @@ export function MobileMenu() {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-600 hover:text-[#36596A] transition-colors"
-        aria-label="Toggle mobile menu"
+        className="touch-target p-3 text-gray-600 hover:text-[#36596A] transition-colors focus-visible-enhanced rounded-lg hover:bg-gray-50"
+        aria-label={isOpen ? "Close mobile menu" : "Open mobile menu"}
+        aria-expanded={isOpen}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {/* Mobile menu overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsOpen(false)}>
-          <div className="fixed inset-y-0 right-0 w-80 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 transition-opacity duration-300" 
+          onClick={() => setIsOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation menu"
+        >
+          <div 
+            className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-[#36596A]">Menu</h2>
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-[#36596A] senior-friendly-text">Menu</h2>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 text-gray-600 hover:text-[#36596A] transition-colors"
+                  className="touch-target p-3 text-gray-600 hover:text-[#36596A] transition-colors focus-visible-enhanced rounded-lg hover:bg-gray-50"
+                  aria-label="Close menu"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
 
               {/* Menu items */}
-              <div className="flex-1 overflow-y-auto py-4">
-                <nav className="space-y-1">
+              <div className="flex-1 overflow-y-auto py-6">
+                <nav className="space-y-2">
                   {mobileMenuItems.map((item) => (
-                    <div key={item.title} className="px-4">
+                    <div key={item.title} className="px-6">
                       <Link
                         href={item.href}
-                        className="block py-3 text-lg font-medium text-[#36596A] hover:text-[#2a4a5a] transition-colors"
+                        className="block py-4 text-xl font-medium text-[#36596A] hover:text-[#2a4a5a] transition-colors touch-target focus-visible-enhanced rounded-lg senior-friendly-text hover:bg-gray-50 px-2 -mx-2"
                         onClick={() => setIsOpen(false)}
                       >
                         {item.title}
                       </Link>
-                      <div className="ml-4 space-y-1">
+                      <div className="ml-6 space-y-1 mt-2">
                         {item.items.map((subItem) => (
                           <Link
                             key={subItem.name}
                             href={subItem.href}
-                            className="block py-2 text-sm text-gray-600 hover:text-[#36596A] transition-colors"
+                            className="block py-3 text-base text-gray-600 hover:text-[#36596A] transition-colors touch-target focus-visible-enhanced rounded-lg senior-friendly-text hover:bg-gray-50 px-2 -mx-2"
                             onClick={() => setIsOpen(false)}
                           >
                             {subItem.name}
@@ -122,11 +133,11 @@ export function MobileMenu() {
               </div>
 
               {/* Footer */}
-              <div className="p-4 border-t border-gray-200">
-                <div className="space-y-2">
+              <div className="p-6 border-t border-gray-200">
+                <div className="space-y-4">
                   <Link
                     href="/contact"
-                    className="block w-full bg-[#36596A] text-white py-2 px-4 rounded-lg text-center hover:bg-[#2a4a5a] transition-colors"
+                    className="btn-accessible w-full bg-[#36596A] text-white hover:bg-[#2a4a5a] focus-visible:ring-2 focus-visible:ring-[#36596A] focus-visible:ring-offset-2 text-lg py-4 text-center"
                     onClick={() => setIsOpen(false)}
                   >
                     Get Started
