@@ -94,7 +94,7 @@ const MedigapGuide: React.FC = () => {
               </div>
               
               <div className="bg-purple-50 p-6 rounded-lg">
-                <h3 className="font-semibent text-purple-900 mb-3">High-Deductible Plan G</h3>
+                                  <h3 className="font-semibold text-purple-900 mb-3">High-Deductible Plan G</h3>
                 <p className="text-purple-800 text-sm mb-4">
                   Lower monthly premium with higher deductible ($2,800 in 2024). After meeting deductible, 
                   provides same benefits as Plan G.
@@ -124,7 +124,7 @@ const MedigapGuide: React.FC = () => {
               </div>
               
               <div className="bg-yellow-50 p-6 rounded-lg">
-                <h3 className="font-semibent text-yellow-900 mb-3">Special Circumstances</h3>
+                                      <h3 className="font-semibold text-yellow-900 mb-3">Special Circumstances</h3>
                 <p className="text-yellow-800 mb-3">
                   You may have guaranteed issue rights in certain situations:
                 </p>

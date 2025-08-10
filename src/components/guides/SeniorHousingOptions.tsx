@@ -159,7 +159,7 @@ const SeniorHousingOptions: React.FC = () => {
                 <div className="bg-orange-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <span className="text-2xl">📍</span>
                 </div>
-                <h3 className="font-semibent text-gray-800 mb-2">Location</h3>
+                                        <h3 className="font-semibold text-gray-800 mb-2">Location</h3>
                 <p className="text-gray-600 text-sm">
                   Proximity to family, healthcare, and amenities
                 </p>
@@ -188,7 +188,7 @@ const SeniorHousingOptions: React.FC = () => {
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibent text-gray-800 mb-2">Plan and Prepare (Ages 65-70)</h3>
+                                          <h3 className="font-semibold text-gray-800 mb-2">Plan and Prepare (Ages 65-70)</h3>
                   <p className="text-gray-600 text-sm">
                     Make home modifications, research communities, and create a long-term care plan.
                   </p>
@@ -200,7 +200,7 @@ const SeniorHousingOptions: React.FC = () => {
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibent text-gray-800 mb-2">Make the Transition (Ages 70+)</h3>
+                                          <h3 className="font-semibold text-gray-800 mb-2">Make the Transition (Ages 70+)</h3>
                   <p className="text-gray-600 text-sm">
                     Execute your housing plan based on your health, social needs, and financial situation.
                   </p>
@@ -210,7 +210,7 @@ const SeniorHousingOptions: React.FC = () => {
           </div>
           
           <div className="mt-8 bg-white rounded-lg shadow-md p-8 text-center">
-            <h3 className="text-lg font-semibent text-[#36596A] mb-4">
+            <h3 className="text-lg font-semibold text-[#36596A] mb-4">
               Need Help Choosing the Right Housing Option?
             </h3>
             <p className="text-gray-600 mb-6">
