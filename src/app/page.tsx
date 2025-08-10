@@ -47,39 +47,39 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="text-white">
-              <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-6">
+              <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-6 animate-fade-in">
                 Simplify Your Retirement Journey
               </h1>
-              <p className="text-xl mb-8 opacity-90">
+              <p className="text-xl mb-8 opacity-90 animate-fade-in-delay">
                 No-cost education on annuities, taxes, estate planning, reverse mortgages, regenerative medicine, and housing.
               </p>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <button className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2 group">
+              <div className="flex flex-wrap gap-4 mb-8 animate-fade-in-delay-2">
+                <button className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   Take the Retirement Quiz
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </button>
-                <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-colors flex items-center gap-2">
+                <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   I&apos;m a Financial Advisor
                   <Users className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex flex-wrap gap-6 text-sm opacity-80">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-300" />
+              <div className="flex flex-wrap gap-6 text-sm opacity-80 animate-fade-in-delay-3">
+                <div className="flex items-center gap-2 bg-white bg-opacity-10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-300 group">
+                  <Star className="w-4 h-4 text-yellow-300 group-hover:scale-110 transition-transform duration-300" />
                   <span>As seen on Forbes</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-300" />
+                <div className="flex items-center gap-2 bg-white bg-opacity-10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-300 group">
+                  <Shield className="w-4 h-4 text-blue-300 group-hover:scale-110 transition-transform duration-300" />
                   <span>Partnered with AARP</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-green-300" />
+                <div className="flex items-center gap-2 bg-white bg-opacity-10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-300 group">
+                  <Award className="w-4 h-4 text-green-300 group-hover:scale-110 transition-transform duration-300" />
                   <span>Fiduciary Alliance Approved</span>
                 </div>
               </div>
             </div>
-            <div className="text-center">
-              <div className="w-full h-96 bg-white bg-opacity-10 rounded-xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden">
+            <div className="text-center animate-fade-in-delay-4">
+              <div className="w-full h-96 bg-white bg-opacity-10 rounded-xl flex items-center justify-center text-lg opacity-70 relative overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105">
                 <Image
                   src="/images/webp/hero/couple-share-coffee-meeting-home-couch.webp"
                   alt="Senior couple sharing coffee and planning retirement at home"
@@ -87,6 +87,7 @@ export default async function HomePage() {
                   className="object-cover rounded-xl"
                   priority={true}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
               </div>
             </div>
           </div>
@@ -94,48 +95,94 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border hover:shadow-md transition-shadow group relative">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-105 transition-transform">
+      <section className="py-16 px-6 bg-white relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2336596A' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-semibold mb-4 text-[#36596A]">How It Works</h2>
+            <div className="w-24 h-1 bg-[#E4CDA1] mx-auto mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Get personalized retirement guidance in three simple steps
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connecting Lines */}
+            <div className="hidden md:block absolute top-1/2 left-1/3 w-1/3 h-0.5 bg-gradient-to-r from-[#E4CDA1] to-transparent transform -translate-y-1/2"></div>
+            <div className="hidden md:block absolute top-1/2 right-1/3 w-1/3 h-0.5 bg-gradient-to-l from-[#E4CDA1] to-transparent transform -translate-y-1/2"></div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-sm text-center border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+              {/* Background Accent */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1]"></div>
+              
+              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-110 transition-transform duration-300 relative">
                 <CheckCircle className="w-8 h-8" />
+                <div className="absolute inset-0 bg-[#36596A] rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </div>
-              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                 1
               </div>
               <h3 className="text-xl font-semibold mb-4 text-[#36596A]">Take a Quick Quiz</h3>
-              <p className="text-gray-600">Answer 5–7 questions about your retirement needs.</p>
+              <p className="text-gray-600">Answer 5–7 questions about your retirement needs and goals.</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border hover:shadow-md transition-shadow group relative">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-105 transition-transform">
+            
+            <div className="bg-white p-8 rounded-xl shadow-sm text-center border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+              {/* Background Accent */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1]"></div>
+              
+              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-110 transition-transform duration-300 relative">
                 <Lightbulb className="w-8 h-8" />
+                <div className="absolute inset-0 bg-[#36596A] rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </div>
-              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                 2
               </div>
               <h3 className="text-xl font-semibold mb-4 text-[#36596A]">Get Personalized Guidance</h3>
-              <p className="text-gray-600">Receive educational content tailored to you.</p>
+              <p className="text-gray-600">Receive educational content and resources tailored specifically to you.</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center border hover:shadow-md transition-shadow group relative">
-              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-105 transition-transform">
+            
+            <div className="bg-white p-8 rounded-xl shadow-sm text-center border border-gray-100 hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+              {/* Background Accent */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#36596A] to-[#E4CDA1]"></div>
+              
+              <div className="w-16 h-16 bg-[#E4CDA1] rounded-full flex items-center justify-center mx-auto mb-6 text-[#36596A] group-hover:scale-110 transition-transform duration-300 relative">
                 <Handshake className="w-8 h-8" />
+                <div className="absolute inset-0 bg-[#36596A] rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </div>
-              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                 3
               </div>
               <h3 className="text-xl font-semibold mb-4 text-[#36596A]">Connect with Trusted Experts</h3>
-              <p className="text-gray-600">Optionally speak with a vetted professional.</p>
+              <p className="text-gray-600">Optionally speak with vetted professionals who act in your best interest.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Topics Grid */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-serif font-semibold text-center mb-12 text-[#36596A]">Explore Retirement Topics</h2>
+      <section className="py-16 px-6 relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-3">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2336596A' fill-opacity='0.05'%3E%3Cpath d='M20 20c0 11.046-8.954 20-20 20s-20-8.954-20-20 8.954-20 20-20 20 8.954 20 20zm0 0c0-11.046 8.954-20 20-20s20 8.954 20 20-8.954 20-20 20-20-8.954-20-20z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-semibold mb-4 text-[#36596A]">Explore Retirement Topics</h2>
+            <div className="w-24 h-1 bg-[#E4CDA1] mx-auto mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Discover comprehensive resources on key retirement planning areas
+            </p>
+          </div>
+          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { 

@@ -43,6 +43,103 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Hero Section Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDelay {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  50% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDelay2 {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  66% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDelay3 {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  75% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDelay4 {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  85% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-fade-in-delay {
+  animation: fadeInDelay 1.2s ease-out forwards;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fadeInDelay2 1.6s ease-out forwards;
+}
+
+.animate-fade-in-delay-3 {
+  animation: fadeInDelay3 2s ease-out forwards;
+}
+
+.animate-fade-in-delay-4 {
+  animation: fadeInDelay4 2.4s ease-out forwards;
+}
+
+/* Enhanced Shadow Utilities */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
 /* Article Content Styling */
 .prose {
   color: #374151;
@@ -98,25 +195,21 @@ body {
   text-decoration: underline;
 }
 
-.prose a:hover {
-  color: #2a4a5a;
-}
-
 .prose blockquote {
-  font-style: italic;
   border-left: 4px solid #E4CDA1;
   padding-left: 1rem;
   margin: 1.5rem 0;
-  color: #6B7280;
+  font-style: italic;
+  color: #6b7280;
 }
 
 .prose strong {
-  font-weight: 600;
   color: #36596A;
+  font-weight: 600;
 }
 
 .prose em {
-  font-style: italic;
+  color: #6b7280;
 }
 
 .prose img {
@@ -125,14 +218,13 @@ body {
 }
 
 .prose hr {
-  border-color: #E5E7EB;
+  border-color: #E4CDA1;
   margin: 2rem 0;
 }
 
-/* Line clamp utility */
 .line-clamp-3 {
-  overflow: hidden;
   display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
