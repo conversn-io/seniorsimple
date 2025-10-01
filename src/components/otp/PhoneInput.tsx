@@ -50,7 +50,7 @@ export const PhoneInput = ({
   return (
     <div className={`phone-input ${className}`}>
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
           <span className="text-gray-500 text-lg font-medium">+1</span>
         </div>
         <input
@@ -62,7 +62,7 @@ export const PhoneInput = ({
           placeholder={placeholder}
           disabled={disabled}
           className={`
-            w-full pl-12 pr-4 py-3 text-lg border-2 rounded-lg
+            w-full pr-4 py-3 text-lg border-2 rounded-lg
             focus:ring-2 focus:ring-blue-500 focus:border-blue-500
             transition-colors duration-200
             ${hasError 
@@ -71,6 +71,7 @@ export const PhoneInput = ({
             }
             ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
           `}
+          style={{ paddingLeft: '100px' }}
           autoComplete="tel"
         />
       </div>

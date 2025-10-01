@@ -6,6 +6,11 @@ const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '';
+    }
+    
     // Main production domain
     if (hostname === 'www.seniorsimple.org' || hostname === 'seniorsimple.org') {
       return '';

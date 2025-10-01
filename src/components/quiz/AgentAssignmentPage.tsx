@@ -241,6 +241,7 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
                 if (key === 'currentSavings') label = 'Current Savings';
                 if (key === 'monthlyIncome') label = 'Monthly Income';
                 if (key === 'savingsGoals') label = 'Savings Goals';
+                if (key === 'allocationPercent') label = 'FIA Allocation';
                 
                 // Handle array values (multi-select)
                 if (Array.isArray(value)) {
@@ -248,6 +249,25 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
                     <div key={key} className="border-b border-slate-100 pb-2">
                       <span className="font-semibold text-slate-700">{label}:</span>
                       <span className="text-slate-600 ml-2">{value.join(', ')}</span>
+                    </div>
+                  );
+                }
+                
+                // Handle object values (like allocation data)
+                if (typeof value === 'object' && value !== null) {
+                  if (key === 'allocationPercent' || key === 'fiaAllocation') {
+                    return (
+                      <div key={key} className="border-b border-slate-100 pb-2">
+                        <span className="font-semibold text-slate-700">FIA Allocation:</span>
+                        <span className="text-slate-600 ml-2">{value.percentage}% (${value.amount?.toLocaleString() || 'N/A'})</span>
+                      </div>
+                    );
+                  }
+                  // For other objects, display as JSON string
+                  return (
+                    <div key={key} className="border-b border-slate-100 pb-2">
+                      <span className="font-semibold text-slate-700">{label}:</span>
+                      <span className="text-slate-600 ml-2">{JSON.stringify(value)}</span>
                     </div>
                   );
                 }

@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
-import { QuizResults } from './QuizResults';
-import { AgentAssignmentPage } from './AgentAssignmentPage';
 import { SavingsSlider } from './SavingsSlider';
 import { AllocationSlider } from './AllocationSlider';
 import { useRouter } from 'next/navigation';
@@ -30,14 +28,12 @@ interface QuizAnswer {
   [key: string]: any;
 }
 
-type FunnelType = 'primary' | 'secondary';
-
-// Primary funnel for investors with assets
-const PRIMARY_QUIZ_QUESTIONS = [
+// FIA Quote Quiz Questions with standardized order
+const FIA_QUIZ_QUESTIONS = [
   {
     id: 'ageRange',
     title: 'What is your current age range?',
-    subtitle: 'This helps us recommend the right strategy for your timeline',
+    subtitle: 'This helps us recommend the right FIA strategy for your timeline',
     type: 'multiple-choice' as const,
     options: [
       '50 or Younger',
@@ -49,7 +45,7 @@ const PRIMARY_QUIZ_QUESTIONS = [
   {
     id: 'retirementTimeline',
     title: 'How soon are you planning to retire?',
-    subtitle: 'This helps us recommend the right investment strategy',
+    subtitle: 'This helps us recommend the right FIA strategy',
     type: 'multiple-choice' as const,
     options: [
       'Already retired',
@@ -62,7 +58,7 @@ const PRIMARY_QUIZ_QUESTIONS = [
   {
     id: 'riskTolerance',
     title: 'How would you describe your risk tolerance?',
-    subtitle: 'This helps us recommend appropriate investment strategies',
+    subtitle: 'This helps us recommend appropriate FIA strategies',
     type: 'multiple-choice' as const,
     options: [
       'Conservative - I want to protect my principal',
@@ -111,13 +107,13 @@ const PRIMARY_QUIZ_QUESTIONS = [
   {
     id: 'personalInfo',
     title: 'Let\'s get your contact information',
-    subtitle: 'We\'ll use this to send you personalized recommendations',
+    subtitle: 'We\'ll use this to send you personalized FIA quotes',
     type: 'personal-info' as const,
   },
   {
     id: 'locationInfo',
     title: 'What\'s your ZIP code?',
-    subtitle: 'This helps us provide state-specific guidance and connect you with licensed professionals in your area',
+    subtitle: 'This helps us provide state-specific FIA guidance and connect you with licensed professionals in your area',
     type: 'location-info' as const,
   },
   {
@@ -128,95 +124,10 @@ const PRIMARY_QUIZ_QUESTIONS = [
   },
 ];
 
-// Secondary funnel for those with less assets
-const SECONDARY_QUIZ_QUESTIONS = [
-  {
-    id: 'ageRange',
-    title: 'What is your current age range?',
-    subtitle: 'This helps us recommend the right strategy for your timeline',
-    type: 'multiple-choice' as const,
-    options: [
-      '50 or Younger',
-      '51 - 60',
-      '61 - 70',
-      '70+'
-    ],
-  },
-  {
-    id: 'retirementTimeline',
-    title: 'How soon are you planning to retire?',
-    subtitle: 'This helps us recommend the right savings strategy',
-    type: 'multiple-choice' as const,
-    options: [
-      'Already retired',
-      'Within 1-2 years',
-      '3-5 years',
-      '6-10 years',
-      'More than 10 years'
-    ],
-  },
-  {
-    id: 'riskTolerance',
-    title: 'How would you describe your risk tolerance?',
-    subtitle: 'This helps us recommend appropriate savings strategies',
-    type: 'multiple-choice' as const,
-    options: [
-      'Conservative - I want to protect my principal',
-      'Moderate - I want some growth with some protection',
-      'Aggressive - I want maximum growth potential'
-    ],
-  },
-  {
-    id: 'currentRetirementPlans',
-    title: 'What type of retirement accounts do you currently have?',
-    subtitle: 'Select all that apply to your current situation',
-    type: 'multi-select' as const,
-    options: [
-      '401(k) or 403(b)',
-      'IRA (Traditional or Roth)',
-      'Pension',
-      'Annuities',
-      'Taxable investments',
-      'None of the above'
-    ],
-  },
-  {
-    id: 'retirementSavings',
-    title: 'What is your total retirement savings?',
-    subtitle: 'Use the slider to select your total retirement savings across all accounts',
-    type: 'savings-slider' as const,
-    min: 50000,
-    max: 2000000,
-    step: 50000,
-    defaultValue: 75000,
-    unit: '$',
-  },
-  {
-    id: 'personalInfo',
-    title: 'Let\'s get your contact information',
-    subtitle: 'We\'ll use this to send you personalized recommendations',
-    type: 'personal-info' as const,
-  },
-  {
-    id: 'locationInfo',
-    title: 'What\'s your ZIP code?',
-    subtitle: 'This helps us provide state-specific guidance and connect you with licensed professionals in your area',
-    type: 'location-info' as const,
-  },
-  {
-    id: 'phone',
-    title: 'What\'s your phone number?',
-    subtitle: 'We\'ll send you a verification code to confirm your number',
-    type: 'phone-consent' as const,
-  },
-];
-
-export const AnnuityQuiz = () => {
+export const FIAQuoteQuiz = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
-  const [funnelType, setFunnelType] = useState<FunnelType>('primary');
-  const [showResults, setShowResults] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
@@ -224,14 +135,12 @@ export const AnnuityQuiz = () => {
 
   // Filter questions based on conditional logic
   const getFilteredQuestions = () => {
-    const baseQuestions = funnelType === 'primary' ? PRIMARY_QUIZ_QUESTIONS : SECONDARY_QUIZ_QUESTIONS;
-    
     // Skip allocation slider if savings < $100k
     if (answers.retirementSavings && answers.retirementSavings < 100000) {
-      return baseQuestions.filter(q => q.id !== 'allocationPercent');
+      return FIA_QUIZ_QUESTIONS.filter(q => q.id !== 'allocationPercent');
     }
     
-    return baseQuestions;
+    return FIA_QUIZ_QUESTIONS;
   };
 
   const questions = getFilteredQuestions();
@@ -239,36 +148,34 @@ export const AnnuityQuiz = () => {
 
   useEffect(() => {
     // Generate unique session ID for tracking
-    const sessionId = `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `fia_quote_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setQuizSessionId(sessionId);
     
     // Initialize comprehensive tracking
     initializeTracking();
     
     // Track page view
-    trackPageView('SeniorSimple Retirement Quiz', '/quiz');
+    trackPageView('SeniorSimple FIA Quote Calculator', '/quote');
     
     // Track quiz start
-    trackQuizStart('annuity', sessionId);
+    trackQuizStart('fia_quote', sessionId);
     
     // Send CAPI ViewContent event (multi-site)
     sendCAPIViewContentEventMultiSite({
-      quizType: 'annuity',
+      quizType: 'fia_quote',
       sessionId: sessionId
     });
     
-    console.log('🚀 Quiz Session Started:', { 
+    console.log('🚀 FIA Quote Quiz Session Started:', { 
       sessionId,
-      funnelType, 
       totalSteps,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href
     });
 
-    // UTM Tracking - Extract and track UTM parameters (following your proven pattern)
+    // UTM Tracking - Extract and track UTM parameters
     const extractAndTrackUTM = async () => {
-      // Check if we've already tracked UTM for this session
       const utmTracked = sessionStorage.getItem('utm_tracked');
       if (utmTracked === 'true') {
         console.log('📊 UTM Already Tracked for This Session');
@@ -279,7 +186,6 @@ export const AnnuityQuiz = () => {
         return;
       }
 
-      // Extract UTM parameters from URL
       const utmData = extractUTMParameters();
       
       if (hasUTMParameters(utmData)) {
@@ -287,11 +193,9 @@ export const AnnuityQuiz = () => {
         setUtmParams(utmData);
         storeUTMParameters(utmData);
         
-        // Track UTM parameters using existing track-utm function
         const trackingSuccess = await trackUTMParameters(sessionId, utmData);
         
         if (trackingSuccess) {
-          // Mark as tracked to prevent duplicate sends
           sessionStorage.setItem('utm_tracked', 'true');
           console.log('✅ UTM Parameters Tracked Successfully');
         } else {
@@ -299,7 +203,6 @@ export const AnnuityQuiz = () => {
         }
       } else {
         console.log('📊 No UTM Parameters Found in URL');
-        // Check for stored UTM parameters from previous session
         const storedUtm = getStoredUTMParameters();
         if (storedUtm) {
           setUtmParams(storedUtm);
@@ -309,17 +212,17 @@ export const AnnuityQuiz = () => {
     };
 
     extractAndTrackUTM();
-  }, [funnelType, totalSteps]);
+  }, [totalSteps]);
 
   const handleAnswer = async (answer: any) => {
     const currentQuestion = questions[currentStep];
     
     // Track question answer
     try {
-      trackQuestionAnswer(currentQuestion.id, answer, currentStep + 1, questions.length, quizSessionId || 'unknown', 'medicare');
+      trackQuestionAnswer(currentQuestion.id, answer, currentStep + 1, questions.length, quizSessionId || 'unknown', 'fia_quote');
     } catch {}
     
-    console.log('📝 Quiz Answer Received:', {
+    console.log('📝 FIA Quote Answer Received:', {
       sessionId: quizSessionId,
       step: currentStep + 1,
       questionId: currentQuestion.id,
@@ -329,26 +232,11 @@ export const AnnuityQuiz = () => {
       timestamp: new Date().toISOString()
     });
     
-    // Handle funnel routing
-    if (currentQuestion.id === 'investableAssets') {
-      if (answer === 'No, I have less than $100,000') {
-        console.log('🔄 Funnel Switch: Primary → Secondary', {
-          sessionId: quizSessionId,
-          reason: 'Assets below $100k threshold',
-          timestamp: new Date().toISOString()
-        });
-        setFunnelType('secondary');
-        setCurrentStep(0); // Reset to first question of secondary funnel
-        setAnswers({});
-        return;
-      }
-    }
-
-    // Store answer first
+    // Store answer
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
 
-    // Handle personal info submission - save email for retargeting
+    // Handle personal info submission
     if (currentQuestion.id === 'personalInfo') {
       console.log('📧 Personal Info Submitted - Capturing Email for Retargeting');
       
@@ -358,12 +246,12 @@ export const AnnuityQuiz = () => {
         lastName: answer.lastName,
         quizAnswers: updatedAnswers,
         sessionId: quizSessionId || 'unknown',
-        funnelType: funnelType,
+        funnelType: 'fia_quote',
         zipCode: updatedAnswers.locationInfo?.zipCode,
         state: updatedAnswers.locationInfo?.state,
         stateName: updatedAnswers.locationInfo?.stateName,
         licensingInfo: updatedAnswers.locationInfo?.licensing,
-        utmParams: utmParams // Include UTM parameters
+        utmParams: utmParams
       };
 
       try {
@@ -384,7 +272,7 @@ export const AnnuityQuiz = () => {
       }
     }
 
-    // Handle phone number submission - go directly to OTP
+    // Handle phone number submission
     if (currentQuestion.id === 'phone') {
       console.log('📱 Phone Number Submitted - Initiating OTP Flow:', {
         sessionId: quizSessionId || 'unknown',
@@ -399,15 +287,26 @@ export const AnnuityQuiz = () => {
     
     // Check if this is the last question
     if (currentStep === questions.length - 1) {
-      console.log('🏁 Quiz Completed - All Questions Answered:', {
+      console.log('🏁 FIA Quote Quiz Completed - All Questions Answered:', {
         sessionId: quizSessionId,
         totalSteps,
         allAnswers: updatedAnswers,
         timestamp: new Date().toISOString()
       });
-      // Quiz completed, show results
-      setShowResults(true);
-      calculateResults();
+      
+      // Calculate and store results, then redirect to quote-submitted page
+      const results = calculateFIAResults();
+      sessionStorage.setItem('fia_quote_data', JSON.stringify(results));
+      sessionStorage.setItem('phone_number', answer);
+      
+      console.log('📊 FIA Quote Results Stored:', {
+        sessionId: quizSessionId,
+        results,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Redirect to quote-submitted page
+      router.push('/quote-submitted');
     } else {
       const nextStep = currentStep + 1;
       console.log('➡️ Moving to Next Step:', {
@@ -421,58 +320,84 @@ export const AnnuityQuiz = () => {
     }
   };
 
-  const calculateResults = () => {
-    console.log('🧮 Calculating Quiz Results:', {
+  const calculateFIAResults = () => {
+    console.log('🧮 Calculating FIA Quote Results:', {
       sessionId: quizSessionId,
       answers,
-      funnelType,
       timestamp: new Date().toISOString()
     });
 
     // Track quiz completion
     try {
       const completionTime = Date.now() - ((window as any).quizStartTime || Date.now());
-      trackQuizComplete('annuity', quizSessionId || 'unknown', 'medicare', completionTime);
+      trackQuizComplete('fia_quote', quizSessionId || 'unknown', 'fia_quote', completionTime);
     } catch {}
 
-    // Calculate projected monthly income based on answers
+    // Calculate FIA-specific income projections
     const retirementSavings = answers.retirementSavings;
-    let projectedMonthlyIncomeMin = 0;
-    let projectedMonthlyIncomeMax = 0;
-
-    // Simple calculation based on retirement savings
+    const ageRange = answers.ageRange;
+    const allocationPercent = answers.fiaAllocation?.percentage || 25;
+    
+    // Parse savings amount
+    let totalSavings = 0;
     switch (retirementSavings) {
       case '$1,000,000+':
-        projectedMonthlyIncomeMin = 4000;
-        projectedMonthlyIncomeMax = 6000;
+        totalSavings = 1000000;
         break;
       case '$750,000 - $999,999':
-        projectedMonthlyIncomeMin = 3000;
-        projectedMonthlyIncomeMax = 4500;
+        totalSavings = 750000;
         break;
       case '$500,000 - $749,999':
-        projectedMonthlyIncomeMin = 2000;
-        projectedMonthlyIncomeMax = 3500;
+        totalSavings = 500000;
         break;
       case '$250,000 - $499,999':
-        projectedMonthlyIncomeMin = 1000;
-        projectedMonthlyIncomeMax = 2500;
+        totalSavings = 250000;
         break;
       case '$100,000 - $249,999':
-        projectedMonthlyIncomeMin = 500;
-        projectedMonthlyIncomeMax = 1500;
+        totalSavings = 100000;
         break;
       default:
-        projectedMonthlyIncomeMin = 300;
-        projectedMonthlyIncomeMax = 800;
+        totalSavings = 50000;
     }
 
+    // Calculate allocation amount
+    const allocationAmount = totalSavings * (allocationPercent / 100);
+    
+    // Get age factor for FIA rates
+    let ageFactor = 0.055; // Default
+    switch (ageRange) {
+      case '50 or Younger':
+        ageFactor = 0.045;
+        break;
+      case '51 - 60':
+        ageFactor = 0.055;
+        break;
+      case '61 - 70':
+        ageFactor = 0.065;
+        break;
+      case '70+':
+        ageFactor = 0.075;
+        break;
+    }
+
+    // Calculate monthly income based on allocation and age
+    const monthlyIncome = (allocationAmount * ageFactor) / 12;
+    
     const calculatedResults = {
-      projected_monthly_income_min: projectedMonthlyIncomeMin,
-      projected_monthly_income_max: projectedMonthlyIncomeMax
+      totalSavings,
+      allocationAmount,
+      allocationPercent,
+      monthlyIncome: {
+        conservative: monthlyIncome * 0.85,
+        current: monthlyIncome,
+        optimistic: monthlyIncome * 1.15
+      },
+      ageFactor,
+      currentRate: ageFactor,
+      lastUpdated: new Date().toISOString()
     };
 
-    console.log('✅ Quiz Results Calculated:', {
+    console.log('✅ FIA Quote Results Calculated:', {
       sessionId: quizSessionId,
       calculatedResults,
       timestamp: new Date().toISOString()
@@ -492,9 +417,8 @@ export const AnnuityQuiz = () => {
     setShowProcessing(true);
 
     try {
-      const calculatedResults = calculateResults();
+      const calculatedResults = calculateFIAResults();
       
-      // Call server-side proxy to Supabase Edge Function
       const edgeFunctionUrl = '/api/process-lead';
       
       console.log('🚀 Calling Supabase Edge Function:', {
@@ -510,7 +434,7 @@ export const AnnuityQuiz = () => {
         },
         body: JSON.stringify({
           site_key: 'SENIORSIMPLE',
-          funnel_type: funnelType,
+          funnel_type: 'fia_quote',
           session_id: quizSessionId || 'unknown',
           user_id: answers.personalInfo?.email,
           contact: {
@@ -520,7 +444,7 @@ export const AnnuityQuiz = () => {
             last_name: answers.personalInfo?.lastName
           },
           quiz_answers: answers,
-          lead_score: 75, // Default lead score - Edge Function will calculate proper score
+          lead_score: 85, // Higher lead score for FIA quotes
           utm_source: utmParams?.utm_source,
           utm_medium: utmParams?.utm_medium,
           utm_campaign: utmParams?.utm_campaign,
@@ -548,7 +472,7 @@ export const AnnuityQuiz = () => {
           timestamp: new Date().toISOString()
         });
 
-        // Fire direct client-side GHL webhook in parallel for speed
+        // Fire direct client-side GHL webhook
         try {
           const ghlUrl = process.env.NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE || 'https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6'
           const ghlPayload = {
@@ -559,15 +483,14 @@ export const AnnuityQuiz = () => {
             zipCode: answers.locationInfo?.zipCode,
             state: answers.locationInfo?.state,
             stateName: answers.locationInfo?.stateName,
-            source: 'SeniorSimple Quiz',
-            funnelType: funnelType,
+            source: 'SeniorSimple FIA Quote',
+            funnelType: 'fia_quote',
             quizAnswers: answers,
-            leadScore: edgeResult.lead_score || 75,
+            leadScore: edgeResult.lead_score || 85,
             utmParams: utmParams || {},
             timestamp: new Date().toISOString()
           }
 
-          // Non-blocking fire-and-forget
           fetch(ghlUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -600,108 +523,29 @@ export const AnnuityQuiz = () => {
     }
 
     setShowProcessing(false);
-    setShowResults(true);
-    // Route to pageview tracking page
-    try {
-      router.push('/quiz-submitted');
-    } catch {}
-  };
-
-  const submitQuizToDatabase = async () => {
-    console.log('📤 Starting Lead Submission to Database:', {
+    
+    // Calculate and store results, then redirect to quote-submitted page
+    const results = calculateFIAResults();
+    sessionStorage.setItem('fia_quote_data', JSON.stringify(results));
+    
+    console.log('📊 FIA Quote Results Stored After OTP:', {
       sessionId: quizSessionId,
+      results,
       timestamp: new Date().toISOString()
     });
-
-    try {
-      const calculatedResults = calculateResults();
-      
-      // Extract location data from answers
-      const locationData = answers.locationInfo || {};
-      
-      const leadData = {
-        contact_info: {
-          first_name: answers.personalInfo?.firstName || answers.firstName,
-          last_name: answers.personalInfo?.lastName || answers.lastName,
-          email: answers.personalInfo?.email || answers.email,
-          phone: answers.phone,
-          zip_code: locationData.zipCode || answers.zipCode,
-          state: locationData.state || '',
-          state_name: locationData.stateName || '',
-          address: locationData.address || '',
-          city: locationData.city || ''
-        },
-        quiz_answers: answers,
-        calculated_results: calculatedResults,
-        lead_score: 75, // Default lead score
-        licensing_info: locationData.licensing || {},
-        funnel_type: funnelType,
-        quiz_session_id: quizSessionId
-      };
-
-      console.log('📊 Lead Data Prepared for Submission:', {
-        sessionId: quizSessionId,
-        leadData,
-        timestamp: new Date().toISOString()
-      });
-
-      // Track lead form submission
-      const trackingLeadData: LeadData = {
-        firstName: leadData.contact_info.first_name,
-        lastName: leadData.contact_info.last_name,
-        email: leadData.contact_info.email,
-        phoneNumber: leadData.contact_info.phone,
-        zipCode: leadData.contact_info.zip_code,
-        state: leadData.contact_info.state,
-        stateName: leadData.contact_info.state_name,
-        quizAnswers: answers,
-        sessionId: quizSessionId || 'unknown',
-        funnelType: 'annuity',
-        leadScore: leadData.lead_score
-      };
-
-      trackLeadFormSubmit(trackingLeadData);
-      sendCAPILeadEventMultiSite(trackingLeadData);
-
-      // TODO: Implement actual Supabase submission
-      // For now, just log the data - we'll implement proper submission later
-      console.log('⚠️ Lead Data Logged (Not Submitted to Database Yet):', leadData);
-
-      console.log('✅ Lead Submission Process Complete:', {
-        sessionId: quizSessionId,
-        success: true,
-        timestamp: new Date().toISOString()
-      });
-
-      // Add delay to allow GTM to process tracking events before redirect
-      console.log('⏳ Waiting for GTM to process tracking events...');
-      setTimeout(() => {
-        setShowProcessing(false);
-        setShowResults(true);
-        try { router.push('/quiz-submitted'); } catch {}
-      }, 2000); // 2 second delay
-    } catch (error) {
-      console.error('💥 Lead Submission Error:', {
-        sessionId: quizSessionId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString()
-      });
-      setShowProcessing(false);
-      setShowResults(true);
-    }
+    
+    // Redirect to quote-submitted page
+    router.push('/quote-submitted');
   };
 
   const handleRestart = () => {
-    console.log('🔄 Quiz Restart Initiated:', {
+    console.log('🔄 FIA Quote Quiz Restart Initiated:', {
       sessionId: quizSessionId,
       timestamp: new Date().toISOString()
     });
 
     setCurrentStep(0);
     setAnswers({});
-    setFunnelType('primary');
-    setShowResults(false);
     setShowOTP(false);
     setShowProcessing(false);
     setQuizSessionId(null);
@@ -712,7 +556,7 @@ export const AnnuityQuiz = () => {
       sessionId: quizSessionId,
       timestamp: new Date().toISOString()
     });
-    return <ProcessingState message="Processing your information..." />;
+    return <ProcessingState message="Processing your FIA quote..." />;
   }
 
   if (showOTP) {
@@ -731,27 +575,14 @@ export const AnnuityQuiz = () => {
     );
   }
 
-  if (showResults) {
-    console.log('🎯 Showing Agent Assignment Page:', {
-      sessionId: quizSessionId,
-      timestamp: new Date().toISOString()
-    });
-    return (
-      <AgentAssignmentPage
-        answers={answers}
-        onRestart={handleRestart}
-      />
-    );
-  }
 
-  console.log('📋 Rendering Quiz Question:', {
+  console.log('📋 Rendering FIA Quote Question:', {
     sessionId: quizSessionId,
     currentStep: currentStep + 1,
     totalSteps,
     questionId: questions[currentStep].id,
     questionTitle: questions[currentStep].title,
     showOTP: showOTP,
-    showResults: showResults,
     showProcessing: showProcessing,
     timestamp: new Date().toISOString()
   });

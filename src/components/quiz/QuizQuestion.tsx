@@ -497,17 +497,20 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 Phone Number *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                  <span className="text-gray-500 text-lg">+1</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
                 </div>
                 <input
                   type="tel"
                   name="phone"
-                  className="quiz-input w-full pl-12 pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   placeholder="(555) 123-4567"
                   required
                   disabled={isLoading || isSendingOTP}
-                  style={{ minHeight: '56px' }}
+                  style={{ 
+                    minHeight: '56px',
+                    paddingLeft: '100px'
+                  }}
                 />
               </div>
               <p className="text-sm text-gray-500 mt-2">

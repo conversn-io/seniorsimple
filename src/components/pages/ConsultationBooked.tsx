@@ -114,13 +114,6 @@ const ConsultationBooked = () => {
             If you need to reschedule or have any questions, don't hesitate to reach out.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href="tel:8884409669"
-              className="bg-[#E4CDA1] text-[#36596A] px-6 py-3 rounded-lg font-medium hover:bg-[#d4b885] transition-colors flex items-center justify-center"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Call (888) 440-9669
-            </a>
             <Link 
               href="/contact"
               className="bg-white text-[#36596A] px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center justify-center"
