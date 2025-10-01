@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Mortgage Calculator - RetireSafe.ly</title>
+    <meta name="description" content="Calculate how much you could receive from a reverse mortgage based on your age, home value, and current rates. Free interactive tool for retirement planning.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .result-highlight {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { font-size: 12px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans leading-relaxed">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                    <i class="fas fa-calculator mr-3"></i>
+                    Reverse Mortgage Calculator
+                </h1>
+                <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto">
+                    Discover how much you could receive from a reverse mortgage based on your age, home value, and current market rates
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Calculator Section -->
+        <div class="bg-white rounded-xl card-shadow p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-home text-blue-600 mr-2"></i>
+                Calculate Your Reverse Mortgage Proceeds
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user-clock mr-2 text-blue-600"></i>
+                            Your Age
+                        </label>
+                        <input type="number" id="age" min="62" max="100" value="65" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus transition-all duration-200">
+                        <p class="text-sm text-gray-500 mt-1">Must be 62 or older to qualify</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-home mr-2 text-blue-600"></i>
+                            Estimated Home Value
+                        </label>
+                        <input type="number" id="homeValue" min="50000" max="2000000" value="300000" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus transition-all duration-200">
+                        <p class="text-sm text-gray-500 mt-1">Current market value of your home</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-dollar-sign mr-2 text-blue-600"></i>
+                            Current Mortgage Balance
+                        </label>
+                        <input type="number" id="mortgageBalance" min="0" value="0" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus transition-all duration-200">
+                        <p class="text-sm text-gray-500 mt-1">Enter 0 if home is paid off</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-percentage mr-2 text-blue-600"></i>
+                            Current Interest Rate
+                        </label>
+                        <input type="number" id="interestRate" min="3" max="12" step="0.1" value="6.5" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus transition-all duration-200">
+                        <p class="text-sm text-gray-500 mt-1">Current HECM rates (typically 6-8%)</p>
+                    </div>
+
+                    <button onclick="calculateReverseMortgage()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-all duration-200 transform hover:scale-105">
+                        <i class="fas fa-calculator mr-2"></i>
+                        Calculate My Proceeds
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-line mr-2 text-green-600"></i>
+                        Your Results
+                    </h3>
+                    
+                    <div id="results" class="space-y-4">
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-arrow-left text-4xl mb-4"></i>
+                            <p class="text-lg">Enter your information and click "Calculate" to see your potential proceeds</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Sections -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- How It Works -->
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                    How Reverse Mortgages Work
+                </h3>
+                <div class="space-y-3 text-gray-700">
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                        <p>Convert home equity into cash without monthly payments</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                        <p>Remain in your home and retain ownership</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                        <p>Loan becomes due when you move or pass away</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                        <p>Proceeds are tax-free and don't affect Social Security</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payout Options -->
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-coins mr-2 text-green-600"></i>
+                    Payout Options
+                </h3>
+                <div class="space-y-3 text-gray-700">
+                    <div class="flex items-start">
+                        <i class="fas fa-money-bill-wave text-blue-500 mr-3 mt-1"></i>
+                        <p><strong>Lump Sum:</strong> Receive all proceeds at once</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-calendar-alt text-blue-500 mr-3 mt-1"></i>
+                        <p><strong>Monthly Payments:</strong> Fixed payments for life</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-credit-card text-blue-500 mr-3 mt-1"></i>
+                        <p><strong>Line of Credit:</strong> Access funds as needed</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-balance-scale text-blue-500 mr-3 mt-1"></i>
+                        <p><strong>Combination:</strong> Mix of monthly payments and credit line</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eligibility Requirements -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-clipboard-check mr-2 text-purple-600"></i>
+                Eligibility Requirements
+            </h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Age 62 or older</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-home text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Own your home outright or have low mortgage balance</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marker-alt text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Primary residence requirement</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-dollar-sign text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Demonstrate financial capacity</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-graduation-cap text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Complete HUD counseling session</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-tools text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Keep home in good condition</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Costs and Considerations -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-exclamation-triangle mr-2 text-yellow-600"></i>
+                Important Considerations
+            </h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-700 mb-3">
+                        <i class="fas fa-money-check-alt mr-2 text-red-500"></i>
+                        Associated Costs
+                    </h4>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• Origination fees (up to $6,000)</li>
+                        <li>• Mortgage insurance premiums</li>
+                        <li>• Appraisal and inspection fees</li>
+                        <li>• Closing costs and attorney fees</li>
+                        <li>• Annual servicing fees</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-700 mb-3">
+                        <i class="fas fa-lightbulb mr-2 text-blue-500"></i>
+                        Key Factors
+                    </h4>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• Interest compounds over time</li>
+                        <li>• May affect inheritance</li>
+                        <li>• Property taxes and insurance required</li>
+                        <li>• Home maintenance responsibilities</li>
+                        <li>• Potential impact on government benefits</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-arrow-right mr-2 text-blue-600"></i>
+                Next Steps
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4 text-center">
+                <div class="bg-white rounded-lg p-4">
+                    <i class="fas fa-phone text-3xl text-blue-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-800">1. Get Counseling</h4>
+                    <p class="text-sm text-gray-600">Schedule required HUD counseling session</p>
+                </div>
+                <div class="bg-white rounded-lg p-4">
+                    <i class="fas fa-search text-3xl text-green-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-800">2. Shop Lenders</h4>
+                    <p class="text-sm text-gray-600">Compare offers from multiple lenders</p>
+                </div>
+                <div class="bg-white rounded-lg p-4">
+                    <i class="fas fa-file-contract text-3xl text-purple-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-800">3. Complete Application</h4>
+                    <p class="text-sm text-gray-600">Submit application with chosen lender</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-300">
+                <i class="fas fa-shield-alt mr-2"></i>
+                This calculator provides estimates only. Actual proceeds may vary based on specific loan terms and conditions.
+            </p>
+            <p class="text-gray-400 mt-2">
+                RetireSafe.ly - Your trusted resource for retirement planning
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function calculateReverseMortgage() {
+            const age = parseInt(document.getElementById('age').value);
+            const homeValue = parseInt(document.getElementById('homeValue').value);
+            const mortgageBalance = parseInt(document.getElementById('mortgageBalance').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+
+            // Validate inputs
+            if (age < 62) {
+                alert('You must be at least 62 years old to qualify for a reverse mortgage.');
+                return;
+            }
+
+            if (homeValue <= 0) {
+                alert('Please enter a valid home value.');
+                return;
+            }
+
+            // Principal Limit Factor (PLF) calculation based on age and interest rate
+            // This is a simplified calculation - actual PLF tables are more complex
+            let plf = 0;
+            if (age >= 62 && age < 65) {
+                plf = Math.max(0.35 - (interestRate - 5) * 0.02, 0.25);
+            } else if (age >= 65 && age < 70) {
+                plf = Math.max(0.45 - (interestRate - 5) * 0.02, 0.35);
+            } else if (age >= 70 && age < 75) {
+                plf = Math.max(0.55 - (interestRate - 5) * 0.02, 0.45);
+            } else if (age >= 75) {
+                plf = Math.max(0.65 - (interestRate - 5) * 0.02, 0.55);
+            }
+
+            // FHA lending limit (simplified)
+            const fhaLimit = Math.min(homeValue, 1089300); // 2024 FHA limit
+            
+            // Calculate principal limit
+            const principalLimit = fhaLimit * plf;
+            
+            // Calculate available proceeds (after paying off existing mortgage)
+            const availableProceeds = Math.max(principalLimit - mortgageBalance, 0);
+            
+            // Calculate monthly payment option (based on life expectancy)
+            const lifeExpectancy = age >= 75 ? 15 : age >= 70 ? 20 : age >= 65 ? 25 : 30;
+            const monthlyPayment = availableProceeds / (lifeExpectancy * 12);
+            
+            // Calculate line of credit growth
+            const creditLineGrowth = availableProceeds * (1 + interestRate / 100) ** 10;
+
+            displayResults({
+                age: age,
+                homeValue: homeValue,
+                mortgageBalance: mortgageBalance,
+                interestRate: interestRate,
+                principalLimit: principalLimit,
+                availableProceeds: availableProceeds,
+                monthlyPayment: monthlyPayment,
+                creditLineGrowth: creditLineGrowth,
+                plf: plf
+            });
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            resultsDiv.innerHTML = `
+                <div class="result-highlight text-white rounded-lg p-4 mb-4">
+                    <h4 class="text-xl font-bold mb-2">
+                        <i class="fas fa-dollar-sign mr-2"></i>
+                        Estimated Available Proceeds
+                    </h4>
+                    <div class="text-3xl font-bold">
+
+                        $${data.availableProceeds.toLocaleString()}
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700">
+                                <i class="fas fa-calculator mr-2 text-blue-600"></i>
+                                Principal Limit
+                            </span>
+                            <span class="font-bold text-gray-800">$${data.principalLimit.toLocaleString()}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">${(data.plf * 100).toFixed(1)}% of home value</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700">
+                                <i class="fas fa-calendar-alt mr-2 text-green-600"></i>
+                                Monthly Payment Option
+                            </span>
+                            <span class="font-bold text-gray-800">$${data.monthlyPayment.toLocaleString()}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">For life (tenure payment)</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700">
+                                <i class="fas fa-credit-card mr-2 text-purple-600"></i>
+                                Line of Credit (10 years)
+                            </span>
+                            <span class="font-bold text-gray-800">$${data.creditLineGrowth.toLocaleString()}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Grows at ${data.interestRate}% annually</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <p class="text-sm text-yellow-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Important:</strong> These are estimates only. Actual proceeds will vary based on specific loan terms, fees, and current market conditions.
+                    </p>
+                </div>
+            `;
+        }
+
+        // Auto-calculate when inputs change
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = ['age', 'homeValue', 'mortgageBalance', 'interestRate'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    // Clear results when inputs change
+                    document.getElementById('results').innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-arrow-left text-4xl mb-4"></i>
+                            <p class="text-lg">Click "Calculate" to see updated results</p>
+                        </div>
+                    `;
+                });
+            });
+        });
+
+        // Format number inputs
+        document.getElementById('homeValue').addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('mortgageBalance').addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

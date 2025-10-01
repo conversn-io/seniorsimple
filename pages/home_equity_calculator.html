@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Equity Calculator - RetireSafe.ly</title>
+    <meta name="description" content="Calculate your current home equity and project future growth potential with our comprehensive home equity calculator designed for retirement planning.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .calculator-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .input-group {
+            transition: all 0.3s ease;
+        }
+        
+        .input-group:hover {
+            transform: translateY(-2px);
+        }
+        
+        .calc-input {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .calc-input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-left: 4px solid #10b981;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            font-size: 24px;
+            margin: 0 auto 15px;
+        }
+        
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .info-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .trend-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .trend-down {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        @media print {
+            body {
+                background: white !important;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="section-header">
+        <div class="max-w-6xl mx-auto">
+            <div class="icon-circle">
+                <i class="fas fa-home"></i>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Home Equity Calculator</h1>
+            <p class="text-xl opacity-90">Estimate your current home equity and project future growth potential</p>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="calculator-container">
+            <!-- Calculator Input Section -->
+            <div class="p-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Input Form -->
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-calculator text-blue-600 mr-3"></i>
+                            Property Information
+                        </h2>
+                        
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Current Home Value
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="Current estimated market value of your home">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" id="currentValue" class="calc-input w-full pl-8 pr-4 py-3 border rounded-lg focus:outline-none" placeholder="500,000" value="500000">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Original Purchase Price
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="What you originally paid for your home">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" id="purchasePrice" class="calc-input w-full pl-8 pr-4 py-3 border rounded-lg focus:outline-none" placeholder="300,000" value="300000">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Current Mortgage Balance
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="Outstanding amount owed on your mortgage">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" id="mortgageBalance" class="calc-input w-full pl-8 pr-4 py-3 border rounded-lg focus:outline-none" placeholder="150,000" value="150000">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Years Owned
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="How long you've owned the property">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <input type="number" id="yearsOwned" class="calc-input w-full px-4 py-3 border rounded-lg focus:outline-none" placeholder="10" value="10">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Expected Annual Appreciation (%)
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="Expected yearly increase in home value (historical average is 3-5%)">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <input type="number" id="appreciationRate" class="calc-input w-full px-4 py-3 border rounded-lg focus:outline-none" placeholder="4" value="4" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Projection Years
+                                <span class="tooltip text-blue-500 ml-1" data-tooltip="How many years into the future to project">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <input type="number" id="projectionYears" class="calc-input w-full px-4 py-3 border rounded-lg focus:outline-none" placeholder="10" value="10">
+                        </div>
+
+                        <button onclick="calculateEquity()" class="btn-calculate w-full text-white font-semibold py-4 px-6 rounded-lg">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Calculate Home Equity
+                        </button>
+                    </div>
+
+                    <!-- Current Equity Display -->
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-chart-line text-green-600 mr-3"></i>
+                            Current Equity Analysis
+                        </h2>
+                        
+                        <div id="currentEquityResults" class="space-y-4">
+                            <div class="result-card p-6 rounded-lg">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Current Home Equity</h3>
+                                    <i class="fas fa-home text-2xl text-blue-600"></i>
+                                </div>
+                                <div class="text-3xl font-bold text-green-600 mb-2" id="currentEquity">$350,000</div>
+                                <div class="text-sm text-gray-600" id="equityPercentage">70% of home value</div>
+                            </div>
+
+                            <div class="result-card p-6 rounded-lg">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Total Appreciation</h3>
+                                    <i class="fas fa-trending-up text-2xl text-green-600"></i>
+                                </div>
+                                <div class="text-2xl font-bold text-blue-600 mb-2" id="totalAppreciation">$200,000</div>
+                                <div class="text-sm text-gray-600" id="appreciationPercentage">66.7% increase</div>
+                            </div>
+
+                            <div class="result-card p-6 rounded-lg">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Equity Position</h3>
+                                    <i class="fas fa-percentage text-2xl text-purple-600"></i>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Loan-to-Value Ratio:</span>
+                                        <span class="font-semibold" id="ltvRatio">30%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Equity Ratio:</span>
+                                        <span class="font-semibold" id="equityRatio">70%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="bg-gray-50 p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-chart-area text-blue-600 mr-3"></i>
+                    Equity Growth Projection
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Home Value & Equity Growth</h3>
+                        <canvas id="equityChart" style="height: 400px;"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Equity Composition</h3>
+                        <canvas id="compositionChart" style="height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Projections -->
+            <div class="p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-crystal-ball text-purple-600 mr-3"></i>
+                    Future Equity Projections
+                </h2>
+                
+                <div id="projectionResults" class="grid md:grid-cols-3 gap-6">
+                    <!-- Projection cards will be generated here -->
+                </div>
+            </div>
+
+            <!-- Market Insights -->
+            <div class="bg-blue-50 p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-lightbulb text-yellow-600 mr-3"></i>
+                    Market Insights & Recommendations
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="info-box">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                            Equity Building Strategies
+                        </h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li><i class="fas fa-check text-green-600 mr-2"></i>Make additional principal payments</li>
+                            <li><i class="fas fa-check text-green-600 mr-2"></i>Invest in home improvements that add value</li>
+                            <li><i class="fas fa-check text-green-600 mr-2"></i>Consider refinancing to a shorter term</li>
+                            <li><i class="fas fa-check text-green-600 mr-2"></i>Monitor local market trends</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-exclamation-triangle text-orange-600 mr-2"></i>
+                            Important Considerations
+                        </h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li><i class="fas fa-info text-blue-600 mr-2"></i>Market conditions can vary significantly</li>
+                            <li><i class="fas fa-info text-blue-600 mr-2"></i>Home improvements don't always add full value</li>
+                            <li><i class="fas fa-info text-blue-600 mr-2"></i>Consider selling costs when accessing equity</li>
+                            <li><i class="fas fa-info text-blue-600 mr-2"></i>Consult with real estate professionals</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Steps -->
+            <div class="gradient-bg text-white p-8">
+                <h2 class="text-2xl font-bold mb-6 text-center">
+                    <i class="fas fa-tasks mr-3"></i>
+                    Next Steps for Your Home Equity
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white bg-opacity-20 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3">
+                            <i class="fas fa-home text-yellow-300 mr-2"></i>
+                            Maximize Your Equity
+                        </h3>
+                        <ul class="space-y-2 text-sm opacity-90">
+                            <li>• Get a current professional appraisal</li>
+                            <li>• Research comparable home sales in your area</li>
+                            <li>• Consider strategic home improvements</li>
+                            <li>• Explore refinancing options</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white bg-opacity-20 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3">
+                            <i class="fas fa-piggy-bank text-green-300 mr-2"></i>
+                            Access Your Equity
+                        </h3>
+                        <ul class="space-y-2 text-sm opacity-90">
+                            <li>• Consider a home equity line of credit (HELOC)</li>
+                            <li>• Explore cash-out refinancing options</li>
+                            <li>• Investigate reverse mortgage eligibility</li>
+                            <li>• Plan for retirement funding strategies</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let equityChart, compositionChart;
+        
+        function calculateEquity() {
+            const currentValue = parseFloat(document.getElementById('currentValue').value) || 0;
+            const purchasePrice = parseFloat(document.getElementById('purchasePrice').value) || 0;
+            const mortgageBalance = parseFloat(document.getElementById('mortgageBalance').value) || 0;
+            const yearsOwned = parseFloat(document.getElementById('yearsOwned').value) || 0;
+            const appreciationRate = parseFloat(document.getElementById('appreciationRate').value) || 0;
+            const projectionYears = parseInt(document.getElementById('projectionYears').value) || 0;
+            
+            // Calculate current equity
+            const currentEquity = currentValue - mortgageBalance;
+            const totalAppreciation = currentValue - purchasePrice;
+            const equityPercentage = (currentEquity / currentValue) * 100;
+            const ltvRatio = (mortgageBalance / currentValue) * 100;
+            const appreciationPercentage = ((currentValue - purchasePrice) / purchasePrice) * 100;
+            
+            // Update current equity display
+            document.getElementById('currentEquity').textContent = `$${currentEquity.toLocaleString()}`;
+            document.getElementById('equityPercentage').textContent = `${equityPercentage.toFixed(1)}% of home value`;
+            document.getElementById('totalAppreciation').textContent = `$${totalAppreciation.toLocaleString()}`;
+            document.getElementById('appreciationPercentage').textContent = `${appreciationPercentage.toFixed(1)}% increase`;
+            document.getElementById('ltvRatio').textContent = `${ltvRatio.toFixed(1)}%`;
+            document.getElementById('equityRatio').textContent = `${equityPercentage.toFixed(1)}%`;
+            
+            // Generate projection data
+            const projectionData = generateProjections(currentValue, mortgageBalance, appreciationRate, projectionYears);
+            
+            // Update charts
+            updateCharts(projectionData);
+            
+            // Update projection cards
+            updateProjectionCards(projectionData);
+        }
+        
+        function generateProjections(currentValue, mortgageBalance, appreciationRate, projectionYears) {
+            const data = {
+                years: [0],
+                homeValues: [currentValue],
+                equityValues: [currentValue - mortgageBalance],
+                mortgageBalances: [mortgageBalance]
+            };
+            
+            let homeValue = currentValue;
+            let mortgage = mortgageBalance;
+            
+            for (let i = 1; i <= projectionYears; i++) {
+                homeValue *= (1 + appreciationRate / 100);
+                mortgage = Math.max(0, mortgage * 0.95); // Assuming 5% annual principal reduction
+                
+                data.years.push(i);
+                data.homeValues.push(homeValue);
+                data.equityValues.push(homeValue - mortgage);
+                data.mortgageBalances.push(mortgage);
+            }
+            
+            return data;
+        }
+        
+        function updateCharts(data) {
+            const ctx1 = document.getElementById('equityChart').getContext('2d');
+            const ctx2 = document.getElementById('compositionChart').getContext('2d');
+            
+            // Destroy existing charts
+            if (equityChart) equityChart.destroy();
+            if (compositionChart) compositionChart.destroy();
+            
+            // Home Value & Equity Growth Chart
+            equityChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: data.years,
+                    datasets: [{
+                        label: 'Home Value',
+                        data: data.homeValues,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Equity Value',
+                        data: data.equityValues,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+            
+            // Equity Composition Chart
+            const finalYear = data.years.length - 1;
+            const finalEquity = data.equityValues[finalYear];
+            const finalMortgage = data.mortgageBalances[finalYear];
+            
+            compositionChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Equity', 'Mortgage Balance'],
+                    datasets: [{
+                        data: [finalEquity, finalMortgage],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateProjectionCards(data) {
+            const container = document.getElementById('projectionResults');
+            const years = [5, 10, 15];
+            
+            container.innerHTML = '';
+            
+            years.forEach(year => {
+                if (year <= data.years.length - 1) {
+                    const index = data.years.indexOf(year);
+                    const homeValue = data.homeValues[index];
+                    const equityValue = data.equityValues[index];
+                    const growth = equityValue - data.equityValues[0];
+                    
+                    const card = document.createElement('div');
+                    card.className = 'result-card p-6 rounded-lg';
+                    card.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600 mb-2">${year} Years</div>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="text-sm text-gray-600">Projected Home Value</div>
+                                    <div class="text-xl font-semibold text-gray-800">$${homeValue.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">Projected Equity</div>
+                                    <div class="text-xl font-semibold text-green-600">$${equityValue.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">Equity Growth</div>
+                                    <div class="text-lg font-semibold text-blue-600">+$${growth.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+        
+        // Initialize calculator on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateEquity();
+        });
+        
+        // Add event listeners for real-time updates
+        document.querySelectorAll('.calc-input').forEach(input => {
+            input.addEventListener('input', function() {
+                // Debounce the calculation
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout(calculateEquity, 500);
+            });
+        });
+    </script>
+</body>
+</html>

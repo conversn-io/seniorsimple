@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roth Conversion Calculator - RetireSafe.ly</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .result-highlight {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .chart-container {
+            height: 400px;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="min-h-screen py-6">
+        <!-- Header -->
+        <div class="gradient-bg text-white py-8 mb-8">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <i class="fas fa-exchange-alt text-4xl mb-4"></i>
+                    <h1 class="text-4xl font-bold mb-2">Roth Conversion Calculator</h1>
+                    <p class="text-xl opacity-90">Analyze the benefits of converting traditional IRA funds to Roth IRA</p>
+                    <div class="mt-4 text-sm opacity-75">
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full">RetireSafe.ly</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 max-w-6xl">
+            <!-- Calculator Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Input Section -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg card-shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                            Calculator Inputs
+                        </h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Age</label>
+                                <input type="number" id="currentAge" value="55" min="18" max="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Traditional IRA Balance</label>
+                                <input type="number" id="iraBalance" value="500000" min="0" step="1000" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Amount to Convert</label>
+                                <input type="number" id="conversionAmount" value="100000" min="0" step="1000" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Tax Bracket (%)</label>
+                                <select id="currentTaxBracket" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="10">10%</option>
+                                    <option value="12">12%</option>
+                                    <option value="22" selected>22%</option>
+                                    <option value="24">24%</option>
+                                    <option value="32">32%</option>
+                                    <option value="35">35%</option>
+                                    <option value="37">37%</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Expected Retirement Tax Bracket (%)</label>
+                                <select id="retirementTaxBracket" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="10">10%</option>
+                                    <option value="12">12%</option>
+                                    <option value="22" selected>22%</option>
+                                    <option value="24">24%</option>
+                                    <option value="32">32%</option>
+                                    <option value="35">35%</option>
+                                    <option value="37">37%</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Expected Annual Return (%)</label>
+                                <input type="number" id="returnRate" value="7" min="0" max="20" step="0.1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Years Until Retirement</label>
+                                <input type="number" id="yearsUntilRetirement" value="10" min="1" max="50" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            
+                            <button onclick="calculateConversion()" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold">
+                                <i class="fas fa-calculator mr-2"></i>
+                                Calculate Benefits
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg card-shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                            Conversion Analysis Results
+                        </h2>
+                        
+                        <div id="results" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                                    <h3 class="text-lg font-semibold text-red-800 mb-2">
+                                        <i class="fas fa-dollar-sign mr-2"></i>
+                                        Tax Cost of Conversion
+                                    </h3>
+                                    <p class="text-2xl font-bold text-red-600" id="taxCost">$0</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                                    <h3 class="text-lg font-semibold text-green-800 mb-2">
+                                        <i class="fas fa-piggy-bank mr-2"></i>
+                                        Net Benefit
+                                    </h3>
+                                    <p class="text-2xl font-bold text-green-600" id="netBenefit">$0</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+                                <h3 class="text-xl font-semibold text-blue-800 mb-4">Future Value Comparison</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-semibold text-blue-700">With Roth Conversion</h4>
+                                        <p class="text-lg font-bold text-blue-600" id="rothValue">$0</p>
+                                        <p class="text-sm text-blue-500">Tax-free withdrawals</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-blue-700">Without Conversion</h4>
+                                        <p class="text-lg font-bold text-blue-600" id="traditionalValue">$0</p>
+                                        <p class="text-sm text-blue-500">After-tax value</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
+                                <h3 class="text-xl font-semibold text-purple-800 mb-4">Break-Even Analysis</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="font-semibold text-purple-700">Break-Even Time</h4>
+                                        <p class="text-lg font-bold text-purple-600" id="breakEvenTime">0 years</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-purple-700">Conversion Recommendation</h4>
+                                        <p class="text-lg font-bold text-purple-600" id="recommendation">Calculate to see</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white rounded-lg card-shadow p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-area text-blue-600 mr-2"></i>
+                        Growth Projection
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg card-shadow p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie text-green-600 mr-2"></i>
+                        Tax Impact Comparison
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Benefits Section -->
+            <div class="bg-white rounded-lg card-shadow p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                    Key Benefits of Roth Conversion
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                        <i class="fas fa-tax text-blue-600 text-2xl mb-3"></i>
+                        <h3 class="text-lg font-semibold text-blue-800 mb-2">Tax-Free Growth</h3>
+                        <p class="text-sm text-blue-600">All future growth and withdrawals are completely tax-free</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                        <i class="fas fa-clock text-green-600 text-2xl mb-3"></i>
+                        <h3 class="text-lg font-semibold text-green-800 mb-2">No RMDs</h3>
+                        <p class="text-sm text-green-600">No required minimum distributions during your lifetime</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                        <i class="fas fa-heart text-purple-600 text-2xl mb-3"></i>
+                        <h3 class="text-lg font-semibold text-purple-800 mb-2">Legacy Benefits</h3>
+                        <p class="text-sm text-purple-600">Tax-free inheritance for your beneficiaries</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Considerations Section -->
+            <div class="bg-white rounded-lg card-shadow p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-exclamation-triangle text-orange-600 mr-2"></i>
+                    Important Considerations
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">When Roth Conversion Makes Sense</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                                <span>You expect to be in a higher tax bracket in retirement</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                                <span>You have cash outside of retirement accounts to pay taxes</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                                <span>You want to leave tax-free money to heirs</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                                <span>You're in a low-income year</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Potential Drawbacks</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-600 mt-1 mr-2"></i>
+                                <span>Immediate tax bill on converted amount</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-600 mt-1 mr-2"></i>
+                                <span>Could push you into higher tax bracket</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-600 mt-1 mr-2"></i>
+                                <span>May affect Medicare premiums</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-600 mt-1 mr-2"></i>
+                                <span>5-year rule for penalty-free withdrawals</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="result-highlight text-white rounded-lg p-8 text-center">
+                <h2 class="text-2xl font-bold mb-4">Ready to Optimize Your Retirement Tax Strategy?</h2>
+                <p class="text-lg mb-6">Speak with a qualified financial advisor to determine if Roth conversion is right for your situation.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-200">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Schedule Consultation
+                    </button>
+                    <button class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-200">
+                        <i class="fas fa-download mr-2"></i>
+                        Download Results
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let growthChart;
+        let taxChart;
+        
+        function calculateConversion() {
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const iraBalance = parseFloat(document.getElementById('iraBalance').value);
+            const conversionAmount = parseFloat(document.getElementById('conversionAmount').value);
+            const currentTaxBracket = parseFloat(document.getElementById('currentTaxBracket').value) / 100;
+            const retirementTaxBracket = parseFloat(document.getElementById('retirementTaxBracket').value) / 100;
+            const returnRate = parseFloat(document.getElementById('returnRate').value) / 100;
+            const yearsUntilRetirement = parseInt(document.getElementById('yearsUntilRetirement').value);
+            
+            // Calculate tax cost of conversion
+            const taxCost = conversionAmount * currentTaxBracket;
+            
+            // Calculate future value of converted amount (Roth)
+            const rothFutureValue = conversionAmount * Math.pow(1 + returnRate, yearsUntilRetirement);
+            
+            // Calculate future value if not converted (Traditional)
+            const traditionalFutureValue = (conversionAmount * Math.pow(1 + returnRate, yearsUntilRetirement)) * (1 - retirementTaxBracket);
+            
+            // Calculate net benefit
+            const netBenefit = rothFutureValue - traditionalFutureValue - taxCost;
+            
+            // Calculate break-even time
+            let breakEvenTime = 0;
+            for (let year = 1; year <= yearsUntilRetirement; year++) {
+                const rothValue = conversionAmount * Math.pow(1 + returnRate, year);
+                const traditionalValue = (conversionAmount * Math.pow(1 + returnRate, year)) * (1 - retirementTaxBracket);
+                if (rothValue - traditionalValue >= taxCost) {
+                    breakEvenTime = year;
+                    break;
+                }
+            }
+            
+            // Update results
+            document.getElementById('taxCost').textContent = formatCurrency(taxCost);
+            document.getElementById('netBenefit').textContent = formatCurrency(netBenefit);
+            document.getElementById('rothValue').textContent = formatCurrency(rothFutureValue);
+            document.getElementById('traditionalValue').textContent = formatCurrency(traditionalFutureValue);
+            document.getElementById('breakEvenTime').textContent = breakEvenTime > 0 ? `${breakEvenTime} years` : 'Never';
+            
+            // Recommendation
+            let recommendation = '';
+            if (netBenefit > 0) {
+                recommendation = 'Favorable';
+            } else if (netBenefit < 0) {
+                recommendation = 'Not Favorable';
+            } else {
+                recommendation = 'Neutral';
+            }
+            document.getElementById('recommendation').textContent = recommendation;
+            
+            // Update charts
+            updateGrowthChart(conversionAmount, returnRate, yearsUntilRetirement, retirementTaxBracket);
+            updateTaxChart(rothFutureValue, traditionalFutureValue, taxCost);
+        }
+        
+        function updateGrowthChart(conversionAmount, returnRate, years, taxBracket) {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            if (growthChart) {
+                growthChart.destroy();
+            }
+            
+            const labels = [];
+            const rothData = [];
+            const traditionalData = [];
+            
+            for (let year = 0; year <= years; year++) {
+                labels.push(year);
+                const rothValue = conversionAmount * Math.pow(1 + returnRate, year);
+                const traditionalValue = (conversionAmount * Math.pow(1 + returnRate, year)) * (1 - taxBracket);
+                rothData.push(rothValue);
+                traditionalData.push(traditionalValue);
+            }
+            
+            growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Roth IRA (Tax-Free)',
+                            data: rothData,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'Traditional IRA (After-Tax)',
+                            data: traditionalData,
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Growth Projection Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTaxChart(rothValue, traditionalValue, taxCost) {
+            const ctx = document.getElementById('taxChart').getContext('2d');
+            
+            if (taxChart) {
+                taxChart.destroy();
+            }
+            
+            taxChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Roth IRA Value', 'Traditional IRA Value', 'Tax Cost'],
+                    datasets: [{
+                        data: [rothValue, traditionalValue, taxCost],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(59, 130, 246)',
+                            'rgb(239, 68, 68)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Value Comparison'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': $' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        
+        // Initialize with default calculation
+        calculateConversion();
+        
+        // Add event listeners for real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = ['currentAge', 'iraBalance', 'conversionAmount', 'currentTaxBracket', 'retirementTaxBracket', 'returnRate', 'yearsUntilRetirement'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateConversion);
+            });
+        });
+    </script>
+</body>
+</html>

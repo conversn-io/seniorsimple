@@ -1,0 +1,1038 @@
+{
+    "exportFormatVersion": 2,
+    "exportTime": "2025-09-26 15:00:00",
+    "containerVersion": {
+        "path": "accounts/6307234127/containers/226756085/versions/1",
+        "accountId": "6307234127",
+        "containerId": "226756085",
+        "containerVersionId": "1",
+        "container": {
+            "path": "accounts/6307234127/containers/226756085",
+            "accountId": "6307234127",
+            "containerId": "226756085",
+            "name": "www.seniorsimple.org",
+            "publicId": "GTM-T75CL8X9",
+            "usageContext": [
+                "WEB"
+            ],
+            "fingerprint": "1754540432435",
+            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6307234127/containers/226756085/workspaces?apiLink=container",
+            "features": {
+                "supportUserPermissions": true,
+                "supportEnvironments": true,
+                "supportWorkspaces": true,
+                "supportGtagConfigs": false,
+                "supportBuiltInVariables": true,
+                "supportClients": false,
+                "supportFolders": true,
+                "supportTags": true,
+                "supportTemplates": true,
+                "supportTriggers": true,
+                "supportVariables": true,
+                "supportVersions": true,
+                "supportZones": true,
+                "supportTransformations": false
+            },
+            "tagIds": [
+                "GTM-T75CL8X9"
+            ]
+        },
+        "tag": [
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "12",
+                "name": "GA4 Configuration - SeniorSimple",
+                "type": "googtag",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "tagId",
+                        "value": "{{GA4 Measurement ID - SeniorSimple}}"
+                    }
+                ],
+                "fingerprint": "1758231714924",
+                "firingTriggerId": [
+                    "2147479553"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "13",
+                "name": "GA4 Lead Form Submit",
+                "type": "gaawe",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "measurementIdOverride",
+                        "value": "{{GA4 Measurement ID - SeniorSimple}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventName",
+                        "value": "lead_form_submit"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "eventSettingsTable",
+                        "list": [
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "event_category"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Event Category}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "event_label"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Event Label}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "value"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Value}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "session_id"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Session ID}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "funnel_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Funnel Type}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "lead_score"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Lead Score}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714925",
+                "firingTriggerId": [
+                    "20"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "14",
+                "name": "GA4 Question Answer",
+                "type": "gaawe",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "measurementIdOverride",
+                        "value": "{{GA4 Measurement ID - SeniorSimple}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventName",
+                        "value": "question_answer"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "eventSettingsTable",
+                        "list": [
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "question_number"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Question Number}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "question_text"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Question Text}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "answer_value"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Answer Value}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "session_id"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Session ID}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "funnel_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Funnel Type}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714926",
+                "firingTriggerId": [
+                    "21"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "15",
+                "name": "GA4 Quiz Start",
+                "type": "gaawe",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "measurementIdOverride",
+                        "value": "{{GA4 Measurement ID - SeniorSimple}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventName",
+                        "value": "quiz_start"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "eventSettingsTable",
+                        "list": [
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "quiz_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Quiz Type}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "session_id"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Session ID}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "funnel_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Funnel Type}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714927",
+                "firingTriggerId": [
+                    "22"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "16",
+                "name": "GA4 Quiz Complete",
+                "type": "gaawe",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "measurementIdOverride",
+                        "value": "{{GA4 Measurement ID - SeniorSimple}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventName",
+                        "value": "quiz_complete"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "eventSettingsTable",
+                        "list": [
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "quiz_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Quiz Type}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "session_id"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Session ID}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "funnel_type"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Funnel Type}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "completion_time"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Completion Time}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MAP",
+                                "map": [
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameter",
+                                        "value": "lead_score"
+                                    },
+                                    {
+                                        "type": "TEMPLATE",
+                                        "key": "parameterValue",
+                                        "value": "{{DLV - Lead Score}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714928",
+                "firingTriggerId": [
+                    "23"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "17",
+                "name": "Meta Pixel - Lead",
+                "type": "html",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "html",
+                        "value": "<!-- Meta Pixel Lead Event -->\n<script>\nfbq('track', 'Lead', {\n  content_name: '{{DLV - Event Label}}',\n  content_category: '{{DLV - Event Category}}',\n  value: {{DLV - Value}},\n  currency: 'USD',\n  lead_source: 'seniorsimple_platform',\n  session_id: '{{DLV - Session ID}}',\n  funnel_type: '{{DLV - Funnel Type}}',\n  lead_score: {{DLV - Lead Score}}\n});\n</script>"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "supportDocumentWrite",
+                        "value": "false"
+                    }
+                ],
+                "fingerprint": "1758231714929",
+                "firingTriggerId": [
+                    "24"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "tagId": "18",
+                "name": "Meta Pixel - PageView",
+                "type": "html",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "html",
+                        "value": "<!-- Meta Pixel PageView Event -->\n<script>\nfbq('track', 'PageView');\n</script>"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "supportDocumentWrite",
+                        "value": "false"
+                    }
+                ],
+                "fingerprint": "1758231714930",
+                "firingTriggerId": [
+                    "2147479553"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT",
+                "monitoringMetadata": {
+                    "type": "MAP"
+                },
+                "consentSettings": {
+                    "consentStatus": "NOT_SET"
+                }
+            }
+        ],
+        "trigger": [
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "triggerId": "20",
+                "name": "Lead Form Submit",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "lead_form_submit"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714925"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "triggerId": "21",
+                "name": "Question Answer",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "question_answer"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714926"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "triggerId": "22",
+                "name": "Quiz Start",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "quiz_start"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714927"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "triggerId": "23",
+                "name": "Quiz Complete",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "quiz_complete"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714928"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "triggerId": "24",
+                "name": "Meta Lead Event",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "meta_lead_event"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1758231714929"
+            }
+        ],
+        "variable": [
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "4",
+                "name": "GA4 Measurement ID - SeniorSimple",
+                "type": "c",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "value",
+                        "value": "G-N2K9G79RE5"
+                    }
+                ],
+                "fingerprint": "1758231714921",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "5",
+                "name": "Meta Pixel ID - SeniorSimple",
+                "type": "c",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "value",
+                        "value": "24221789587508633"
+                    }
+                ],
+                "fingerprint": "1758231714922",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "6",
+                "name": "DLV - Event Category",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "event_category"
+                    }
+                ],
+                "fingerprint": "1758231714923",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "7",
+                "name": "DLV - Event Label",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "event_label"
+                    }
+                ],
+                "fingerprint": "1758231714924",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "8",
+                "name": "DLV - Value",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "value"
+                    }
+                ],
+                "fingerprint": "1758231714925",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "9",
+                "name": "DLV - Session ID",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "session_id"
+                    }
+                ],
+                "fingerprint": "1758231714926",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "10",
+                "name": "DLV - Funnel Type",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "funnel_type"
+                    }
+                ],
+                "fingerprint": "1758231714927",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "11",
+                "name": "DLV - Quiz Type",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "quiz_type"
+                    }
+                ],
+                "fingerprint": "1758231714928",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "12",
+                "name": "DLV - Question Number",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "question_number"
+                    }
+                ],
+                "fingerprint": "1758231714929",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "13",
+                "name": "DLV - Question Text",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "question_text"
+                    }
+                ],
+                "fingerprint": "1758231714930",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "14",
+                "name": "DLV - Answer Value",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "answer_value"
+                    }
+                ],
+                "fingerprint": "1758231714931",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "15",
+                "name": "DLV - Lead Score",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "lead_score"
+                    }
+                ],
+                "fingerprint": "1758231714932",
+                "formatValue": {}
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "variableId": "16",
+                "name": "DLV - Completion Time",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "completion_time"
+                    }
+                ],
+                "fingerprint": "1758231714933",
+                "formatValue": {}
+            }
+        ],
+        "builtInVariable": [
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "type": "PAGE_URL",
+                "name": "Page URL"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "type": "PAGE_HOSTNAME",
+                "name": "Page Hostname"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "type": "PAGE_PATH",
+                "name": "Page Path"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "type": "REFERRER",
+                "name": "Referrer"
+            },
+            {
+                "accountId": "6307234127",
+                "containerId": "226756085",
+                "type": "EVENT",
+                "name": "Event"
+            }
+        ],
+        "fingerprint": "1758898518325",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/6307234127/containers/226756085/versions/1?apiLink=version"
+    }
+}

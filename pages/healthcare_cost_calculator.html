@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Cost Calculator - RetireSafe.ly</title>
+    <meta name="description" content="Interactive calculator to estimate retirement healthcare expenses and plan accordingly for a secure retirement.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .chart-container {
+            height: 400px;
+            margin: 20px 0;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-break { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="gradient-bg text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold mb-2">
+                        <i class="fas fa-heartbeat mr-3"></i>
+                        Healthcare Cost Calculator
+                    </h1>
+                    <p class="text-xl opacity-90">Plan for Your Retirement Healthcare Expenses</p>
+                    <p class="text-sm mt-2 opacity-80">Estimate costs, compare scenarios, and secure your health in retirement</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- Input Section -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                <!-- Personal Information -->
+                <div class="bg-white rounded-lg p-6 card-shadow">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-user-circle text-blue-600 mr-2"></i>
+                        Personal Information
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Age</label>
+                            <input type="number" id="currentAge" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="65" min="50" max="90" value="65">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Retirement Age</label>
+                            <input type="number" id="retirementAge" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="67" min="60" max="75" value="67">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Life Expectancy</label>
+                            <input type="number" id="lifeExpectancy" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="85" min="70" max="100" value="85">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Health Status</label>
+                            <select id="healthStatus" class="w-full p-3 border border-gray-300 rounded-lg input-focus">
+                                <option value="excellent">Excellent</option>
+                                <option value="good" selected>Good</option>
+                                <option value="fair">Fair</option>
+                                <option value="poor">Poor</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Geographic Location</label>
+                            <select id="location" class="w-full p-3 border border-gray-300 rounded-lg input-focus">
+                                <option value="low">Low Cost Area</option>
+                                <option value="medium" selected>Medium Cost Area</option>
+                                <option value="high">High Cost Area</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Healthcare Expenses -->
+                <div class="bg-white rounded-lg p-6 card-shadow">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                        Healthcare Expenses
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Medicare Part B Premium (Monthly)</label>
+                            <input type="number" id="medicareB" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="174" value="174">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Medicare Part D Premium (Monthly)</label>
+                            <input type="number" id="medicareD" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="45" value="45">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Medigap Insurance (Monthly)</label>
+                            <input type="number" id="medigap" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="125" value="125">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Out-of-Pocket Medical (Annual)</label>
+                            <input type="number" id="outOfPocket" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="2500" value="2500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prescription Drugs (Monthly)</label>
+                            <input type="number" id="prescriptions" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="150" value="150">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dental & Vision (Annual)</label>
+                            <input type="number" id="dentalVision" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                                   placeholder="1200" value="1200">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Options -->
+            <div class="bg-white rounded-lg p-6 card-shadow mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-cog text-purple-600 mr-2"></i>
+                    Advanced Options
+                </h2>
+                
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Healthcare Inflation Rate (%)</label>
+                        <input type="number" id="inflationRate" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                               placeholder="6.5" step="0.1" value="6.5">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Long-Term Care Probability (%)</label>
+                        <input type="number" id="ltcProbability" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                               placeholder="70" value="70">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">LTC Annual Cost</label>
+                        <input type="number" id="ltcCost" class="w-full p-3 border border-gray-300 rounded-lg input-focus" 
+                               placeholder="55000" value="55000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <div class="text-center mb-8">
+                <button onclick="calculateHealthcareCosts()" class="btn-primary text-white px-8 py-4 rounded-lg font-bold text-lg">
+                    <i class="fas fa-calculator mr-2"></i>
+                    Calculate Healthcare Costs
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden">
+                <!-- Summary Cards -->
+                <div class="grid md:grid-cols-4 gap-4 mb-8">
+                    <div class="result-card rounded-lg p-6 text-center">
+                        <i class="fas fa-calendar-alt text-3xl mb-2"></i>
+                        <h3 class="text-lg font-bold">Total Years</h3>
+                        <p id="totalYears" class="text-2xl font-bold">--</p>
+                    </div>
+                    
+                    <div class="result-card rounded-lg p-6 text-center">
+                        <i class="fas fa-dollar-sign text-3xl mb-2"></i>
+                        <h3 class="text-lg font-bold">Annual Cost (Today)</h3>
+                        <p id="annualCostToday" class="text-2xl font-bold">--</p>
+                    </div>
+                    
+                    <div class="result-card rounded-lg p-6 text-center">
+                        <i class="fas fa-chart-line text-3xl mb-2"></i>
+                        <h3 class="text-lg font-bold">Annual Cost (Retirement)</h3>
+                        <p id="annualCostRetirement" class="text-2xl font-bold">--</p>
+                    </div>
+                    
+                    <div class="result-card rounded-lg p-6 text-center">
+                        <i class="fas fa-piggy-bank text-3xl mb-2"></i>
+                        <h3 class="text-lg font-bold">Total Estimated Cost</h3>
+                        <p id="totalEstimatedCost" class="text-2xl font-bold">--</p>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="bg-white rounded-lg p-6 card-shadow mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-area text-blue-600 mr-2"></i>
+                        Healthcare Cost Projection
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="healthcareChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="bg-white rounded-lg p-6 card-shadow mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-list-ul text-green-600 mr-2"></i>
+                        Detailed Cost Breakdown
+                    </h2>
+                    <div id="costBreakdown" class="space-y-4">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-white rounded-lg p-6 card-shadow">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                        Recommendations & Action Steps
+                    </h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8 mt-12">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-sm opacity-80">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    RetireSafe.ly - Your Trusted Partner in Retirement Planning
+                </p>
+                <p class="text-xs mt-2 opacity-60">
+                    This calculator provides estimates based on current data. Consult with a financial advisor for personalized advice.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let healthcareChart;
+
+        function calculateHealthcareCosts() {
+            // Get input values
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const retirementAge = parseInt(document.getElementById('retirementAge').value);
+            const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value);
+            const healthStatus = document.getElementById('healthStatus').value;
+            const location = document.getElementById('location').value;
+            
+            const medicareB = parseFloat(document.getElementById('medicareB').value);
+            const medicareD = parseFloat(document.getElementById('medicareD').value);
+            const medigap = parseFloat(document.getElementById('medigap').value);
+            const outOfPocket = parseFloat(document.getElementById('outOfPocket').value);
+            const prescriptions = parseFloat(document.getElementById('prescriptions').value);
+            const dentalVision = parseFloat(document.getElementById('dentalVision').value);
+            
+            const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
+            const ltcProbability = parseFloat(document.getElementById('ltcProbability').value) / 100;
+            const ltcCost = parseFloat(document.getElementById('ltcCost').value);
+            
+            // Calculate multipliers
+            const healthMultiplier = {
+                'excellent': 0.9,
+                'good': 1.0,
+                'fair': 1.2,
+                'poor': 1.4
+            }[healthStatus];
+            
+            const locationMultiplier = {
+                'low': 0.8,
+                'medium': 1.0,
+                'high': 1.3
+            }[location];
+            
+            // Calculate annual costs
+            const monthlyPremiums = (medicareB + medicareD + medigap) * healthMultiplier * locationMultiplier;
+            const monthlyPrescriptions = prescriptions * healthMultiplier * locationMultiplier;
+            const annualOutOfPocket = outOfPocket * healthMultiplier * locationMultiplier;
+            const annualDentalVision = dentalVision * healthMultiplier * locationMultiplier;
+            
+            const annualCostToday = (monthlyPremiums + monthlyPrescriptions) * 12 + annualOutOfPocket + annualDentalVision;
+            
+            // Calculate years in retirement
+            const yearsToRetirement = retirementAge - currentAge;
+            const yearsInRetirement = lifeExpectancy - retirementAge;
+            
+            // Calculate inflated costs
+            const annualCostAtRetirement = annualCostToday * Math.pow(1 + inflationRate, yearsToRetirement);
+            
+            // Calculate total cost over retirement
+            let totalCost = 0;
+            const yearlyData = [];
+            
+            for (let year = 0; year < yearsInRetirement; year++) {
+                const age = retirementAge + year;
+                const inflatedCost = annualCostAtRetirement * Math.pow(1 + inflationRate, year);
+                totalCost += inflatedCost;
+                yearlyData.push({
+                    age: age,
+                    cost: inflatedCost
+                });
+            }
+            
+            // Add potential long-term care costs
+            const ltcExpectedCost = ltcCost * ltcProbability * 3; // Average 3 years of care
+            totalCost += ltcExpectedCost;
+            
+            // Update display
+            document.getElementById('totalYears').textContent = yearsInRetirement;
+            document.getElementById('annualCostToday').textContent = '$' + annualCostToday.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('annualCostRetirement').textContent = '$' + annualCostAtRetirement.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('totalEstimatedCost').textContent = '$' + totalCost.toLocaleString(undefined, {maximumFractionDigits: 0});
+            
+            // Create chart
+            createHealthcareChart(yearlyData);
+            
+            // Create breakdown
+            createCostBreakdown(annualCostToday, annualCostAtRetirement, totalCost, ltcExpectedCost);
+            
+            // Create recommendations
+            createRecommendations(totalCost, annualCostAtRetirement, currentAge, retirementAge);
+            
+            // Show results
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function createHealthcareChart(data) {
+            const ctx = document.getElementById('healthcareChart').getContext('2d');
+            
+            if (healthcareChart) {
+                healthcareChart.destroy();
+            }
+            
+            healthcareChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.age),
+                    datasets: [{
+                        label: 'Annual Healthcare Cost',
+                        data: data.map(d => d.cost),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Annual Cost: $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createCostBreakdown(todayCost, retirementCost, totalCost, ltcCost) {
+            const breakdown = document.getElementById('costBreakdown');
+            
+            const items = [
+                { name: 'Medicare Part B Premium', amount: parseFloat(document.getElementById('medicareB').value) * 12 },
+                { name: 'Medicare Part D Premium', amount: parseFloat(document.getElementById('medicareD').value) * 12 },
+                { name: 'Medigap Insurance', amount: parseFloat(document.getElementById('medigap').value) * 12 },
+                { name: 'Out-of-Pocket Medical', amount: parseFloat(document.getElementById('outOfPocket').value) },
+                { name: 'Prescription Drugs', amount: parseFloat(document.getElementById('prescriptions').value) * 12 },
+                { name: 'Dental & Vision', amount: parseFloat(document.getElementById('dentalVision').value) },
+                { name: 'Expected Long-Term Care', amount: ltcCost }
+            ];
+            
+            breakdown.innerHTML = items.map(item => `
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                    <span class="font-medium">${item.name}</span>
+                    <span class="text-lg font-bold text-blue-600">$${item.amount.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+        
+        function createRecommendations(totalCost, annualCost, currentAge, retirementAge) {
+            const recommendations = document.getElementById('recommendations');
+            const yearsToRetirement = retirementAge - currentAge;
+            const monthlySavings = totalCost / (yearsToRetirement * 12);
+            
+            const tips = [
+                {
+                    icon: 'fas fa-piggy-bank',
+                    title: 'Start Saving Now',
+                    description: `Save approximately $${monthlySavings.toLocaleString()} per month to cover estimated healthcare costs.`
+                },
+                {
+                    icon: 'fas fa-heart',
+                    title: 'Invest in Your Health',
+                    description: 'Maintain a healthy lifestyle to potentially reduce healthcare costs by 20-30%.'
+                },
+                {
+                    icon: 'fas fa-shield-alt',
+                    title: 'Consider Long-Term Care Insurance',
+                    description: 'LTC insurance can help protect your savings from catastrophic care costs.'
+                },
+                {
+                    icon: 'fas fa-chart-line',
+                    title: 'Health Savings Account (HSA)',
+                    description: 'If eligible, maximize HSA contributions for triple tax benefits.'
+                },
+                {
+                    icon: 'fas fa-search',
+                    title: 'Review Medicare Options',
+                    description: 'Compare Medicare plans annually during open enrollment to optimize costs.'
+                },
+                {
+                    icon: 'fas fa-user-md',
+                    title: 'Professional Guidance',
+                    description: 'Consult with a financial advisor specializing in retirement healthcare planning.'
+                }
+            ];
+            
+            recommendations.innerHTML = tips.map(tip => `
+                <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <i class="${tip.icon} text-2xl text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-gray-800">${tip.title}</h3>
+                        <p class="text-gray-600">${tip.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Initialize with default calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateHealthcareCosts();
+        });
+    </script>
+</body>
+</html>

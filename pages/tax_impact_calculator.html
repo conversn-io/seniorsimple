@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Impact Calculator - RetireSafe.ly</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .calculator-card {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .senior-friendly {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .chart-container {
+            height: 400px;
+            margin: 2rem 0;
+        }
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        .income-source {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .tax-bracket {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+        }
+        .highlight-box {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { font-size: 12px; }
+            .chart-container { height: 300px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 senior-friendly">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-calculator text-blue-600 mr-3"></i>
+                Tax Impact Calculator
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Estimate how different retirement income sources affect your taxes and plan your withdrawals strategically
+            </p>
+        </div>
+
+        <!-- Main Calculator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Section -->
+            <div class="calculator-card bg-white rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-edit text-green-600 mr-2"></i>
+                    Your Retirement Income
+                </h2>
+
+                <form id="taxCalculatorForm">
+                    <!-- Filing Status -->
+                    <div class="input-group">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-users mr-2"></i>Filing Status
+                        </label>
+                        <select id="filingStatus" class="w-full p-3 border border-gray-300 rounded-lg text-lg">
+                            <option value="single">Single</option>
+                            <option value="marriedJoint">Married Filing Jointly</option>
+                            <option value="marriedSeparate">Married Filing Separately</option>
+                            <option value="headOfHousehold">Head of Household</option>
+                        </select>
+                    </div>
+
+                    <!-- Age -->
+                    <div class="input-group">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-birthday-cake mr-2"></i>Your Age
+                        </label>
+                        <input type="number" id="age" class="w-full p-3 border border-gray-300 rounded-lg text-lg" value="65" min="50" max="100">
+                        <p class="text-sm text-gray-500 mt-1">Age affects standard deduction amounts</p>
+                    </div>
+
+                    <!-- Social Security -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-shield-alt mr-2 text-blue-600"></i>Social Security Benefits (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="socialSecurity" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Up to 85% may be taxable depending on other income</p>
+                    </div>
+
+                    <!-- Pension Income -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-building mr-2 text-purple-600"></i>Pension Income (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="pensionIncome" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Generally fully taxable as ordinary income</p>
+                    </div>
+
+                    <!-- Traditional IRA/401(k) Withdrawals -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-piggy-bank mr-2 text-red-600"></i>Traditional IRA/401(k) Withdrawals (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="traditionalWithdrawals" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Fully taxable as ordinary income</p>
+                    </div>
+
+                    <!-- Roth IRA Withdrawals -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-gem mr-2 text-green-600"></i>Roth IRA Withdrawals (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="rothWithdrawals" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Tax-free if rules are met (age 59½ + 5-year rule)</p>
+                    </div>
+
+                    <!-- Investment Income -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-chart-line mr-2 text-indigo-600"></i>Investment Income (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="investmentIncome" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Includes dividends, interest, and capital gains</p>
+                    </div>
+
+                    <!-- Other Taxable Income -->
+                    <div class="income-source">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-plus-circle mr-2 text-gray-600"></i>Other Taxable Income (Annual)
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-lg text-gray-600 mr-2">$</span>
+                            <input type="number" id="otherIncome" class="flex-1 p-3 border border-gray-300 rounded-lg text-lg" value="0" min="0" step="100">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Part-time work, rental income, etc.</p>
+                    </div>
+
+                    <button type="button" onclick="calculateTaxes()" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-xl font-semibold hover:bg-blue-700 transition duration-200">
+                        <i class="fas fa-calculator mr-2"></i>Calculate Tax Impact
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div class="calculator-card bg-white rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                    Your Tax Results
+                </h2>
+
+                <div id="resultsSection" class="hidden">
+                    <!-- Total Tax Summary -->
+                    <div class="result-box text-center">
+                        <h3 class="text-2xl font-bold mb-2">Estimated Federal Tax</h3>
+                        <div class="text-4xl font-bold mb-2" id="totalTax">$0</div>
+                        <div class="text-lg" id="effectiveRate">0% Effective Rate</div>
+                        <div class="text-lg" id="marginalRate">0% Marginal Rate</div>
+                    </div>
+
+                    <!-- Income Breakdown -->
+                    <div class="highlight-box">
+                        <h4 class="text-lg font-bold text-gray-800 mb-3">
+                            <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>Income Breakdown
+                        </h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>Total Income:</span>
+                                <span class="font-bold" id="totalIncome">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxable Income:</span>
+                                <span class="font-bold" id="taxableIncome">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Standard Deduction:</span>
+                                <span class="font-bold" id="standardDeduction">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxable SS Benefits:</span>
+                                <span class="font-bold" id="taxableSS">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tax Brackets -->
+                    <div class="mt-6">
+                        <h4 class="text-lg font-bold text-gray-800 mb-3">
+                            <i class="fas fa-layer-group mr-2 text-yellow-600"></i>Tax Bracket Breakdown
+                        </h4>
+                        <div id="taxBrackets"></div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="chart-container">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="placeholderText" class="text-center text-gray-500 py-12">
+                    <i class="fas fa-calculator text-6xl mb-4"></i>
+                    <p class="text-xl">Enter your income information and click "Calculate Tax Impact" to see your results</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax Strategies Section -->
+        <div class="mt-12 calculator-card bg-white rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                Tax-Efficient Retirement Strategies
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="tax-bracket">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        <i class="fas fa-balance-scale mr-2 text-blue-600"></i>Tax Diversification
+                    </h3>
+                    <p class="text-gray-600 mb-3">Spread retirement savings across different account types for tax flexibility.</p>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Traditional 401(k)/IRA for current tax deductions</li>
+                        <li>• Roth accounts for tax-free growth and withdrawals</li>
+                        <li>• Taxable accounts for flexibility and liquidity</li>
+                    </ul>
+                </div>
+
+                <div class="tax-bracket">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        <i class="fas fa-sort-numeric-down mr-2 text-purple-600"></i>Withdrawal Sequencing
+                    </h3>
+                    <p class="text-gray-600 mb-3">Strategic order of account withdrawals to minimize lifetime taxes.</p>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Start with taxable accounts first</li>
+                        <li>• Use tax-deferred accounts for income needs</li>
+                        <li>• Save Roth accounts for last (or legacy)</li>
+                    </ul>
+                </div>
+
+                <div class="tax-bracket">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        <i class="fas fa-chart-line mr-2 text-green-600"></i>Tax-Loss Harvesting
+                    </h3>
+                    <p class="text-gray-600 mb-3">Offset gains with losses to reduce current year tax liability.</p>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Sell investments with losses to offset gains</li>
+                        <li>• Be aware of wash sale rules</li>
+                        <li>• Consider tax implications of rebalancing</li>
+                    </ul>
+                </div>
+
+                <div class="tax-bracket">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        <i class="fas fa-heart mr-2 text-red-600"></i>Charitable Giving
+                    </h3>
+                    <p class="text-gray-600 mb-3">Use charitable strategies to reduce taxes while supporting causes you care about.</p>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Qualified Charitable Distributions from IRA</li>
+                        <li>• Donor-advised funds for flexible giving</li>
+                        <li>• Charitable remainder trusts for large gifts</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="mt-8 warning-box">
+            <h3 class="text-lg font-bold text-red-800 mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Important Disclaimers
+            </h3>
+            <ul class="text-red-700 space-y-1">
+                <li>• This calculator provides estimates for federal taxes only and does not include state taxes</li>
+                <li>• Results are based on 2024 tax brackets and may not reflect future tax law changes</li>
+                <li>• Social Security taxation depends on combined income including 50% of SS benefits</li>
+                <li>• Consult with a tax professional for personalized advice and state-specific considerations</li>
+                <li>• Individual circumstances may significantly affect actual tax liability</li>
+            </ul>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mt-12 text-center highlight-box">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Ready to Optimize Your Retirement Tax Strategy?</h3>
+            <p class="text-lg text-gray-600 mb-6">Get personalized advice from qualified financial professionals who specialize in retirement tax planning.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition duration-200">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule Consultation
+                </button>
+                <button class="bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-green-700 transition duration-200">
+                    <i class="fas fa-download mr-2"></i>Download Tax Guide
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 2024 Tax Brackets
+        const taxBrackets2024 = {
+            single: [
+                { min: 0, max: 11600, rate: 0.10 },
+                { min: 11600, max: 47150, rate: 0.12 },
+                { min: 47150, max: 100525, rate: 0.22 },
+                { min: 100525, max: 191650, rate: 0.24 },
+                { min: 191650, max: 243725, rate: 0.32 },
+                { min: 243725, max: 609350, rate: 0.35 },
+                { min: 609350, max: Infinity, rate: 0.37 }
+            ],
+            marriedJoint: [
+                { min: 0, max: 23200, rate: 0.10 },
+                { min: 23200, max: 94300, rate: 0.12 },
+                { min: 94300, max: 201050, rate: 0.22 },
+                { min: 201050, max: 383900, rate: 0.24 },
+                { min: 383900, max: 487450, rate: 0.32 },
+                { min: 487450, max: 731200, rate: 0.35 },
+                { min: 731200, max: Infinity, rate: 0.37 }
+            ]
+        };
+
+        // Standard Deductions for 2024
+        const standardDeductions2024 = {
+            single: 14600,
+            marriedJoint: 29200,
+            marriedSeparate: 14600,
+            headOfHousehold: 21900
+        };
+
+        // Additional standard deduction for seniors (65+)
+        const seniorAdditionalDeduction = {
+            single: 1950,
+            marriedJoint: 1550, // per person
+            marriedSeparate: 1950,
+            headOfHousehold: 1950
+        };
+
+        let taxChart;
+
+        function calculateTaxes() {
+            const filingStatus = document.getElementById('filingStatus').value;
+            const age = parseInt(document.getElementById('age').value);
+            const socialSecurity = parseFloat(document.getElementById('socialSecurity').value) || 0;
+            const pensionIncome = parseFloat(document.getElementById('pensionIncome').value) || 0;
+            const traditionalWithdrawals = parseFloat(document.getElementById('traditionalWithdrawals').value) || 0;
+            const rothWithdrawals = parseFloat(document.getElementById('rothWithdrawals').value) || 0;
+            const investmentIncome = parseFloat(document.getElementById('investmentIncome').value) || 0;
+            const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
+
+            // Calculate taxable Social Security
+            const taxableSocialSecurity = calculateTaxableSocialSecurity(
+                socialSecurity, 
+                pensionIncome + traditionalWithdrawals + investmentIncome + otherIncome
+            );
+
+            // Calculate total taxable income
+            const totalTaxableIncome = pensionIncome + traditionalWithdrawals + investmentIncome + otherIncome + taxableSocialSecurity;
+            
+            // Calculate standard deduction
+            let standardDeduction = standardDeductions2024[filingStatus];
+            if (age >= 65) {
+                if (filingStatus === 'marriedJoint') {
+                    standardDeduction += seniorAdditionalDeduction[filingStatus] * 2; // Assuming both spouses are 65+
+                } else {
+                    standardDeduction += seniorAdditionalDeduction[filingStatus];
+                }
+            }
+
+            // Calculate adjusted gross income and taxable income
+            const adjustedGrossIncome = Math.max(0, totalTaxableIncome - standardDeduction);
+            
+            // Calculate federal tax
+            const brackets = filingStatus === 'marriedJoint' ? taxBrackets2024.marriedJoint : taxBrackets2024.single;
+            const { totalTax, bracketBreakdown } = calculateTaxWithBrackets(adjustedGrossIncome, brackets);
+            
+            // Calculate rates
+            const effectiveRate = totalTaxableIncome > 0 ? (totalTax / totalTaxableIncome) * 100 : 0;
+            const marginalRate = getMarginalRate(adjustedGrossIncome, brackets) * 100;
+
+            // Display results
+            displayResults({
+                totalTax,
+                effectiveRate,
+                marginalRate,
+                totalIncome: socialSecurity + pensionIncome + traditionalWithdrawals + rothWithdrawals + investmentIncome + otherIncome,
+                taxableIncome: totalTaxableIncome,
+                standardDeduction,
+                taxableSocialSecurity,
+                bracketBreakdown,
+                adjustedGrossIncome
+            });
+
+            // Show results section
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('placeholderText').classList.add('hidden');
+        }
+
+        function calculateTaxableSocialSecurity(socialSecurity, otherIncome) {
+            if (socialSecurity === 0) return 0;
+            
+            const combinedIncome = otherIncome + (socialSecurity * 0.5);
+            const filingStatus = document.getElementById('filingStatus').value;
+            
+            let threshold1, threshold2;
+            if (filingStatus === 'marriedJoint') {
+                threshold1 = 32000;
+                threshold2 = 44000;
+            } else {
+                threshold1 = 25000;
+                threshold2 = 34000;
+            }
+            
+            if (combinedIncome <= threshold1) {
+                return 0;
+            } else if (combinedIncome <= threshold2) {
+                return Math.min(socialSecurity * 0.5, (combinedIncome - threshold1) * 0.5);
+            } else {
+                return Math.min(socialSecurity * 0.85, 
+                    (threshold2 - threshold1) * 0.5 + (combinedIncome - threshold2) * 0.85);
+            }
+        }
+
+        function calculateTaxWithBrackets(income, brackets) {
+            let totalTax = 0;
+            let bracketBreakdown = [];
+            
+            for (let i = 0; i < brackets.length; i++) {
+                const bracket = brackets[i];
+                if (income <= bracket.min) break;
+                
+                const taxableInBracket = Math.min(income, bracket.max) - bracket.min;
+                const taxForBracket = taxableInBracket * bracket.rate;
+                totalTax += taxForBracket;
+                
+                if (taxableInBracket > 0) {
+                    bracketBreakdown.push({
+                        rate: bracket.rate,
+                        min: bracket.min,
+                        max: bracket.max === Infinity ? 'No limit' : bracket.max,
+                        taxableAmount: taxableInBracket,
+                        tax: taxForBracket
+                    });
+                }
+            }
+            
+            return { totalTax, bracketBreakdown };
+        }
+
+        function getMarginalRate(income, brackets) {
+            for (let i = 0; i < brackets.length; i++) {
+                if (income <= brackets[i].max) {
+                    return brackets[i].rate;
+                }
+            }
+            return brackets[brackets.length - 1].rate;
+        }
+
+        function displayResults(results) {
+            document.getElementById('totalTax').textContent = `$${results.totalTax.toLocaleString()}`;
+            document.getElementById('effectiveRate').textContent = `${results.effectiveRate.toFixed(1)}% Effective Rate`;
+            document.getElementById('marginalRate').textContent = `${results.marginalRate.toFixed(1)}% Marginal Rate`;
+            document.getElementById('totalIncome').textContent = `$${results.totalIncome.toLocaleString()}`;
+            document.getElementById('taxableIncome').textContent = `$${results.taxableIncome.toLocaleString()}`;
+            document.getElementById('standardDeduction').textContent = `$${results.standardDeduction.toLocaleString()}`;
+            document.getElementById('taxableSS').textContent = `$${results.taxableSocialSecurity.toLocaleString()}`;
+            
+            // Display tax brackets
+            const bracketsDiv = document.getElementById('taxBrackets');
+            bracketsDiv.innerHTML = '';
+            
+            results.bracketBreakdown.forEach(bracket => {
+                const bracketDiv = document.createElement('div');
+                bracketDiv.className = 'tax-bracket';
+                bracketDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold">${(bracket.rate * 100).toFixed(0)}% Tax Bracket</span>
+                        <span class="font-bold text-lg">$${bracket.tax.toLocaleString()}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        On $${bracket.taxableAmount.toLocaleString()} 
+                        (${bracket.min.toLocaleString()} - ${bracket.max.toLocaleString()})
+                    </div>
+                `;
+                bracketsDiv.appendChild(bracketDiv);
+            });
+            
+            // Update chart
+            updateChart(results);
+        }
+
+        function updateChart(results) {
+            const ctx = document.getElementById('taxChart').getContext('2d');
+            
+            if (taxChart) {
+                taxChart.destroy();
+            }
+            
+            const labels = results.bracketBreakdown.map(b => `${(b.rate * 100).toFixed(0)}%`);
+            const data = results.bracketBreakdown.map(b => b.tax);
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
+            
+            taxChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, data.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tax by Bracket',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const percentage = ((value / results.totalTax) * 100).toFixed(1);
+                                    return `${context.label}: $${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize with default calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners for real-time updates
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (document.getElementById('resultsSection').classList.contains('hidden')) {
+                        return;
+                    }
+                    setTimeout(calculateTaxes, 300); // Debounce
+                });
+            });
+        });
+    </script>
+</body>
+</html>

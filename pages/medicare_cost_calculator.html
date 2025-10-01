@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare Cost Calculator - RetireSafe.ly</title>
+    <meta name="description" content="Interactive Medicare cost calculator to estimate costs and compare different plan options for baby boomers and retirees.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .calculator-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .plan-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .plan-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .plan-card.recommended {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+        }
+        
+        .cost-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .cost-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cost-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        
+        .cost-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .info-box h4 {
+            color: #1e40af;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #3730a3;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .savings-highlight {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .calculator-card {
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+            }
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-4">
+                <i class="fas fa-calculator mr-3"></i>
+                Medicare Cost Calculator
+            </h1>
+            <p class="text-xl text-white opacity-90">
+                Estimate your Medicare costs and compare plan options
+            </p>
+        </div>
+
+        <!-- Main Calculator Card -->
+        <div class="calculator-card p-8 mb-8">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">
+                        <i class="fas fa-user-circle mr-2 text-blue-600"></i>
+                        Your Information
+                    </h2>
+                    
+                    <div class="input-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" min="62" max="100" value="65" placeholder="Enter your age">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="income">Annual Income</label>
+                        <input type="number" id="income" value="50000" placeholder="Enter your annual income">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="state">State</label>
+                        <select id="state">
+                            <option value="average">National Average</option>
+                            <option value="alabama">Alabama</option>
+                            <option value="alaska">Alaska</option>
+                            <option value="arizona">Arizona</option>
+                            <option value="california">California</option>
+                            <option value="florida">Florida</option>
+                            <option value="georgia">Georgia</option>
+                            <option value="illinois">Illinois</option>
+                            <option value="michigan">Michigan</option>
+                            <option value="newyork">New York</option>
+                            <option value="ohio">Ohio</option>
+                            <option value="pennsylvania">Pennsylvania</option>
+                            <option value="texas">Texas</option>
+                            <option value="virginia">Virginia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="healthStatus">Health Status</label>
+                        <select id="healthStatus">
+                            <option value="excellent">Excellent</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="prescriptions">Number of Prescription Medications</label>
+                        <input type="number" id="prescriptions" min="0" max="20" value="2" placeholder="Number of medications">
+                    </div>
+                    
+                    <button class="calculate-btn" onclick="calculateCosts()">
+                        <i class="fas fa-calculator mr-2"></i>
+                        Calculate Medicare Costs
+                    </button>
+                </div>
+
+                <!-- Quick Info Section -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        Medicare Basics
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="info-box">
+                            <h4><i class="fas fa-hospital mr-2"></i>Part A - Hospital Insurance</h4>
+                            <p>Covers inpatient hospital stays, skilled nursing facility care, hospice care, and home health care. Most people get Part A premium-free.</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h4><i class="fas fa-user-md mr-2"></i>Part B - Medical Insurance</h4>
+                            <p>Covers doctor visits, outpatient care, medical supplies, and preventive services. Standard premium is $174.70/month in 2024.</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h4><i class="fas fa-pills mr-2"></i>Part D - Prescription Drug Coverage</h4>
+                            <p>Covers prescription medications. Average premium is about $48/month, varies by plan and location.</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h4><i class="fas fa-shield-alt mr-2"></i>Medigap - Supplemental Insurance</h4>
+                            <p>Helps pay for costs not covered by Original Medicare, like copayments, coinsurance, and deductibles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <div class="calculator-card p-8 mb-8">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">
+                    <i class="fas fa-chart-line mr-2 text-green-600"></i>
+                    Your Medicare Cost Estimate
+                </h2>
+                
+                <div class="cost-breakdown" id="costBreakdown">
+                    <!-- Cost items will be populated by JavaScript -->
+                </div>
+                
+                <div class="result-card">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-dollar-sign mr-2"></i>
+                        Total Estimated Annual Cost
+                    </h3>
+                    <div class="text-4xl font-bold text-blue-600" id="totalCost">
+                        $0
+                    </div>
+                    <p class="text-gray-600 mt-2">This includes all Medicare parts and estimated out-of-pocket expenses</p>
+                </div>
+            </div>
+
+            <!-- Plan Comparison Section -->
+            <div class="calculator-card p-8">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">
+                    <i class="fas fa-balance-scale mr-2 text-purple-600"></i>
+                    Medicare Plan Comparison
+                </h2>
+                
+                <div class="plan-comparison" id="planComparison">
+                    <!-- Plan cards will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="calculator-card p-8 mt-8">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">
+                <i class="fas fa-lightbulb mr-2 text-yellow-600"></i>
+                Important Medicare Facts
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Enrollment Periods
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><strong>Initial Enrollment:</strong> 3 months before to 3 months after your 65th birthday</li>
+                        <li><strong>General Enrollment:</strong> January 1 - March 31 (coverage starts July 1)</li>
+                        <li><strong>Open Enrollment:</strong> October 15 - December 7 (coverage starts January 1)</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Late Enrollment Penalties
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><strong>Part B:</strong> 10% penalty for each 12-month period you delay enrollment</li>
+                        <li><strong>Part D:</strong> 1% penalty for each month you delay enrollment</li>
+                        <li><strong>Lifetime penalties:</strong> These penalties continue as long as you have Medicare</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateCosts() {
+            const age = parseInt(document.getElementById('age').value);
+            const income = parseInt(document.getElementById('income').value);
+            const state = document.getElementById('state').value;
+            const healthStatus = document.getElementById('healthStatus').value;
+            const prescriptions = parseInt(document.getElementById('prescriptions').value);
+            
+            // Base Medicare costs (2024)
+            let partAPremium = 0; // Most people get Part A premium-free
+            let partBPremium = 174.70; // Standard premium
+            let partDPremium = 48; // Average premium
+            let medigapPremium = 150; // Average Medigap premium
+            
+            // IRMAA adjustments based on income
+            if (income > 103000) {
+                partBPremium += 69.90;
+                partDPremium += 12.90;
+            }
+            if (income > 129000) {
+                partBPremium += 174.70;
+                partDPremium += 33.30;
+            }
+            if (income > 161000) {
+                partBPremium += 279.20;
+                partDPremium += 53.80;
+            }
+            if (income > 193000) {
+                partBPremium += 383.70;
+                partDPremium += 74.20;
+            }
+            if (income > 500000) {
+                partBPremium += 454.20;
+                partDPremium += 81.00;
+            }
+            
+            // State adjustments
+            const stateMultipliers = {
+                'alabama': 0.85,
+                'alaska': 1.3,
+                'arizona': 0.95,
+                'california': 1.15,
+                'florida': 0.9,
+                'georgia': 0.88,
+                'illinois': 1.05,
+                'michigan': 0.92,
+                'newyork': 1.25,
+                'ohio': 0.87,
+                'pennsylvania': 0.95,
+                'texas': 0.9,
+                'virginia': 0.98,
+                'average': 1.0
+            };
+            
+            const stateMultiplier = stateMultipliers[state] || 1.0;
+            medigapPremium *= stateMultiplier;
+            
+            // Health status adjustments
+            const healthMultipliers = {
+                'excellent': 0.8,
+                'good': 1.0,
+                'fair': 1.3,
+                'poor': 1.6
+            };
+            
+            const healthMultiplier = healthMultipliers[healthStatus];
+            
+            // Calculate out-of-pocket costs
+            let outOfPocket = 2000 * healthMultiplier; // Base out-of-pocket
+            outOfPocket += prescriptions * 200; // Prescription costs
+            
+            // Calculate totals
+            const monthlyPremiums = partAPremium + partBPremium + partDPremium + medigapPremium;
+            const annualPremiums = monthlyPremiums * 12;
+            const totalAnnualCost = annualPremiums + outOfPocket;
+            
+            // Display results
+            displayResults({
+                partAPremium,
+                partBPremium,
+                partDPremium,
+                medigapPremium,
+                outOfPocket,
+                monthlyPremiums,
+                annualPremiums,
+                totalAnnualCost
+            });
+            
+            // Show results section
+            document.getElementById('resultsSection').classList.remove('hidden');
+            
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function displayResults(costs) {
+            // Update cost breakdown
+            const costBreakdown = document.getElementById('costBreakdown');
+            costBreakdown.innerHTML = `
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.partAPremium.toFixed(0)}</div>
+                    <div class="cost-label">Part A Monthly</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.partBPremium.toFixed(0)}</div>
+                    <div class="cost-label">Part B Monthly</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.partDPremium.toFixed(0)}</div>
+                    <div class="cost-label">Part D Monthly</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.medigapPremium.toFixed(0)}</div>
+                    <div class="cost-label">Medigap Monthly</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.outOfPocket.toFixed(0)}</div>
+                    <div class="cost-label">Out-of-Pocket Annual</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-amount">$${costs.monthlyPremiums.toFixed(0)}</div>
+                    <div class="cost-label">Total Monthly Premiums</div>
+                </div>
+            `;
+            
+            // Update total cost
+            document.getElementById('totalCost').textContent = `$${costs.totalAnnualCost.toFixed(0)}`;
+            
+            // Generate plan comparison
+            generatePlanComparison(costs);
+        }
+        
+        function generatePlanComparison(costs) {
+            const planComparison = document.getElementById('planComparison');
+            
+            // Calculate different plan scenarios
+            const originalMedicare = costs.totalAnnualCost;
+            const medicareAdvantage = originalMedicare * 0.85; // Typically 15% less
+            const medicareAdvantageWithSupplement = originalMedicare * 0.75; // 25% less
+            
+            planComparison.innerHTML = `
+                <div class="plan-card">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-hospital mr-2"></i>
+                        Original Medicare + Medigap
+                    </h3>
+                    <div class="text-3xl font-bold text-blue-600 mb-2">
+
+                        $${originalMedicare.toFixed(0)}/year
+                    </div>
+                    <div class="text-gray-600 mb-4">
+
+                        $${(originalMedicare/12).toFixed(0)}/month
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Maximum flexibility in choosing doctors</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Nationwide coverage</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Predictable costs</li>
+                        <li><i class="fas fa-times text-red-500 mr-2"></i>Higher premiums</li>
+                    </ul>
+                </div>
+                
+                <div class="plan-card recommended">
+                    <div class="savings-highlight">
+                        <i class="fas fa-star mr-2"></i>
+                        RECOMMENDED - Save $${(originalMedicare - medicareAdvantage).toFixed(0)}/year
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Medicare Advantage
+                    </h3>
+                    <div class="text-3xl font-bold text-green-600 mb-2">
+
+                        $${medicareAdvantage.toFixed(0)}/year
+                    </div>
+                    <div class="text-gray-600 mb-4">
+
+                        $${(medicareAdvantage/12).toFixed(0)}/month
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Lower monthly premiums</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Often includes prescription drug coverage</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>May include extra benefits</li>
+                        <li><i class="fas fa-times text-red-500 mr-2"></i>Network restrictions</li>
+                    </ul>
+                </div>
+                
+                <div class="plan-card">
+                    <div class="savings-highlight">
+                        <i class="fas fa-piggy-bank mr-2"></i>
+                        MAXIMUM SAVINGS - Save $${(originalMedicare - medicareAdvantageWithSupplement).toFixed(0)}/year
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-plus mr-2"></i>
+                        Medicare Advantage + Supplement
+                    </h3>
+                    <div class="text-3xl font-bold text-purple-600 mb-2">
+
+                        $${medicareAdvantageWithSupplement.toFixed(0)}/year
+                    </div>
+                    <div class="text-gray-600 mb-4">
+
+                        $${(medicareAdvantageWithSupplement/12).toFixed(0)}/month
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Comprehensive coverage</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Lower out-of-pocket costs</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Dental and vision often included</li>
+                        <li><i class="fas fa-times text-red-500 mr-2"></i>Must use plan network</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Initialize calculator with default values
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateCosts();
+        });
+    </script>
+</body>
+</html>

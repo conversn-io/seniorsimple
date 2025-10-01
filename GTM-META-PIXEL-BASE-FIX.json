@@ -1,0 +1,66 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2025-01-27 12:00:00",
+  "containerVersion": {
+    "path": "accounts/6307234127/containers/226756085/versions/2",
+    "accountId": "6307234127",
+    "containerId": "226756085",
+    "containerVersionId": "2",
+    "container": {
+      "path": "accounts/6307234127/containers/226756085",
+      "accountId": "6307234127",
+      "containerId": "226756085",
+      "name": "www.seniorsimple.org",
+      "publicId": "GTM-T75CL8X9",
+      "usageContext": ["WEB"],
+      "fingerprint": "1754540432435",
+      "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6307234127/containers/226756085/workspaces?apiLink=container"
+    },
+    "tag": [
+      {
+        "accountId": "6307234127",
+        "containerId": "226756085",
+        "tagId": "50",
+        "name": "Meta Pixel - Base Configuration",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<!-- Meta Pixel Code -->\n<script>\n!function(f,b,e,v,n,t,s)\n{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\nn.callMethod.apply(n,arguments):n.queue.push(arguments)};\nif(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\nn.queue=[];t=b.createElement(e);t.async=!0;\nt.src=v;s=b.getElementsByTagName(e)[0];\ns.parentNode.insertBefore(t,s)}(window, document,'script',\n'https://connect.facebook.net/en_US/fbevents.js');\nfbq('init', '{{Meta Pixel ID - SeniorSimple}}');\nfbq('track', 'PageView');\n</script>\n<noscript><img height=\"1\" width=\"1\" style=\"display:none\"\nsrc=\"https://www.facebook.com/tr?id={{Meta Pixel ID - SeniorSimple}}&ev=PageView&noscript=1\"\n/></noscript>"
+          }
+        ],
+        "firingTriggerId": ["1"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1758231714923"
+      }
+    ],
+    "trigger": [
+      {
+        "accountId": "6307234127",
+        "containerId": "226756085",
+        "triggerId": "1",
+        "name": "All Pages",
+        "type": "PAGEVIEW",
+        "fingerprint": "1754540432436"
+      }
+    ],
+    "variable": [
+      {
+        "accountId": "6307234127",
+        "containerId": "226756085",
+        "variableId": "5",
+        "name": "Meta Pixel ID - SeniorSimple",
+        "type": "c",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "value",
+            "value": "24221789587508633"
+          }
+        ],
+        "fingerprint": "1758231714922"
+      }
+    ]
+  }
+}

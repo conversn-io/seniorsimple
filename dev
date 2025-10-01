@@ -1,0 +1,5 @@
+#!/bin/bash
+# Simple alias for the development server manager
+exec "$(dirname "$0")/start-dev.sh" "$@"
+
+

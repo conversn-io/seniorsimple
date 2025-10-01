@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Required Minimum Distribution (RMD) Calculator - RetireSafe.ly</title>
+    <meta name="description" content="Calculate your required minimum distributions from retirement accounts based on age and account balances. Free RMD calculator with IRS tables.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .info-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { font-size: 12px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                    <i class="fas fa-calculator mr-3"></i>
+                    Required Minimum Distribution Calculator
+                </h1>
+                <p class="text-xl md:text-2xl mb-6">Calculate Your Required Retirement Account Withdrawals</p>
+                <p class="text-lg opacity-90 max-w-3xl mx-auto">
+                    Use our IRS-compliant calculator to determine your required minimum distributions and avoid costly penalties
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Calculator Section -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8 mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-calculator text-blue-600 mr-3"></i>
+                    RMD Calculator
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Input Section -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-birthday-cake text-blue-600 mr-2"></i>
+                                Your Age (as of December 31st)
+                            </label>
+                            <input type="number" id="age" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus" 
+                                   placeholder="Enter your age" min="70" max="110" value="72">
+                            <p class="text-sm text-gray-600 mt-1">You must be at least 70½ to be subject to RMDs</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-piggy-bank text-blue-600 mr-2"></i>
+                                Account Balance (as of December 31st)
+                            </label>
+                            <input type="number" id="balance" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus" 
+                                   placeholder="Enter total account balance" min="0" step="0.01" value="500000">
+                            <p class="text-sm text-gray-600 mt-1">Include all traditional IRA, 401(k), and similar accounts</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                                Tax Year
+                            </label>
+                            <select id="taxYear" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg input-focus">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+
+                        <button onclick="calculateRMD()" class="w-full btn-primary text-white font-bold py-4 px-6 rounded-lg text-lg">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Calculate My RMD
+                        </button>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div id="resultsSection" class="space-y-4">
+                        <div class="result-card rounded-lg p-6 text-center">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <i class="fas fa-money-bill-wave mr-2"></i>
+                                Your Required Minimum Distribution
+                            </h3>
+                            <div class="text-4xl font-bold mb-2" id="rmdAmount">$0</div>
+                            <p class="text-lg opacity-90" id="rmdDetails">Enter your information to calculate</p>
+                        </div>
+
+                        <div class="info-card rounded-lg p-6">
+                            <h4 class="text-xl font-bold mb-3">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Important Details
+                            </h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><strong>Life Expectancy Factor:</strong> <span id="lifeExpectancy">--</span></li>
+                                <li><strong>Monthly Distribution:</strong> <span id="monthlyAmount">$0</span></li>
+                                <li><strong>Deadline:</strong> December 31st (April 1st for first RMD)</li>
+                                <li><strong>Penalty:</strong> 25% of shortfall if missed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RMD Chart Section -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+                    RMD Projections Over Time
+                </h2>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="rmdChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- IRS Life Expectancy Table -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-table text-blue-600 mr-3"></i>
+                    IRS Uniform Lifetime Table
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Age</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Life Expectancy</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Age</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Life Expectancy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lifeExpectancyTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Content -->
+        <section class="mb-12">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg card-shadow p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                        Understanding RMDs
+                    </h3>
+                    <div class="space-y-4 text-gray-700">
+                        <p><strong>What are RMDs?</strong> Required Minimum Distributions are mandatory withdrawals from retirement accounts that must begin at age 73 (or 72 if you reached 72 before 2023).</p>
+                        <p><strong>Which accounts?</strong> Traditional IRAs, 401(k)s, 403(b)s, and other tax-deferred retirement accounts are subject to RMDs.</p>
+                        <p><strong>Calculation method:</strong> RMD = Account Balance ÷ Life Expectancy Factor from IRS tables.</p>
+                        <p><strong>Annual requirement:</strong> You must take your RMD by December 31st each year (April 1st for your first RMD).</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg card-shadow p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                        Important Considerations
+                    </h3>
+                    <div class="space-y-4 text-gray-700">
+                        <p><strong>Penalty for missing RMDs:</strong> 25% of the amount you should have withdrawn (reduced to 10% if corrected within 2 years).</p>
+                        <p><strong>Roth IRAs:</strong> Not subject to RMDs during the owner's lifetime.</p>
+                        <p><strong>Multiple accounts:</strong> Calculate RMDs for each account, but can take total from one account.</p>
+                        <p><strong>Tax implications:</strong> RMDs are taxed as ordinary income in the year withdrawn.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tips Section -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                    RMD Planning Tips
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Plan Ahead</h3>
+                        <p class="text-gray-600">Start planning your RMD strategy before you're required to take distributions.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Consider Roth Conversions</h3>
+                        <p class="text-gray-600">Convert traditional IRA funds to Roth IRA before RMDs begin to reduce future requirements.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-hand-holding-heart text-purple-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Charitable Giving</h3>
+                        <p class="text-gray-600">Consider Qualified Charitable Distributions to satisfy RMDs while supporting causes you care about.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-lg mb-2">© 2024 RetireSafe.ly - Your Trusted Retirement Planning Resource</p>
+            <p class="text-gray-400">This calculator is for educational purposes only. Consult a qualified financial advisor for personalized advice.</p>
+        </div>
+    </footer>
+
+    <script>
+        // IRS Uniform Lifetime Table (2024)
+        const lifeExpectancyTable = {
+            70: 27.4, 71: 26.5, 72: 25.6, 73: 24.7, 74: 23.8, 75: 22.9, 76: 22.0, 77: 21.2,
+            78: 20.3, 79: 19.5, 80: 18.7, 81: 17.9, 82: 17.1, 83: 16.3, 84: 15.5, 85: 14.8,
+            86: 14.1, 87: 13.4, 88: 12.7, 89: 12.0, 90: 11.4, 91: 10.8, 92: 10.2, 93: 9.6,
+            94: 9.1, 95: 8.6, 96: 8.1, 97: 7.6, 98: 7.1, 99: 6.7, 100: 6.3, 101: 5.9,
+            102: 5.5, 103: 5.2, 104: 4.9, 105: 4.5, 106: 4.2, 107: 3.9, 108: 3.7, 109: 3.4,
+            110: 3.1, 111: 2.9, 112: 2.6, 113: 2.4, 114: 2.1, 115: 1.9
+        };
+
+        let rmdChart = null;
+
+        function calculateRMD() {
+            const age = parseInt(document.getElementById('age').value);
+            const balance = parseFloat(document.getElementById('balance').value);
+            
+            if (!age || !balance || age < 70) {
+                alert('Please enter valid age (70 or older) and account balance.');
+                return;
+            }
+
+            const lifeExpectancy = lifeExpectancyTable[age] || 1.0;
+            const rmdAmount = balance / lifeExpectancy;
+            const monthlyAmount = rmdAmount / 12;
+
+            // Update results
+            document.getElementById('rmdAmount').textContent = formatCurrency(rmdAmount);
+            document.getElementById('rmdDetails').textContent = `Based on account balance of ${formatCurrency(balance)}`;
+            document.getElementById('lifeExpectancy').textContent = lifeExpectancy.toFixed(1);
+            document.getElementById('monthlyAmount').textContent = formatCurrency(monthlyAmount);
+
+            // Update chart
+            updateRMDChart(age, balance);
+        }
+
+        function updateRMDChart(currentAge, currentBalance) {
+            const ctx = document.getElementById('rmdChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (rmdChart) {
+                rmdChart.destroy();
+            }
+
+            // Generate data for next 10 years
+            const ages = [];
+            const rmdAmounts = [];
+            const balances = [];
+            
+            let projectedBalance = currentBalance;
+            
+            for (let i = 0; i < 10; i++) {
+                const age = currentAge + i;
+                const lifeExpectancy = lifeExpectancyTable[age] || 1.0;
+                const rmdAmount = projectedBalance / lifeExpectancy;
+                
+                ages.push(age);
+                rmdAmounts.push(rmdAmount);
+                balances.push(projectedBalance);
+                
+                // Assume 5% growth minus RMD for next year projection
+                projectedBalance = (projectedBalance - rmdAmount) * 1.05;
+            }
+
+            rmdChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ages,
+                    datasets: [{
+                        label: 'Required Minimum Distribution',
+                        data: rmdAmounts,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.3
+                    }, {
+                        label: 'Projected Account Balance',
+                        data: balances,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'RMD Projections (Assuming 5% Annual Growth)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'RMD Amount ($)'
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Account Balance ($)'
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function populateLifeExpectancyTable() {
+            const tableBody = document.getElementById('lifeExpectancyTable');
+            const ages = Object.keys(lifeExpectancyTable);
+            
+            for (let i = 0; i < ages.length; i += 2) {
+                const row = document.createElement('tr');
+                row.className = i % 4 === 0 ? 'bg-gray-50' : '';
+                
+                const age1 = ages[i];
+                const lifeExp1 = lifeExpectancyTable[age1];
+                const age2 = ages[i + 1];
+                const lifeExp2 = lifeExpectancyTable[age2];
+                
+                row.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2">${age1}</td>
+                    <td class="border border-gray-300 px-4 py-2">${lifeExp1}</td>
+                    <td class="border border-gray-300 px-4 py-2">${age2 || ''}</td>
+                    <td class="border border-gray-300 px-4 py-2">${lifeExp2 || ''}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            populateLifeExpectancyTable();
+            calculateRMD(); // Calculate with default values
+        });
+    </script>
+</body>
+</html>

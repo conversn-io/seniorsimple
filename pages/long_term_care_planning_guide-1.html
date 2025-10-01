@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Long-Term Care Planning Guide - RetireSafe.ly</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .text-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .chart-container { height: 400px; }
+        @media print {
+            body { font-size: 12px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">Long-Term Care Planning Guide</h1>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto">Prepare for potential long-term care needs and understand your options for insurance and alternative funding strategies</p>
+                <div class="mt-6 flex justify-center items-center space-x-4 text-sm">
+                    <span><i class="fas fa-clock mr-2"></i>20 min read</span>
+                    <span><i class="fas fa-shield-alt mr-2"></i>Comprehensive Guide</span>
+                    <span><i class="fas fa-star mr-2"></i>Expert Reviewed</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Introduction -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-6">Why Long-Term Care Planning Matters</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-lg mb-4">Long-term care planning is one of the most important yet overlooked aspects of retirement preparation. With Americans living longer than ever, the likelihood of needing extended care services has increased dramatically.</p>
+                        <p class="text-lg mb-4">According to the U.S. Department of Health and Human Services, about 70% of people over age 65 will need some form of long-term care services in their lifetime.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-xl mb-4 text-blue-800">Key Statistics</h3>
+                        <ul class="space-y-2 text-blue-700">
+                            <li><i class="fas fa-check-circle mr-2"></i>70% will need long-term care</li>
+                            <li><i class="fas fa-check-circle mr-2"></i>Average care duration: 3 years</li>
+                            <li><i class="fas fa-check-circle mr-2"></i>Women typically need care longer than men</li>
+                            <li><i class="fas fa-check-circle mr-2"></i>20% will need care for 5+ years</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Types of Long-Term Care -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">Types of Long-Term Care</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
+                        <i class="fas fa-home text-3xl text-green-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Home Care</h3>
+                        <p class="text-sm text-gray-600">Personal care, homemaker services, and skilled nursing provided in your home.</p>
+                        <div class="mt-4 text-sm">
+                            <strong>Cost Range:</strong> $25-$35/hour
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
+                        <i class="fas fa-users text-3xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Adult Day Care</h3>
+                        <p class="text-sm text-gray-600">Daytime care services while family caregivers work or take respite.</p>
+                        <div class="mt-4 text-sm">
+                            <strong>Cost Range:</strong> $70-$100/day
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
+                        <i class="fas fa-building text-3xl text-purple-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Assisted Living</h3>
+                        <p class="text-sm text-gray-600">Residential care with assistance for daily activities while maintaining independence.</p>
+                        <div class="mt-4 text-sm">
+                            <strong>Cost Range:</strong> $4,000-$6,000/month
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg">
+                        <i class="fas fa-hospital text-3xl text-red-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Nursing Home</h3>
+                        <p class="text-sm text-gray-600">24/7 skilled nursing care for those with serious ongoing health conditions.</p>
+                        <div class="mt-4 text-sm">
+                            <strong>Cost Range:</strong> $8,000-$12,000/month
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Analysis Chart -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-6">Long-Term Care Costs by Type</h2>
+                <div class="chart-container">
+                    <canvas id="costChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-600 mt-4 text-center">*Costs vary significantly by geographic location. National averages shown.</p>
+            </div>
+        </section>
+
+        <!-- Long-Term Care Insurance -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">Long-Term Care Insurance Options</h2>
+                
+                <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-xl mb-4 text-blue-800">Traditional LTC Insurance</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Comprehensive Coverage:</strong> Covers all types of long-term care services
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Inflation Protection:</strong> Optional riders to keep pace with rising costs
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-orange-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Premium Increases:</strong> Premiums can rise over time
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-orange-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Use it or Lose it:</strong> No benefit if care is never needed
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-xl mb-4 text-green-800">Hybrid Life/LTC Insurance</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Guaranteed Benefits:</strong> Death benefit if LTC is never needed
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Fixed Premiums:</strong> Premiums typically cannot increase
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-orange-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Higher Cost:</strong> More expensive than traditional LTC insurance
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-orange-500 mr-3 mt-1"></i>
+                                <div>
+                                    <strong>Limited Coverage:</strong> May not cover full cost of care
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 p-6 rounded-lg">
+                    <h3 class="font-semibold text-xl mb-4 text-yellow-800">Key Policy Features to Consider</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold mb-3">Benefit Period</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><strong>2-3 years:</strong> Covers average care duration</li>
+                                <li><strong>5+ years:</strong> Covers extended care needs</li>
+                                <li><strong>Lifetime:</strong> No limit on benefit duration</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3">Elimination Period</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><strong>0 days:</strong> Benefits start immediately</li>
+                                <li><strong>30-90 days:</strong> Standard waiting period</li>
+                                <li><strong>180+ days:</strong> Lower premiums, higher out-of-pocket</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alternative Funding Strategies -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">Alternative Funding Strategies</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-purple-800">Self-Funding</h3>
+                            <p class="text-sm mb-3">Using personal savings, investments, and income to pay for care.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Complete control, no premium payments</div>
+                                <div><strong>Cons:</strong> Risk of outliving assets, unpredictable costs</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-indigo-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-indigo-800">Reverse Mortgage</h3>
+                            <p class="text-sm mb-3">Converting home equity into cash to fund care expenses.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Access to home equity, remain in home</div>
+                                <div><strong>Cons:</strong> Reduces inheritance, interest accumulation</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-teal-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-teal-800">Health Savings Account (HSA)</h3>
+                            <p class="text-sm mb-3">Using HSA funds for qualified long-term care expenses.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Tax-free withdrawals, triple tax advantage</div>
+                                <div><strong>Cons:</strong> Limited contribution amounts, coverage gaps</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-pink-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-pink-800">Medicaid Planning</h3>
+                            <p class="text-sm mb-3">Strategic asset and income planning to qualify for Medicaid benefits.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Comprehensive coverage, no asset limits</div>
+                                <div><strong>Cons:</strong> Strict eligibility, limited provider choices</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-orange-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-orange-800">Family Care Agreements</h3>
+                            <p class="text-sm mb-3">Formal agreements with family members to provide care.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Lower cost, familiar caregivers</div>
+                                <div><strong>Cons:</strong> Family burden, potential conflicts</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-3 text-gray-800">Veterans Benefits</h3>
+                            <p class="text-sm mb-3">Aid and Attendance benefits for qualifying veterans and spouses.</p>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Pros:</strong> Significant monthly benefit, covers home care</div>
+                                <div><strong>Cons:</strong> Strict eligibility, long approval process</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Planning Timeline -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">Long-Term Care Planning Timeline</h2>
+                
+                <div class="relative">
+                    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+                    
+                    <div class="space-y-8">
+                        <div class="relative flex items-start">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">1</div>
+                            <div class="ml-6">
+                                <h3 class="font-semibold text-lg mb-2">Ages 40-50: Early Planning</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li>• Research long-term care insurance options</li>
+                                    <li>• Begin maximizing HSA contributions</li>
+                                    <li>• Start conversations with family about preferences</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="relative flex items-start">
+                            <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">2</div>
+                            <div class="ml-6">
+                                <h3 class="font-semibold text-lg mb-2">Ages 50-60: Decision Time</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li>• Purchase long-term care insurance (if choosing this option)</li>
+                                    <li>• Evaluate and compare policy options</li>
+                                    <li>• Consider hybrid life/LTC insurance products</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="relative flex items-start">
+                            <div class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">3</div>
+                            <div class="ml-6">
+                                <h3 class="font-semibold text-lg mb-2">Ages 60-70: Preparation Phase</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li>• Review and update insurance policies</li>
+                                    <li>• Consider home modifications for aging in place</li>
+                                    <li>• Research local care providers and facilities</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="relative flex items-start">
+                            <div class="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">4</div>
+                            <div class="ml-6">
+                                <h3 class="font-semibold text-lg mb-2">Ages 70+: Implementation</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li>• Activate care plans as needed</li>
+                                    <li>• Coordinate with family and professionals</li>
+                                    <li>• Monitor and adjust care arrangements</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- State Considerations -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">State-Specific Considerations</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4">Medicaid Variations</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="bg-blue-50 p-4 rounded">
+                                <strong>Expansion States:</strong> More generous Medicaid coverage for long-term care services
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded">
+                                <strong>Non-Expansion States:</strong> Stricter eligibility requirements and limited coverage
+                            </div>
+                            <div class="bg-green-50 p-4 rounded">
+                                <strong>Partnership States:</strong> LTC insurance policies that work with Medicaid to preserve assets
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4">Cost Variations by Region</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span>Northeast</span>
+                                <span class="font-semibold">$150,000-$200,000/year</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span>West Coast</span>
+                                <span class="font-semibold">$120,000-$180,000/year</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span>Midwest</span>
+                                <span class="font-semibold">$80,000-$120,000/year</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span>South</span>
+                                <span class="font-semibold">$70,000-$110,000/year</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Planning Checklist -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg card-shadow p-8">
+                <h2 class="text-3xl font-bold text-gradient mb-8">Long-Term Care Planning Checklist</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4 text-blue-800">Financial Planning</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-blue-600">
+                                <span class="text-sm">Calculate potential long-term care costs</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-blue-600">
+                                <span class="text-sm">Evaluate long-term care insurance options</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-blue-600">
+                                <span class="text-sm">Review current health insurance coverage</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-blue-600">
+                                <span class="text-sm">Maximize HSA contributions</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-blue-600">
+                                <span class="text-sm">Consider Medicaid planning strategies</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4 text-green-800">Personal Planning</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-green-600">
+                                <span class="text-sm">Discuss preferences with family members</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-green-600">
+                                <span class="text-sm">Research local care providers and facilities</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-green-600">
+                                <span class="text-sm">Consider home modifications for aging in place</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-green-600">
+                                <span class="text-sm">Update advance directives and healthcare proxies</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-4 w-4 text-green-600">
+                                <span class="text-sm">Consult with elder law attorney</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Next Steps -->
+        <section class="mb-12">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8">
+                <h2 class="text-3xl font-bold mb-6">Take Action Today</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <i class="fas fa-calculator text-4xl mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Calculate Your Needs</h3>
+                        <p class="text-sm opacity-90">Use our long-term care cost calculator to estimate your potential expenses</p>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt text-4xl mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Compare Insurance Options</h3>
+                        <p class="text-sm opacity-90">Review traditional and hybrid long-term care insurance policies</p>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-users text-4xl mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Consult with Experts</h3>
+                        <p class="text-sm opacity-90">Speak with financial advisors and elder law attorneys</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-sm opacity-75">This guide is for educational purposes only and should not be considered as personalized financial advice. Consult with qualified professionals for guidance specific to your situation.</p>
+            <p class="text-sm opacity-75 mt-2">© 2024 RetireSafe.ly - Your trusted resource for retirement planning</p>
+        </div>
+    </footer>
+
+    <script>
+        // Cost Chart
+        const ctx = document.getElementById('costChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Home Care (per hour)', 'Adult Day Care (per day)', 'Assisted Living (per month)', 'Nursing Home (per month)'],
+                datasets: [{
+                    label: 'Average Cost ($)',
+                    data: [30, 85, 5000, 10000],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(147, 51, 234, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(147, 51, 234, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Long-Term Care Costs by Service Type',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

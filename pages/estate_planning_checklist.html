@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estate Planning Checklist - RetireSafe.ly</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .checklist-item {
+            transition: all 0.3s ease;
+        }
+        
+        .checklist-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .completed {
+            background-color: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .priority-high {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .priority-low {
+            border-left: 4px solid #10b981;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .document-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            transition: width 0.3s ease;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-file-contract text-blue-600 mr-3"></i>
+                Estate Planning Checklist
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                A comprehensive guide to ensure your legacy is protected and your loved ones are prepared. 
+                Use this checklist to organize your estate planning documents and complete essential tasks.
+            </p>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                Your Progress Overview
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600" id="total-tasks">0</div>
+                    <div class="text-sm text-gray-600">Total Tasks</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600" id="completed-tasks">0</div>
+                    <div class="text-sm text-gray-600">Completed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-orange-600" id="pending-tasks">0</div>
+                    <div class="text-sm text-gray-600">Pending</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-purple-600" id="progress-percentage">0%</div>
+                    <div class="text-sm text-gray-600">Complete</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Essential Documents Section -->
+        <div class="mb-12">
+            <div class="section-header rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">
+                    <i class="fas fa-folder-open mr-3"></i>
+                    Essential Estate Planning Documents
+                </h2>
+                <p class="text-lg opacity-90 mt-2">
+                    Core documents every estate plan should include
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Will -->
+                <div class="document-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-scroll text-blue-600 mr-2"></i>
+                            Last Will and Testament
+                        </h3>
+                        <div class="priority-high px-3 py-1 rounded-full text-sm font-medium">
+                            High Priority
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Legal document specifying how your assets will be distributed after death.
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="will">
+                            <span class="text-gray-700">Draft will with attorney consultation</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="will">
+                            <span class="text-gray-700">Name executor and backup executor</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="will">
+                            <span class="text-gray-700">Specify guardians for minor children</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="will">
+                            <span class="text-gray-700">Sign and witness properly</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="will">
+                            <span class="text-gray-700">Store in secure location</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Trust -->
+                <div class="document-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-shield-alt text-green-600 mr-2"></i>
+                            Trust Agreement
+                        </h3>
+                        <div class="priority-medium px-3 py-1 rounded-full text-sm font-medium">
+                            Medium Priority
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Legal entity to hold and manage assets for beneficiaries.
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="trust">
+                            <span class="text-gray-700">Determine if trust is needed</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="trust">
+                            <span class="text-gray-700">Choose trust type (revocable/irrevocable)</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="trust">
+                            <span class="text-gray-700">Name trustee and successor trustee</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="trust">
+                            <span class="text-gray-700">Fund the trust with assets</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="trust">
+                            <span class="text-gray-700">Update asset titles to trust name</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Power of Attorney -->
+                <div class="document-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-handshake text-purple-600 mr-2"></i>
+                            Power of Attorney
+                        </h3>
+                        <div class="priority-high px-3 py-1 rounded-full text-sm font-medium">
+                            High Priority
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Authorizes someone to make financial and legal decisions on your behalf.
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="poa">
+                            <span class="text-gray-700">Create durable power of attorney</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="poa">
+                            <span class="text-gray-700">Choose primary and backup agents</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="poa">
+                            <span class="text-gray-700">Define scope of authority</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="poa">
+                            <span class="text-gray-700">Sign and notarize properly</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="poa">
+                            <span class="text-gray-700">Distribute copies to relevant parties</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Healthcare Directive -->
+                <div class="document-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-heartbeat text-red-600 mr-2"></i>
+                            Healthcare Directive
+                        </h3>
+                        <div class="priority-high px-3 py-1 rounded-full text-sm font-medium">
+                            High Priority
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Specifies your healthcare preferences and appoints a healthcare proxy.
+                    </p>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="healthcare">
+                            <span class="text-gray-700">Create living will</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="healthcare">
+                            <span class="text-gray-700">Appoint healthcare power of attorney</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="healthcare">
+                            <span class="text-gray-700">Specify end-of-life preferences</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="healthcare">
+                            <span class="text-gray-700">Discuss wishes with family/proxy</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="healthcare">
+                            <span class="text-gray-700">Provide copies to doctors/hospitals</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Organization Section -->
+        <div class="mb-12">
+            <div class="section-header rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">
+                    <i class="fas fa-coins mr-3"></i>
+                    Financial Organization & Inventory
+                </h2>
+                <p class="text-lg opacity-90 mt-2">
+                    Organize and document your financial assets and accounts
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Asset Inventory -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-list-alt text-blue-600 mr-2"></i>
+                        Asset Inventory
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">List all bank accounts with balances</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">Document investment accounts</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">List retirement accounts (401k, IRA)</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">Document real estate properties</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">List valuable personal property</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="assets">
+                            <span class="text-gray-700">Document business interests</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Beneficiary Updates -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-users text-green-600 mr-2"></i>
+                        Beneficiary Designations
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="beneficiary">
+                            <span class="text-gray-700">Update life insurance beneficiaries</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="beneficiary">
+                            <span class="text-gray-700">Review retirement account beneficiaries</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="beneficiary">
+                            <span class="text-gray-700">Update bank account beneficiaries</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="beneficiary">
+                            <span class="text-gray-700">Name contingent beneficiaries</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="beneficiary">
+                            <span class="text-gray-700">Keep beneficiary information current</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Debt and Liabilities -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-credit-card text-red-600 mr-2"></i>
+                        Debts & Liabilities
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="debt">
+                            <span class="text-gray-700">List all outstanding mortgages</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="debt">
+                            <span class="text-gray-700">Document credit card debts</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="debt">
+                            <span class="text-gray-700">List personal loans</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="debt">
+                            <span class="text-gray-700">Document business debts</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="debt">
+                            <span class="text-gray-700">Note any guarantees or co-signatures</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Important Documents -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-file-alt text-purple-600 mr-2"></i>
+                        Important Documents
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="documents">
+                            <span class="text-gray-700">Gather insurance policies</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="documents">
+                            <span class="text-gray-700">Collect tax returns (last 3 years)</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="documents">
+                            <span class="text-gray-700">Organize property deeds</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="documents">
+                            <span class="text-gray-700">Compile investment statements</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="documents">
+                            <span class="text-gray-700">Store in secure, accessible location</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Team Section -->
+        <div class="mb-12">
+            <div class="section-header rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">
+                    <i class="fas fa-users mr-3"></i>
+                    Professional Team Assembly
+                </h2>
+                <p class="text-lg opacity-90 mt-2">
+                    Build your estate planning professional team
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Estate Planning Attorney -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                        Estate Planning Attorney
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="attorney">
+                            <span class="text-gray-700">Research estate planning attorneys</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="attorney">
+                            <span class="text-gray-700">Schedule initial consultation</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="attorney">
+                            <span class="text-gray-700">Discuss estate planning goals</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="attorney">
+                            <span class="text-gray-700">Understand fees and timeline</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Financial Advisor -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                        Financial Advisor
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="advisor">
+                            <span class="text-gray-700">Review current financial advisor</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="advisor">
+                            <span class="text-gray-700">Discuss estate planning implications</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="advisor">
+                            <span class="text-gray-700">Coordinate with estate attorney</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="advisor">
+                            <span class="text-gray-700">Update investment strategies</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tax Professional -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-calculator text-purple-600 mr-2"></i>
+                        Tax Professional
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="tax">
+                            <span class="text-gray-700">Consult on tax implications</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="tax">
+                            <span class="text-gray-700">Discuss gifting strategies</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="tax">
+                            <span class="text-gray-700">Review estate tax exposure</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="tax">
+                            <span class="text-gray-700">Plan for income tax efficiency</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Section -->
+        <div class="mb-12">
+            <div class="section-header rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">
+                    <i class="fas fa-comments mr-3"></i>
+                    Family Communication & Final Steps
+                </h2>
+                <p class="text-lg opacity-90 mt-2">
+                    Ensure your family is informed and prepared
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Family Communication -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-heart text-red-600 mr-2"></i>
+                        Family Discussions
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="family">
+                            <span class="text-gray-700">Discuss estate plan with spouse</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="family">
+                            <span class="text-gray-700">Inform children about your plans</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="family">
+                            <span class="text-gray-700">Speak with chosen executors</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="family">
+                            <span class="text-gray-700">Share document locations</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="family">
+                            <span class="text-gray-700">Provide emergency contact information</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Ongoing Maintenance -->
+                <div class="document-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-sync-alt text-blue-600 mr-2"></i>
+                        Ongoing Maintenance
+                    </h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="maintenance">
+                            <span class="text-gray-700">Schedule annual plan review</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="maintenance">
+                            <span class="text-gray-700">Update after major life events</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="maintenance">
+                            <span class="text-gray-700">Review beneficiary designations</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="maintenance">
+                            <span class="text-gray-700">Update asset inventory</span>
+                        </label>
+                        <label class="flex items-center checklist-item p-2 rounded cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 mr-3" data-task="maintenance">
+                            <span class="text-gray-700">Confirm contact information</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-address-book text-green-600 mr-2"></i>
+                    Important Contact Information
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Estate Planning Attorney</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Financial Advisor</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Tax Professional</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Primary Executor</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Backup Executor</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Healthcare Proxy</h3>
+                        <div class="text-gray-600 space-y-1">
+                            <div>Name: _________________</div>
+                            <div>Phone: _______________</div>
+                            <div>Email: ________________</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Timeline -->
+        <div class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                    Recommended Action Timeline
+                </h2>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-red-500 pl-4">
+                        <h3 class="font-semibold text-red-700">Immediate (Within 1 Month)</h3>
+                        <ul class="text-gray-700 mt-2 space-y-1">
+                            <li>• Schedule consultation with estate planning attorney</li>
+                            <li>• Gather important documents and financial information</li>
+                            <li>• Create basic will if none exists</li>
+                            <li>• Update beneficiary designations</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 border-orange-500 pl-4">
+                        <h3 class="font-semibold text-orange-700">Short-term (1-3 Months)</h3>
+                        <ul class="text-gray-700 mt-2 space-y-1">
+                            <li>• Complete estate planning documents</li>
+                            <li>• Establish power of attorney and healthcare directives</li>
+                            <li>• Consider trust structures if appropriate</li>
+                            <li>• Begin family discussions about estate plans</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h3 class="font-semibold text-green-700">Long-term (Ongoing)</h3>
+                        <ul class="text-gray-700 mt-2 space-y-1">
+                            <li>• Review and update plans annually</li>
+                            <li>• Adjust for life changes and new assets</li>
+                            <li>• Coordinate with financial and tax professionals</li>
+                            <li>• Maintain open communication with family</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-800 text-white rounded-lg p-6">
+            <div class="text-center">
+                <h3 class="text-xl font-semibold mb-2">Need Professional Help?</h3>
+                <p class="text-gray-300 mb-4">
+                    Estate planning can be complex. Consider working with qualified professionals to ensure your plan is comprehensive and legally sound.
+                </p>
+                <div class="text-sm text-gray-400">
+                    <p>© 2024 RetireSafe.ly - This checklist is for educational purposes only and does not constitute legal or financial advice.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize progress tracking
+        let totalTasks = 0;
+        let completedTasks = 0;
+
+        // Count all checkboxes
+        function countTasks() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            totalTasks = checkboxes.length;
+            completedTasks = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            updateProgress();
+        }
+
+        // Update progress display
+        function updateProgress() {
+            const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('total-tasks').textContent = totalTasks;
+            document.getElementById('completed-tasks').textContent = completedTasks;
+            document.getElementById('pending-tasks').textContent = totalTasks - completedTasks;
+            document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+            document.getElementById('progress-bar').style.width = progressPercentage + '%';
+        }
+
+        // Handle checkbox changes
+        function handleCheckboxChange(checkbox) {
+            const parentLabel = checkbox.closest('label');
+            if (checkbox.checked) {
+                parentLabel.classList.add('completed');
+                completedTasks++;
+            } else {
+                parentLabel.classList.remove('completed');
+                completedTasks--;
+            }
+            updateProgress();
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    handleCheckboxChange(this);
+                });
+            });
+
+            // Initial count
+            countTasks();
+        });
+    </script>
+</body>
+</html>

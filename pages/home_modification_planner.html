@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Modification Planner - RetireSafe.ly</title>
+    <meta name="description" content="Plan and budget for home modifications for accessibility and aging in place. Get cost estimates and priority planning for senior-friendly home improvements.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .modification-item {
+            transition: all 0.3s ease;
+        }
+        .modification-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .priority-high { border-left: 4px solid #ef4444; }
+        .priority-medium { border-left: 4px solid #f59e0b; }
+        .priority-low { border-left: 4px solid #10b981; }
+        .selected { background-color: #dbeafe; border-color: #3b82f6; }
+        @media print {
+            body { font-size: 12pt; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-900 mb-4">
+                <i class="fas fa-home mr-3"></i>Home Modification Planner
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Plan and budget for home modifications to create a safer, more accessible living environment for aging in place
+            </p>
+        </header>
+
+        <!-- Planning Overview -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-clipboard-check mr-2 text-blue-600"></i>Planning Overview
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <i class="fas fa-list-check text-3xl text-blue-600 mb-2"></i>
+                    <h3 class="font-semibold text-gray-800">Select Modifications</h3>
+                    <p class="text-sm text-gray-600">Choose from common accessibility improvements</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <i class="fas fa-star text-3xl text-green-600 mb-2"></i>
+                    <h3 class="font-semibold text-gray-800">Set Priorities</h3>
+                    <p class="text-sm text-gray-600">Prioritize based on safety and budget</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <i class="fas fa-calculator text-3xl text-purple-600 mb-2"></i>
+                    <h3 class="font-semibold text-gray-800">Calculate Budget</h3>
+                    <p class="text-sm text-gray-600">Get total cost estimates for planning</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modification Categories -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Bathroom Modifications -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-bath mr-2 text-blue-600"></i>Bathroom Safety
+                </h3>
+                <div class="space-y-3">
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="150" data-category="bathroom">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Grab Bars Installation</h4>
+                                <p class="text-sm text-gray-600">Essential safety bars near toilet and shower</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$150</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="800" data-category="bathroom">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Walk-in Shower Conversion</h4>
+                                <p class="text-sm text-gray-600">Remove tub step-over barrier</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$800</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="300" data-category="bathroom">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Raised Toilet Seat</h4>
+                                <p class="text-sm text-gray-600">Higher toilet for easier sitting/standing</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$300</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="200" data-category="bathroom">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Non-slip Flooring</h4>
+                                <p class="text-sm text-gray-600">Slip-resistant bathroom flooring</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$200</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kitchen Modifications -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-utensils mr-2 text-green-600"></i>Kitchen Accessibility
+                </h3>
+                <div class="space-y-3">
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="600" data-category="kitchen">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Pull-out Drawers</h4>
+                                <p class="text-sm text-gray-600">Replace lower cabinets with pull-out drawers</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$600</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="400" data-category="kitchen">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Lever-style Faucets</h4>
+                                <p class="text-sm text-gray-600">Easier to operate than traditional knobs</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$400</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="250" data-category="kitchen">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Under-cabinet Lighting</h4>
+                                <p class="text-sm text-gray-600">Better task lighting for food preparation</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$250</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="800" data-category="kitchen">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Adjustable Height Counters</h4>
+                                <p class="text-sm text-gray-600">Counters that adjust for wheelchair access</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$800</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stairway & Entrance -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-stairs mr-2 text-purple-600"></i>Stairway & Entrance
+                </h3>
+                <div class="space-y-3">
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="3500" data-category="stairs">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Stair Lift Installation</h4>
+                                <p class="text-sm text-gray-600">Motorized chair for stair navigation</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$3,500</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="1200" data-category="stairs">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Entrance Ramp</h4>
+                                <p class="text-sm text-gray-600">Wheelchair/walker accessible entrance</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$1,200</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="300" data-category="stairs">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Stair Railings</h4>
+                                <p class="text-sm text-gray-600">Sturdy railings on both sides of stairs</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$300</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="100" data-category="stairs">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Motion Sensor Lighting</h4>
+                                <p class="text-sm text-gray-600">Automatic lighting for stairs and entrances</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$100</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- General Safety -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-shield-alt mr-2 text-red-600"></i>General Safety
+                </h3>
+                <div class="space-y-3">
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="500" data-category="safety">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Door Handle Replacement</h4>
+                                <p class="text-sm text-gray-600">Lever handles throughout the home</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$500</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="200" data-category="safety">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Improved Lighting</h4>
+                                <p class="text-sm text-gray-600">Brighter bulbs and additional fixtures</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$200</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="150" data-category="safety">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Security System Upgrade</h4>
+                                <p class="text-sm text-gray-600">Medical alert and security monitoring</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$150</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modification-item border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleModification(this)" data-cost="300" data-category="safety">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium text-gray-800">Threshold Ramps</h4>
+                                <p class="text-sm text-gray-600">Small ramps over door thresholds</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-semibold text-green-600">$300</span>
+                                <select class="ml-2 text-sm border rounded px-2 py-1" onclick="event.stopPropagation()" onchange="updatePriority(this)">
+                                    <option value="">Priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Summary -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-calculator mr-2 text-green-600"></i>Budget Summary
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Selected Modifications</h3>
+                    <div id="selectedModifications" class="space-y-2 mb-4">
+                        <p class="text-gray-600 italic">Select modifications to see them here</p>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-lg font-semibold text-gray-800">Total Cost:</span>
+                            <span id="totalCost" class="text-2xl font-bold text-green-600">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-600">
+                            <span>Number of modifications:</span>
+                            <span id="modificationCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Priority Breakdown</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                <span class="font-medium text-red-800">High Priority</span>
+                            </div>
+                            <span id="highPriorityCost" class="font-semibold text-red-600">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                <span class="font-medium text-yellow-800">Medium Priority</span>
+                            </div>
+                            <span id="mediumPriorityCost" class="font-semibold text-yellow-600">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span class="font-medium text-green-800">Low Priority</span>
+                            </div>
+                            <span id="lowPriorityCost" class="font-semibold text-green-600">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Plan -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-list-ol mr-2 text-blue-600"></i>Your Action Plan
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Implementation Tips</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-2 mt-1"></i>
+                            <span>Start with high-priority safety modifications</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-2 mt-1"></i>
+                            <span>Get multiple quotes from licensed contractors</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-2 mt-1"></i>
+                            <span>Consider tax credits for accessibility improvements</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-2 mt-1"></i>
+                            <span>Phase modifications over time to manage costs</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-2 mt-1"></i>
+                            <span>Check with insurance for potential coverage</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Financing Options</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold text-blue-800">Home Equity Line of Credit</h4>
+                            <p class="text-sm text-blue-700">Use your home's equity for modifications</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg">
+                            <h4 class="font-semibold text-green-800">Personal Savings</h4>
+                            <p class="text-sm text-green-700">Pay cash to avoid interest charges</p>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded-lg">
+                            <h4 class="font-semibold text-purple-800">Government Programs</h4>
+                            <p class="text-sm text-purple-700">Check local aging-in-place assistance</p>
+                        </div>
+                        <div class="p-3 bg-orange-50 rounded-lg">
+                            <h4 class="font-semibold text-orange-800">Personal Loan</h4>
+                            <p class="text-sm text-orange-700">Fixed-rate loan for immediate needs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 mt-12">
+            <p class="mb-2">© 2024 RetireSafe.ly - Your trusted partner in retirement planning</p>
+            <p class="text-sm">Costs are estimates and may vary by location. Consult with licensed contractors for accurate quotes.</p>
+        </footer>
+    </div>
+
+    <script>
+        let selectedModifications = [];
+        let totalCost = 0;
+
+        function toggleModification(element) {
+            const cost = parseInt(element.dataset.cost);
+            const title = element.querySelector('h4').textContent;
+            const category = element.dataset.category;
+            
+            if (element.classList.contains('selected')) {
+                // Remove from selection
+                element.classList.remove('selected');
+                selectedModifications = selectedModifications.filter(mod => mod.title !== title);
+                totalCost -= cost;
+            } else {
+                // Add to selection
+                element.classList.add('selected');
+                selectedModifications.push({ title, cost, category, priority: 'none' });
+                totalCost += cost;
+            }
+            
+            updateSummary();
+        }
+
+        function updatePriority(selectElement) {
+            const modificationElement = selectElement.closest('.modification-item');
+            const title = modificationElement.querySelector('h4').textContent;
+            const priority = selectElement.value;
+            
+            // Update priority in selected modifications
+            const mod = selectedModifications.find(m => m.title === title);
+            if (mod) {
+                mod.priority = priority;
+            }
+            
+            // Update visual priority indicator
+            modificationElement.classList.remove('priority-high', 'priority-medium', 'priority-low');
+            if (priority && modificationElement.classList.contains('selected')) {
+                modificationElement.classList.add(`priority-${priority}`);
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const selectedContainer = document.getElementById('selectedModifications');
+            const totalCostElement = document.getElementById('totalCost');
+            const modificationCountElement = document.getElementById('modificationCount');
+            
+            // Update total cost
+            totalCostElement.textContent = `$${totalCost.toLocaleString()}`;
+            modificationCountElement.textContent = selectedModifications.length;
+            
+            // Update selected modifications list
+            if (selectedModifications.length === 0) {
+                selectedContainer.innerHTML = '<p class="text-gray-600 italic">Select modifications to see them here</p>';
+            } else {
+                selectedContainer.innerHTML = selectedModifications.map(mod => `
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span class="text-sm">${mod.title}</span>
+                        <span class="text-sm font-semibold text-green-600">$${mod.cost.toLocaleString()}</span>
+                    </div>
+                `).join('');
+            }
+            
+            // Update priority breakdown
+            const highPriority = selectedModifications.filter(mod => mod.priority === 'high').reduce((sum, mod) => sum + mod.cost, 0);
+            const mediumPriority = selectedModifications.filter(mod => mod.priority === 'medium').reduce((sum, mod) => sum + mod.cost, 0);
+            const lowPriority = selectedModifications.filter(mod => mod.priority === 'low').reduce((sum, mod) => sum + mod.cost, 0);
+            
+            document.getElementById('highPriorityCost').textContent = `$${highPriority.toLocaleString()}`;
+            document.getElementById('mediumPriorityCost').textContent = `$${mediumPriority.toLocaleString()}`;
+            document.getElementById('lowPriorityCost').textContent = `$${lowPriority.toLocaleString()}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRA Withdrawal Strategy Guide - RetireSafe.ly</title>
+    <meta name="description" content="Strategic guide to optimizing IRA withdrawals for tax efficiency - minimize your tax burden through smart withdrawal timing and sequencing strategies.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #374151;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .section-divider {
+            border-top: 3px solid #e5e7eb;
+            margin: 3rem 0;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        .strategy-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .strategy-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .action-item {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+        }
+        .warning-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-16">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center">
+                <div class="icon-circle bg-white bg-opacity-20 text-white text-2xl mb-6">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h1 class="text-4xl font-bold mb-4">IRA Withdrawal Strategy Guide</h1>
+                <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                    Strategic guide to optimizing IRA withdrawals for tax efficiency - minimize your tax burden through smart withdrawal timing and sequencing strategies.
+                </p>
+                <div class="mt-8 flex justify-center items-center space-x-6 text-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span>15 min read</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        <span>Tax Planning</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-level-up-alt mr-2"></i>
+                        <span>Intermediate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <!-- Introduction -->
+        <section class="mb-12">
+            <div class="highlight-box p-6 rounded-lg mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                    <i class="fas fa-lightbulb text-amber-500 mr-3"></i>
+                    Why IRA Withdrawal Strategy Matters
+                </h2>
+                <p class="text-lg text-gray-700 mb-4">
+                    Your IRA withdrawal strategy can significantly impact your lifetime tax burden and retirement income. Poor timing and sequencing can cost you thousands in unnecessary taxes, while strategic planning can preserve more of your hard-earned savings.
+                </p>
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-semibold text-green-600 mb-2">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Strategic Approach
+                        </h3>
+                        <p class="text-sm text-gray-600">Proper sequencing can save $50,000+ in taxes over retirement</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-semibold text-red-600 mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Random Withdrawals
+                        </h3>
+                        <p class="text-sm text-gray-600">Unplanned withdrawals can push you into higher tax brackets</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Understanding IRA Types -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-university text-blue-600 mr-3"></i>
+                Understanding Your IRA Options
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="strategy-card p-6 rounded-lg">
+                    <div class="icon-circle bg-blue-100 text-blue-600 text-lg">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Traditional IRA</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Tax-deductible contributions</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Tax-deferred growth</li>
+                        <li><i class="fas fa-exclamation text-orange-500 mr-2"></i>Taxable withdrawals</li>
+                        <li><i class="fas fa-exclamation text-orange-500 mr-2"></i>Required minimum distributions (RMDs)</li>
+                    </ul>
+                </div>
+                <div class="strategy-card p-6 rounded-lg">
+                    <div class="icon-circle bg-purple-100 text-purple-600 text-lg">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Roth IRA</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Tax-free growth and withdrawals</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>No required minimum distributions</li>
+                        <li><i class="fas fa-exclamation text-orange-500 mr-2"></i>No tax deduction for contributions</li>
+                        <li><i class="fas fa-exclamation text-orange-500 mr-2"></i>5-year rule for withdrawals</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tax Implications -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-calculator text-green-600 mr-3"></i>
+                Tax Implications of IRA Withdrawals
+            </h2>
+            <div class="bg-white p-6 rounded-lg card-shadow mb-6">
+                <h3 class="text-xl font-semibold mb-4">How IRA Withdrawals Are Taxed</h3>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-blue-600">Traditional IRA Withdrawals</h4>
+                        <p class="text-gray-600">Taxed as ordinary income at your current marginal tax rate. Can push you into higher tax brackets.</p>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h4 class="font-semibold text-green-600">Roth IRA Withdrawals</h4>
+                        <p class="text-gray-600">Contributions withdrawn tax-free anytime. Earnings withdrawn tax-free after age 59½ and 5-year rule.</p>
+                    </div>
+                    <div class="border-l-4 border-orange-500 pl-4">
+                        <h4 class="font-semibold text-orange-600">Early Withdrawal Penalties</h4>
+                        <p class="text-gray-600">10% penalty on withdrawals before age 59½ (with some exceptions).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box p-6 mb-6">
+                <h3 class="text-lg font-semibold text-red-600 mb-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Common Tax Mistakes to Avoid
+                </h3>
+                <ul class="space-y-2 text-gray-700">
+                    <li><i class="fas fa-times text-red-500 mr-2"></i>Taking large withdrawals that push you into higher tax brackets</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i>Ignoring the impact on Social Security taxation</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i>Not considering Medicare premium increases (IRMAA)</li>
+                    <li><i class="fas fa-times text-red-500 mr-2"></i>Failing to plan for required minimum distributions</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Withdrawal Strategies -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-chess text-purple-600 mr-3"></i>
+                Strategic Withdrawal Approaches
+            </h2>
+            
+            <div class="grid md:grid-cols-1 gap-8">
+                <!-- Strategy 1: Bucket Strategy -->
+                <div class="strategy-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-layer-group text-blue-600 mr-3"></i>
+                        The Bucket Strategy
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Organize retirement accounts into three "buckets" based on tax treatment and withdrawal timing.
+                    </p>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-semibold text-blue-600">Bucket 1: Taxable</h4>
+                            <p class="text-sm text-gray-600">Brokerage accounts, savings, CDs</p>
+                            <p class="text-sm text-blue-600 mt-2">Use first for flexibility</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-semibold text-green-600">Bucket 2: Tax-Deferred</h4>
+                            <p class="text-sm text-gray-600">Traditional IRA, 401(k)</p>
+                            <p class="text-sm text-green-600 mt-2">Use for income needs</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-semibold text-purple-600">Bucket 3: Tax-Free</h4>
+                            <p class="text-sm text-gray-600">Roth IRA, Roth 401(k)</p>
+                            <p class="text-sm text-purple-600 mt-2">Save for last or legacy</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy 2: Tax Bracket Management -->
+                <div class="strategy-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-chart-bar text-green-600 mr-3"></i>
+                        Tax Bracket Management
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Optimize withdrawals to stay within your target tax bracket and avoid unnecessary tax spikes.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Step 1: Determine Your Target Tax Bracket</h4>
+                            <p class="text-gray-600">Calculate your current tax situation and identify the optimal bracket to maintain.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Step 2: Fill Up the Bracket</h4>
+                            <p class="text-gray-600">Take withdrawals up to the top of your target bracket, not beyond.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Step 3: Consider Roth Conversions</h4>
+                            <p class="text-gray-600">Use remaining bracket space for strategic Roth conversions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy 3: Timing Optimization -->
+                <div class="strategy-card p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-clock text-orange-600 mr-3"></i>
+                        Timing Optimization
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Time your withdrawals to minimize taxes and maximize after-tax income.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-600 mb-2">Optimal Timing</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• Early retirement years (lower tax brackets)</li>
+                                <li>• Years with market losses (tax-loss harvesting)</li>
+                                <li>• Before RMDs begin at age 73</li>
+                                <li>• Years with large deductions</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-red-600 mb-2">Avoid These Times</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• High-income years</li>
+                                <li>• Years with large capital gains</li>
+                                <li>• When approaching Medicare premium thresholds</li>
+                                <li>• During market highs (if possible)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Strategies -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-graduation-cap text-indigo-600 mr-3"></i>
+                Advanced Optimization Techniques
+            </h2>
+            
+            <div class="space-y-6">
+                <!-- Charitable Giving -->
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-heart text-red-500 mr-3"></i>
+                        Qualified Charitable Distributions (QCDs)
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Direct charitable donations from your IRA can satisfy RMD requirements while providing tax benefits.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="action-item p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-600">QCD Benefits</h4>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Counts toward RMD requirement</li>
+                                <li>• Excluded from taxable income</li>
+                                <li>• No income limits</li>
+                                <li>• Can reduce Medicare premiums</li>
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-600">QCD Requirements</h4>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Must be age 70½ or older</li>
+                                <li>• Maximum $100,000 per year</li>
+                                <li>• Must go directly to charity</li>
+                                <li>• Must be qualified 501(c)(3) organization</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asset Location -->
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-map-marker-alt text-purple-500 mr-3"></i>
+                        Asset Location Strategy
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Optimize which investments you hold in which account types for maximum tax efficiency.
+                    </p>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-semibold text-blue-600">Taxable Accounts</h4>
+                            <p class="text-sm text-gray-600 mt-2">Tax-efficient investments:</p>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Index funds</li>
+                                <li>• Individual stocks</li>
+                                <li>• Tax-managed funds</li>
+                                <li>• Municipal bonds</li>
+                            </ul>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-semibold text-green-600">Tax-Deferred (IRA)</h4>
+                            <p class="text-sm text-gray-600 mt-2">Tax-inefficient investments:</p>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Bonds and bond funds</li>
+                                <li>• REITs</li>
+                                <li>• Actively managed funds</li>
+                                <li>• High-dividend stocks</li>
+                            </ul>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-semibold text-purple-600">Roth IRA</h4>
+                            <p class="text-sm text-gray-600 mt-2">Highest growth potential:</p>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Growth stocks</li>
+                                <li>• Small-cap funds</li>
+                                <li>• International funds</li>
+                                <li>• Alternative investments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RMD Optimization -->
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-calendar-check text-orange-500 mr-3"></i>
+                        RMD Planning and Optimization
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Prepare for required minimum distributions to minimize their tax impact.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Before Age 73: Proactive Planning</h4>
+                            <p class="text-gray-600">Consider voluntary distributions or Roth conversions to reduce future RMDs.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Age 73: RMDs Begin</h4>
+                            <p class="text-gray-600">Calculate required amounts and plan withdrawal timing throughout the year.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 class="font-semibold">Ongoing: Optimize Timing</h4>
+                            <p class="text-gray-600">Take RMDs early in high-income years, later in low-income years.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Plan -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-clipboard-check text-green-600 mr-3"></i>
+                Your IRA Withdrawal Action Plan
+            </h2>
+            
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <h3 class="text-xl font-semibold mb-4">Step-by-Step Implementation</h3>
+                <div class="space-y-6">
+                    <div class="action-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-600 mb-2">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            Step 1: Assess Your Current Situation
+                        </h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Calculate total IRA/401(k) balances</li>
+                            <li>• Determine current tax bracket</li>
+                            <li>• Estimate retirement income needs</li>
+                            <li>• Review other income sources</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="action-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-600 mb-2">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Step 2: Calculate Optimal Withdrawal Strategy
+                        </h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Project future tax brackets</li>
+                            <li>• Calculate RMD requirements</li>
+                            <li>• Determine target withdrawal amounts</li>
+                            <li>• Consider Roth conversion opportunities</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="action-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-600 mb-2">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Step 3: Create Annual Withdrawal Schedule
+                        </h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Plan withdrawal amounts by year</li>
+                            <li>• Schedule timing throughout the year</li>
+                            <li>• Set up automatic transfers if appropriate</li>
+                            <li>• Include tax planning in schedule</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="action-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-600 mb-2">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Step 4: Monitor and Adjust
+                        </h4>
+                        <ul class="text-gray-600 space-y-1">
+                            <li>• Review strategy annually</li>
+                            <li>• Adjust for tax law changes</li>
+                            <li>• Monitor account performance</li>
+                            <li>• Update for life changes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Guidance -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-handshake text-blue-600 mr-3"></i>
+                When to Seek Professional Help
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                        <i class="fas fa-user-tie mr-2"></i>
+                        Work with a Professional If...
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>You have complex tax situations</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Large retirement account balances</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Multiple income sources</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Estate planning concerns</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>State tax complexities</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-green-600">
+                        <i class="fas fa-tools mr-2"></i>
+                        Types of Professional Help
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><i class="fas fa-calculator text-blue-500 mr-2"></i>Tax professionals for complex situations</li>
+                        <li><i class="fas fa-chart-line text-green-500 mr-2"></i>Financial advisors for comprehensive planning</li>
+                        <li><i class="fas fa-balance-scale text-purple-500 mr-2"></i>Estate planning attorneys for legacy issues</li>
+                        <li><i class="fas fa-piggy-bank text-orange-500 mr-2"></i>Fee-only planners for unbiased advice</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Takeaways -->
+        <section class="mb-12">
+            <div class="highlight-box p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                    <i class="fas fa-key text-amber-500 mr-3"></i>
+                    Key Takeaways
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Strategic Priorities</h3>
+                        <ul class="space-y-1 text-gray-700">
+                            <li>• Use the bucket strategy for withdrawal sequencing</li>
+                            <li>• Manage tax brackets carefully</li>
+                            <li>• Consider Roth conversions in low-income years</li>
+                            <li>• Plan for RMDs before age 73</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Remember</h3>
+                        <ul class="space-y-1 text-gray-700">
+                            <li>• Small optimizations compound over time</li>
+                            <li>• Tax laws change - stay informed</li>
+                            <li>• Consider all income sources in planning</li>
+                            <li>• Professional guidance pays for itself</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-2">Ready to Optimize Your IRA Withdrawal Strategy?</h3>
+                <p class="text-gray-300">Get personalized guidance from retirement planning experts</p>
+            </div>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition duration-300">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Schedule Consultation
+                </a>
+                <a href="#" class="border border-gray-600 hover:border-gray-400 px-6 py-3 rounded-lg font-semibold transition duration-300">
+                    <i class="fas fa-calculator mr-2"></i>
+                    Use Our Calculator
+                </a>
+            </div>
+            <div class="text-sm text-gray-400">
+                <p>&copy; 2024 RetireSafe.ly. This guide is for educational purposes only and does not constitute tax or financial advice.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

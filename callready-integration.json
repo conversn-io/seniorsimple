@@ -1,0 +1,42 @@
+{
+  "project_name": "SeniorSimple",
+  "project_type": "retirement_planning_platform",
+  "brand_identity_path": "../../14-Brand-Assets/04-Brand-Materials/brand_properties/senior_simple_brand_identity.json",
+  "deployment": {
+    "platform": "vercel",
+    "url": "https://seniorsimple.vercel.app",
+    "github_repo": "https://github.com/conversn-io/seniorsimple"
+  },
+  "cms": {
+    "type": "supabase",
+    "name": "Regenerative",
+    "integration": "unified_cms"
+  },
+  "content_pillars": [
+    "Life Insurance Planning",
+    "Annuities & Retirement Income", 
+    "Medicare & Health",
+    "Long-Term Care & Housing",
+    "Estate & Legacy Planning",
+    "Fraud Protection & Security"
+  ],
+  "target_audience": {
+    "persona": "Retired or near-retirement Baby Boomers",
+    "age_range": "58–75"
+  },
+  "monetization_strategy": [
+    "Pay-per-lead delivery for insurance & annuity providers",
+    "Intent-data retargeting via identity resolution pixels",
+    "Email warmup + quiz funnel nurturing",
+    "Affiliate monetization of senior-friendly products"
+  ],
+  "callready_integration": {
+    "lead_generation": "integrated",
+    "content_engine": "integrated", 
+    "email_automation": "integrated",
+    "analytics": "integrated",
+    "client_management": "integrated"
+  }
+}
+
+

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retirement Tax Strategy Guide - RetireSafe.ly</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .tax-bracket { background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%); }
+        .strategy-card { border-left: 4px solid #3b82f6; }
+        .highlight-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+        .example-box { background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%); }
+        .warning-box { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); }
+        .success-box { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+        .icon-bg { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .section-divider { height: 2px; background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 50%, #3b82f6 100%); }
+        .number-circle { width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .progress-bar { background: linear-gradient(90deg, #10b981 0%, #059669 100%); }
+        .chart-container { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+        .tax-table th { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); }
+        .tax-table td { border-bottom: 1px solid #e5e7eb; }
+        .tax-table tr:hover { background-color: #f8fafc; }
+        .strategy-number { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .benefit-icon { color: #059669; }
+        .risk-icon { color: #dc2626; }
+        .neutral-icon { color: #6b7280; }
+        .timeline-dot { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .timeline-line { background: linear-gradient(0deg, #3b82f6 0%, #1d4ed8 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 leading-relaxed">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-4">
+                    <i class="fas fa-calculator text-2xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold mb-4">Retirement Tax Strategy Guide</h1>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto">Comprehensive strategies to minimize taxes in retirement and maximize your after-tax income</p>
+                <div class="mt-6 flex justify-center items-center space-x-6 text-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span>25 min read</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-user-graduate mr-2"></i>
+                        <span>Intermediate Level</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-tag mr-2"></i>
+                        <span>Tax Planning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <div class="bg-white py-8 border-b">
+        <div class="container mx-auto px-6">
+            <h2 class="text-2xl font-bold mb-6 text-center">Table of Contents</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                <a href="#overview" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-eye text-blue-600 mr-3"></i>
+                    <span>Tax Planning Overview</span>
+                </a>
+                <a href="#diversification" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-coins text-blue-600 mr-3"></i>
+                    <span>Tax Diversification</span>
+                </a>
+                <a href="#withdrawal" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-sort-amount-down text-blue-600 mr-3"></i>
+                    <span>Withdrawal Sequencing</span>
+                </a>
+                <a href="#harvesting" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+                    <span>Tax-Loss Harvesting</span>
+                </a>
+                <a href="#charitable" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-heart text-blue-600 mr-3"></i>
+                    <span>Charitable Strategies</span>
+                </a>
+                <a href="#advanced" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-cog text-blue-600 mr-3"></i>
+                    <span>Advanced Strategies</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-12">
+        
+        <!-- Overview Section -->
+        <section id="overview" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Why Tax Planning Matters in Retirement</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Smart tax planning can add years to your retirement savings and significantly increase your after-tax income.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="icon-bg w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-piggy-bank text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Preserve More Wealth</h3>
+                    <p class="text-gray-600">Effective tax strategies can save thousands of dollars annually, preserving more of your retirement savings for you and your beneficiaries.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="icon-bg w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-calendar-alt text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Extend Portfolio Life</h3>
+                    <p class="text-gray-600">By minimizing taxes, you reduce the amount you need to withdraw from your accounts, potentially extending your portfolio's longevity.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="icon-bg w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Maximize Legacy</h3>
+                    <p class="text-gray-600">Tax-efficient strategies help ensure more of your wealth passes to your heirs and charitable causes you care about.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box p-6 rounded-lg border">
+                <h3 class="text-lg font-semibold mb-3 flex items-center">
+                    <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                    Key Insight
+                </h3>
+                <p class="text-gray-700">The difference between paying 12% and 22% in taxes on your retirement income can mean the difference between a $50,000 annual income and a $40,000 annual income from the same portfolio.</p>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Tax Diversification Section -->
+        <section id="diversification" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Tax Diversification Strategy</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Spread your retirement savings across different account types to create tax flexibility and optimize your withdrawal strategy.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-university text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold">Traditional Accounts</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">401(k), 403(b), Traditional IRA</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Tax deduction today</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Tax-deferred growth</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <span class="text-sm">Taxed as ordinary income</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <span class="text-sm">Required minimum distributions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-gem text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold">Roth Accounts</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Roth 401(k), Roth IRA</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Tax-free growth</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Tax-free withdrawals</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">No required distributions</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <span class="text-sm">No immediate tax deduction</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-purple-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-chart-area text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold">Taxable Accounts</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Brokerage accounts</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">No withdrawal restrictions</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Capital gains tax rates</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span class="text-sm">Stepped-up basis at death</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <span class="text-sm">Annual tax on gains/dividends</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-box p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                    Example: Optimal Tax Diversification
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-3">Sarah's Tax-Diversified Portfolio</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Traditional 401(k):</span>
+                                <span class="font-medium">$400,000 (50%)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Roth IRA:</span>
+                                <span class="font-medium">$200,000 (25%)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxable Brokerage:</span>
+                                <span class="font-medium">$200,000 (25%)</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between font-semibold">
+                                <span>Total Portfolio:</span>
+                                <span>$800,000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Annual Withdrawal Strategy</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Social Security:</span>
+                                <span class="font-medium">$24,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Traditional 401(k):</span>
+                                <span class="font-medium">$15,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxable Account:</span>
+                                <span class="font-medium">$10,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Roth IRA (if needed):</span>
+                                <span class="font-medium">$5,000</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between font-semibold">
+                                <span>Total Annual Income:</span>
+                                <span>$54,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Withdrawal Sequencing Section -->
+        <section id="withdrawal" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Strategic Withdrawal Sequencing</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">The order in which you withdraw from different accounts can significantly impact your lifetime tax bill.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-6 text-center">The Generally Recommended Withdrawal Order</h3>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="number-circle rounded-full mx-auto mb-4 flex items-center justify-center text-white font-bold text-lg">1</div>
+                        <h4 class="font-semibold mb-2">Taxable Accounts</h4>
+                        <p class="text-sm text-gray-600">Start with brokerage accounts to take advantage of lower capital gains rates</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="number-circle rounded-full mx-auto mb-4 flex items-center justify-center text-white font-bold text-lg">2</div>
+                        <h4 class="font-semibold mb-2">Traditional IRAs/401(k)s</h4>
+                        <p class="text-sm text-gray-600">Use tax-deferred accounts for income needs before RMDs begin</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="number-circle rounded-full mx-auto mb-4 flex items-center justify-center text-white font-bold text-lg">3</div>
+                        <h4 class="font-semibold mb-2">Roth IRAs</h4>
+                        <p class="text-sm text-gray-600">Save tax-free accounts for last to maximize growth potential</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="number-circle rounded-full mx-auto mb-4 flex items-center justify-center text-white font-bold text-lg">4</div>
+                        <h4 class="font-semibold mb-2">HSAs</h4>
+                        <p class="text-sm text-gray-600">Use for healthcare expenses or as retirement account after age 65</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="success-box p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-thumbs-up text-green-600 mr-2"></i>
+                        Benefits of Proper Sequencing
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span>Minimizes lifetime tax burden</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span>Maximizes Roth IRA growth period</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span>Takes advantage of lower capital gains rates</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span>Provides flexibility for tax planning</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="warning-box p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        Important Considerations
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-info-circle text-red-600 mr-2 mt-1"></i>
+                            <span>Required minimum distributions start at age 73</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-info-circle text-red-600 mr-2 mt-1"></i>
+                            <span>Market conditions may affect optimal timing</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-info-circle text-red-600 mr-2 mt-1"></i>
+                            <span>Tax bracket management is crucial</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-info-circle text-red-600 mr-2 mt-1"></i>
+                            <span>Healthcare costs may require flexibility</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Tax Bracket Management Strategy</h3>
+                <div class="overflow-x-auto">
+                    <table class="tax-table w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-white p-3 text-left">Tax Bracket</th>
+                                <th class="text-white p-3 text-left">Single Filer</th>
+                                <th class="text-white p-3 text-left">Married Filing Jointly</th>
+                                <th class="text-white p-3 text-left">Strategy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="tax-table p-3 font-medium">10%</td>
+                                <td class="tax-table p-3">$0 - $11,000</td>
+                                <td class="tax-table p-3">$0 - $22,000</td>
+                                <td class="tax-table p-3">Fill this bracket with traditional account withdrawals</td>
+                            </tr>
+                            <tr>
+                                <td class="tax-table p-3 font-medium">12%</td>
+                                <td class="tax-table p-3">$11,001 - $44,725</td>
+                                <td class="tax-table p-3">$22,001 - $89,450</td>
+                                <td class="tax-table p-3">Optimal range for most retirees</td>
+                            </tr>
+                            <tr>
+                                <td class="tax-table p-3 font-medium">22%</td>
+                                <td class="tax-table p-3">$44,726 - $95,375</td>
+                                <td class="tax-table p-3">$89,451 - $190,750</td>
+                                <td class="tax-table p-3">Consider Roth conversions to avoid this bracket</td>
+                            </tr>
+                            <tr>
+                                <td class="tax-table p-3 font-medium">24%</td>
+                                <td class="tax-table p-3">$95,376 - $182,050</td>
+                                <td class="tax-table p-3">$190,751 - $364,200</td>
+                                <td class="tax-table p-3">Use taxable accounts or Roth withdrawals</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">*2024 tax brackets. Consult current tax tables for up-to-date information.</p>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Tax-Loss Harvesting Section -->
+        <section id="harvesting" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Tax-Loss Harvesting</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Offset investment gains with losses to reduce your current year tax liability while maintaining your investment strategy.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                        How Tax-Loss Harvesting Works
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="strategy-number w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-1">1</div>
+                            <div>
+                                <h4 class="font-medium">Identify Losses</h4>
+                                <p class="text-sm text-gray-600">Review your portfolio for investments that are trading below their cost basis</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="strategy-number w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-1">2</div>
+                            <div>
+                                <h4 class="font-medium">Sell Loss Positions</h4>
+                                <p class="text-sm text-gray-600">Sell investments at a loss to realize the tax benefit</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="strategy-number w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-1">3</div>
+                            <div>
+                                <h4 class="font-medium">Offset Gains</h4>
+                                <p class="text-sm text-gray-600">Use losses to offset capital gains and up to $3,000 of ordinary income</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="strategy-number w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-1">4</div>
+                            <div>
+                                <h4 class="font-medium">Reinvest Wisely</h4>
+                                <p class="text-sm text-gray-600">Reinvest proceeds in similar (but not identical) investments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                        Tax-Loss Harvesting Benefits
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="benefit-icon fas fa-dollar-sign mr-3"></i>
+                            <span class="text-sm">Reduces current year tax liability</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="benefit-icon fas fa-calendar-forward mr-3"></i>
+                            <span class="text-sm">Unused losses carry forward indefinitely</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="benefit-icon fas fa-chart-area mr-3"></i>
+                            <span class="text-sm">Maintains investment exposure</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="benefit-icon fas fa-recycle mr-3"></i>
+                            <span class="text-sm">Can be repeated annually</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-2">Annual Tax Savings Potential</h4>
+                        <div class="text-sm text-green-700">
+                            <div class="flex justify-between">
+                                <span>Offset $10,000 in gains:</span>
+                                <span class="font-medium">$1,500-$2,400 saved</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Offset $3,000 ordinary income:</span>
+                                <span class="font-medium">$360-$1,110 saved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box p-6 rounded-lg mb-8">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    Wash Sale Rule - Critical to Understand
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium mb-3">What is the Wash Sale Rule?</h4>
+                        <p class="text-sm text-gray-700 mb-3">The IRS disallows the tax loss if you purchase the same or "substantially identical" security within 30 days before or after the sale.</p>
+                        <div class="bg-red-50 p-3 rounded text-sm">
+                            <strong>Example:</strong> If you sell Apple stock at a loss on January 15, you cannot buy Apple stock again until February 15 (30 days later).
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium mb-3">How to Avoid Wash Sales</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Wait 31 days before repurchasing</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Buy a similar but different security</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Use different asset classes (stocks vs bonds)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Consider ETFs vs mutual funds</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-box p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                    Tax-Loss Harvesting Example
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-3">John's Portfolio Situation</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Tech Stock A (gain):</span>
+                                <span class="font-medium text-green-600">+$8,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Energy Stock B (loss):</span>
+                                <span class="font-medium text-red-600">-$5,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>REIT Fund C (loss):</span>
+                                <span class="font-medium text-red-600">-$3,000</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between">
+                                <span>Net without harvesting:</span>
+                                <span class="font-medium">$0 (no tax benefit)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">After Tax-Loss Harvesting</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Realized gains:</span>
+                                <span class="font-medium">$8,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Harvested losses:</span>
+                                <span class="font-medium">($8,000)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Net taxable gain:</span>
+                                <span class="font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Tax saved (20% rate):</span>
+                                <span class="font-medium text-green-600">$1,600</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Charitable Strategies Section -->
+        <section id="charitable" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Charitable Giving Strategies</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Use charitable strategies to reduce taxes while supporting causes you care about.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="bg-purple-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-hand-heart text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Qualified Charitable Distribution</h3>
+                    <p class="text-sm text-gray-600 mb-4">Transfer up to $100,000 annually directly from your IRA to qualified charities.</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Counts toward RMD requirement</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Excludes amount from taxable income</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Available starting at age 70½</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="bg-blue-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-piggy-bank text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Donor-Advised Fund</h3>
+                    <p class="text-sm text-gray-600 mb-4">Get immediate tax deduction while maintaining flexibility in your giving timeline.</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Immediate tax deduction</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Flexible distribution timing</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Investment growth potential</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md card-hover">
+                    <div class="bg-green-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-line text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Charitable Remainder Trust</h3>
+                    <p class="text-sm text-gray-600 mb-4">Receive income for life while eventually benefiting charity and reducing estate taxes.</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Lifetime income stream</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Immediate tax deduction</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>Reduces estate taxes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Qualified Charitable Distribution Strategy</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold mb-3">Traditional Approach</h4>
+                        <div class="space-y-2 text-sm bg-gray-50 p-4 rounded">
+                            <div class="flex justify-between">
+                                <span>RMD withdrawal:</span>
+                                <span class="font-medium">$25,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxes (22% bracket):</span>
+                                <span class="font-medium text-red-600">-$5,500</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Charitable donation:</span>
+                                <span class="font-medium">-$5,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Tax deduction benefit:</span>
+                                <span class="font-medium text-green-600">+$1,100</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between font-semibold">
+                                <span>Net after-tax income:</span>
+                                <span>$15,600</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">QCD Approach</h4>
+                        <div class="space-y-2 text-sm bg-green-50 p-4 rounded">
+                            <div class="flex justify-between">
+                                <span>QCD to charity:</span>
+                                <span class="font-medium">$5,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Remaining RMD:</span>
+                                <span class="font-medium">$20,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxes (22% bracket):</span>
+                                <span class="font-medium text-red-600">-$4,400</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Additional deduction:</span>
+                                <span class="font-medium">$0</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between font-semibold">
+                                <span>Net after-tax income:</span>
+                                <span class="text-green-600">$15,600</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-green-100 rounded-lg">
+                    <p class="text-sm"><strong>QCD Advantage:</strong> Same charitable impact and after-tax income, but the QCD approach may help avoid Medicare premium increases and other income-based thresholds.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Advanced Strategies Section -->
+        <section id="advanced" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Advanced Tax Strategies</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Sophisticated techniques for high-net-worth retirees and complex situations.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-exchange-alt text-blue-600 mr-2"></i>
+                        Roth Conversion Strategies
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Convert traditional IRA funds to Roth IRA during low-income years to reduce future tax burden.</p>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">Optimal Timing</h4>
+                                <p class="text-xs text-gray-600">Convert during years when you're in a lower tax bracket</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-chart-line text-green-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">Tax-Free Growth</h4>
+                                <p class="text-xs text-gray-600">All future growth in the Roth IRA is tax-free</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-users text-blue-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">Legacy Benefits</h4>
+                                <p class="text-xs text-gray-600">Heirs receive tax-free inheritance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-map-marked-alt text-green-600 mr-2"></i>
+                        Geographic Tax Planning
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Consider relocating to tax-friendly states to reduce your overall tax burden.</p>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-home text-blue-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">State Tax Considerations</h4>
+                                <p class="text-xs text-gray-600">Some states don't tax retirement income</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-building text-purple-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">Property Tax Differences</h4>
+                                <p class="text-xs text-gray-600">Significant variations in property tax rates</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-shopping-cart text-orange-500 mr-2 mt-1"></i>
+                            <div>
+                                <h4 class="font-medium text-sm">Sales Tax Impact</h4>
+                                <p class="text-xs text-gray-600">Consider overall cost of living differences</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Asset Location Strategy</h3>
+                <p class="text-sm text-gray-600 mb-4">Optimize which investments you hold in which types of accounts to minimize taxes.</p>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="bg-blue-100 p-4 rounded-lg mb-3">
+                            <h4 class="font-semibold text-blue-800">Taxable Accounts</h4>
+                            <p class="text-xs text-blue-600 mt-2">Best for:</p>
+                            <ul class="text-xs text-left mt-2 space-y-1">
+                                <li>• Tax-efficient index funds</li>
+                                <li>• Individual stocks (long-term)</li>
+                                <li>• Municipal bonds</li>
+                                <li>• Assets you may donate</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-green-100 p-4 rounded-lg mb-3">
+                            <h4 class="font-semibold text-green-800">Tax-Deferred Accounts</h4>
+                            <p class="text-xs text-green-600 mt-2">Best for:</p>
+                            <ul class="text-xs text-left mt-2 space-y-1">
+                                <li>• Bonds and bond funds</li>
+                                <li>• REITs</li>
+                                <li>• High-dividend stocks</li>
+                                <li>• Actively managed funds</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-purple-100 p-4 rounded-lg mb-3">
+                            <h4 class="font-semibold text-purple-800">Roth Accounts</h4>
+                            <p class="text-xs text-purple-600 mt-2">Best for:</p>
+                            <ul class="text-xs text-left mt-2 space-y-1">
+                                <li>• High-growth stocks</li>
+                                <li>• Small-cap funds</li>
+                                <li>• International stocks</li>
+                                <li>• Alternative investments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-user-tie text-blue-600 mr-2"></i>
+                    When to Consult a Professional
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-3">Complex Situations</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-600 mr-2 mt-1"></i>
+                                <span>Multiple retirement account types</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-600 mr-2 mt-1"></i>
+                                <span>Significant taxable investments</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-600 mr-2 mt-1"></i>
+                                <span>Business ownership or rental properties</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-600 mr-2 mt-1"></i>
+                                <span>Estate planning considerations</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Professional Benefits</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Personalized tax modeling</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Coordination with overall financial plan</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Advanced strategy implementation</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                                <span>Ongoing tax law updates</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider mb-16"></div>
+
+        <!-- Action Steps Section -->
+        <section class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Your Tax Strategy Action Plan</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Follow these steps to implement an effective retirement tax strategy.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-list-check text-green-600 mr-2"></i>
+                        Immediate Actions (This Month)
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Review Current Tax Situation</h4>
+                                <p class="text-xs text-gray-600">Analyze your current tax bracket and projected retirement income</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Inventory Your Accounts</h4>
+                                <p class="text-xs text-gray-600">List all retirement and investment accounts by tax treatment</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Calculate RMD Requirements</h4>
+                                <p class="text-xs text-gray-600">Determine when and how much you'll need to withdraw</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Assess Tax-Loss Harvesting</h4>
+                                <p class="text-xs text-gray-600">Review taxable accounts for harvest opportunities</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                        Ongoing Strategy (Annual Review)
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Review Withdrawal Strategy</h4>
+                                <p class="text-xs text-gray-600">Optimize account withdrawal sequence based on tax brackets</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Consider Roth Conversions</h4>
+                                <p class="text-xs text-gray-600">Evaluate conversion opportunities during low-income years</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Plan Charitable Giving</h4>
+                                <p class="text-xs text-gray-600">Implement QCDs and other charitable strategies</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3">
+                            <div>
+                                <h4 class="font-medium text-sm">Update Asset Location</h4>
+                                <p class="text-xs text-gray-600">Optimize which investments are held in which accounts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Takeaways -->
+        <section class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-lg">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-4">Key Takeaways</h2>
+                <p class="text-lg opacity-90">Remember these essential points for effective retirement tax planning</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                        <i class="fas fa-coins text-3xl mb-3"></i>
+                        <h3 class="font-semibold mb-2">Diversify Tax Treatment</h3>
+                        <p class="text-sm opacity-90">Have money in traditional, Roth, and taxable accounts</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                        <i class="fas fa-sort-amount-down text-3xl mb-3"></i>
+                        <h3 class="font-semibold mb-2">Sequence Withdrawals</h3>
+                        <p class="text-sm opacity-90">Withdraw from accounts in tax-optimal order</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                        <i class="fas fa-chart-line text-3xl mb-3"></i>
+                        <h3 class="font-semibold mb-2">Harvest Losses</h3>
+                        <p class="text-sm opacity-90">Offset gains with losses to reduce taxes</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                        <i class="fas fa-heart text-3xl mb-3"></i>
+                        <h3 class="font-semibold mb-2">Give Strategically</h3>
+                        <p class="text-sm opacity-90">Use charitable strategies for tax benefits</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-2">Ready to Optimize Your Retirement Tax Strategy?</h3>
+                <p class="text-gray-300 mb-4">Get personalized guidance to minimize your tax burden and maximize your retirement income.</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-calculator mr-2"></i>
+                        Use Tax Calculator
+                    </a>
+                    <a href="#" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-phone mr-2"></i>
+                        Schedule Consultation
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-6">
+                <p class="text-gray-400 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    This guide is for educational purposes only. Tax laws are complex and change frequently. 
+                    Please consult with a qualified tax professional or financial advisor for personalized advice.
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior Housing Options: Complete Comparison Guide | RetireSafe.ly</title>
+    <meta name="description" content="Explore different senior living options including costs, benefits, and considerations for aging in place, downsizing, active adult communities, and assisted living.">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .option-card {
+            border-left: 4px solid #4299e1;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+        
+        .cost-indicator {
+            background: linear-gradient(45deg, #48bb78, #68d391);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .pros-cons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .pros-cons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .comparison-table {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        
+        .decision-matrix {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .cost-breakdown {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">Senior Housing Options: Complete Comparison Guide</h1>
+                <p class="text-xl opacity-90 max-w-3xl mx-auto">
+                    Navigate your retirement housing decisions with confidence. Compare costs, benefits, and considerations for every senior living option.
+                </p>
+                <div class="mt-6 flex justify-center items-center space-x-6 text-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span>15 min read</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-user mr-2"></i>
+                        <span>All Experience Levels</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-home mr-2"></i>
+                        <span>Housing Planning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Introduction -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Making the Right Housing Choice for Your Retirement</h2>
+                <div class="text-lg text-gray-600 space-y-4">
+                    <p>
+                        Choosing where to live in retirement is one of the most important decisions you'll make. Your housing choice affects your finances, health, social connections, and overall quality of life. This comprehensive guide examines four primary senior housing options to help you make an informed decision.
+                    </p>
+                    <p>
+                        We'll explore the costs, benefits, and considerations for each option, providing you with the information needed to choose the path that best fits your lifestyle, budget, and long-term goals.
+                    </p>
+                </div>
+                
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <i class="fas fa-home text-3xl text-blue-600 mb-2"></i>
+                        <h3 class="font-semibold text-gray-800">Age in Place</h3>
+                        <p class="text-sm text-gray-600">Stay in your current home</p>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <i class="fas fa-arrows-alt text-3xl text-green-600 mb-2"></i>
+                        <h3 class="font-semibold text-gray-800">Downsize</h3>
+                        <p class="text-sm text-gray-600">Move to smaller home</p>
+                    </div>
+                    <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                        <i class="fas fa-users text-3xl text-yellow-600 mb-2"></i>
+                        <h3 class="font-semibold text-gray-800">Active Adult</h3>
+                        <p class="text-sm text-gray-600">55+ communities</p>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-lg">
+                        <i class="fas fa-heart text-3xl text-purple-600 mb-2"></i>
+                        <h3 class="font-semibold text-gray-800">Assisted Living</h3>
+                        <p class="text-sm text-gray-600">Professional care support</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Options Comparison -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Detailed Housing Options</h2>
+            
+            <!-- Age in Place -->
+            <div class="option-card mb-8 p-8 rounded-lg shadow-lg">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-home text-4xl text-blue-600 mr-4"></i>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">Age in Place</h3>
+                            <p class="text-gray-600">Stay in your current home with modifications for safety and accessibility</p>
+                        </div>
+                    </div>
+                    <div class="cost-indicator" style="background: linear-gradient(45deg, #48bb78, #68d391);">
+                        $1,500-$3,000/month
+                    </div>
+                </div>
+                
+                <div class="pros-cons-grid mb-6">
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Advantages
+                        </h4>
+                        <ul class="space-y-2 text-green-700">
+                            <li>• Familiar environment and neighborhood</li>
+                            <li>• Maintain complete independence</li>
+                            <li>• Often the most cost-effective option</li>
+                            <li>• Preserve existing social connections</li>
+                            <li>• No age restrictions or community rules</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-red-800 mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Considerations
+                        </h4>
+                        <ul class="space-y-2 text-red-700">
+                            <li>• May require costly home modifications</li>
+                            <li>• Ongoing maintenance responsibilities</li>
+                            <li>• Potential for social isolation</li>
+                            <li>• Home may become too large/expensive</li>
+                            <li>• Limited access to care as needs increase</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="cost-breakdown">
+                    <h4 class="font-semibold text-gray-800 mb-3">Typical Monthly Costs:</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Property Taxes:</span>
+                            <br>$300-800
+                        </div>
+                        <div>
+                            <span class="font-medium">Utilities:</span>
+                            <br>$200-400
+                        </div>
+                        <div>
+                            <span class="font-medium">Maintenance:</span>
+                            <br>$300-600
+                        </div>
+                        <div>
+                            <span class="font-medium">Modifications:</span>
+                            <br>$200-500
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Downsize -->
+            <div class="option-card mb-8 p-8 rounded-lg shadow-lg" style="border-left-color: #48bb78;">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-arrows-alt text-4xl text-green-600 mr-4"></i>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">Downsize</h3>
+                            <p class="text-gray-600">Move to a smaller, more manageable home in your preferred location</p>
+                        </div>
+                    </div>
+                    <div class="cost-indicator" style="background: linear-gradient(45deg, #38a169, #48bb78);">
+                        $1,200-$2,500/month
+                    </div>
+                </div>
+                
+                <div class="pros-cons-grid mb-6">
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Advantages
+                        </h4>
+                        <ul class="space-y-2 text-green-700">
+                            <li>• Lower maintenance and utility costs</li>
+                            <li>• Reduced cleaning and upkeep</li>
+                            <li>• Free up home equity for other uses</li>
+                            <li>• Opportunity to relocate to preferred area</li>
+                            <li>• Modern, energy-efficient features</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-red-800 mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Considerations
+                        </h4>
+                        <ul class="space-y-2 text-red-700">
+                            <li>• Upfront moving and transaction costs</li>
+                            <li>• Emotional attachment to current home</li>
+                            <li>• Need to declutter and reduce possessions</li>
+                            <li>• Finding the right location and property</li>
+                            <li>• Potential market timing challenges</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="cost-breakdown">
+                    <h4 class="font-semibold text-gray-800 mb-3">Typical Monthly Costs:</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Mortgage/Rent:</span>
+                            <br>$800-1,800
+                        </div>
+                        <div>
+                            <span class="font-medium">Property Taxes:</span>
+                            <br>$150-400
+                        </div>
+                        <div>
+                            <span class="font-medium">Utilities:</span>
+                            <br>$100-200
+                        </div>
+                        <div>
+                            <span class="font-medium">Maintenance:</span>
+                            <br>$100-300
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Adult Community -->
+            <div class="option-card mb-8 p-8 rounded-lg shadow-lg" style="border-left-color: #ed8936;">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-4xl text-yellow-600 mr-4"></i>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">Active Adult Community</h3>
+                            <p class="text-gray-600">Age-restricted communities (55+) with amenities and activities</p>
+                        </div>
+                    </div>
+                    <div class="cost-indicator" style="background: linear-gradient(45deg, #ed8936, #f6ad55);">
+                        $2,000-$4,000/month
+                    </div>
+                </div>
+                
+                <div class="pros-cons-grid mb-6">
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Advantages
+                        </h4>
+                        <ul class="space-y-2 text-green-700">
+                            <li>• Built-in social community with peers</li>
+                            <li>• Age-appropriate amenities and activities</li>
+                            <li>• Maintenance and landscaping included</li>
+                            <li>• Security and safety features</li>
+                            <li>• Resort-like lifestyle amenities</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-red-800 mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Considerations
+                        </h4>
+                        <ul class="space-y-2 text-red-700">
+                            <li>• Monthly HOA fees can be substantial</li>
+                            <li>• Age restrictions limit visitors</li>
+                            <li>• Less demographic diversity</li>
+                            <li>• Community rules and regulations</li>
+                            <li>• Limited care options as needs increase</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="cost-breakdown">
+                    <h4 class="font-semibold text-gray-800 mb-3">Typical Monthly Costs:</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Home Cost:</span>
+                            <br>$1,200-2,500
+                        </div>
+                        <div>
+                            <span class="font-medium">HOA Fees:</span>
+                            <br>$300-800
+                        </div>
+                        <div>
+                            <span class="font-medium">Amenities:</span>
+                            <br>$100-400
+                        </div>
+                        <div>
+                            <span class="font-medium">Utilities:</span>
+                            <br>$150-300
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assisted Living -->
+            <div class="option-card mb-8 p-8 rounded-lg shadow-lg" style="border-left-color: #9f7aea;">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-heart text-4xl text-purple-600 mr-4"></i>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">Assisted Living</h3>
+                            <p class="text-gray-600">Professional care with personal independence and privacy</p>
+                        </div>
+                    </div>
+                    <div class="cost-indicator" style="background: linear-gradient(45deg, #9f7aea, #b794f6);">
+                        $3,500-$6,000/month
+                    </div>
+                </div>
+                
+                <div class="pros-cons-grid mb-6">
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Advantages
+                        </h4>
+                        <ul class="space-y-2 text-green-700">
+                            <li>• Professional healthcare support available</li>
+                            <li>• Social activities and community</li>
+                            <li>• Meals and housekeeping included</li>
+                            <li>• 24/7 emergency assistance</li>
+                            <li>• Medication management support</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-red-800 mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Considerations
+                        </h4>
+                        <ul class="space-y-2 text-red-700">
+                            <li>• Significantly higher monthly costs</li>
+                            <li>• Less personal independence</li>
+                            <li>• Shared living environment</li>
+                            <li>• Waiting lists at quality facilities</li>
+                            <li>• Potential for further moves as needs change</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="cost-breakdown">
+                    <h4 class="font-semibold text-gray-800 mb-3">Typical Monthly Costs:</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Base Rate:</span>
+                            <br>$3,000-5,000
+                        </div>
+                        <div>
+                            <span class="font-medium">Care Services:</span>
+                            <br>$300-800
+                        </div>
+                        <div>
+                            <span class="font-medium">Additional Services:</span>
+                            <br>$200-500
+                        </div>
+                        <div>
+                            <span class="font-medium">Personal Items:</span>
+                            <br>$100-300
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Comparison Table -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Cost Comparison Overview</h2>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Housing Option</th>
+                            <th>Monthly Cost Range</th>
+                            <th>Upfront Costs</th>
+                            <th>Hidden Costs</th>
+                            <th>Best For Budget</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Age in Place</strong></td>
+                            <td>$1,500 - $3,000</td>
+                            <td>Home modifications: $5,000-$25,000</td>
+                            <td>Emergency repairs, increased utilities</td>
+                            <td>Limited/Fixed income</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Downsize</strong></td>
+                            <td>$1,200 - $2,500</td>
+                            <td>Moving costs: $10,000-$30,000</td>
+                            <td>Realtor fees, closing costs</td>
+                            <td>Moderate income</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Active Adult</strong></td>
+                            <td>$2,000 - $4,000</td>
+                            <td>Buy-in: $150,000-$500,000</td>
+                            <td>Special assessments, activity fees</td>
+                            <td>Comfortable income</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Assisted Living</strong></td>
+                            <td>$3,500 - $6,000</td>
+                            <td>Entry fee: $2,000-$10,000</td>
+                            <td>Level of care increases, personal services</td>
+                            <td>Higher income/assets</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Decision Framework -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Decision-Making Framework</h2>
+            
+            <div class="decision-matrix">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6">Key Factors to Consider</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-dollar-sign mr-2 text-green-600"></i>
+                            Financial Considerations
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>• Monthly budget and income stability</li>
+                            <li>• Available liquid assets</li>
+                            <li>• Home equity and real estate market</li>
+                            <li>• Long-term care insurance coverage</li>
+                            <li>• Healthcare costs and Medicare coverage</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-heart mr-2 text-red-600"></i>
+                            Health & Lifestyle
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>• Current health status and prognosis</li>
+                            <li>• Mobility and accessibility needs</li>
+                            <li>• Social connections and community preferences</li>
+                            <li>• Activity level and interests</li>
+                            <li>• Family proximity and support system</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-clock mr-2 text-blue-600"></i>
+                            Timing Factors
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>• Age and retirement timeline</li>
+                            <li>• Spouse/partner considerations</li>
+                            <li>• Real estate market conditions</li>
+                            <li>• Seasonal preferences for moving</li>
+                            <li>• Wait times for preferred communities</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-purple-600"></i>
+                            Location Preferences
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>• Climate and weather preferences</li>
+                            <li>• Cost of living variations</li>
+                            <li>• Healthcare quality and accessibility</li>
+                            <li>• Cultural and recreational opportunities</li>
+                            <li>• State tax implications</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Steps -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Your Next Steps</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center p-6 bg-blue-50 rounded-lg card-hover">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-clipboard-list text-2xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">1. Assess Your Situation</h3>
+                        <p class="text-gray-600">Evaluate your financial position, health status, and personal preferences using our decision framework.</p>
+                    </div>
+                    
+                    <div class="text-center p-6 bg-green-50 rounded-lg card-hover">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-search text-2xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">2. Research Options</h3>
+                        <p class="text-gray-600">Visit communities, get cost estimates, and speak with current residents to gather firsthand information.</p>
+                    </div>
+                    
+                    <div class="text-center p-6 bg-purple-50 rounded-lg card-hover">
+                        <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-handshake text-2xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">3. Consult Professionals</h3>
+                        <p class="text-gray-600">Work with financial advisors, real estate agents, and healthcare professionals to make informed decisions.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Pro Tip
+                    </h3>
+                    <p class="text-yellow-700">
+                        Don't wait until you're forced to make a decision. Start planning at least 5-10 years before you think you'll need to move. This gives you time to explore options, save additional funds, and make a choice that truly fits your lifestyle and budget.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Additional Resources</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Helpful Tools & Calculators</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <i class="fas fa-calculator text-blue-600 mr-3"></i>
+                                <a href="/calculators/reverse-mortgage" class="text-blue-600 hover:underline">Reverse Mortgage Calculator</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-home text-green-600 mr-3"></i>
+                                <a href="/calculators/downsizing" class="text-blue-600 hover:underline">Downsizing Cost Calculator</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-chart-line text-purple-600 mr-3"></i>
+                                <a href="/calculators/home-equity" class="text-blue-600 hover:underline">Home Equity Calculator</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-tools text-orange-600 mr-3"></i>
+                                <a href="/tools/home-modification-planner" class="text-blue-600 hover:underline">Home Modification Planner</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Related Guides</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <i class="fas fa-book text-blue-600 mr-3"></i>
+                                <a href="/resources/aging-in-place" class="text-blue-600 hover:underline">Aging in Place Guide</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-heart text-red-600 mr-3"></i>
+                                <a href="/resources/long-term-care" class="text-blue-600 hover:underline">Long-Term Care Planning</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-money-bill-wave text-green-600 mr-3"></i>
+                                <a href="/guides/reverse-mortgages" class="text-blue-600 hover:underline">Understanding Reverse Mortgages</a>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-arrow-down text-purple-600 mr-3"></i>
+                                <a href="/guides/downsizing" class="text-blue-600 hover:underline">Downsizing Your Home</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="mb-8">
+            <div class="gradient-bg text-white rounded-lg p-8 text-center">
+                <h2 class="text-2xl font-bold mb-4">Ready to Plan Your Retirement Housing?</h2>
+                <p class="text-lg opacity-90 mb-6">
+                    Don't leave your housing decisions to chance. Start planning today with our comprehensive tools and expert guidance.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/calculators/retirement-planning" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                        Start Planning Now
+                    </a>
+                    <a href="/contact" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                        Speak with an Expert
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-4">&copy; 2024 RetireSafe.ly - Your Trusted Retirement Planning Resource</p>
+            <div class="flex justify-center space-x-6 text-sm">
+                <a href="/privacy" class="hover:text-blue-400">Privacy Policy</a>
+                <a href="/terms" class="hover:text-blue-400">Terms of Service</a>
+                <a href="/contact" class="hover:text-blue-400">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

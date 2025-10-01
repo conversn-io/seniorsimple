@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare Made Simple - Complete Guide for Baby Boomers | RetireSafe.ly</title>
+    <meta name="description" content="Navigate Medicare options, enrollment periods, and costs with confidence. Simple guide for baby boomers approaching retirement age.">
+    <meta name="keywords" content="Medicare, Medicare Parts, enrollment, healthcare, retirement, baby boomers, Medicare costs">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: #374151;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .medicare-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .medicare-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+            margin: 2rem 0;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(45deg, #eff6ff, #f0f9ff);
+            border: 1px solid #bfdbfe;
+        }
+        
+        .cost-table {
+            overflow-x: auto;
+        }
+        
+        .cost-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .cost-table th,
+        .cost-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .cost-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #3b82f6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .alert-box {
+            border-left: 4px solid #ef4444;
+            background: #fef2f2;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .success-box {
+            border-left: 4px solid #10b981;
+            background: #f0fdf4;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .info-box {
+            border-left: 4px solid #3b82f6;
+            background: #eff6ff;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .part-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .part-a { background: #fef3c7; color: #92400e; }
+        .part-b { background: #dbeafe; color: #1e40af; }
+        .part-c { background: #d1fae5; color: #065f46; }
+        .part-d { background: #fce7f3; color: #9d174d; }
+        
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-12">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">Medicare Made Simple</h1>
+                <p class="text-xl opacity-90 mb-6">Navigate Medicare options, enrollment periods, and costs with confidence</p>
+                <div class="flex justify-center items-center space-x-6 text-sm">
+                    <span class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        10 min read
+                    </span>
+                    <span class="flex items-center">
+                        <i class="fas fa-user-graduate mr-2"></i>
+                        Beginner
+                    </span>
+                    <span class="flex items-center">
+                        <i class="fas fa-tag mr-2"></i>
+                        Healthcare
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 py-8">
+        <!-- Introduction -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Understanding Medicare: Your Gateway to Healthcare Security</h2>
+                <p class="text-lg text-gray-700 mb-4">
+                    Turning 65 brings many changes, and one of the most important is navigating Medicare. This federal health insurance program provides essential healthcare coverage for millions of Americans, but understanding your options can feel overwhelming.
+                </p>
+                <p class="text-lg text-gray-700 mb-6">
+                    Don't worry – we've simplified everything you need to know about Medicare, from the different parts to enrollment deadlines and costs. By the end of this guide, you'll have the confidence to make informed decisions about your healthcare coverage.
+                </p>
+                
+                <div class="highlight-box rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                        Key Takeaway
+                    </h3>
+                    <p class="text-gray-700">
+                        Medicare isn't just one program – it's a comprehensive system with different parts that work together to provide complete healthcare coverage. Understanding each part helps you choose the right combination for your needs and budget.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Medicare Parts Overview -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">The Four Parts of Medicare Explained</h2>
+                <p class="text-lg text-gray-700 mb-8">
+                    Medicare is divided into four main parts, each covering different aspects of your healthcare. Think of it like a comprehensive insurance package where each part serves a specific purpose.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Part A -->
+                    <div class="medicare-card bg-white rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="part-badge part-a mr-3">Part A</div>
+                            <h3 class="text-xl font-semibold text-gray-900">Hospital Insurance</h3>
+                        </div>
+                        <p class="text-gray-700 mb-4">
+                            Covers inpatient hospital stays, skilled nursing facility care, hospice care, and some home health services. Most people get Part A automatically and don't pay a premium.
+                        </p>
+                        <div class="text-sm text-gray-600">
+                            <p><strong>Coverage includes:</strong></p>
+                            <ul class="mt-2 space-y-1">
+                                <li>• Hospital room and board</li>
+                                <li>• Skilled nursing facility care</li>
+                                <li>• Hospice and home health services</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Part B -->
+                    <div class="medicare-card bg-white rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="part-badge part-b mr-3">Part B</div>
+                            <h3 class="text-xl font-semibold text-gray-900">Medical Insurance</h3>
+                        </div>
+                        <p class="text-gray-700 mb-4">
+                            Covers doctor visits, outpatient care, medical equipment, and preventive services. You pay a monthly premium for Part B coverage.
+                        </p>
+                        <div class="text-sm text-gray-600">
+                            <p><strong>Coverage includes:</strong></p>
+                            <ul class="mt-2 space-y-1">
+                                <li>• Doctor visits and outpatient care</li>
+                                <li>• Medical equipment and supplies</li>
+                                <li>• Preventive services and screenings</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Part C -->
+                    <div class="medicare-card bg-white rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="part-badge part-c mr-3">Part C</div>
+                            <h3 class="text-xl font-semibold text-gray-900">Medicare Advantage</h3>
+                        </div>
+                        <p class="text-gray-700 mb-4">
+                            An alternative to Original Medicare that combines Parts A and B, often including Part D. Offered by private insurance companies approved by Medicare.
+                        </p>
+                        <div class="text-sm text-gray-600">
+                            <p><strong>May include:</strong></p>
+                            <ul class="mt-2 space-y-1">
+                                <li>• All benefits of Parts A and B</li>
+                                <li>• Often includes prescription drug coverage</li>
+                                <li>• May offer vision, dental, hearing aids</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Part D -->
+                    <div class="medicare-card bg-white rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="part-badge part-d mr-3">Part D</div>
+                            <h3 class="text-xl font-semibold text-gray-900">Prescription Drug Coverage</h3>
+                        </div>
+                        <p class="text-gray-700 mb-4">
+                            Covers prescription medications. Available as a standalone plan or included in Medicare Advantage plans. Highly recommended for most beneficiaries.
+                        </p>
+                        <div class="text-sm text-gray-600">
+                            <p><strong>Coverage includes:</strong></p>
+                            <ul class="mt-2 space-y-1">
+                                <li>• Brand-name and generic drugs</li>
+                                <li>• Varies by plan and formulary</li>
+                                <li>• Helps reduce out-of-pocket costs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enrollment Periods -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Critical Enrollment Periods: Don't Miss These Deadlines</h2>
+                <p class="text-lg text-gray-700 mb-8">
+                    Timing is everything with Medicare enrollment. Missing deadlines can result in penalties and delayed coverage. Here are the key enrollment periods you need to know:
+                </p>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Initial Enrollment Period (IEP)</h3>
+                        <p class="text-gray-700 mb-2">
+                            <strong>When:</strong> 7-month window around your 65th birthday (3 months before, your birthday month, and 3 months after)
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            This is your first opportunity to enroll in Medicare. If you're already receiving Social Security benefits, you'll be automatically enrolled in Parts A and B.
+                        </p>
+                        <div class="alert-box">
+                            <p class="text-red-800 font-medium">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Important: If you don't enroll during your IEP and don't have creditable coverage, you may face lifetime penalties.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">General Enrollment Period (GEP)</h3>
+                        <p class="text-gray-700 mb-2">
+                            <strong>When:</strong> January 1 - March 31 each year
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            If you missed your Initial Enrollment Period, you can enroll during this time. Coverage begins July 1, and you may face penalties.
+                        </p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Annual Open Enrollment Period</h3>
+                        <p class="text-gray-700 mb-2">
+                            <strong>When:</strong> October 15 - December 7 each year
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            Your annual opportunity to make changes to your Medicare coverage, including switching between Original Medicare and Medicare Advantage plans.
+                        </p>
+                        <div class="success-box">
+                            <p class="text-green-800 font-medium">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Pro Tip: Review your coverage annually during this period to ensure it still meets your needs and budget.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Special Enrollment Periods (SEP)</h3>
+                        <p class="text-gray-700 mb-2">
+                            <strong>When:</strong> Triggered by qualifying life events
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            Available when you experience certain life changes, such as moving, losing employer coverage, or qualifying for financial assistance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Costs Breakdown -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Understanding Medicare Costs: What You'll Pay</h2>
+                <p class="text-lg text-gray-700 mb-8">
+                    Medicare costs can vary significantly based on your income, location, and the plans you choose. Here's a breakdown of the main costs you'll encounter:
+                </p>
+
+                <div class="cost-table mb-8">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Medicare Part</th>
+                                <th>Monthly Premium (2024)</th>
+                                <th>Deductible</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-medium">Part A</td>
+                                <td>$0 (for most people)</td>
+                                <td>$1,632 per benefit period</td>
+                                <td>Premium-free if you paid Medicare taxes for 10+ years</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Part B</td>
+                                <td>$174.70 (standard)</td>
+                                <td>$240 annually</td>
+                                <td>Higher earners pay more (IRMAA)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Part C</td>
+                                <td>Varies by plan</td>
+                                <td>Varies by plan</td>
+                                <td>May have $0 premium options</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Part D</td>
+                                <td>Varies by plan</td>
+                                <td>Varies by plan</td>
+                                <td>Late enrollment penalty may apply</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="info-box rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-dollar-sign text-blue-500 mr-2"></i>
+                            Income-Related Monthly Adjustment Amount (IRMAA)
+                        </h3>
+                        <p class="text-gray-700 mb-2">
+                            If your income is above certain thresholds, you'll pay higher premiums for Parts B and D. This is called IRMAA.
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            <strong>2024 Thresholds:</strong> Individual income over $103,000 or joint income over $206,000
+                        </p>
+                    </div>
+
+                    <div class="info-box rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
+                            Medigap Insurance
+                        </h3>
+                        <p class="text-gray-700 mb-2">
+                            Supplemental insurance that helps pay for costs not covered by Original Medicare, such as copayments and deductibles.
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            <strong>Cost:</strong> Varies by plan and insurance company, typically $100-$300+ per month
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Decision Making Guide -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Making the Right Choice for Your Situation</h2>
+                <p class="text-lg text-gray-700 mb-8">
+                    Choosing the right Medicare coverage depends on your health needs, budget, and preferences. Here's how to approach this important decision:
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Consider Original Medicare + Medigap if:</h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You want the freedom to see any doctor who accepts Medicare
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You travel frequently and want nationwide coverage
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You prefer predictable costs with comprehensive coverage
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You have complex health conditions requiring specialist care
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Consider Medicare Advantage if:</h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You want lower monthly premiums (possibly $0)
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You prefer one plan covering all your needs
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You want extra benefits like dental, vision, or wellness programs
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                You're comfortable with network restrictions
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-compass text-blue-500 mr-2"></i>
+                        Your Medicare Decision Checklist
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Health Considerations:</h4>
+                            <ul class="space-y-1 text-gray-700">
+                                <li>□ Current health status and conditions</li>
+                                <li>□ Prescription medications you take</li>
+                                <li>□ Preferred doctors and hospitals</li>
+                                <li>□ Expected medical needs</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Financial Considerations:</h4>
+                            <ul class="space-y-1 text-gray-700">
+                                <li>□ Monthly premium budget</li>
+                                <li>□ Deductible and out-of-pocket limits</li>
+                                <li>□ Prescription drug costs</li>
+                                <li>□ Income level (for IRMAA)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Steps -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Your Next Steps: Getting Started with Medicare</h2>
+                <p class="text-lg text-gray-700 mb-8">
+                    Now that you understand the basics, here's your action plan for navigating Medicare enrollment successfully:
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center p-6 bg-blue-50 rounded-lg">
+                        <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-xl font-bold">1</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Research Your Options</h3>
+                        <p class="text-gray-700 text-sm">
+                            Use Medicare.gov to compare plans, costs, and coverage options in your area. Take notes on what matters most to you.
+                        </p>
+                    </div>
+
+                    <div class="text-center p-6 bg-green-50 rounded-lg">
+                        <div class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-xl font-bold">2</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Check Your Timing</h3>
+                        <p class="text-gray-700 text-sm">
+                            Identify your enrollment period and mark important dates on your calendar. Don't wait until the last minute.
+                        </p>
+                    </div>
+
+                    <div class="text-center p-6 bg-purple-50 rounded-lg">
+                        <div class="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-xl font-bold">3</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Get Expert Help</h3>
+                        <p class="text-gray-700 text-sm">
+                            Consider speaking with a Medicare counselor or insurance agent who can provide personalized guidance.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-phone text-blue-500 mr-2"></i>
+                        Important Resources
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-900">Medicare.gov</p>
+                            <p class="text-gray-700">Official Medicare website with plan comparisons and enrollment</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">1-800-MEDICARE</p>
+                            <p class="text-gray-700">Free phone assistance 24/7</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">State Health Insurance Assistance Program (SHIP)</p>
+                            <p class="text-gray-700">Free local counseling and assistance</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Social Security Administration</p>
+                            <p class="text-gray-700">For questions about eligibility and enrollment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-sm p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Take Control of Your Healthcare Future</h2>
+                <p class="text-lg text-gray-700 mb-6">
+                    Medicare doesn't have to be intimidating. With the right information and proper timing, you can secure comprehensive healthcare coverage that fits your needs and budget. Remember, the key is to start planning before you need coverage and to review your options annually.
+                </p>
+                <p class="text-lg text-gray-700 mb-8">
+                    Your health is your most valuable asset in retirement. By understanding Medicare and making informed decisions, you're taking a crucial step toward protecting that asset and ensuring peace of mind for years to come.
+                </p>
+                
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-6 text-center">
+                    <h3 class="text-2xl font-bold mb-4">Ready to Secure Your Healthcare Future?</h3>
+                    <p class="text-lg mb-6">
+                        Get personalized guidance on Medicare options, estate planning, and retirement strategies.
+                    </p>
+                    <div class="flex justify-center space-x-4">
+                        <button class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Schedule Free Consultation
+                        </button>
+                        <button class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                            <i class="fas fa-download mr-2"></i>
+                            Download Medicare Guide
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="text-xl font-semibold mb-2">RetireSafe.ly</h3>
+            <p class="text-gray-400 mb-4">Your trusted partner for retirement planning and financial security</p>
+            <div class="flex justify-center space-x-6 text-sm">
+                <a href="#" class="hover:text-blue-400 transition duration-300">Privacy Policy</a>
+                <a href="#" class="hover:text-blue-400 transition duration-300">Terms of Service</a>
+                <a href="#" class="hover:text-blue-400 transition duration-300">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
