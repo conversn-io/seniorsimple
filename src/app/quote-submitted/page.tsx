@@ -97,11 +97,11 @@ export default function QuoteSubmittedPage() {
                   Based on your ${formatNumber(quoteData.allocationAmount)} FIA allocation:
                 </p>
                 <div className="flex items-center justify-center mb-4">
-                  <span className="text-4xl font-bold text-blue-600">
+                  <span className="text-4xl font-bold text-[#36596A]">
                     ${formatNumber(quoteData.monthlyIncome.conservative)}
                   </span>
                   <span className="text-2xl text-gray-500 mx-4"> - </span>
-                  <span className="text-4xl font-bold text-blue-600">
+                  <span className="text-4xl font-bold text-[#36596A]">
                     ${formatNumber(quoteData.monthlyIncome.optimistic)}
                   </span>
                   <span className="text-2xl text-gray-600 ml-2">/month</span>
@@ -153,7 +153,7 @@ export default function QuoteSubmittedPage() {
             {/* Step 1 */}
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">1</span>
+                <span className="text-[#36596A] font-bold text-sm">1</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -172,7 +172,7 @@ export default function QuoteSubmittedPage() {
             {/* Step 2 */}
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">2</span>
+                <span className="text-[#36596A] font-bold text-sm">2</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -184,10 +184,10 @@ export default function QuoteSubmittedPage() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <Clock className="w-5 h-5 text-blue-600 mr-2" />
+                      <Clock className="w-5 h-5 text-[#36596A] mr-2" />
                       <span className="text-gray-700">Schedule Consultation</span>
                     </div>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <button className="bg-[#36596A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a4a5a] transition-colors">
                       Choose Time
                     </button>
                   </div>
@@ -198,7 +198,7 @@ export default function QuoteSubmittedPage() {
             {/* Step 3 */}
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">3</span>
+                <span className="text-[#36596A] font-bold text-sm">3</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -243,28 +243,28 @@ export default function QuoteSubmittedPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-start">
-              <User className="w-6 h-6 text-blue-600 mr-3 mt-1" />
+              <User className="w-6 h-6 text-[#36596A] mr-3 mt-1" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Licensed Professionals</h3>
                 <p className="text-gray-600 text-sm">Our specialists are fully licensed and experienced in FIA products.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <BookOpen className="w-6 h-6 text-blue-600 mr-3 mt-1" />
+              <BookOpen className="w-6 h-6 text-[#36596A] mr-3 mt-1" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Educational Approach</h3>
                 <p className="text-gray-600 text-sm">We educate you on all options before making any recommendations.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckCircle className="w-6 h-6 text-blue-600 mr-3 mt-1" />
+              <CheckCircle className="w-6 h-6 text-[#36596A] mr-3 mt-1" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">No Obligation</h3>
                 <p className="text-gray-600 text-sm">Free consultation with no pressure to purchase anything.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <Phone className="w-6 h-6 text-blue-600 mr-3 mt-1" />
+              <Phone className="w-6 h-6 text-[#36596A] mr-3 mt-1" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Personalized Service</h3>
                 <p className="text-gray-600 text-sm">One-on-one consultation tailored to your specific needs.</p>

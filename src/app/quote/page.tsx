@@ -20,7 +20,7 @@ const QuotePage = () => {
         <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center mb-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
-              FIA Quote Calculator
+              Tax-Free Retirement Income Calculator
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 mb-4 leading-relaxed max-w-3xl mx-auto">
               Get personalized Fixed Indexed Annuity quotes with real-time rates and income projections.

@@ -71,7 +71,7 @@ export const SavingsSlider = ({
 
       <div className="slider-section bg-white rounded-xl p-6 shadow-lg">
         <div className="slider-value-display text-center mb-6">
-          <div className="value text-4xl font-bold text-blue-600 mb-2">
+          <div className="value text-4xl font-bold text-[#36596A] mb-2">
             {formatNumber(value)}
           </div>
           <p className="text-sm text-gray-500">Use the slider to select your total retirement savings</p>
@@ -87,7 +87,7 @@ export const SavingsSlider = ({
             onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="savings-slider w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((value - question.min) / (question.max - question.min)) * 100}%, #e5e7eb ${((value - question.min) / (question.max - question.min)) * 100}%, #e5e7eb 100%)`
+              background: `linear-gradient(to right, #36596A 0%, #36596A ${((value - question.min) / (question.max - question.min)) * 100}%, #e5e7eb ${((value - question.min) / (question.max - question.min)) * 100}%, #e5e7eb 100%)`
             }}
             disabled={isLoading}
           />
@@ -115,7 +115,7 @@ export const SavingsSlider = ({
         <button
           onClick={handleContinue}
           disabled={!isValid || isLoading}
-          className="btn-continue w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-continue w-full bg-[#36596A] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <span className="flex items-center justify-center">

@@ -19,12 +19,12 @@
 }
 
 .calculator-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-200;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent text-lg transition-all duration-200;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 .calculator-input:focus {
-  @apply border-blue-500 shadow-lg;
+  @apply border-[#36596A] shadow-lg;
   transform: translateY(-1px);
   box-shadow: 0 10px 25px rgba(54, 89, 106, 0.15);
 }
@@ -55,7 +55,7 @@
 }
 
 .calculator-action-button.primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700;
+  @apply bg-[#36596A] text-white hover:bg-[#2a4a5a];
 }
 
 .calculator-action-button.secondary {
@@ -84,7 +84,7 @@
 }
 
 .tool-step-indicator.active {
-  @apply bg-blue-600 text-white shadow-lg;
+  @apply bg-[#36596A] text-white shadow-lg;
   background: linear-gradient(135deg, #36596A 0%, #2c4754 100%);
   transform: scale(1.1);
 }
@@ -103,12 +103,12 @@
 }
 
 .tool-form-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-200;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent text-lg transition-all duration-200;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 .tool-form-input:focus {
-  @apply border-blue-500 shadow-lg;
+  @apply border-[#36596A] shadow-lg;
   transform: translateY(-1px);
   box-shadow: 0 10px 25px rgba(54, 89, 106, 0.15);
 }
@@ -136,7 +136,7 @@
 }
 
 .checklist-progress-fill {
-  @apply bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500;
+  @apply bg-gradient-to-r from-[#36596A] to-[#2a4a5a] h-3 rounded-full transition-all duration-500;
   background: linear-gradient(90deg, #36596A 0%, #2c4754 100%);
   box-shadow: 0 2px 4px rgba(54, 89, 106, 0.3);
 }
@@ -176,12 +176,12 @@
 }
 
 .checklist-notes-textarea {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all duration-200;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent text-sm transition-all duration-200;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 .checklist-notes-textarea:focus {
-  @apply border-blue-500 shadow-lg;
+  @apply border-[#36596A] shadow-lg;
   transform: translateY(-1px);
 }
 
@@ -195,7 +195,7 @@
 }
 
 .article-reading-progress-fill {
-  @apply h-full bg-blue-600 transition-all duration-150;
+  @apply h-full bg-[#36596A] transition-all duration-150;
   background: linear-gradient(90deg, #36596A 0%, #2c4754 100%);
 }
 
@@ -270,7 +270,7 @@
 }
 
 .article-action-button.primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700;
+  @apply bg-[#36596A] text-white hover:bg-[#2a4a5a];
   background: linear-gradient(135deg, #36596A 0%, #2c4754 100%);
 }
 
@@ -318,12 +318,12 @@
 }
 
 .search-input {
-  @apply block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-200;
+  @apply block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent text-lg transition-all duration-200;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 .search-input:focus {
-  @apply border-blue-500 shadow-lg;
+  @apply border-[#36596A] shadow-lg;
   transform: translateY(-1px);
   box-shadow: 0 10px 25px rgba(54, 89, 106, 0.15);
 }
@@ -349,7 +349,7 @@
 }
 
 .search-filter-checkbox {
-  @apply w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500;
+  @apply w-4 h-4 text-[#36596A] border-gray-300 rounded focus:ring-[#36596A];
 }
 
 .search-suggestion-button {
@@ -371,7 +371,7 @@
 
 /* ===== LOADING AND ANIMATION STYLES ===== */
 .loading-spinner {
-  @apply animate-spin rounded-full border-b-2 border-blue-600;
+  @apply animate-spin rounded-full border-b-2 border-[#36596A];
 }
 
 .fade-in {

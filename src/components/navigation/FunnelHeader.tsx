@@ -26,19 +26,6 @@ export function FunnelHeader() {
             </Link>
           </div>
 
-          {/* Phone CTA Button */}
-          {pathname !== '/quiz-submitted' && (
-            <div className="flex items-center">
-              <a
-                href="tel:+18884409669"
-                className="flex items-center bg-[#36596A] text-white px-6 py-3 rounded-lg hover:bg-[#2a4a5a] transition-colors font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Call (888) 440-9669</span>
-                <span className="sm:hidden">Call Now</span>
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </header>

@@ -128,7 +128,7 @@ export const AllocationSlider = ({
 
       <div className="slider-section bg-white rounded-xl p-6 shadow-lg">
         <div className="slider-value-display text-center mb-6">
-          <div className="value text-4xl font-bold text-blue-600 mb-2">
+          <div className="value text-4xl font-bold text-[#36596A] mb-2">
             {value}%
           </div>
           <div className="amount text-xl text-gray-600">
@@ -146,7 +146,7 @@ export const AllocationSlider = ({
             onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="allocation-slider w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${value}%, #e5e7eb ${value}%, #e5e7eb 100%)`
+              background: `linear-gradient(to right, #36596A 0%, #36596A ${value}%, #e5e7eb ${value}%, #e5e7eb 100%)`
             }}
             disabled={isLoading}
           />
@@ -162,7 +162,7 @@ export const AllocationSlider = ({
 
         <div className="allocation-preview flex justify-between p-4 bg-gray-50 rounded-lg">
           <div className="preview-item text-center">
-            <div className="text-sm text-gray-600 mb-1">FIA Allocation:</div>
+            <div className="text-sm text-gray-600 mb-1">Allocation:</div>
             <div className="amount font-bold text-lg text-gray-800">
               ${formatNumber(currentAmount)}
             </div>
@@ -180,7 +180,7 @@ export const AllocationSlider = ({
         <button
           onClick={handleContinue}
           disabled={!isValid || isLoading}
-          className="btn-continue w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-continue w-full bg-[#36596A] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <span className="flex items-center justify-center">

@@ -29,15 +29,6 @@ export const OTPVerification = ({ phoneNumber, onVerificationComplete, onBack }:
             console.error('❌ OTP Verification Failed:', error);
           }}
         />
-        
-        <div className="text-center mt-6">
-          <button
-            onClick={onBack}
-            className="text-gray-500 hover:underline text-sm"
-          >
-            ← Back to previous step
-          </button>
-        </div>
       </div>
     </div>
   );

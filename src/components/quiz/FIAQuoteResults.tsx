@@ -124,7 +124,7 @@ export const FIAQuoteResults = ({ answers, onRestart }: FIAQuoteResultsProps) =>
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
           <p className="text-gray-600">Calculating your FIA quote...</p>
         </div>
       </div>
@@ -144,11 +144,11 @@ export const FIAQuoteResults = ({ answers, onRestart }: FIAQuoteResultsProps) =>
           </p>
         </div>
         <div className="income-range flex items-center justify-center mb-4">
-          <span className="amount text-4xl font-bold text-blue-600">
+          <span className="amount text-4xl font-bold text-[#36596A]">
             ${formatNumber(incomeProjections.monthlyIncome.conservative)}
           </span>
           <span className="separator text-2xl text-gray-500 mx-4"> - </span>
-          <span className="amount text-4xl font-bold text-blue-600">
+          <span className="amount text-4xl font-bold text-[#36596A]">
             ${formatNumber(incomeProjections.monthlyIncome.optimistic)}
           </span>
           <span className="period text-2xl text-gray-600 ml-2">/month</span>
@@ -186,7 +186,7 @@ export const FIAQuoteResults = ({ answers, onRestart }: FIAQuoteResultsProps) =>
               No-obligation consultation
             </li>
           </ul>
-          <button className="btn-primary w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+          <button className="btn-primary w-full bg-[#36596A] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors">
             Schedule Your FIA Call
           </button>
         </div>
@@ -215,21 +215,21 @@ export const FIAQuoteResults = ({ answers, onRestart }: FIAQuoteResultsProps) =>
           <div className="grid md:grid-cols-2 gap-4">
             <ul className="space-y-2">
               <li className="flex items-center text-gray-700">
-                <span className="text-blue-500 mr-2">🏆</span>
+                <span className="text-[#36596A] mr-2">🏆</span>
                 Licensed in all 50 states
               </li>
               <li className="flex items-center text-gray-700">
-                <span className="text-blue-500 mr-2">📊</span>
+                <span className="text-[#36596A] mr-2">📊</span>
                 Access to 50+ FIA carriers
               </li>
             </ul>
             <ul className="space-y-2">
               <li className="flex items-center text-gray-700">
-                <span className="text-blue-500 mr-2">💰</span>
+                <span className="text-[#36596A] mr-2">💰</span>
                 No fees for our service
               </li>
               <li className="flex items-center text-gray-700">
-                <span className="text-blue-500 mr-2">🔒</span>
+                <span className="text-[#36596A] mr-2">🔒</span>
                 Your information is secure
               </li>
             </ul>
@@ -275,7 +275,7 @@ export const FIAQuoteResults = ({ answers, onRestart }: FIAQuoteResultsProps) =>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => router.push('/quote-submitted')}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="bg-[#36596A] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#2a4a5a] transition-colors"
           >
             Get Detailed Quote
           </button>

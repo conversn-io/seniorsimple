@@ -102,7 +102,7 @@ const Guides = () => {
                 placeholder="Search guides..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent"
               />
             </div>
 
@@ -112,7 +112,7 @@ const Guides = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent"
               >
                 {categories.map(category => (
                   <option key={category} value={category}>{category}</option>
@@ -128,7 +128,7 @@ const Guides = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredGuides.map((guide) => (
-              <div key={guide.id} className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow ${guide.featured ? 'ring-2 ring-blue-500' : ''}`}>
+              <div key={guide.id} className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow ${guide.featured ? 'ring-2 ring-[#36596A]' : ''}`}>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-4">
                     {guide.featured && (
@@ -157,7 +157,7 @@ const Guides = () => {
                       <span>{guide.readTime}</span>
                     </div>
                     <Link href={`/guides/${guide.id}`}>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      <button className="bg-[#36596A] hover:bg-[#2a4a5a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Read Guide
                       </button>
                     </Link>

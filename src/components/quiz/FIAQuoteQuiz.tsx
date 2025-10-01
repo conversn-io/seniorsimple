@@ -93,7 +93,7 @@ const FIA_QUIZ_QUESTIONS = [
   },
   {
     id: 'allocationPercent',
-    title: 'How much of your retirement savings would you like to allocate to a Fixed Indexed Annuity?',
+    title: 'How much of your retirement savings would you like to protect from market volatility?',
     subtitle: 'Use the slider to select your preferred allocation amount',
     type: 'allocation-slider' as const,
     min: 0,
@@ -338,26 +338,41 @@ export const FIAQuoteQuiz = () => {
     const ageRange = answers.ageRange;
     const allocationPercent = answers.fiaAllocation?.percentage || 25;
     
-    // Parse savings amount
+    // Parse savings amount - handle both numeric and string values
     let totalSavings = 0;
-    switch (retirementSavings) {
-      case '$1,000,000+':
-        totalSavings = 1000000;
-        break;
-      case '$750,000 - $999,999':
-        totalSavings = 750000;
-        break;
-      case '$500,000 - $749,999':
-        totalSavings = 500000;
-        break;
-      case '$250,000 - $499,999':
-        totalSavings = 250000;
-        break;
-      case '$100,000 - $249,999':
-        totalSavings = 100000;
-        break;
-      default:
-        totalSavings = 50000;
+    if (typeof retirementSavings === 'number') {
+      // New SavingsSlider stores numeric values
+      totalSavings = retirementSavings;
+    } else if (typeof retirementSavings === 'string') {
+      // Try to parse as number first
+      const numericValue = parseFloat(retirementSavings);
+      if (!isNaN(numericValue)) {
+        totalSavings = numericValue;
+      } else {
+        // Fall back to old string-based parsing for backward compatibility
+        switch (retirementSavings) {
+          case '$1,000,000+':
+            totalSavings = 1000000;
+            break;
+          case '$750,000 - $999,999':
+            totalSavings = 750000;
+            break;
+          case '$500,000 - $749,999':
+            totalSavings = 500000;
+            break;
+          case '$250,000 - $499,999':
+            totalSavings = 250000;
+            break;
+          case '$100,000 - $249,999':
+            totalSavings = 100000;
+            break;
+          default:
+            totalSavings = 50000;
+        }
+      }
+    } else {
+      // Default fallback
+      totalSavings = 50000;
     }
 
     // Calculate allocation amount

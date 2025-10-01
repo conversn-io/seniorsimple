@@ -97,7 +97,7 @@ const PRIMARY_QUIZ_QUESTIONS = [
   },
   {
     id: 'allocationPercent',
-    title: 'How much of your retirement savings would you like to allocate to a Fixed Indexed Annuity?',
+    title: 'How much of your retirement savings would you like to protect from market volatility?',
     subtitle: 'Use the slider to select your preferred allocation amount',
     type: 'allocation-slider' as const,
     min: 0,
@@ -601,6 +601,10 @@ export const AnnuityQuiz = () => {
 
     setShowProcessing(false);
     setShowResults(true);
+    
+    // Store quiz answers for personalized thank you message
+    sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
+    
     // Route to pageview tracking page
     try {
       router.push('/quiz-submitted');
@@ -678,6 +682,10 @@ export const AnnuityQuiz = () => {
       setTimeout(() => {
         setShowProcessing(false);
         setShowResults(true);
+        
+        // Store quiz answers for personalized thank you message
+        sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
+        
         try { router.push('/quiz-submitted'); } catch {}
       }, 2000); // 2 second delay
     } catch (error) {

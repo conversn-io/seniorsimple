@@ -63,7 +63,7 @@ export const PhoneInput = ({
           disabled={disabled}
           className={`
             w-full pr-4 py-3 text-lg border-2 rounded-lg
-            focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            focus:ring-2 focus:ring-[#36596A] focus:border-[#36596A]
             transition-colors duration-200
             ${hasError 
               ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 

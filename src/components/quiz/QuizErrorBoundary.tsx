@@ -52,7 +52,7 @@ class QuizErrorBoundary extends Component<Props, State> {
               </div>
               <button
                 onClick={this.handleReset}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                className="w-full bg-[#36596A] hover:bg-[#2a4a5a] text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Restart Quiz
