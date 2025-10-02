@@ -18,6 +18,11 @@ interface QuoteData {
   ageFactor: number;
   currentRate: number;
   lastUpdated: string;
+  personalInfo?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
 }
 
 export default function QuoteSubmittedPage() {
@@ -73,24 +78,20 @@ export default function QuoteSubmittedPage() {
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            FIA Quote Request Submitted!
+            Thank you {quoteData?.personalInfo?.firstName || ''}!
           </h1>
           <p className="text-lg text-gray-600">
-            Thank you for your interest in Fixed Indexed Annuities. Our specialists will contact you within 24 hours with your personalized quote.
+            One of our licensed specialists will be contacting you within the next 24 hours to complete your quote and provide you with more information about your next steps.
           </p>
         </div>
 
         {/* Quote Details Section */}
         {quoteData && (
           <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Your FIA Quote Summary
-            </h2>
-            
             {/* Income Projections */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">
-                Projected Monthly Income
+                Projected Monthly Tax Free Income
               </h3>
               <div className="text-center mb-4">
                 <p className="text-sm text-gray-600 mb-2">
@@ -122,7 +123,7 @@ export default function QuoteSubmittedPage() {
                   <span className="font-medium">${formatNumber(quoteData.totalSavings)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>FIA Allocation:</span>
+                  <span>Allocation %:</span>
                   <span className="font-medium">{quoteData.allocationPercent}%</span>
                 </div>
                 <div className="flex justify-between">
@@ -143,95 +144,47 @@ export default function QuoteSubmittedPage() {
           </div>
         )}
 
-        {/* 3 Steps Vertical */}
+        {/* Download Free Resource */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            What happens next?
+            Download the Free Resource
           </h2>
           
-          <div className="space-y-6">
-            {/* Step 1 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-[#36596A] font-bold text-sm">1</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Expect a call within 24 hours
-                </h3>
-                <p className="text-gray-600">
-                  {phoneNumber ? (
-                    <>We'll call you at the number ending in <strong>****{phoneNumber}</strong> within the next 24 hours.</>
-                  ) : (
-                    <>We'll call you at the number you provided within the next 24 hours.</>
-                  )}
-                </p>
-              </div>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+              "The Retirement Revolution"
+            </h3>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              "The Retirement Revolution" exposes exactly why Wall Street's 401(k) and IRA system has failed millions of Americans, while revealing how Fixed Indexed Annuities provide guaranteed lifetime income that you can never outlive. This eye-opening guide gives you the insider knowledge to understand why the annuity quote you just requested could be the smartest financial decision you'll ever make for your retirement security.
+            </p>
+            <div className="text-center">
+              <button className="bg-[#36596A] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#2a4a5a] transition-colors">
+                Download Free Guide
+              </button>
             </div>
+          </div>
 
-            {/* Step 2 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-[#36596A] font-bold text-sm">2</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Schedule your consultation
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  If you'd like to schedule a specific time, use our scheduling tool below.
-                </p>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Clock className="w-5 h-5 text-[#36596A] mr-2" />
-                      <span className="text-gray-700">Schedule Consultation</span>
-                    </div>
-                    <button className="bg-[#36596A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a4a5a] transition-colors">
-                      Choose Time
-                    </button>
-                  </div>
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">Read these articles</h4>
+            <div className="space-y-3">
+              <Link href="/content/can-i-lose-money-in-a-fixed-annuity" className="block bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Can I Lose Money in a Fixed Annuity?</span>
+                  <span className="text-[#36596A] text-sm">→</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-[#36596A] font-bold text-sm">3</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Get more information and education
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Download our free guide "The Retirement Revolution" and watch our educational webinar.
-                </p>
-                <div className="space-y-3">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Download className="w-5 h-5 text-green-600 mr-2" />
-                        <span className="text-gray-700">Download Free Guide</span>
-                      </div>
-                      <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Play className="w-5 h-5 text-red-600 mr-2" />
-                        <span className="text-gray-700">Watch Webinar</span>
-                      </div>
-                      <button className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-                        Watch Now
-                      </button>
-                    </div>
-                  </div>
+              </Link>
+              <Link href="/content/annuities-explained-secure-your-retirement-income-with-confidence" className="block bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Annuities Explained: Secure Your Retirement Income with Confidence</span>
+                  <span className="text-[#36596A] text-sm">→</span>
                 </div>
-              </div>
+              </Link>
+              <Link href="/content/tax-free-retirement-income-complete-guide" className="block bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Tax-Free Retirement Income: Complete Guide</span>
+                  <span className="text-[#36596A] text-sm">→</span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

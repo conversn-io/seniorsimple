@@ -409,7 +409,8 @@ export const FIAQuoteQuiz = () => {
       },
       ageFactor,
       currentRate: ageFactor,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      personalInfo: answers.personalInfo
     };
 
     console.log('✅ FIA Quote Results Calculated:', {
