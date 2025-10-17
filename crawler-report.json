@@ -1,0 +1,52 @@
+{
+  "start_time": 1760716844220,
+  "end_time": 1760716859.5854342,
+  "duration": -1758956127360.4146,
+  "pages_tested": [
+    {
+      "data": {},
+      "message": "Starting Comprehensive Site Crawler...",
+      "step": "Site Crawler",
+      "timestamp": 1760716844236
+    },
+    {
+      "data": {},
+      "message": "Testing URL accessibility: http://localhost:3010/",
+      "step": "URL Test",
+      "timestamp": 1760716844240
+    },
+    {
+      "data": {},
+      "message": "Testing navigation elements...",
+      "step": "Navigation",
+      "timestamp": 1760716852764
+    },
+    {
+      "data": {},
+      "message": "Testing URL accessibility: http://localhost:3010/retirement",
+      "step": "URL Test",
+      "timestamp": 1760716852771
+    },
+    {
+      "data": {},
+      "message": "Testing URL accessibility: http://localhost:3010/housing",
+      "step": "URL Test",
+      "timestamp": 1760716854836
+    },
+    {
+      "data": {},
+      "message": "Testing URL accessibility: http://localhost:3010/health",
+      "step": "URL Test",
+      "timestamp": 1760716856511
+    }
+  ],
+  "broken_links": [],
+  "performance_issues": [],
+  "ux_issues": [],
+  "seo_issues": [],
+  "callready_issues": [],
+  "success_count": 5,
+  "total_checks": 6,
+  "success_rate": 83.33333333333334,
+  "recommendations": []
+}
