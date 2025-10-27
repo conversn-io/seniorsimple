@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SeniorSimple - Retirement Planning Made Simple",
+    default: "SeniorSimple - Retirement Rescue™ Made Simple",
     template: "%s | SeniorSimple"
   },
   description: "Free retirement planning help for seniors. Get expert guidance on annuities, taxes, estate planning, reverse mortgages, and more. Simple tools and resources for people 55+.",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://seniorsimple.org',
     siteName: 'SeniorSimple',
-    title: 'SeniorSimple - Retirement Planning Made Simple',
+    title: 'SeniorSimple - Retirement Rescue™ Made Simple',
     description: 'Free retirement planning help for seniors. Get expert guidance on annuities, taxes, estate planning, reverse mortgages, and more.',
     images: [
       {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@SeniorSimple',
     creator: '@SeniorSimple',
-    title: 'SeniorSimple - Retirement Planning Made Simple',
+    title: 'SeniorSimple - Retirement Rescue™ Made Simple',
     description: 'Free retirement planning help for seniors. Get expert guidance on annuities, taxes, estate planning, reverse mortgages, and more.',
     images: ['/images/webp/hero/couple-share-coffee-meeting-home-couch.webp'],
   },

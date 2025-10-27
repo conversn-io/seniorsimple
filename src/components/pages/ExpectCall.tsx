@@ -27,8 +27,8 @@ const ExpectCall = () => {
           </h1>
           
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-            Thank you for your interest in learning more about indexed annuities. 
-            One of our retirement specialists will contact you within the next 24 hours.
+            Thank you for your interest in learning more about Retirement Rescue™ strategies. 
+            One of our Retirement Rescue™ specialists will contact you within the next 24 hours.
           </p>
           
           <div className="bg-[#F5F5F0] rounded-lg p-6 mb-6">
@@ -102,7 +102,7 @@ const ExpectCall = () => {
               <ul className="space-y-2 text-gray-600">
                 <li>• Your current retirement situation</li>
                 <li>• Your retirement timeline and goals</li>
-                <li>• What you know about indexed annuities</li>
+                <li>• What you know about Retirement Rescue™ strategies</li>
                 <li>• Any specific questions you have</li>
               </ul>
             </div>
@@ -110,7 +110,7 @@ const ExpectCall = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">We'll Explain</h3>
               <ul className="space-y-2 text-gray-600">
-                <li>• How indexed annuities work</li>
+                <li>• How Retirement Rescue™ strategies work</li>
                 <li>• Benefits and potential drawbacks</li>
                 <li>• Whether they might fit your situation</li>
                 <li>• Next steps if you're interested</li>

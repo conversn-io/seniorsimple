@@ -72,13 +72,13 @@ const menuItems = [
             description: "Optimize accounts for seniors"
           },
           {
-            name: "Retirement Planning Quiz",
+            name: "Retirement Rescue™ Quiz",
             href: "/quiz",
             icon: Target,
             description: "Get personalized retirement strategy"
           },
           {
-            name: "Retirement Planning Assessment",
+            name: "Retirement Rescue™ Assessment",
             href: "/content/retirement-planning-assessment",
             icon: Calculator,
             description: "Evaluate your retirement readiness"

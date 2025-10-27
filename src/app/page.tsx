@@ -40,7 +40,7 @@ import {
 } from 'lucide-react'
 
 // Generate SEO metadata for homepage
-const pageTitle = "Retirement Planning Made Simple for Seniors"
+const pageTitle = "Retirement Rescue™ Made Simple for Seniors"
 const pageDescription = "Get free retirement planning help with annuities, taxes, estate planning, reverse mortgages, and more. Simple tools and expert guidance for seniors 55+."
 const primaryKeywords = ["retirement planning", "seniors", "annuities", "estate planning", "reverse mortgage", "medicare", "tax planning"]
 
@@ -601,7 +601,7 @@ export default async function HomePage() {
           
           <p className="text-sm text-white opacity-80 flex items-center justify-center gap-2">
             <Download className="w-4 h-4" />
-            Free download: The Retirement Planning Essentials Checklist
+            Free download: The Retirement Rescue™ Essentials Checklist
           </p>
         </div>
       </section>

@@ -1,6 +1,8 @@
+'use client'
+
 import Image from 'next/image'
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { 
   CheckCircle, 
   Shield, 
@@ -21,13 +23,15 @@ import {
   Clock
 } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: "Retirement Rescue - Why Wealthy Americans Are Rushing to This Little-Known Strategy",
-  description: "Discover the retirement strategy that's helping Americans with $250k+ protect their savings from market crashes while still participating in growth. See if you qualify.",
-  keywords: ["retirement rescue", "retirement protection", "market protection", "retirement strategy", "tax advantages", "guaranteed growth"],
-};
-
 export default function RetirementRescuePage() {
+  useEffect(() => {
+    document.title = "Retirement Rescue™ - Why Wealthy Americans Are Rushing to This Little-Known Strategy"
+    const metaDescription = document.querySelector('meta[name="description"]')
+    if (metaDescription) {
+      metaDescription.setAttribute('content', "Discover the retirement strategy that's helping Americans with $250k+ protect their savings from market crashes while still participating in growth. See if you qualify.")
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-white">
       
@@ -51,12 +55,15 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Why Are Wealthy Americans Rushing To 
-              <span className="block text-orange-300">Rescue Their Retirement?</span>
+              Why Are Average Americans Rushing To
+              <br />
+              <span className="text-orange-300">Rescue Their Retirement?</span>
             </h1>
             <div className="w-32 h-1 bg-orange-300 mx-auto mb-8"></div>
             <p className="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in-delay max-w-4xl mx-auto">
-              It's True…You May Be Able To <strong>Rescue Your Retirement</strong> From Market Crashes and Taxes
+              It's True…You May Be Able To <strong>Rescue Your Retirement</strong>
+              <br />
+              From Market Crashes and Taxes
             </p>
             {/* Removed CTA button from hero per request */}
           </div>
@@ -132,6 +139,14 @@ export default function RetirementRescuePage() {
               </p>
             </div>
           </div>
+          
+          {/* Scroll Indicator */}
+          <div className="flex flex-col items-center justify-center mt-16 animate-bounce">
+            <div className="text-white/80 text-sm mb-2 font-medium">Learn More Below</div>
+            <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-white/80 rounded-full mt-2 animate-pulse"></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -157,7 +172,7 @@ export default function RetirementRescuePage() {
               Now is the best time to <strong>protect your investments and secure your retirement income</strong>.
             </p>
             <p className="text-lg text-gray-700 max-w-4xl mx-auto mt-6">
-              Why is the Retirement Rescue quickly becoming the go-to strategy for the nation's elite?
+              Why is the Retirement Rescue™ quickly becoming the go-to strategy for the nation's elite?
             </p>
             <p className="text-lg text-gray-700 max-w-4xl mx-auto mt-4">
               It's because there is a perfect storm on the horizon…
@@ -206,7 +221,7 @@ export default function RetirementRescuePage() {
               Well, there's good news.
             </p>
             <p className="text-xl font-semibold text-[#36596A]">
-              With Retirement Rescue, you get market upside potential with downside protection.
+              With Retirement Rescue™, you get market upside potential with downside protection.
             </p>
           </div>
         </div>
@@ -217,7 +232,7 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              What Is Retirement Rescue?
+              What Is Retirement Rescue™?
             </h2>
             <div className="w-24 h-1 bg-[#36596A] mx-auto mb-8"></div>
           </div>
@@ -261,7 +276,7 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              With Retirement Rescue:
+              With Retirement Rescue™:
             </h2>
             <div className="w-24 h-1 bg-[#36596A] mx-auto mb-8"></div>
           </div>
@@ -383,12 +398,12 @@ export default function RetirementRescuePage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-8">
             What Are Americans Like You Doing To Prequalify For 
-            <span className="text-orange-300">Retirement Rescue Protection?</span>
+            <span className="text-orange-300"> Retirement Rescue™ Protection?</span>
           </h2>
           <div className="w-32 h-1 bg-orange-300 mx-auto mb-12"></div>
           
           <p className="text-xl mb-8 opacity-90">
-            You may prequalify for <strong>Retirement Rescue if you have more than $250k saved for retirement</strong> in a 401(k) or IRA.
+            You may prequalify for <strong>Retirement Rescue™ if you have more than $250k saved for retirement</strong> in a 401(k) or IRA.
           </p>
           <p className="text-lg mb-12 opacity-80">
             However, there are a few more steps you must take.
@@ -401,10 +416,16 @@ export default function RetirementRescuePage() {
           <div className="mt-8">
             <Link
               href="/quiz"
-              className="inline-flex items-center bg-white text-[#36596A] px-8 py-4 rounded-lg font-bold text-xl hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="relative inline-flex items-center bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-white px-8 py-4 rounded-lg font-bold text-xl shadow-2xl hover:shadow-yellow-500/50 transform hover:scale-105 transition-all duration-300 animate-pulse hover:animate-none"
+              style={{
+                boxShadow: '0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2), 0 0 60px rgba(251, 191, 36, 0.1)',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              }}
             >
-              Start Your Retirement Rescue Quiz
-              <ArrowRight className="w-6 h-6 ml-2" />
+              <span className="relative z-10">Start Your Retirement Rescue™ Quiz</span>
+              <ArrowRight className="w-6 h-6 ml-2 relative z-10" />
+              {/* Gradient overlay for extra shine */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-lg"></div>
             </Link>
           </div>
         </div>
@@ -415,7 +436,7 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              What Is A Licensed Retirement Rescue Advisor?
+              What Is A Licensed Retirement Rescue™ Advisor?
             </h2>
             <div className="w-24 h-1 bg-[#36596A] mx-auto mb-8"></div>
           </div>
@@ -423,16 +444,16 @@ export default function RetirementRescuePage() {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
               <p className="text-lg text-gray-700 mb-6">
-                <strong>A Licensed Retirement Rescue Advisor</strong> has earned a special license required by your state...
+                <strong>A Licensed Retirement Rescue™ Advisor</strong> has earned a special license required by your state...
               </p>
               <p className="text-lg text-gray-700 mb-6">
                 This is often different than your typical financial advisor.
               </p>
               <p className="text-lg text-gray-700 mb-6">
-                This allows them to work directly with <strong>Insurance Companies that offer Retirement Rescue strategies</strong>.
+                This allows them to work directly with <strong>Insurance Companies that offer Retirement Rescue™ strategies</strong>.
               </p>
               <p className="text-lg text-gray-700">
-                And allows them to be certified as a Licensed Retirement Rescue Advisor.
+                And allows them to be certified as a Licensed Retirement Rescue™ Advisor.
               </p>
             </div>
             <div className="text-center">
@@ -455,18 +476,18 @@ export default function RetirementRescuePage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
             Why Should I Schedule My Complimentary 
-            <span className="bg-gradient-to-r from-[#36596A] to-[#2a4a5a] bg-clip-text text-transparent">Retirement Rescue Suitability Review Call?</span>
+            <span className="bg-gradient-to-r from-[#36596A] to-[#2a4a5a] bg-clip-text text-transparent"> Retirement Rescue™ Suitability Review Call?</span>
           </h2>
           <div className="w-24 h-1 bg-[#36596A] mx-auto mb-12"></div>
           
           <p className="text-lg text-gray-700 mb-8">
-            <strong>Only 30%</strong> of prequalified Americans can actually implement a Retirement Rescue strategy.
+            <strong>Unfortunately, only 30%</strong> of prequalified Americans can actually implement a Retirement Rescue™ strategy.
           </p>
           <p className="text-lg text-gray-700 mb-8">
             There are legal restrictions like the types of accounts you have, and how long you've been funding them for.
           </p>
           <p className="text-lg text-gray-700 mb-8">
-            To complete your <strong>qualification and provide a customized and personalized Retirement Rescue strategy</strong>, your Licensed Retirement Rescue Advisor will need 5 - 15 minutes so they can determine if a Retirement Rescue is suitable for you.
+            To complete your <strong>qualification and provide a customized and personalized Retirement Rescue™ strategy</strong>, your Licensed Retirement Rescue™ Advisor will need 5 - 15 minutes so they can determine if a Retirement Rescue™ is suitable for you.
           </p>
           <p className="text-lg text-gray-700 mb-8">
             Like a mortgage, once you're pre-qualified, you need to speak with a banker.
@@ -477,7 +498,7 @@ export default function RetirementRescuePage() {
           
           <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 mb-8">
             <p className="text-lg font-semibold text-gray-900 mb-4">
-              Your Licensed Retirement Rescue Advisor will be the first to tell you that a Retirement Rescue will not work for you.
+              Your Licensed Retirement Rescue™ Advisor will be the first to tell you that a Retirement Rescue™ will not work for you.
             </p>
             <p className="text-lg text-[#36596A] font-semibold">
               Don't wait, and begin the suitability process by completing the brief survey above.

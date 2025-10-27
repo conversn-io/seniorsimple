@@ -20,7 +20,7 @@ const FunnelFooter = () => {
             <h3 className="text-lg font-semibold text-[#36596A] mb-4">Resources</h3>
             <div className="space-y-2 text-gray-600">
               <Link href="/retirement" className="block hover:text-[#36596A] transition-colors">
-                Retirement Planning
+                Retirement Rescue™
               </Link>
               <Link href="/housing" className="block hover:text-[#36596A] transition-colors">
                 Housing & Real Estate
