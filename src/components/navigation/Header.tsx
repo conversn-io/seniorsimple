@@ -12,11 +12,11 @@ export function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
               <Image
-                src="/images/logos/seniorsimplelogo-sq.png"
+                src="/images/logos/senior-simple-logo-nav-icon.png"
                 alt="SeniorSimple"
                 width={40}
                 height={40}
-                className="h-10 w-auto"
+                className="h-10 w-10 rounded-full"
               />
               <span className="ml-2 text-xl font-bold text-[#36596A]">
                 SeniorSimple

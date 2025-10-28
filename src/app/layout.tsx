@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   authors: [{ name: "SeniorSimple Team" }],
   creator: "SeniorSimple",
   publisher: "SeniorSimple",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/images/logos/senior-simple-logo-circle-mark-favicon.png',
+  },
   formatDetection: {
     email: false,
     address: false,
