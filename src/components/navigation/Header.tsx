@@ -12,15 +12,12 @@ export function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
               <Image
-                src="/images/logos/senior-simple-logo-nav-icon.png"
+                src="/images/logos/senior-simple-logo-rectangle-header.png"
                 alt="SeniorSimple"
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full"
+                width={200}
+                height={50}
+                className="h-12 w-auto"
               />
-              <span className="ml-2 text-xl font-bold text-[#36596A]">
-                SeniorSimple
-              </span>
             </Link>
           </div>
 
