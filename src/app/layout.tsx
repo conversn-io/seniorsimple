@@ -26,8 +26,12 @@ export const metadata: Metadata = {
   creator: "SeniorSimple",
   publisher: "SeniorSimple",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
+    icon: [
+      { url: '/images/logos/senior-simple-logo-circle-mark-favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' }
+    ],
+    shortcut: '/images/logos/senior-simple-logo-circle-mark-favicon.png',
     apple: '/images/logos/senior-simple-logo-circle-mark-favicon.png',
   },
   formatDetection: {
@@ -84,6 +88,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Favicon links for better browser compatibility */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/logos/senior-simple-logo-circle-mark-favicon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/logos/senior-simple-logo-circle-mark-favicon.png" />
+        
         {/* ❌ TEMPORARILY DISABLED: Google Tag Manager - Using direct tracking */}
         {/* 
         <script
