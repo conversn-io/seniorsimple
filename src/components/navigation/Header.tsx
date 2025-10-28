@@ -9,14 +9,14 @@ export function Header() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 w-[150px]">
+          <div className="flex-shrink-0 w-[200px]">
             <Link href="/" className="flex items-center">
               <Image
                 src="/images/logos/senior-simple-logo-rectangle-header.png"
                 alt="SeniorSimple"
                 width={200}
                 height={50}
-                className="h-12 w-auto max-w-[150px]"
+                className="h-10 w-auto max-w-[200px]"
               />
             </Link>
           </div>
