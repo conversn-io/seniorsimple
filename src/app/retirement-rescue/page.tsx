@@ -55,15 +55,12 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Why Are Average Americans Rushing To
-              <br />
-              <span className="text-orange-300">Rescue Their Retirement?</span>
+              Why Are Wealthy Americans Rushing To 
+              <span className="block text-orange-300">Rescue Their Retirement?</span>
             </h1>
             <div className="w-32 h-1 bg-orange-300 mx-auto mb-8"></div>
             <p className="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in-delay max-w-4xl mx-auto">
-              It's True…You May Be Able To <strong>Rescue Your Retirement</strong>
-              <br />
-              From Market Crashes and Taxes
+              It's True…You May Be Able To <strong>Rescue Your Retirement</strong> From Market Crashes and Taxes
             </p>
             {/* Removed CTA button from hero per request */}
           </div>
