@@ -86,3 +86,8 @@ jspm_packages/
 
 # Supabase Edge Functions (exclude from Next.js build)
 supabase/functions/supabase/functions/
+
+# Environment files
+.env
+.env.local
+.env.local.backup
