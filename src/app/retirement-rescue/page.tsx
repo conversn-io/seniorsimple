@@ -55,7 +55,7 @@ export default function RetirementRescuePage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Why Are Wealthy Americans Rushing To 
+              Why Are Average Americans Rushing To 
               <span className="block text-orange-300">Rescue Their Retirement?</span>
             </h1>
             <div className="w-32 h-1 bg-orange-300 mx-auto mb-8"></div>
