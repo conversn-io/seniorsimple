@@ -136,17 +136,18 @@ async function upsertLead(
     existingLead = existing;
   }
   
-  // Extract UTM parameters
-  const utmSource = utmParams?.utm_source || 'seniorsimple';
-  const utmMedium = utmParams?.utm_medium || 'quiz';
+  // Extract UTM parameters - use null instead of defaults to clearly indicate missing UTM data
+  const utmSource = utmParams?.utm_source || null;
+  const utmMedium = utmParams?.utm_medium || null;
   const utmCampaign = utmParams?.utm_campaign || null;
   
+  // NOTE: Do NOT include optional columns (form_type, attributed_ad_account, profit_center) 
+  // as they don't exist in the current schema and will cause PGRST204 errors
   const leadData: any = {
     contact_id: contactId,
     session_id: sessionId,
     site_key: 'seniorsimple.org',
     funnel_type: funnelType || 'insurance',
-    form_type: 'quiz',
     status: isVerified ? 'verified' : 'email_captured',
     is_verified: isVerified,
     verified_at: verifiedAt,
@@ -157,13 +158,15 @@ async function upsertLead(
       ...quizAnswers,
       calculated_results: calculatedResults,
       licensing_info: licensingInfo,
-      utm_parameters: utmParams,
+      utm_parameters: utmParams || {}, // Ensure UTM is stored even if empty object
     },
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    attributed_ad_account: 'CallReady - Insurance',
-    profit_center: 'SeniorSimple.org',
+    // Optional columns removed - they don't exist in schema:
+    // form_type: 'quiz',
+    // attributed_ad_account: 'CallReady - Insurance',
+    // profit_center: 'SeniorSimple.org',
   };
   
   if (existingLead?.id) {
@@ -179,25 +182,14 @@ async function upsertLead(
       .single();
     
     if (error) {
-      // Try without optional columns if they don't exist
-      const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
-      let shouldRetry = false;
+      const errorCode = error.code || '';
+      const errorMessage = String(error.message || error.details || '').toLowerCase();
+      const isPGRST204 = errorCode === 'PGRST204';
+      const mentionsColumn = errorMessage.includes('column') || errorMessage.includes('could not find');
       
-      for (const col of optionalColumns) {
-        if (error.message?.includes(col)) {
-          delete leadData[col];
-          shouldRetry = true;
-        }
-      }
-      
-      if (shouldRetry) {
-        const { data: fallbackUpdated } = await callreadyQuizDb
-          .from('leads')
-          .update(leadData)
-          .eq('id', existingLead.id)
-          .select('*')
-          .single();
-        return fallbackUpdated || existingLead;
+      // If it's a schema/column error, we've already removed optional columns, so this is a real error
+      if (isPGRST204 || mentionsColumn) {
+        console.error('❌ Schema error persisted even after removing optional columns:', error);
       }
       throw error;
     }
@@ -211,24 +203,14 @@ async function upsertLead(
       .single();
     
     if (error) {
-      // Try without optional columns if they don't exist
-      const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
-      let shouldRetry = false;
+      const errorCode = error.code || '';
+      const errorMessage = String(error.message || error.details || '').toLowerCase();
+      const isPGRST204 = errorCode === 'PGRST204';
+      const mentionsColumn = errorMessage.includes('column') || errorMessage.includes('could not find');
       
-      for (const col of optionalColumns) {
-        if (error.message?.includes(col)) {
-          delete leadData[col];
-          shouldRetry = true;
-        }
-      }
-      
-      if (shouldRetry) {
-        const { data: fallbackLead } = await callreadyQuizDb
-          .from('leads')
-          .insert(leadData)
-          .select('*')
-          .single();
-        return fallbackLead;
+      // If it's a schema/column error, we've already removed optional columns, so this is a real error
+      if (isPGRST204 || mentionsColumn) {
+        console.error('❌ Schema error persisted even after removing optional columns:', error);
       }
       throw error;
     }
@@ -315,15 +297,10 @@ export async function POST(request: NextRequest) {
         true // is_verified = true
       );
     } else {
-      // Update existing lead to verified status
-      console.log('✅ Lead found, updating to verified status...');
-      const updateData: any = {
-        is_verified: true,
-        verified_at: new Date().toISOString(),
-        status: 'verified',
-      };
-
-      // Also update contact phone if not already set
+      // Update existing lead to verified status WITH ALL NEW DATA
+      console.log('✅ Lead found, updating to verified status with full data...');
+      
+      // First, update contact phone if not already set
       if (phoneNumber && lead.contact_id) {
         const { data: contact } = await callreadyQuizDb
           .from('contacts')
@@ -343,6 +320,35 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Build comprehensive update data with all fields
+      const existingQuizAnswers = lead.quiz_answers || {};
+      const updatedQuizAnswers = {
+        ...existingQuizAnswers,
+        ...(quizAnswers || {}),
+        calculated_results: calculatedResults || existingQuizAnswers.calculated_results,
+        licensing_info: licensingInfo || existingQuizAnswers.licensing_info,
+        locationInfo: (zipCode || state || stateName) ? {
+          zipCode: zipCode || existingQuizAnswers.locationInfo?.zipCode,
+          state: state || existingQuizAnswers.locationInfo?.state,
+          stateName: stateName || existingQuizAnswers.locationInfo?.stateName,
+          licensing: licensingInfo || existingQuizAnswers.locationInfo?.licensing,
+        } : existingQuizAnswers.locationInfo,
+        phone: phoneNumber || existingQuizAnswers.phone,
+        utm_parameters: utmParams || existingQuizAnswers.utm_parameters || {},
+      };
+
+      const updateData: any = {
+        is_verified: true,
+        verified_at: new Date().toISOString(),
+        status: 'verified',
+        // Update location fields if provided
+        zip_code: zipCode || lead.zip_code,
+        state: state || lead.state,
+        state_name: stateName || lead.state_name,
+        // Update quiz_answers with all new data
+        quiz_answers: updatedQuizAnswers,
+      };
+
       const { data: updatedLead, error: updateError } = await callreadyQuizDb
         .from('leads')
         .update(updateData)
@@ -351,10 +357,31 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (updateError) {
-        console.error('⚠️ Error updating lead:', updateError);
+        const errorCode = updateError.code || '';
+        const errorMessage = String(updateError.message || updateError.details || '').toLowerCase();
+        const isPGRST204 = errorCode === 'PGRST204';
+        const mentionsColumn = errorMessage.includes('column') || errorMessage.includes('could not find');
+        
+        console.error('⚠️ Error updating lead:', {
+          error: updateError.message || updateError,
+          code: errorCode,
+          details: updateError.details,
+          isPGRST204,
+          mentionsColumn
+        });
+        
+        // updateData doesn't include optional columns, so if we get a schema error here,
+        // it's a different issue - log it but don't fail completely
+        if (isPGRST204 || mentionsColumn) {
+          console.error('❌ Schema error in update - this should not happen as optional columns are removed');
+        }
+        
+        // Use existing lead data if update fails
+        lead = updatedLead || lead;
+        console.log('⚠️ Lead verification updated but with potential data loss:', lead.id);
       } else {
         lead = updatedLead || lead;
-        console.log('✅ Lead updated to verified:', lead.id);
+        console.log('✅ Lead updated to verified with full data:', lead.id);
       }
     }
 
