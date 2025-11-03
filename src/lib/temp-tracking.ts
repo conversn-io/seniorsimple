@@ -19,6 +19,8 @@ declare global {
 const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE || 'G-XXXXXXXXXX';
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID_SENIORSIMPLE || '24221789587508633';
 const GHL_WEBHOOK = process.env.NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE;
+const SUPABASE_QUIZ_URL = process.env.NEXT_PUBLIC_SUPABASE_QUIZ_URL || 'https://jqjftrlnyysqcwbbigpw.supabase.co';
+const SUPABASE_QUIZ_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_QUIZ_ANON_KEY || '';
 
 // Debug logging
 console.log('🔧 SeniorSimple Temp Tracking Config:', {
@@ -46,53 +48,55 @@ export interface LeadData {
   recommendedProducts?: string[];
 }
 
+// Bot detection utility
+export function isBot(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+  
+  const ua = navigator.userAgent || '';
+  const botPatterns = [
+    /bot/i,
+    /crawler/i,
+    /spider/i,
+    /crawling/i,
+    /facebookexternalhit/i,
+    /Googlebot/i,
+    /Bingbot/i,
+    /Slurp/i,
+    /DuckDuckBot/i,
+    /Baiduspider/i,
+    /YandexBot/i,
+    /Sogou/i,
+    /Exabot/i,
+    /facebot/i,
+    /ia_archiver/i,
+    /Twitterbot/i,
+    /LinkedInBot/i,
+    /WhatsApp/i,
+    /TelegramBot/i
+  ];
+  
+  return botPatterns.some(pattern => pattern.test(ua));
+}
+
 // Initialize tracking
 export function initializeTracking(): void {
   console.log('🎯 SeniorSimple Temporary Tracking Initialized');
   
-  // Load GA4 script if not already loaded
-  if (typeof window !== 'undefined' && !window.gtag) {
-    loadGA4Script();
-  }
-  
-  // Initialize GA4
+  // GA4 is now loaded in layout.tsx, just verify it's available
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA4_MEASUREMENT_ID);
-    console.log('✅ GA4 initialized with ID:', GA4_MEASUREMENT_ID);
+    console.log('✅ GA4 already loaded in layout');
   } else {
-    console.log('❌ GA4 not available');
+    console.log('⚠️ GA4 not available (may be blocked or loading)');
   }
 
   // Meta Pixel is now loaded in layout.tsx, just verify it's available
   if (typeof window !== 'undefined' && window.fbq) {
     console.log('✅ Meta Pixel already loaded in layout');
   } else {
-    console.log('❌ Meta Pixel not available');
+    console.log('⚠️ Meta Pixel not available');
   }
-}
-
-// Load GA4 script dynamically
-function loadGA4Script(): void {
-  if (typeof window === 'undefined') return;
-  
-  // Create script element
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
-  
-  // Add to head
-  document.head.appendChild(script);
-  
-  // Initialize gtag
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
-  };
-  
-  window.gtag('js', new Date());
-  window.gtag('config', GA4_MEASUREMENT_ID);
-  
-  console.log('📊 GA4 script loaded dynamically');
 }
 
 // GA4 Event Tracking
@@ -224,14 +228,151 @@ export function trackLeadFormSubmit(leadData: LeadData): void {
   // API route handles GHL webhook sending
 }
 
+// Send event to Supabase analytics_events
+async function sendPageViewToSupabase(
+  pageName: string,
+  pagePath: string,
+  sessionId: string
+): Promise<void> {
+  // Skip if bot
+  if (isBot()) {
+    console.log('🤖 Bot detected, skipping Supabase tracking');
+    return;
+  }
+
+  // Skip if Supabase not configured
+  if (!SUPABASE_QUIZ_URL || !SUPABASE_QUIZ_ANON_KEY) {
+    console.warn('⚠️ Supabase not configured, skipping PageView tracking');
+    return;
+  }
+
+  try {
+    // Get tracking IDs
+    const gaClientId = getGAClientId();
+    const metaIds = getMetaPixelIds();
+    
+    // Get UTM parameters
+    const utmParams = getUTMParams();
+
+    // Send to Supabase via API route (more reliable than direct client insert)
+    const response = await fetch('/api/analytics/track-pageview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        event_name: 'page_view',
+        page_title: pageName,
+        page_path: pagePath,
+        session_id: sessionId,
+        page_url: typeof window !== 'undefined' ? window.location.href : pagePath,
+        referrer: typeof document !== 'undefined' ? document.referrer : null,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        properties: {
+          site_key: 'seniorsimple.org',
+          funnel_type: 'insurance',
+          utm_parameters: utmParams,
+          contact: {
+            ga_client_id: gaClientId,
+            ...metaIds
+          }
+        },
+        utm_source: utmParams.utm_source || null,
+        utm_medium: utmParams.utm_medium || null,
+        utm_campaign: utmParams.utm_campaign || null
+      })
+    });
+
+    if (!response.ok) {
+      console.warn('⚠️ Supabase PageView tracking failed:', response.statusText);
+    } else {
+      console.log('✅ PageView sent to Supabase');
+    }
+  } catch (error) {
+    console.error('❌ Failed to send PageView to Supabase:', error);
+  }
+}
+
+// Get GA Client ID
+function getGAClientId(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  
+  // Try to get from cookies
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === '_ga') {
+      // GA4 format: G-XXXXXXXXXX.1234567890.1234567890
+      // Extract client ID (last two parts)
+      const parts = value?.split('.');
+      if (parts && parts.length >= 2) {
+        return parts.slice(-2).join('.');
+      }
+    }
+  }
+  
+  return undefined;
+}
+
+// Get Meta Pixel IDs
+function getMetaPixelIds(): { fbc?: string; fbp?: string } {
+  if (typeof window === 'undefined') return {};
+  
+  const result: { fbc?: string; fbp?: string } = {};
+  const cookies = document.cookie.split(';');
+  
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === '_fbc') result.fbc = value;
+    if (name === '_fbp') result.fbp = value;
+  }
+  
+  return result;
+}
+
+// Get UTM parameters
+function getUTMParams(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    utm_source: urlParams.get('utm_source') || '',
+    utm_medium: urlParams.get('utm_medium') || '',
+    utm_campaign: urlParams.get('utm_campaign') || ''
+  };
+}
+
 // Page view tracking
 export function trackPageView(pageName: string, pagePath: string): void {
   console.log('📊 Tracking page view:', pageName);
   
-  trackGA4Event('page_view', {
-    page_title: pageName,
-    page_location: pagePath,
-    event_category: 'navigation'
+  // Skip if bot
+  if (isBot()) {
+    console.log('🤖 Bot detected, skipping client-side tracking');
+    return;
+  }
+  
+  // Generate session ID if not exists
+  const sessionId = typeof window !== 'undefined' 
+    ? (sessionStorage.getItem('session_id') || `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+    : `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem('session_id', sessionId);
+  }
+  
+  // Track to GA4
+  if (typeof window !== 'undefined' && window.gtag) {
+    trackGA4Event('page_view', {
+      page_title: pageName,
+      page_location: pagePath,
+      event_category: 'navigation'
+    });
+  }
+  
+  // Track to Supabase (async, non-blocking)
+  sendPageViewToSupabase(pageName, pagePath, sessionId).catch(error => {
+    console.error('Failed to send PageView to Supabase:', error);
   });
 }
 

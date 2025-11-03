@@ -107,7 +107,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
         */}
         
-        {/* ✅ DIRECT TRACKING: Meta Pixel Base Code */}
+        {/* ✅ DIRECT TRACKING: GA4 Base Code (Synchronous Loading) */}
+        {process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE && (
+          <>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE}');
+                `
+              }}
+            />
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE}`}
+            />
+          </>
+        )}
+        
+        {/* ✅ DIRECT TRACKING: Meta Pixel Base Code (with bot detection) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -119,8 +139,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '24221789587508633');
-              fbq('track', 'PageView');
+              
+              // Bot detection - only track if not a bot
+              (function() {
+                var isBot = false;
+                if (typeof navigator !== 'undefined') {
+                  var ua = navigator.userAgent || '';
+                  isBot = /bot|crawler|spider|crawling|facebookexternalhit|Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|Exabot|facebot|ia_archiver/i.test(ua);
+                }
+                
+                if (!isBot) {
+                  fbq('init', '24221789587508633');
+                  fbq('track', 'PageView');
+                } else {
+                  // Still initialize but don't track PageView for bots
+                  fbq('init', '24221789587508633');
+                }
+              })();
             `
           }}
         />
