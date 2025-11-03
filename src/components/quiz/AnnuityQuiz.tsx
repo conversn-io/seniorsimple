@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
 import { QuizResults } from './QuizResults';
-import { AgentAssignmentPage } from './AgentAssignmentPage';
 import { SavingsSlider } from './SavingsSlider';
 import { AllocationSlider } from './AllocationSlider';
 import { useRouter } from 'next/navigation';
@@ -25,6 +24,7 @@ import {
   sendCAPIViewContentEventMultiSite,
   LeadData
 } from '@/lib/temp-tracking';
+import { formatPhoneForGHL } from '@/utils/phone-utils';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -109,22 +109,16 @@ const PRIMARY_QUIZ_QUESTIONS = [
     conditional: true, // Only show if savings >= $100k
   },
   {
-    id: 'personalInfo',
-    title: 'Let\'s get your contact information',
-    subtitle: 'We\'ll use this to send you personalized recommendations',
-    type: 'personal-info' as const,
-  },
-  {
     id: 'locationInfo',
     title: 'What\'s your ZIP code?',
     subtitle: 'This helps us provide state-specific guidance and connect you with licensed professionals in your area',
     type: 'location-info' as const,
   },
   {
-    id: 'phone',
-    title: 'What\'s your phone number?',
-    subtitle: 'We\'ll send you a verification code to confirm your number',
-    type: 'phone-consent' as const,
+    id: 'personalInfo',
+    title: 'Let\'s get your contact information',
+    subtitle: 'We\'ll use this to send you personalized recommendations',
+    type: 'personal-info' as const,
   },
 ];
 
@@ -192,26 +186,24 @@ const SECONDARY_QUIZ_QUESTIONS = [
     unit: '$',
   },
   {
-    id: 'personalInfo',
-    title: 'Let\'s get your contact information',
-    subtitle: 'We\'ll use this to send you personalized recommendations',
-    type: 'personal-info' as const,
-  },
-  {
     id: 'locationInfo',
     title: 'What\'s your ZIP code?',
     subtitle: 'This helps us provide state-specific guidance and connect you with licensed professionals in your area',
     type: 'location-info' as const,
   },
   {
-    id: 'phone',
-    title: 'What\'s your phone number?',
-    subtitle: 'We\'ll send you a verification code to confirm your number',
-    type: 'phone-consent' as const,
+    id: 'personalInfo',
+    title: 'Let\'s get your contact information',
+    subtitle: 'We\'ll use this to send you personalized recommendations',
+    type: 'personal-info' as const,
   },
 ];
 
-export const AnnuityQuiz = () => {
+interface AnnuityQuizProps {
+  skipOTP?: boolean;
+}
+
+export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
@@ -356,6 +348,7 @@ export const AnnuityQuiz = () => {
         email: answer.email,
         firstName: answer.firstName,
         lastName: answer.lastName,
+        phoneNumber: answer.phone, // Now included in consolidated form
         quizAnswers: updatedAnswers,
         sessionId: quizSessionId || 'unknown',
         funnelType: funnelType,
@@ -373,29 +366,93 @@ export const AnnuityQuiz = () => {
           body: JSON.stringify(emailCaptureData)
         });
 
-        const result = await response.json();
-        if (result.success) {
+        let result: any = {};
+        try {
+          const text = await response.text();
+          if (text) {
+            try {
+              result = JSON.parse(text);
+            } catch {
+              result = { raw: text, success: false, error: 'Invalid JSON response' };
+            }
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Could not parse email capture response:', parseError);
+          result = { success: false, error: 'Failed to parse response' };
+        }
+
+        if (response.ok && result.success) {
           console.log('✅ Email Captured for Retargeting:', { eventId: result.eventId, email: answer.email });
         } else {
-          console.error('❌ Email Capture Failed:', result.error);
+          const errorDetails = {
+            status: response.status,
+            statusText: response.statusText,
+            error: result.error || result.message || result.details || 'Unknown error',
+            details: result.details || result.code || 'No additional details',
+            response: result,
+            url: buildApiUrl('/api/leads/capture-email')
+          };
+          console.error('❌ Email Capture Failed:', errorDetails);
         }
-      } catch (error) {
-        console.error('💥 Email Capture Exception:', error);
+      } catch (error: any) {
+        const errorDetails = {
+          error: error.message || String(error),
+          stack: error.stack,
+          name: error.name,
+          emailCaptureData: {
+            email: emailCaptureData.email,
+            sessionId: emailCaptureData.sessionId,
+            funnelType: emailCaptureData.funnelType
+          }
+        };
+        console.error('💥 Email Capture Exception:', errorDetails);
       }
-    }
-
-    // Handle phone number submission - go directly to OTP
-    if (currentQuestion.id === 'phone') {
-      console.log('📱 Phone Number Submitted - Initiating OTP Flow:', {
-        sessionId: quizSessionId || 'unknown',
-        phoneNumber: answer,
-        timestamp: new Date().toISOString()
-      });
       
-      setShowOTP(true);
-      console.log('🔐 OTP State Set to True - Should show OTP verification next');
+      // Branch based on skipOTP prop
+      if (skipOTP) {
+        // NO OTP FLOW: Send directly to GHL
+        console.log('🚀 No OTP Flow - Sending directly to GHL:', {
+          sessionId: quizSessionId || 'unknown',
+          phoneNumber: answer.phone,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Store quiz answers for personalized thank you page
+        sessionStorage.setItem('quiz_answers', JSON.stringify(updatedAnswers));
+        
+        // Process lead and send to GHL directly
+        await processLeadAndSendToGHL({
+          contact: {
+            email: answer.email,
+            phone: answer.phone,
+            firstName: answer.firstName,
+            lastName: answer.lastName
+          },
+          quizAnswers: updatedAnswers,
+          calculatedResults: calculateResults(),
+          zipCode: updatedAnswers.locationInfo?.zipCode,
+          state: updatedAnswers.locationInfo?.state,
+          stateName: updatedAnswers.locationInfo?.stateName,
+          utmParams: utmParams,
+          sessionId: quizSessionId || 'unknown'
+        });
+        
+        setShowResults(true);
+        console.log('✅ No OTP Flow Complete - Results shown');
+      } else {
+        // OTP FLOW: Show OTP verification
+        console.log('📱 Personal Info Complete - Initiating OTP Flow:', {
+          sessionId: quizSessionId || 'unknown',
+          phoneNumber: answer.phone,
+          timestamp: new Date().toISOString()
+        });
+        
+        setShowOTP(true);
+        console.log('🔐 OTP State Set to True - Should show OTP verification next');
+      }
       return;
     }
+
     
     // Check if this is the last question
     if (currentStep === questions.length - 1) {
@@ -481,25 +538,35 @@ export const AnnuityQuiz = () => {
     return calculatedResults;
   };
 
-  const handleOTPVerification = async () => {
-    console.log('🔐 OTP Verification Complete - Sending to GHL:', {
-      sessionId: quizSessionId,
-      phoneNumber: answers.phone,
+  const processLeadAndSendToGHL = async (data: {
+    contact: {
+      email: string;
+      phone: string;
+      firstName: string;
+      lastName: string;
+    };
+    quizAnswers: QuizAnswer;
+    calculatedResults: any;
+    zipCode?: string;
+    state?: string;
+    stateName?: string;
+    utmParams: any;
+    sessionId: string;
+  }) => {
+    console.log('🚀 Processing Lead and Sending to GHL:', {
+      sessionId: data.sessionId,
       timestamp: new Date().toISOString()
     });
 
-    setShowOTP(false);
     setShowProcessing(true);
 
     try {
-      const calculatedResults = calculateResults();
-      
       // Call server-side proxy to Supabase Edge Function
       const edgeFunctionUrl = '/api/process-lead';
       
       console.log('🚀 Calling Supabase Edge Function:', {
         url: edgeFunctionUrl,
-        sessionId: quizSessionId || 'unknown',
+        sessionId: data.sessionId,
         timestamp: new Date().toISOString()
       });
 
@@ -511,22 +578,22 @@ export const AnnuityQuiz = () => {
         body: JSON.stringify({
           site_key: 'SENIORSIMPLE',
           funnel_type: funnelType,
-          session_id: quizSessionId || 'unknown',
-          user_id: answers.personalInfo?.email,
+          session_id: data.sessionId,
+          user_id: data.contact.email,
           contact: {
-            email: answers.personalInfo?.email,
-            phone: answers.phone,
-            first_name: answers.personalInfo?.firstName,
-            last_name: answers.personalInfo?.lastName
+            email: data.contact.email,
+            phone: formatPhoneForGHL(data.contact.phone),
+            first_name: data.contact.firstName,
+            last_name: data.contact.lastName
           },
-          quiz_answers: answers,
+          quiz_answers: data.quizAnswers,
           lead_score: 75, // Default lead score - Edge Function will calculate proper score
-          utm_source: utmParams?.utm_source,
-          utm_medium: utmParams?.utm_medium,
-          utm_campaign: utmParams?.utm_campaign,
-          zip_code: answers.locationInfo?.zipCode,
-          state: answers.locationInfo?.state,
-          state_name: answers.locationInfo?.stateName,
+          utm_source: data.utmParams?.utm_source,
+          utm_medium: data.utmParams?.utm_medium,
+          utm_campaign: data.utmParams?.utm_campaign,
+          zip_code: data.zipCode,
+          state: data.state,
+          state_name: data.stateName,
           consent: true
         })
       });
@@ -544,71 +611,173 @@ export const AnnuityQuiz = () => {
           leadId: edgeResult.lead_id,
           leadScore: edgeResult.lead_score,
           qualified: edgeResult.qualified,
-          sessionId: quizSessionId || 'unknown',
+          sessionId: data.sessionId,
           timestamp: new Date().toISOString()
         });
 
         // Fire direct client-side GHL webhook in parallel for speed
+        const ghlUrl = process.env.NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE || 'https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6';
         try {
-          const ghlUrl = process.env.NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE || 'https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6'
+          // Format phone with +1 for GHL webhook
+          const formattedPhone = formatPhoneForGHL(data.contact.phone);
           const ghlPayload = {
-            firstName: answers.personalInfo?.firstName,
-            lastName: answers.personalInfo?.lastName,
-            email: answers.personalInfo?.email,
-            phone: answers.phone,
-            zipCode: answers.locationInfo?.zipCode,
-            state: answers.locationInfo?.state,
-            stateName: answers.locationInfo?.stateName,
+            firstName: data.contact.firstName,
+            lastName: data.contact.lastName,
+            email: data.contact.email,
+            phone: formattedPhone,
+            zipCode: data.zipCode,
+            state: data.state,
+            stateName: data.stateName,
             source: 'SeniorSimple Quiz',
             funnelType: funnelType,
-            quizAnswers: answers,
-            leadScore: edgeResult.lead_score || 75,
-            utmParams: utmParams || {},
+            sessionId: data.sessionId,
+            leadScore: data.calculatedResults.leadScore,
+            quizAnswers: data.quizAnswers,
+            utmSource: data.utmParams?.utm_source,
+            utmMedium: data.utmParams?.utm_medium,
+            utmCampaign: data.utmParams?.utm_campaign,
             timestamp: new Date().toISOString()
-          }
+          };
 
-          // Non-blocking fire-and-forget
-          fetch(ghlUrl, {
+          console.log('📡 Sending to GHL Webhook:', {
+            url: ghlUrl,
+            payload: ghlPayload,
+            timestamp: new Date().toISOString()
+          });
+
+          // Create abort controller for timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          
+          const ghlResponse = await fetch(ghlUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(ghlPayload)
-          }).then(res => {
-            if (res.ok) {
-              console.log('✅ GHL webhook (client) sent successfully')
-            } else {
-              console.warn('⚠️ GHL webhook (client) non-200', res.status)
+            body: JSON.stringify(ghlPayload),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+
+          let ghlResponseData: any = {};
+          try {
+            const text = await ghlResponse.text();
+            if (text) {
+              try {
+                ghlResponseData = JSON.parse(text);
+              } catch {
+                ghlResponseData = { raw: text };
+              }
             }
-          }).catch(err => console.error('❌ GHL webhook (client) error', err))
-        } catch (err) {
-          console.error('❌ GHL webhook (client) exception', err)
+          } catch (parseError) {
+            console.warn('⚠️ Could not parse GHL response:', parseError);
+          }
+
+          if (ghlResponse.ok) {
+            console.log('✅ GHL Webhook Success:', {
+              status: ghlResponse.status,
+              statusText: ghlResponse.statusText,
+              response: ghlResponseData,
+              sessionId: data.sessionId,
+              timestamp: new Date().toISOString()
+            });
+          } else {
+            const errorDetails = {
+              status: ghlResponse.status,
+              statusText: ghlResponse.statusText,
+              response: ghlResponseData,
+              error: ghlResponseData?.error || ghlResponseData?.message || 'Unknown GHL error',
+              details: ghlResponseData?.details || ghlResponseData?.raw || 'No additional details',
+              payload: {
+                firstName: ghlPayload.firstName,
+                email: ghlPayload.email,
+                phone: ghlPayload.phone ? '***' : undefined,
+                sessionId: ghlPayload.sessionId
+              },
+              url: ghlUrl,
+              sessionId: data.sessionId,
+              timestamp: new Date().toISOString()
+            };
+            console.error('❌ GHL Webhook Failed:', errorDetails);
+          }
+        } catch (ghlError: any) {
+          const errorDetails = {
+            error: ghlError?.message || String(ghlError),
+            name: ghlError?.name,
+            stack: ghlError?.stack,
+            code: ghlError?.code,
+            url: ghlUrl,
+            sessionId: data.sessionId,
+            timestamp: new Date().toISOString()
+          };
+          console.error('💥 GHL Webhook Exception:', errorDetails);
         }
+
+        setShowProcessing(false);
+        
+        // Store quiz answers for personalized thank you page
+        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        
+        setShowResults(true);
+        console.log('🎯 Lead Processing Complete - Results shown');
       } else {
-        console.error('❌ Edge Function Failed:', { 
-          error: edgeResult.error || 'Unknown error',
-          details: edgeResult.details || edgeResult.raw,
+        console.error('❌ Edge Function Failed:', {
           status: edgeResponse.status,
-          sessionId: quizSessionId || 'unknown',
+          statusText: edgeResponse.statusText,
+          result: edgeResult,
+          sessionId: data.sessionId,
           timestamp: new Date().toISOString()
         });
+        
+        // Store quiz answers even on failure
+        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        
+        setShowProcessing(false);
+        setShowResults(true); // Still show results even if GHL fails
       }
     } catch (error) {
-      console.error('💥 OTP Verification & GHL Lead Distribution Exception:', { 
-        error, 
-        sessionId: quizSessionId || 'unknown',
+      console.error('💥 Lead Processing Exception:', {
+        error,
+        sessionId: data.sessionId,
         timestamp: new Date().toISOString()
       });
+      
+      // Store quiz answers even on exception
+      try {
+        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+      } catch (storageError) {
+        console.warn('⚠️ Could not store quiz answers:', storageError);
+      }
+      
+      setShowProcessing(false);
+      setShowResults(true); // Still show results even if processing fails
     }
+  };
 
-    setShowProcessing(false);
-    setShowResults(true);
-    
-    // Store quiz answers for personalized thank you message
-    sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
-    
-    // Route to pageview tracking page
-    try {
-      router.push('/quiz-submitted');
-    } catch {}
+  const handleOTPVerification = async () => {
+    console.log('🔐 OTP Verification Complete - Sending to GHL:', {
+      sessionId: quizSessionId,
+      phoneNumber: answers.personalInfo?.phone,
+      timestamp: new Date().toISOString()
+    });
+
+    setShowOTP(false);
+
+    // Use the same processLeadAndSendToGHL function for consistency
+    await processLeadAndSendToGHL({
+      contact: {
+        email: answers.personalInfo?.email || '',
+        phone: answers.personalInfo?.phone || '',
+        firstName: answers.personalInfo?.firstName || '',
+        lastName: answers.personalInfo?.lastName || ''
+      },
+      quizAnswers: answers,
+      calculatedResults: calculateResults(),
+      zipCode: answers.locationInfo?.zipCode,
+      state: answers.locationInfo?.state,
+      stateName: answers.locationInfo?.stateName,
+      utmParams: utmParams,
+      sessionId: quizSessionId || 'unknown'
+    });
   };
 
   const submitQuizToDatabase = async () => {
@@ -628,7 +797,7 @@ export const AnnuityQuiz = () => {
           first_name: answers.personalInfo?.firstName || answers.firstName,
           last_name: answers.personalInfo?.lastName || answers.lastName,
           email: answers.personalInfo?.email || answers.email,
-          phone: answers.phone,
+          phone: answers.personalInfo?.phone || answers.phone || '',
           zip_code: locationData.zipCode || answers.zipCode,
           state: locationData.state || '',
           state_name: locationData.stateName || '',
@@ -715,6 +884,22 @@ export const AnnuityQuiz = () => {
     setQuizSessionId(null);
   };
 
+  // Handle redirect to quiz-submitted page when showResults is true
+  // IMPORTANT: This hook MUST come before any conditional returns to avoid React hooks errors
+  useEffect(() => {
+    if (showResults) {
+      console.log('🎯 Redirecting to Quiz Submitted Page:', {
+        sessionId: quizSessionId,
+        timestamp: new Date().toISOString()
+      });
+      // Use setTimeout to avoid React state update during render
+      const timeoutId = setTimeout(() => {
+        router.push('/quiz-submitted');
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [showResults, router, quizSessionId]);
+
   if (showProcessing) {
     console.log('⏳ Showing Processing State:', {
       sessionId: quizSessionId,
@@ -724,15 +909,26 @@ export const AnnuityQuiz = () => {
   }
 
   if (showOTP) {
+    const phoneNumber = answers.personalInfo?.phone || '';
+    if (!phoneNumber) {
+      console.error('❌ OTP Error: Phone number missing from answers', {
+        answers,
+        personalInfo: answers.personalInfo
+      });
+      // Fallback: don't show OTP if phone is missing
+      setShowOTP(false);
+      return null;
+    }
+    
     console.log('📱 Showing OTP Verification:', {
       sessionId: quizSessionId,
-      phoneNumber: answers.phone,
+      phoneNumber,
       showOTP: true,
       timestamp: new Date().toISOString()
     });
     return (
       <OTPVerification
-        phoneNumber={answers.phone}
+        phoneNumber={phoneNumber}
         onVerificationComplete={handleOTPVerification}
         onBack={() => setShowOTP(false)}
       />
@@ -740,15 +936,12 @@ export const AnnuityQuiz = () => {
   }
 
   if (showResults) {
-    console.log('🎯 Showing Agent Assignment Page:', {
-      sessionId: quizSessionId,
-      timestamp: new Date().toISOString()
-    });
+    // Show loading state while redirecting to quiz-submitted page
     return (
-      <AgentAssignmentPage
-        answers={answers}
-        onRestart={handleRestart}
-      />
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
+        <p className="text-lg text-gray-600">Redirecting...</p>
+      </div>
     );
   }
 

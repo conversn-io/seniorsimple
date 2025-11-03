@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { formatUSPhoneNumber, isValidUSPhoneNumber } from '@/utils/phone-utils';
+import { extractUSPhoneNumber, formatPhoneForInput, formatPhoneForGHL } from '@/utils/phone-utils';
 import { validatePhoneForOTP } from '@/utils/otp-utils';
 import type { PhoneInputProps } from '@/types/otp-types';
 
@@ -14,25 +14,36 @@ export const PhoneInput = ({
   error,
   className = ''
 }: PhoneInputProps) => {
-  const [displayValue, setDisplayValue] = useState(value);
+  // Extract 10 digits from value for display (no +1)
+  const getDisplayValue = (phone: string) => {
+    const digits = extractUSPhoneNumber(phone);
+    return formatPhoneForInput(digits);
+  };
+
+  const [displayValue, setDisplayValue] = useState(getDisplayValue(value));
   const [isFocused, setIsFocused] = useState(false);
 
   // Update display value when prop changes
   useEffect(() => {
-    setDisplayValue(value);
+    setDisplayValue(getDisplayValue(value));
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
-    // Allow only digits, spaces, parentheses, hyphens, and plus
-    const cleaned = inputValue.replace(/[^\d\s\(\)\-\+]/g, '');
+    // Remove all non-digit characters
+    const digits = inputValue.replace(/\D/g, '');
     
-    // Format the phone number
-    const formatted = formatUSPhoneNumber(cleaned);
+    // Limit to 10 digits
+    const limitedDigits = digits.slice(0, 10);
+    
+    // Format for display
+    const formatted = formatPhoneForInput(limitedDigits);
     
     setDisplayValue(formatted);
-    onChange(formatted);
+    
+    // Store only 10 digits (no +1) for browser autocomplete
+    onChange(limitedDigits);
   };
 
   const handleBlur = () => {
@@ -44,7 +55,10 @@ export const PhoneInput = ({
     setIsFocused(true);
   };
 
-  const validation = validatePhoneForOTP(displayValue);
+  // Validate using 10-digit format (for OTP, we need +1 format, so format it for validation)
+  const digitsForValidation = extractUSPhoneNumber(value || displayValue.replace(/\D/g, ''));
+  const phoneForValidation = formatPhoneForGHL(digitsForValidation);
+  const validation = validatePhoneForOTP(phoneForValidation);
   const hasError = error || (!validation.isValid && displayValue && !isFocused);
 
   return (
@@ -72,7 +86,7 @@ export const PhoneInput = ({
             ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
           `}
           style={{ paddingLeft: '100px' }}
-          autoComplete="tel"
+          autoComplete="tel-national"
         />
       </div>
       

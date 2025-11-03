@@ -7,7 +7,11 @@ import { AnnuityQuiz } from "../quiz/AnnuityQuiz";
 import { useFunnelLayout } from "../../hooks/useFunnelFooter";
 import "../../styles/quiz-mobile.css";
 
-const Quiz = () => {
+interface QuizProps {
+  skipOTP?: boolean;
+}
+
+const Quiz = ({ skipOTP = false }: QuizProps) => {
   useFunnelLayout(); // This sets both header and footer to 'funnel'
 
   const handleQuizReset = () => {
@@ -28,7 +32,7 @@ const Quiz = () => {
             </p>
           </div>
           <div className="max-w-2xl mx-auto">
-            <AnnuityQuiz />
+            <AnnuityQuiz skipOTP={skipOTP} />
           </div>
         </section>
         {/* Footer is now handled by layout */}

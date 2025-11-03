@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { formatUSPhoneNumber, isValidUSPhoneNumber, formatPhoneForDisplay } from '@/utils/phone-utils';
+import { formatPhoneForInput, formatPhoneForGHL, extractUSPhoneNumber } from '@/utils/phone-utils';
 import { buildApiUrl } from '@/lib/api-config';
 
 interface QuizQuestionProps {
@@ -9,7 +9,7 @@ interface QuizQuestionProps {
     id: string;
     title: string;
     subtitle?: string;
-    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'phone-consent' | 'personal-info' | 'location-info' | 'address-info';
+    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info';
     options?: string[];
     min?: number;
     max?: number;
@@ -40,12 +40,13 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   const [selectedAnswer, setSelectedAnswer] = useState<any>(currentAnswer || question.defaultValue);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(currentAnswer || []);
   const [sliderValue, setSliderValue] = useState(question.defaultValue as number || question.min || 0);
-  const [consentChecked, setConsentChecked] = useState(false);
   
   // Personal info fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [consentChecked, setConsentChecked] = useState(false);
   
   // Location info fields
   const [address, setAddress] = useState('');
@@ -58,8 +59,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   const [isValidatingZip, setIsValidatingZip] = useState(false);
   const [zipError, setZipError] = useState('');
 
-  // Phone submission state
-  const [isSendingOTP, setIsSendingOTP] = useState(false);
+  // Phone error state
   const [phoneError, setPhoneError] = useState('');
 
   // Debounced zip validation
@@ -145,11 +145,25 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (firstName && lastName && email) {
+    if (firstName && lastName && email && phone && consentChecked) {
+      // Extract 10 digits from phone input
+      const digits = extractUSPhoneNumber(phone);
+      
+      // Validate we have 10 digits
+      if (digits.length !== 10) {
+        setPhoneError('Please enter a valid 10-digit US phone number.');
+        return;
+      }
+      
+      // Format phone with +1 for storage/submission
+      const formattedPhoneNumber = formatPhoneForGHL(digits);
+      
       onAnswer({
         firstName,
         lastName,
-        email
+        email,
+        phone: formattedPhoneNumber,
+        consent: consentChecked
       });
     }
   };
@@ -166,102 +180,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const phoneInput = (e.target as HTMLFormElement).phone as HTMLInputElement;
-    
-    if (!phoneInput.value || !consentChecked) {
-      setPhoneError('Please enter your phone number and accept the terms.');
-      return;
-    }
-
-    // Format phone number with country code
-    const formattedPhoneNumber = formatUSPhoneNumber(phoneInput.value);
-    
-    // Validate the formatted phone number
-    if (!isValidUSPhoneNumber(formattedPhoneNumber)) {
-      setPhoneError('Please enter a valid US phone number.');
-      return;
-    }
-
-    console.log('📱 Phone Submission Started:', {
-      originalPhoneNumber: phoneInput.value,
-      formattedPhoneNumber,
-      consentChecked,
-      timestamp: new Date().toISOString()
-    });
-
-    setIsSendingOTP(true);
-    setPhoneError('');
-
-    try {
-      console.log('📡 Sending OTP to formatted phone number...');
-      
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_QUIZ_URL || 'https://jqjftrlnyysqcwbbigpw.supabase.co';
-      const response = await fetch(`${supabaseUrl}/functions/v1/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_QUIZ_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxamZ0cmxueXlzcWN3YmJpZ3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTQ2MzksImV4cCI6MjA2Njg3MDYzOX0.ZqgLIflQJY5zC3ZnU5K9k_KEM9bDdNhtq3ek6ckuwjAo'}`
-        },
-        body: JSON.stringify({
-          phoneNumber: formattedPhoneNumber // Use formatted phone number with country code
-        }),
-      });
-
-      console.log('📡 Send OTP Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-
-      const data = await response.json();
-      console.log('📡 Send OTP Data:', data);
-
-      const sentOk = response.ok && (data?.sent === true || data?.success === true || data?.smsStatus === 'sent');
-
-      if (sentOk) {
-        console.log('✅ OTP Sent Successfully:', {
-          formattedPhoneNumber,
-          otpId: data?.otpId,
-          smsStatus: data?.smsStatus,
-          timestamp: new Date().toISOString()
-        });
-        setPhoneError('');
-        
-        // In development, show the OTP in console for testing
-        if (data.developmentOTP) {
-          console.log('🔑 DEVELOPMENT OTP (for testing):', data.developmentOTP);
-        }
-        
-        // Pass the formatted phone number to the parent component
-        onAnswer(formattedPhoneNumber);
-      } else {
-        const errorMsg = data?.error || 'Failed to send verification code. Please try again.';
-        console.error('❌ OTP Send Failed:', {
-          formattedPhoneNumber,
-          error: errorMsg,
-          response: data
-        });
-        setPhoneError(errorMsg);
-      }
-    } catch (err: any) {
-      console.error('💥 Phone Submission Exception:', {
-        formattedPhoneNumber,
-        error: err.message,
-        stack: err.stack,
-        timestamp: new Date().toISOString()
-      });
-      setPhoneError('Network error. Please check your connection and try again.');
-    } finally {
-      setIsSendingOTP(false);
-      console.log('📱 Phone Submission Process Complete:', {
-        formattedPhoneNumber,
-        success: !phoneError,
-        timestamp: new Date().toISOString()
-      });
-    }
-  };
 
   const renderQuestion = () => {
     switch (question.type) {
@@ -414,10 +332,64 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 style={{ minHeight: '56px' }}
               />
             </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
+                </div>
+                <input
+                  type="tel"
+                  value={formatPhoneForInput(phone)}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    // Remove all non-digit characters
+                    const digits = inputValue.replace(/\D/g, '');
+                    // Limit to 10 digits
+                    const limitedDigits = digits.slice(0, 10);
+                    setPhone(limitedDigits);
+                  }}
+                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  placeholder="(555) 123-4567"
+                  required
+                  disabled={isLoading}
+                  autoComplete="tel-national"
+                  style={{ 
+                    minHeight: '56px',
+                    paddingLeft: '100px'
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                We'll send a verification code to this number
+              </p>
+            </div>
+            <div className="flex items-start space-x-4">
+              <input
+                type="checkbox"
+                id="consent"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-2 w-6 h-6 text-[#36596A] border-2 border-gray-300 rounded focus:ring-4 focus:ring-[#36596A]/20"
+                disabled={isLoading}
+              />
+              <label htmlFor="consent" className="text-lg text-gray-600 leading-relaxed">
+                I consent to receive SMS messages and phone calls from CallReady and its partners regarding my retirement planning inquiry. Message and data rates may apply. Reply STOP to opt out.
+              </label>
+            </div>
+
+            {phoneError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-600 text-sm">{phoneError}</p>
+              </div>
+            )}
+
             <button
               type="submit"
               className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
-              disabled={!firstName || !lastName || !email || isLoading}
+              disabled={!firstName || !lastName || !email || !phone || !consentChecked || isLoading}
               style={{ minHeight: '64px' }}
             >
               Continue
@@ -489,64 +461,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
           </form>
         );
 
-      case 'phone-consent':
-        return (
-          <form onSubmit={handlePhoneSubmit} className="space-y-8">
-            <div>
-              <label className="block text-lg font-semibold text-gray-700 mb-3">
-                Phone Number *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                  <span className="text-gray-500 text-lg font-medium">+1</span>
-                </div>
-                <input
-                  type="tel"
-                  name="phone"
-                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
-                  placeholder="(555) 123-4567"
-                  required
-                  disabled={isLoading || isSendingOTP}
-                  style={{ 
-                    minHeight: '56px',
-                    paddingLeft: '100px'
-                  }}
-                />
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                We'll send a verification code to this number
-              </p>
-            </div>
-            <div className="flex items-start space-x-4">
-              <input
-                type="checkbox"
-                id="consent"
-                checked={consentChecked}
-                onChange={(e) => setConsentChecked(e.target.checked)}
-                className="mt-2 w-6 h-6 text-[#36596A] border-2 border-gray-300 rounded focus:ring-4 focus:ring-[#36596A]/20"
-                disabled={isLoading || isSendingOTP}
-              />
-              <label htmlFor="consent" className="text-lg text-gray-600 leading-relaxed">
-                I consent to receive SMS messages and phone calls from CallReady and its partners regarding my retirement planning inquiry. Message and data rates may apply. Reply STOP to opt out.
-              </label>
-            </div>
-
-            {phoneError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm">{phoneError}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
-              disabled={!consentChecked || isLoading || isSendingOTP}
-              style={{ minHeight: '64px' }}
-            >
-              {isSendingOTP ? 'Sending Code...' : 'Send Verification Code'}
-            </button>
-          </form>
-        );
 
       default:
         return <div>Unsupported question type</div>;

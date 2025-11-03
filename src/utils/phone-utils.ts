@@ -116,6 +116,76 @@ export function formatE164(phoneNumber: string): string {
   return formatUSPhoneNumber(phoneNumber);
 }
 
+/**
+ * Formats a 10-digit phone number to +1XXXXXXXXXX format for GHL webhook
+ * Accepts 10-digit number or already formatted +1 number
+ * @param phoneNumber - Phone number (10 digits or +1XXXXXXXXXX)
+ * @returns Formatted phone number as +1XXXXXXXXXX
+ */
+export function formatPhoneForGHL(phoneNumber: string): string {
+  if (!phoneNumber) return '';
+  
+  // Remove all non-digit characters
+  const digits = phoneNumber.replace(/\D/g, '');
+  
+  // If it's 10 digits, add +1 prefix
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  
+  // If it's 11 digits starting with 1, add + prefix
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+1${digits.substring(1)}`;
+  }
+  
+  // If it already has +1 format, return as is
+  if (phoneNumber.startsWith('+1') && digits.length === 11) {
+    return phoneNumber;
+  }
+  
+  // For any other case, extract last 10 digits and add +1
+  if (digits.length >= 10) {
+    const last10Digits = digits.slice(-10);
+    return `+1${last10Digits}`;
+  }
+  
+  // Return empty if invalid
+  return '';
+}
+
+/**
+ * Formats a phone number for display without country code
+ * Formats as (XXX) XXX-XXXX for 10-digit numbers
+ * @param phoneNumber - Phone number (10 digits)
+ * @returns Formatted phone number (XXX) XXX-XXXX
+ */
+export function formatPhoneForInput(phoneNumber: string): string {
+  if (!phoneNumber) return '';
+  
+  // Remove all non-digit characters
+  const digits = phoneNumber.replace(/\D/g, '');
+  
+  // Extract last 10 digits
+  const last10Digits = digits.slice(-10);
+  
+  if (last10Digits.length === 10) {
+    return `(${last10Digits.slice(0, 3)}) ${last10Digits.slice(3, 6)}-${last10Digits.slice(6)}`;
+  }
+  
+  // If less than 10 digits, return as partial format
+  if (last10Digits.length > 0) {
+    if (last10Digits.length <= 3) {
+      return `(${last10Digits}`;
+    } else if (last10Digits.length <= 6) {
+      return `(${last10Digits.slice(0, 3)}) ${last10Digits.slice(3)}`;
+    } else {
+      return `(${last10Digits.slice(0, 3)}) ${last10Digits.slice(3, 6)}-${last10Digits.slice(6)}`;
+    }
+  }
+  
+  return '';
+}
+
 
 
 

@@ -46,8 +46,25 @@ API_SECRET_KEY=your_api_secret_key
 # =============================================================================
 # OTP VERIFICATION
 # =============================================================================
+# Client-side environment variables (required for OTP functionality)
+# These must be prefixed with NEXT_PUBLIC_ to be accessible in the browser
+NEXT_PUBLIC_SUPABASE_QUIZ_URL=https://jqjftrlnyysqcwbbigpw.supabase.co
+NEXT_PUBLIC_SUPABASE_QUIZ_ANON_KEY=your_supabase_quiz_anon_key
+
+# Server-side environment variables (for API routes)
+SUPABASE_QUIZ_URL=https://jqjftrlnyysqcwbbigpw.supabase.co
+SUPABASE_QUIZ_ANON_KEY=your_supabase_quiz_anon_key
+SUPABASE_QUIZ_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# OTP Configuration
 OTP_SECRET_KEY=your_otp_secret_key
 OTP_EXPIRY_MINUTES=10
+
+# NOTE: Twilio credentials are stored as Supabase Edge Function secrets:
+# - TWILIO_ACCOUNT_SID
+# - TWILIO_AUTH_TOKEN
+# - VERIFY_SERVICE_SID
+# These are configured in Supabase dashboard under Edge Functions > Secrets
 
 # =============================================================================
 # UTM TRACKING

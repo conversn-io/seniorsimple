@@ -132,6 +132,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Consolidata Analytics & Visitor Tracking */}
+        <div id="consolidata-hm-script-loader" consolidata-hm-23-data-name="1241781759524463-3923"></div>
+        <script 
+          id="consolidata-hm-23-domain-name" 
+          consolidata-hm-23-data-name="1241781759524463-3923" 
+          type="text/javascript" 
+          src="https://ms1.consolidata.ai/analytics/script-loader/1241781759524463-3923"
+        ></script>
+        <script async src="https://api.visitoredge.com/api/website/run-cookie-script"></script>
         {/* ❌ TEMPORARILY DISABLED: Google Tag Manager (noscript) - Using direct tracking */}
         {/*
         <noscript>

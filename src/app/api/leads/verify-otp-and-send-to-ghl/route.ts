@@ -1,11 +1,239 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
+import { formatPhoneForGHL, formatE164 } from '@/utils/phone-utils';
+import * as crypto from 'crypto';
 
 const GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
 
 export async function OPTIONS() {
   return handleCorsOptions();
+}
+
+// Helper function to hash phone number
+function phoneHash(phone: string | null): string | null {
+  if (!phone) return null;
+  return crypto.createHash('sha256').update(phone).digest('hex');
+}
+
+// Helper function to upsert contact
+async function upsertContact(email: string, firstName: string | null, lastName: string | null, phone: string | null) {
+  const emailLower = email?.toLowerCase();
+  const normalizedPhone = phone ? formatE164(phone) : null;
+  
+  // Try to find existing contact by email or phone
+  const { data: existingByEmail } = await callreadyQuizDb
+    .from('contacts')
+    .select('*')
+    .eq('email', emailLower)
+    .maybeSingle();
+  
+  // If phone provided, also check by phone_hash
+  let existingByPhone = null;
+  if (normalizedPhone) {
+    const phoneHashVal = phoneHash(normalizedPhone);
+    const { data: phoneMatch } = await callreadyQuizDb
+      .from('contacts')
+      .select('*')
+      .eq('phone_hash', phoneHashVal)
+      .maybeSingle();
+    existingByPhone = phoneMatch;
+  }
+  
+  const existing = existingByEmail || existingByPhone;
+  
+  if (existing?.id) {
+    // Update existing contact with new info
+    const updateData: any = {};
+    if (firstName && !existing.first_name) updateData.first_name = firstName;
+    if (lastName && !existing.last_name) updateData.last_name = lastName;
+    if (normalizedPhone && !existing.phone) {
+      updateData.phone = normalizedPhone;
+      updateData.phone_hash = phoneHash(normalizedPhone);
+    }
+    if (emailLower && !existing.email) updateData.email = emailLower;
+    
+    if (Object.keys(updateData).length > 0) {
+      const { data: updated } = await callreadyQuizDb
+        .from('contacts')
+        .update(updateData)
+        .eq('id', existing.id)
+        .select('*')
+        .single();
+      return updated || existing;
+    }
+    return existing;
+  }
+  
+  // Create new contact
+  const contactData: any = {
+    email: emailLower,
+    first_name: firstName,
+    last_name: lastName,
+    source: 'seniorsimple_quiz',
+  };
+  
+  if (normalizedPhone) {
+    contactData.phone = normalizedPhone;
+    contactData.phone_hash = phoneHash(normalizedPhone);
+  }
+  
+  const { data: newContact, error } = await callreadyQuizDb
+    .from('contacts')
+    .insert(contactData)
+    .select('*')
+    .single();
+  
+  if (error) {
+    // Try without optional columns if they don't exist
+    if (error.message?.includes('phone_hash') || error.message?.includes('source')) {
+      const fallbackData: any = {
+        email: emailLower,
+        first_name: firstName,
+        last_name: lastName,
+      };
+      if (normalizedPhone) fallbackData.phone = normalizedPhone;
+      
+      const { data: fallbackContact } = await callreadyQuizDb
+        .from('contacts')
+        .insert(fallbackData)
+        .select('*')
+        .single();
+      
+      if (fallbackContact) return fallbackContact;
+    }
+    throw error;
+  }
+  
+  return newContact;
+}
+
+// Helper function to find or create lead
+async function upsertLead(
+  contactId: string,
+  sessionId: string | null,
+  funnelType: string,
+  zipCode: string | null,
+  state: string | null,
+  stateName: string | null,
+  quizAnswers: any,
+  calculatedResults: any,
+  licensingInfo: any,
+  utmParams: any,
+  isVerified: boolean = false
+) {
+  const verifiedAt = isVerified ? new Date().toISOString() : null;
+  
+  // Try to find existing lead by contact_id and session_id
+  let existingLead = null;
+  if (sessionId) {
+    const { data: existing } = await callreadyQuizDb
+      .from('leads')
+      .select('*')
+      .eq('contact_id', contactId)
+      .eq('session_id', sessionId)
+      .maybeSingle();
+    existingLead = existing;
+  }
+  
+  // Extract UTM parameters
+  const utmSource = utmParams?.utm_source || 'seniorsimple';
+  const utmMedium = utmParams?.utm_medium || 'quiz';
+  const utmCampaign = utmParams?.utm_campaign || null;
+  
+  const leadData: any = {
+    contact_id: contactId,
+    session_id: sessionId,
+    site_key: 'seniorsimple.org',
+    funnel_type: funnelType || 'insurance',
+    form_type: 'quiz',
+    status: isVerified ? 'verified' : 'email_captured',
+    is_verified: isVerified,
+    verified_at: verifiedAt,
+    zip_code: zipCode,
+    state: state,
+    state_name: stateName,
+    quiz_answers: {
+      ...quizAnswers,
+      calculated_results: calculatedResults,
+      licensing_info: licensingInfo,
+      utm_parameters: utmParams,
+    },
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    attributed_ad_account: 'CallReady - Insurance',
+    profit_center: 'SeniorSimple.org',
+  };
+  
+  if (existingLead?.id) {
+    // Update existing lead
+    const { data: updated, error } = await callreadyQuizDb
+      .from('leads')
+      .update({
+        ...leadData,
+        id: existingLead.id, // Preserve existing ID
+      })
+      .eq('id', existingLead.id)
+      .select('*')
+      .single();
+    
+    if (error) {
+      // Try without optional columns if they don't exist
+      const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
+      let shouldRetry = false;
+      
+      for (const col of optionalColumns) {
+        if (error.message?.includes(col)) {
+          delete leadData[col];
+          shouldRetry = true;
+        }
+      }
+      
+      if (shouldRetry) {
+        const { data: fallbackUpdated } = await callreadyQuizDb
+          .from('leads')
+          .update(leadData)
+          .eq('id', existingLead.id)
+          .select('*')
+          .single();
+        return fallbackUpdated || existingLead;
+      }
+      throw error;
+    }
+    return updated || existingLead;
+  } else {
+    // Create new lead
+    const { data: newLead, error } = await callreadyQuizDb
+      .from('leads')
+      .insert(leadData)
+      .select('*')
+      .single();
+    
+    if (error) {
+      // Try without optional columns if they don't exist
+      const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
+      let shouldRetry = false;
+      
+      for (const col of optionalColumns) {
+        if (error.message?.includes(col)) {
+          delete leadData[col];
+          shouldRetry = true;
+        }
+      }
+      
+      if (shouldRetry) {
+        const { data: fallbackLead } = await callreadyQuizDb
+          .from('leads')
+          .insert(leadData)
+          .select('*')
+          .single();
+        return fallbackLead;
+      }
+      throw error;
+    }
+    return newLead;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -43,57 +271,123 @@ export async function POST(request: NextRequest) {
       funnelType
     });
 
-    // Save to verified_leads table (this is the main leads table)
-    console.log('💾 Saving lead to database...');
-    const { data: lead, error: leadError } = await callreadyQuizDb
-      .from('verified_leads')
-      .insert({
-        phone_number: phoneNumber,
-        email: email,
-        first_name: firstName,
-        last_name: lastName,
-        source: `seniorsimple_${funnelType}_funnel`,
-        status: 'verified',
-        quiz_answers: {
-          ...quizAnswers,
-          calculated_results: calculatedResults,
-          session_id: sessionId,
-          funnel_type: funnelType,
-          zip_code: zipCode,
-          state: state,
-          state_name: stateName,
-          licensing_info: licensingInfo,
-          utm_parameters: utmParams // Include UTM parameters in quiz_answers
-        },
-        property_location: zipCode, // Using existing field for ZIP
-        verified_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (leadError) {
-      console.error('❌ Lead Save Failed:', leadError);
-      return createCorsResponse({ error: 'Failed to save verified lead' }, 500);
+    if (!email || !phoneNumber) {
+      return createCorsResponse({ error: 'Email and phone number are required' }, 400);
     }
 
-    console.log('✅ Lead Saved Successfully:', { leadId: lead.id, email: lead.email });
+    // Find existing lead by session_id (should already exist from capture-email)
+    console.log('🔍 Finding existing lead...');
+    let lead = null;
+    if (sessionId) {
+      // First, find contact by email to get contact_id
+      const { data: contactByEmail } = await callreadyQuizDb
+        .from('contacts')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .maybeSingle();
+      
+      if (contactByEmail?.id) {
+        const { data: existingLead } = await callreadyQuizDb
+          .from('leads')
+          .select('*')
+          .eq('contact_id', contactByEmail.id)
+          .eq('session_id', sessionId)
+          .maybeSingle();
+        lead = existingLead;
+      }
+    }
 
-    // Prepare GHL webhook payload with both ZIP and state
+    if (!lead) {
+      // Lead doesn't exist yet, create it (shouldn't happen but handle gracefully)
+      console.log('⚠️ Lead not found, creating new lead...');
+      const contact = await upsertContact(email, firstName, lastName, phoneNumber);
+      lead = await upsertLead(
+        contact.id,
+        sessionId,
+        funnelType || 'insurance',
+        zipCode,
+        state,
+        stateName,
+        quizAnswers,
+        calculatedResults,
+        licensingInfo,
+        utmParams,
+        true // is_verified = true
+      );
+    } else {
+      // Update existing lead to verified status
+      console.log('✅ Lead found, updating to verified status...');
+      const updateData: any = {
+        is_verified: true,
+        verified_at: new Date().toISOString(),
+        status: 'verified',
+      };
+
+      // Also update contact phone if not already set
+      if (phoneNumber && lead.contact_id) {
+        const { data: contact } = await callreadyQuizDb
+          .from('contacts')
+          .select('*')
+          .eq('id', lead.contact_id)
+          .single();
+        
+        if (contact && !contact.phone) {
+          const normalizedPhone = formatE164(phoneNumber);
+          await callreadyQuizDb
+            .from('contacts')
+            .update({
+              phone: normalizedPhone,
+              phone_hash: phoneHash(normalizedPhone),
+            })
+            .eq('id', lead.contact_id);
+        }
+      }
+
+      const { data: updatedLead, error: updateError } = await callreadyQuizDb
+        .from('leads')
+        .update(updateData)
+        .eq('id', lead.id)
+        .select('*')
+        .single();
+
+      if (updateError) {
+        console.error('⚠️ Error updating lead:', updateError);
+      } else {
+        lead = updatedLead || lead;
+        console.log('✅ Lead updated to verified:', lead.id);
+      }
+    }
+
+    // Get contact info for GHL payload
+    const { data: contact } = await callreadyQuizDb
+      .from('contacts')
+      .select('*')
+      .eq('id', lead.contact_id)
+      .single();
+    
+    if (!contact) {
+      return createCorsResponse({ error: 'Contact not found' }, 404);
+    }
+
+    // Prepare GHL webhook payload (only sent if OTP is verified)
+    // Format phone with +1 for GHL webhook
+    const formattedPhone = formatPhoneForGHL(phoneNumber);
     const ghlPayload = {
-      firstName: lead.first_name,
-      lastName: lead.last_name,
-      email: lead.email,
-      phone: lead.phone_number,
-      zipCode: zipCode,
-      state: state,
-      stateName: stateName,
+      firstName: firstName || contact.first_name,
+      lastName: lastName || contact.last_name,
+      email: email,
+      phone: formattedPhone,
+      zipCode: zipCode || lead.zip_code,
+      state: state || lead.state,
+      stateName: stateName || lead.state_name,
       source: 'SeniorSimple Quiz',
-      funnelType: funnelType,
-      quizAnswers: lead.quiz_answers,
+      funnelType: funnelType || lead.funnel_type || 'insurance',
+      quizAnswers: lead.quiz_answers || quizAnswers,
+      calculatedResults: calculatedResults,
       licensingInfo: licensingInfo,
       leadScore: 75, // Default lead score
       timestamp: new Date().toISOString(),
-      utmParams: utmParams // Include UTM parameters in GHL webhook
+      utmParams: utmParams || lead.quiz_answers?.utm_parameters || {} // Include UTM parameters in GHL webhook
     };
 
     console.log('📤 Sending to GHL Webhook:', {
@@ -101,20 +395,55 @@ export async function POST(request: NextRequest) {
       payload: ghlPayload
     });
 
-    // Send to GHL webhook
+    // Send to GHL webhook with timeout
     console.log('🚀 Making GHL webhook request...');
-    const ghlResponse = await fetch(GHL_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(ghlPayload),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    let ghlResponse: Response;
+    try {
+      ghlResponse = await fetch(GHL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ghlPayload),
+        signal: controller.signal
+      });
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('❌ GHL Webhook Timeout:', {
+          url: GHL_WEBHOOK_URL,
+          timeout: '10s',
+          timestamp: new Date().toISOString()
+        });
+        return createCorsResponse({ 
+          error: 'GHL webhook timeout', 
+          timeout: true 
+        }, 504);
+      }
+      throw fetchError;
+    }
+    clearTimeout(timeoutId);
 
     console.log('📡 GHL Response Status:', ghlResponse.status);
     console.log('📡 GHL Response Headers:', Object.fromEntries(ghlResponse.headers.entries()));
 
-    const ghlResponseData = await ghlResponse.json().catch(() => ({}));
+    // Try to parse response - handle empty responses
+    let ghlResponseData: any = {};
+    try {
+      const text = await ghlResponse.text();
+      if (text) {
+        try {
+          ghlResponseData = JSON.parse(text);
+        } catch {
+          ghlResponseData = { raw: text };
+        }
+      }
+    } catch (parseError) {
+      console.warn('⚠️ Could not parse GHL response:', parseError);
+    }
     console.log('📡 GHL Response Body:', ghlResponseData);
 
     // Log webhook attempt to analytics_events
@@ -123,13 +452,14 @@ export async function POST(request: NextRequest) {
       event_name: 'ghl_webhook_sent',
       event_category: 'lead_distribution',
       event_label: 'seniorsimple_quiz',
-      user_id: lead.phone_number,
+      user_id: phoneNumber,
       session_id: sessionId,
       page_url: request.headers.get('referer'),
       user_agent: request.headers.get('user-agent'),
       ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
       properties: {
         lead_id: lead.id,
+        contact_id: contact.id,
         webhook_url: GHL_WEBHOOK_URL,
         request_payload: ghlPayload,
         response_status: ghlResponse.status,
@@ -139,26 +469,31 @@ export async function POST(request: NextRequest) {
     });
 
     if (ghlResponse.ok) {
-      // Update lead status to contacted
-      await callreadyQuizDb
-        .from('verified_leads')
-        .update({
-          status: 'contacted',
-          contacted_at: new Date().toISOString()
-        })
-        .eq('id', lead.id);
-
+      // Update lead status if needed (optional - status already set to 'verified')
+      // Could add ghl_status field update here if needed
       console.log('✅ Lead Sent to GHL Successfully:', { leadId: lead.id, status: ghlResponse.status });
       return createCorsResponse({ 
         success: true, 
         leadId: lead.id,
+        contactId: contact.id,
         ghlStatus: ghlResponse.status 
       });
     } else {
-      console.error('❌ GHL Webhook Failed:', { status: ghlResponse.status, response: ghlResponseData });
+      console.error('❌ GHL Webhook Failed:', { 
+        status: ghlResponse.status,
+        statusText: ghlResponse.statusText,
+        response: ghlResponseData,
+        payload: ghlPayload,
+        url: GHL_WEBHOOK_URL,
+        timestamp: new Date().toISOString()
+      });
       return createCorsResponse({ 
         error: 'GHL webhook failed', 
-        ghlStatus: ghlResponse.status 
+        leadId: lead.id,
+        contactId: contact.id,
+        ghlStatus: ghlResponse.status,
+        ghlStatusText: ghlResponse.statusText,
+        ghlResponse: ghlResponseData
       }, 500);
     }
 
