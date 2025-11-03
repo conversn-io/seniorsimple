@@ -138,9 +138,9 @@ export async function POST(request: NextRequest) {
     const contactId = contact.id || contact;
     console.log('✅ Contact upserted:', contactId);
 
-    // Extract UTM parameters
-    const utmSource = utmParams?.utm_source || 'seniorsimple';
-    const utmMedium = utmParams?.utm_medium || 'quiz';
+    // Extract UTM parameters - use null instead of defaults to clearly indicate missing UTM data
+    const utmSource = utmParams?.utm_source || null;
+    const utmMedium = utmParams?.utm_medium || null;
     const utmCampaign = utmParams?.utm_campaign || null;
 
     // Check if lead already exists for this contact and session
@@ -156,12 +156,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert or update lead (not verified yet - OTP verification comes later)
+    // NOTE: Do NOT include optional columns (form_type, attributed_ad_account, profit_center) 
+    // as they don't exist in the current schema and will cause PGRST204 errors
     const leadData: any = {
       contact_id: contactId,
       session_id: sessionId,
       site_key: 'seniorsimple.org',
       funnel_type: funnelType || 'insurance',
-      form_type: 'quiz',
       status: phoneNumber ? 'phone_captured' : 'email_captured',
       is_verified: false, // Will be set to true when OTP is verified
       zip_code: zipCode,
@@ -171,13 +172,15 @@ export async function POST(request: NextRequest) {
         ...quizAnswers,
         calculated_results: calculatedResults,
         licensing_info: licensingInfo,
-        utm_parameters: utmParams,
+        utm_parameters: utmParams || {}, // Ensure UTM is stored even if empty object
       },
       utm_source: utmSource,
       utm_medium: utmMedium,
       utm_campaign: utmCampaign,
-      attributed_ad_account: 'CallReady - Insurance',
-      profit_center: 'SeniorSimple.org',
+      // Optional columns removed - they don't exist in schema:
+      // form_type: 'quiz',
+      // attributed_ad_account: 'CallReady - Insurance',
+      // profit_center: 'SeniorSimple.org',
     };
 
     let lead;
@@ -194,19 +197,29 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (updateError) {
-        // Try without optional columns if they don't exist
-        const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
-        let shouldRetry = false;
+        const errorCode = updateError.code || '';
+        const errorMessage = String(updateError.message || updateError.details || '').toLowerCase();
+        const isPGRST204 = errorCode === 'PGRST204';
+        const mentionsColumn = errorMessage.includes('column') || errorMessage.includes('could not find');
         
-        for (const col of optionalColumns) {
-          if (updateError.message?.includes(col)) {
-            delete leadData[col];
-            shouldRetry = true;
-          }
-        }
+        console.log('⚠️ Lead update error, attempting retry without optional columns:', {
+          error: updateError.message || updateError,
+          code: errorCode,
+          details: updateError.details,
+          isPGRST204,
+          mentionsColumn
+        });
         
-        if (shouldRetry) {
-          const { data: fallbackUpdated } = await callreadyQuizDb
+        // If it's a schema/column error (PGRST204 or mentions column), remove ALL optional columns and retry
+        if (isPGRST204 || mentionsColumn) {
+          // Remove all optional columns
+          delete leadData.form_type;
+          delete leadData.attributed_ad_account;
+          delete leadData.profit_center;
+          
+          console.log('🔄 Retrying update without optional columns (form_type, attributed_ad_account, profit_center)');
+          
+          const { data: fallbackUpdated, error: fallbackError } = await callreadyQuizDb
             .from('leads')
             .update(leadData)
             .eq('id', existingLead.id)
@@ -217,6 +230,7 @@ export async function POST(request: NextRequest) {
             lead = fallbackUpdated;
             console.log('✅ Lead updated (without optional columns):', lead.id);
           } else {
+            console.error('❌ Fallback lead update also failed:', fallbackError);
             throw updateError;
           }
         } else {
@@ -235,19 +249,29 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (leadError) {
-        // Try without optional columns if they don't exist
-        const optionalColumns = ['form_type', 'attributed_ad_account', 'profit_center'];
-        let shouldRetry = false;
+        const errorCode = leadError.code || '';
+        const errorMessage = String(leadError.message || leadError.details || '').toLowerCase();
+        const isPGRST204 = errorCode === 'PGRST204';
+        const mentionsColumn = errorMessage.includes('column') || errorMessage.includes('could not find');
         
-        for (const col of optionalColumns) {
-          if (leadError.message?.includes(col)) {
-            delete leadData[col];
-            shouldRetry = true;
-          }
-        }
+        console.log('⚠️ Lead creation error, attempting retry without optional columns:', {
+          error: leadError.message || leadError,
+          code: errorCode,
+          details: leadError.details,
+          isPGRST204,
+          mentionsColumn
+        });
         
-        if (shouldRetry) {
-          const { data: fallbackLead } = await callreadyQuizDb
+        // If it's a schema/column error (PGRST204 or mentions column), remove ALL optional columns and retry
+        if (isPGRST204 || mentionsColumn) {
+          // Remove all optional columns
+          delete leadData.form_type;
+          delete leadData.attributed_ad_account;
+          delete leadData.profit_center;
+          
+          console.log('🔄 Retrying without optional columns (form_type, attributed_ad_account, profit_center)');
+          
+          const { data: fallbackLead, error: fallbackError } = await callreadyQuizDb
             .from('leads')
             .insert(leadData)
             .select('*')
@@ -257,9 +281,11 @@ export async function POST(request: NextRequest) {
             lead = fallbackLead;
             console.log('✅ Lead created (without optional columns):', lead.id);
           } else {
-            throw leadError;
+            console.error('❌ Fallback lead creation also failed:', fallbackError);
+            throw leadError; // Throw original error
           }
         } else {
+          // Not a column error, throw it
           throw leadError;
         }
       } else {
