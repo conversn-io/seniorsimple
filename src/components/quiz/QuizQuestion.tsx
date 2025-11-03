@@ -9,7 +9,7 @@ interface QuizQuestionProps {
     id: string;
     title: string;
     subtitle?: string;
-    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info';
+    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent';
     options?: string[];
     min?: number;
     max?: number;
@@ -461,6 +461,74 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
           </form>
         );
 
+      case 'phone-consent':
+        // Handle phone-consent the same way as personal-info (phone + consent only)
+        return (
+          <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
+                </div>
+                <input
+                  type="tel"
+                  value={formatPhoneForInput(phone)}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    // Remove all non-digit characters
+                    const digits = inputValue.replace(/\D/g, '');
+                    // Limit to 10 digits
+                    const limitedDigits = digits.slice(0, 10);
+                    setPhone(limitedDigits);
+                  }}
+                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  placeholder="(555) 123-4567"
+                  required
+                  disabled={isLoading}
+                  autoComplete="tel-national"
+                  style={{ 
+                    minHeight: '56px',
+                    paddingLeft: '100px'
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                We'll send a verification code to this number
+              </p>
+            </div>
+            <div className="flex items-start space-x-4">
+              <input
+                type="checkbox"
+                id="consent"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-2 w-6 h-6 text-[#36596A] border-2 border-gray-300 rounded focus:ring-4 focus:ring-[#36596A]/20"
+                disabled={isLoading}
+              />
+              <label htmlFor="consent" className="text-lg text-gray-600 leading-relaxed">
+                I consent to receive SMS messages and phone calls from CallReady and its partners regarding my retirement planning inquiry. Message and data rates may apply. Reply STOP to opt out.
+              </label>
+            </div>
+
+            {phoneError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-600 text-sm">{phoneError}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={!phone || !consentChecked || isLoading}
+              style={{ minHeight: '64px' }}
+            >
+              Continue
+            </button>
+          </form>
+        );
 
       default:
         return <div>Unsupported question type</div>;
