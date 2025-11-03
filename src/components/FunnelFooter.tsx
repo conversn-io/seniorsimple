@@ -56,16 +56,16 @@ const FunnelFooter = () => {
           <div>
             <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal & Compliance</h3>
             <div className="space-y-2 text-gray-600">
-              <Link href="/privacy-policy" className="block hover:text-[#36596A] transition-colors">
+              <Link href="/privacy-policy" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                 Privacy Policy
               </Link>
               <Link href="/terms-of-service" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                 Terms of Service
               </Link>
-              <Link href="/disclaimers" className="block hover:text-[#36596A] transition-colors">
+              <Link href="/disclaimers" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                 Disclaimers
               </Link>
-              <Link href="/compliance" className="block hover:text-[#36596A] transition-colors">
+              <Link href="/compliance" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                 Compliance Information
               </Link>
             </div>
@@ -101,16 +101,16 @@ const FunnelFooter = () => {
             <div>
               <h4 className="font-semibold text-[#36596A] mb-3">Regulatory Information</h4>
               <div className="space-y-2 text-sm text-gray-600">
-                <Link href="/compliance/insurance-licensing" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/compliance/insurance-licensing" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Insurance Licensing Information
                 </Link>
-                <Link href="/compliance/state-requirements" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/compliance/state-requirements" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   State-Specific Requirements
                 </Link>
-                <Link href="/compliance/consumer-protection" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/compliance/consumer-protection" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Consumer Protection Rights
                 </Link>
-                <Link href="/compliance/do-not-call" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/compliance/do-not-call" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Do Not Call Registry
                 </Link>
               </div>
@@ -118,16 +118,16 @@ const FunnelFooter = () => {
             <div>
               <h4 className="font-semibold text-[#36596A] mb-3">Legal Documents</h4>
               <div className="space-y-2 text-sm text-gray-600">
-                <Link href="/legal/privacy-policy" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/privacy-policy" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Privacy Policy
                 </Link>
                 <Link href="/terms-of-service" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Terms of Service
                 </Link>
-                <Link href="/legal/cookie-policy" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/legal/cookie-policy" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Cookie Policy
                 </Link>
-                <Link href="/legal/accessibility" className="block hover:text-[#36596A] transition-colors">
+                <Link href="/legal/accessibility" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                   Accessibility Statement
                 </Link>
               </div>

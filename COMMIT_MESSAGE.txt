@@ -1,0 +1,92 @@
+feat: comprehensive lead capture system overhaul and quiz routing improvements
+
+## Major Changes
+
+### Backend/API Improvements
+- **Enhanced `/api/leads/capture-email` route:**
+  - Accepts phone number in addition to email/name
+  - Upserts contacts with phone normalization (E.164 format) and hashing
+  - Creates leads with `is_verified: false` status
+  - Handles optional database columns gracefully
+  - Improved error handling with detailed logging
+
+- **Enhanced `/api/leads/verify-otp-and-send-to-ghl` route:**
+  - Updates existing leads by `session_id` instead of creating duplicates
+  - Sets `is_verified: true` and `verified_at` timestamp on OTP verification
+  - Only sends to GHL webhook after successful OTP verification
+  - Improved error handling with 10-second timeout and detailed responses
+  - Better contact/lead upsert logic with phone deduplication
+
+### Frontend Improvements
+- **Quiz Routing:**
+  - Fixed routing to use `/quiz-submitted` (matches production)
+  - Added `/quiz-a` route with `skipOTP={true}` option
+  - Both `/quiz` and `/quiz-a` now route to `/quiz-submitted` consistently
+
+- **Phone Input:**
+  - Removed `+1` prefix from input field (allows browser autocomplete)
+  - Phone formatting handled on backend for GHL webhooks
+  - Added `autoComplete="tel-national"` for better UX
+  - Phone stored as 10-digit format in frontend, formatted to E.164 on backend
+
+- **React/Fix:**
+  - Fixed critical React hooks error (moved useEffect before conditional returns)
+  - Improved error handling throughout with detailed error messages
+  - Better error logging for email capture and GHL webhook failures
+
+### Database Schema Updates
+- Removed dependency on non-existent `verified_leads` table
+- All verification status now in `leads` table using `is_verified` boolean
+- Added `verified_at` timestamp field
+- Status progression: `email_captured` → `phone_captured` → `verified`
+
+### Component Updates
+- Deleted `AgentAssignmentPage.tsx` (replaced with `/quiz-submitted` route)
+- Enhanced `AnnuityQuiz.tsx` with skipOTP support and better error handling
+- Updated `PhoneInput.tsx` for browser autocomplete compatibility
+- Improved `QuizQuestion.tsx` phone handling
+- Added phone utility functions (`formatPhoneForGHL`, `formatPhoneForInput`, `formatE164`)
+
+### Configuration
+- Updated `env-template-seniorsimple.txt` with OTP verification variables
+- Updated package dependencies
+
+## Bug Fixes
+- Fixed React hooks error: "Rendered fewer hooks than expected"
+- Fixed email capture error handling (was showing empty object `{}`)
+- Fixed GHL webhook error handling (was showing empty object `{}`)
+- Fixed phone autocomplete not working due to `+1` prefix in input
+- Fixed hydration error (moved Consolidata scripts from `<head>` to `<body>`)
+
+## New Features
+- `/quiz-a` route for testing without OTP verification
+- Phone number autocomplete support in browser
+- Comprehensive error logging throughout the application
+- Idempotent contact/lead upserts (no duplicates)
+
+## Documentation
+- Added `QUIZ_ROUTING_ANALYSIS.md` - comprehensive routing analysis
+- Added `TRACKING_ARCHITECTURE.md` - tracking system documentation
+
+## Migration Notes
+- All leads now saved to Supabase regardless of OTP status
+- GHL webhook only triggered after OTP verification
+- Single source of truth in `contacts` and `leads` tables
+- Full event tracking in `analytics_events` table
+
+## Testing Recommendations
+1. Test form submission → verify data in Supabase
+2. Test OTP verification → verify `is_verified` updates
+3. Test GHL webhook → verify payload format
+4. Test duplicate submissions → verify idempotency
+5. Test phone autocomplete → verify browser saves data
+6. Test both `/quiz` and `/quiz-a` routes → verify correct routing
+
+---
+
+Files Changed:
+- 13 files modified
+- 1 file deleted (AgentAssignmentPage.tsx)
+- 2 files added (quiz-a route, documentation)
+- Net: +1370 insertions, -681 deletions
+
