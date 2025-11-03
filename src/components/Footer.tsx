@@ -41,7 +41,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold text-[#36596A] mb-4">Featured Content</h3>
             <div className="space-y-2 text-gray-600">
-              <Link href="/content" className="block hover:text-[#36596A] transition-colors">
+              <Link href="/content" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
                 Content Library
               </Link>
               <Link href="/content/tax-free-retirement-income-complete-guide" className="block hover:text-[#36596A] transition-colors">
