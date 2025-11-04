@@ -85,14 +85,14 @@ export function initializeTracking(): void {
   console.log('🎯 SeniorSimple Temporary Tracking Initialized');
   
   // GA4 is now loaded in layout.tsx, just verify it's available
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     console.log('✅ GA4 already loaded in layout');
   } else {
     console.log('⚠️ GA4 not available (may be blocked or loading)');
   }
 
   // Meta Pixel is now loaded in layout.tsx, just verify it's available
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     console.log('✅ Meta Pixel already loaded in layout');
   } else {
     console.log('⚠️ Meta Pixel not available');
@@ -101,7 +101,7 @@ export function initializeTracking(): void {
 
 // GA4 Event Tracking
 function trackGA4Event(eventName: string, parameters: Record<string, any>): void {
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', eventName, {
       ...parameters,
       site_key: 'SENIORSIMPLE',
@@ -112,7 +112,7 @@ function trackGA4Event(eventName: string, parameters: Record<string, any>): void
 
 // Meta Pixel Event Tracking
 function trackMetaEvent(eventName: string, parameters: Record<string, any>): void {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq('track', eventName, parameters);
   }
 }
@@ -362,7 +362,7 @@ export function trackPageView(pageName: string, pagePath: string): void {
   }
   
   // Track to GA4
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     trackGA4Event('page_view', {
       page_title: pageName,
       page_location: pagePath,
