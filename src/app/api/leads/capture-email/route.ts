@@ -155,6 +155,35 @@ export async function POST(request: NextRequest) {
       existingLead = existing;
     }
 
+    // Get referrer and landing page from request headers
+    const referrer = request.headers.get('referer') || request.headers.get('referrer') || null;
+    const landingPage = request.headers.get('x-forwarded-url') || request.url || referrer || null;
+    
+    // Get user_id from analytics_events if available (for this session)
+    let userId = null;
+    if (sessionId) {
+      const { data: sessionEvent } = await callreadyQuizDb
+        .from('analytics_events')
+        .select('user_id')
+        .eq('session_id', sessionId)
+        .not('user_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      userId = sessionEvent?.user_id || email; // Fallback to email if no user_id found
+    } else {
+      userId = email; // Use email as user_id if no session
+    }
+    
+    // Get contact data for contact JSONB field
+    const contactData = {
+      email: email,
+      phone: phoneNumber || null,
+      first_name: firstName,
+      last_name: lastName,
+      zip_code: zipCode || null
+    };
+
     // Insert or update lead (not verified yet - OTP verification comes later)
     // NOTE: Do NOT include optional columns (form_type, attributed_ad_account, profit_center) 
     // as they don't exist in the current schema and will cause PGRST204 errors
@@ -168,6 +197,10 @@ export async function POST(request: NextRequest) {
       zip_code: zipCode,
       state: state,
       state_name: stateName,
+      referrer: referrer, // Populate from request headers
+      landing_page: landingPage, // Populate from request headers
+      user_id: userId, // Populate from analytics_events or email
+      contact: contactData, // Populate contact JSONB from contact data
       quiz_answers: {
         ...quizAnswers,
         calculated_results: calculatedResults,
@@ -308,6 +341,7 @@ export async function POST(request: NextRequest) {
         user_agent: request.headers.get('user-agent'),
         ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
         properties: {
+          site_key: 'seniorsimple.org',
           email,
           first_name: firstName,
           last_name: lastName,

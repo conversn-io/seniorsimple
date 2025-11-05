@@ -141,6 +141,52 @@ async function upsertLead(
   const utmMedium = utmParams?.utm_medium || null;
   const utmCampaign = utmParams?.utm_campaign || null;
   
+  // Get referrer and landing page from analytics_events (since request may not be available)
+  let referrer = null;
+  let landingPage = null;
+  if (sessionId) {
+    const { data: sessionEvent } = await callreadyQuizDb
+      .from('analytics_events')
+      .select('referrer, page_url, user_id')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (sessionEvent) {
+      referrer = sessionEvent.referrer || null;
+      landingPage = sessionEvent.page_url || null;
+    }
+  }
+  
+  // Get user_id from analytics_events if available
+  let userId = null;
+  if (sessionId) {
+    const { data: sessionEvent } = await callreadyQuizDb
+      .from('analytics_events')
+      .select('user_id')
+      .eq('session_id', sessionId)
+      .not('user_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    userId = sessionEvent?.user_id || null;
+  }
+  
+  // Get contact data for contact JSONB field
+  const { data: contact } = await callreadyQuizDb
+    .from('contacts')
+    .select('email, phone_e164, first_name, last_name, zip_code')
+    .eq('id', contactId)
+    .maybeSingle();
+  
+  const contactData = contact ? {
+    email: contact.email,
+    phone: contact.phone_e164 || null,
+    first_name: contact.first_name,
+    last_name: contact.last_name,
+    zip_code: contact.zip_code || zipCode || null
+  } : null;
+
   // NOTE: Do NOT include optional columns (form_type, attributed_ad_account, profit_center) 
   // as they don't exist in the current schema and will cause PGRST204 errors
   const leadData: any = {
@@ -154,6 +200,10 @@ async function upsertLead(
     zip_code: zipCode,
     state: state,
     state_name: stateName,
+    referrer: referrer, // Populate from analytics_events
+    landing_page: landingPage, // Populate from analytics_events
+    user_id: userId, // Populate from analytics_events
+    contact: contactData, // Populate contact JSONB
     quiz_answers: {
       ...quizAnswers,
       calculated_results: calculatedResults,
@@ -485,6 +535,7 @@ export async function POST(request: NextRequest) {
       user_agent: request.headers.get('user-agent'),
       ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
       properties: {
+        site_key: 'seniorsimple.org',
         lead_id: lead.id,
         contact_id: contact.id,
         webhook_url: GHL_WEBHOOK_URL,

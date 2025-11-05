@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       event_category: 'marketing',
       event_label: 'seniorsimple_quiz_retargeting',
       properties: {
+        site_key: 'seniorsimple.org',
         campaign_type: campaignType,
         target_count: emailCaptures?.length || 0,
         message: message,
