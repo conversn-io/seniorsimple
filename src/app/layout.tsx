@@ -163,6 +163,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <img height="1" width="1" style={{display:'none'}} 
                src="https://www.facebook.com/tr?id=24221789587508633&ev=PageView&noscript=1" />
         </noscript>
+        
+        {/* ✅ PageTest.ai Testing Script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ptaiParams = { team: 'iEnn6B' };`
+          }}
+        />
+        <script
+          src="https://app.pagetest.ai/build/snippet/ptai.js?v=1.0.5"
+          async
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
