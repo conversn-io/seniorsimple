@@ -332,6 +332,18 @@ export default function CalculatorWrapper({
             </div>
           ))}
         </div>
+
+        {/* Calculate Button */}
+        <div className="mt-8 text-center">
+          <button
+            onClick={calculateOutputs}
+            className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || Object.keys(state.inputs).length === 0}
+          >
+            <Calculator className="h-5 w-5 mr-2" />
+            {isLoading ? 'Calculating...' : state.isCalculated ? 'Recalculate' : 'Calculate'}
+          </button>
+        </div>
       </div>
 
       {/* Results Section */}

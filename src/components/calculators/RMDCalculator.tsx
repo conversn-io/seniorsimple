@@ -186,6 +186,18 @@ export default function RMDCalculator({ className = '' }: RMDCalculatorProps) {
                 </div>
               </div>
 
+              {/* Calculate Button */}
+              <div className="mt-8 text-center">
+                <button
+                  onClick={calculateRMD}
+                  className="bg-[#667eea] text-white px-8 py-4 rounded-lg hover:bg-[#5568d3] transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl"
+                  disabled={!inputs.age || !inputs.balance || inputs.age < 70}
+                >
+                  <Calculator className="h-5 w-5 mr-2" />
+                  {isCalculated ? 'Recalculate RMD' : 'Calculate Required Minimum Distribution'}
+                </button>
+              </div>
+
               {/* Results Section */}
               <div className="space-y-6">
                 {results && (

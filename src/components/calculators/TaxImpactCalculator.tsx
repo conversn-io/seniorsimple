@@ -371,6 +371,17 @@ export default function TaxImpactCalculator() {
               <p className="text-sm text-gray-500 mt-1">Part-time work, rental income, etc.</p>
             </div>
           </div>
+
+          {/* Calculate Button */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={calculateTaxes}
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mx-auto font-semibold shadow-lg hover:shadow-xl"
+            >
+              <Calculator className="h-5 w-5 mr-2" />
+              {results ? 'Recalculate Tax Impact' : 'Calculate Tax Impact'}
+            </button>
+          </div>
         </div>
 
         {/* Results Section */}

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Calculator } from 'lucide-react'
 
 interface LifeInsuranceResult {
   totalNeeds: number
@@ -344,6 +345,17 @@ const LifeInsuranceCalculator: React.FC = () => {
                   min="0" 
                 />
               </div>
+            </div>
+
+            {/* Calculate Button */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={calculateNeeds}
+                className="bg-indigo-600 text-white px-8 py-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl"
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                {results.totalNeeds > 0 ? 'Recalculate Life Insurance Needs' : 'Calculate Life Insurance Needs'}
+              </button>
             </div>
           </div>
           

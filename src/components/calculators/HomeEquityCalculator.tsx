@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Calculator } from 'lucide-react'
 
 interface HomeEquityResult {
   currentEquity: number
@@ -275,6 +276,17 @@ const HomeEquityCalculator: React.FC = () => {
                   max="30" 
                 />
               </div>
+            </div>
+
+            {/* Calculate Button */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={calculateHomeEquity}
+                className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl"
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                {results.currentEquity > 0 ? 'Recalculate Home Equity' : 'Calculate Home Equity'}
+              </button>
             </div>
           </div>
           

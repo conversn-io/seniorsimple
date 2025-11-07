@@ -330,6 +330,17 @@ export default function HealthcareCostCalculator() {
             />
           </div>
         </div>
+
+        {/* Calculate Button */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={calculateHealthcareCosts}
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mx-auto font-semibold shadow-lg hover:shadow-xl"
+          >
+            <Calculator className="h-5 w-5 mr-2" />
+            {results ? 'Recalculate Healthcare Costs' : 'Calculate Healthcare Costs'}
+          </button>
+        </div>
       </div>
 
       {/* Results Section */}

@@ -275,6 +275,18 @@ export default function SocialSecurityCalculator({ className = '' }: SocialSecur
                   </div>
                 </>
               )}
+
+              {/* Calculate Button */}
+              <div className="mt-8 text-center">
+                <button
+                  onClick={calculateBenefits}
+                  className="bg-[#36596A] text-white px-8 py-4 rounded-lg hover:bg-[#2a4a5a] transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl"
+                  disabled={isCalculated && !inputs.birthYear}
+                >
+                  <Calculator className="h-5 w-5 mr-2" />
+                  {isCalculated ? 'Recalculate Benefits' : 'Calculate Social Security Benefits'}
+                </button>
+              </div>
             </div>
           </div>
 

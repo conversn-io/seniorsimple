@@ -220,6 +220,17 @@ export default function RothConversionCalculator() {
                 />
               </div>
             </div>
+
+            {/* Calculate Button */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={calculateConversion}
+                className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center mx-auto font-semibold shadow-lg hover:shadow-xl"
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                {results.recommendation !== 'Calculate to see' ? 'Recalculate Conversion' : 'Calculate Roth Conversion'}
+              </button>
+            </div>
           </div>
         </div>
         

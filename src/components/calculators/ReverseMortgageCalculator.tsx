@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Calculator } from 'lucide-react'
 
 interface ReverseMortgageResult {
   principalLimit: number
@@ -231,6 +232,18 @@ const ReverseMortgageCalculator: React.FC = () => {
                 />
                 <p className="text-sm text-gray-500 mt-1">For term payment calculations</p>
               </div>
+            </div>
+
+            {/* Calculate Button */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={calculateReverseMortgage}
+                className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mx-auto font-semibold text-lg shadow-lg hover:shadow-xl"
+                disabled={inputs.age < 62}
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                {results.principalLimit > 0 ? 'Recalculate Reverse Mortgage' : 'Calculate Reverse Mortgage Proceeds'}
+              </button>
             </div>
             
             {/* Results Section */}
