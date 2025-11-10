@@ -16,6 +16,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound()
   }
 
+  // Debug: Log html_body status
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Article ${slug}] html_body exists:`, !!article.html_body)
+    console.log(`[Article ${slug}] html_body length:`, article.html_body?.length || 0)
+  }
+
   // Get related articles
   const { articles: relatedArticles } = await getRelatedArticles(
     article.id, 
@@ -23,9 +29,40 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     3
   )
 
+  // Generate structured data for SEO/AEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.title,
+    "description": article.excerpt || article.meta_description,
+    "image": article.featured_image_url ? [article.featured_image_url] : [],
+    "datePublished": article.created_at,
+    "dateModified": article.updated_at,
+    "author": {
+      "@type": "Organization",
+      "name": "SeniorSimple"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "SeniorSimple",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://seniorsimple.org/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://seniorsimple.org/articles/${article.slug}`
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
-
+      {/* Structured Data for SEO/AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
       {/* Breadcrumb */}
       <section className="bg-white border-b border-gray-200">
@@ -108,16 +145,29 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* Article Content */}
       <section className="bg-white">
         <div className="max-w-4xl mx-auto px-6 pb-16">
-          <div className="prose prose-lg max-w-none">
+          {article.html_body ? (
+            // html_body already includes <div class="prose"> wrapper, so render it directly
             <div 
               className="text-gray-800 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: article.html_body }}
               style={{
                 fontSize: '18px',
                 lineHeight: '1.8',
               }}
             />
-          </div>
+          ) : (
+            // Fallback to markdown content with prose wrapper
+            <div className="prose prose-lg max-w-none">
+              <div 
+                className="text-gray-800 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+                style={{
+                  fontSize: '18px',
+                  lineHeight: '1.8',
+                }}
+              />
+            </div>
+          )}
         </div>
       </section>
 

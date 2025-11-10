@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS articles (
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(255) UNIQUE NOT NULL,
     content TEXT NOT NULL,
+    html_body TEXT,
     excerpt TEXT,
     
     -- Content Classification

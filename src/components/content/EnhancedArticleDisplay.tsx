@@ -498,7 +498,7 @@ export default function EnhancedArticleDisplay({
       {/* Article Content */}
       <div className="article-prose prose prose-lg max-w-none">
         <div 
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: article.html_body || article.content }}
           className="text-gray-800 leading-relaxed"
         />
       </div>

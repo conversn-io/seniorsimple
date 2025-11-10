@@ -5,6 +5,7 @@ export interface Article {
   title: string
   slug: string
   content: string
+  html_body?: string
   excerpt: string
   author_id: string
   status: 'draft' | 'published' | 'pending' | 'private' | 'scheduled'

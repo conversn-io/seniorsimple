@@ -105,6 +105,33 @@ export default async function ContentPage({ params }: ContentPageProps) {
     notFound();
   }
 
+  // Generate structured data for SEO/AEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": content.title,
+    "description": content.excerpt || content.meta_description,
+    "image": content.featured_image_url ? [content.featured_image_url] : [],
+    "datePublished": content.created_at,
+    "dateModified": content.updated_at,
+    "author": {
+      "@type": "Organization",
+      "name": "SeniorSimple"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "SeniorSimple",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://seniorsimple.org/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://seniorsimple.org/content/${slug}`
+    }
+  }
+
   // Check for comprehensive strategy guides
   const strategyGuideSlugs = {
     'social-security-optimization-strategy-guide': SocialSecurityStrategyGuide,
@@ -134,8 +161,8 @@ export default async function ContentPage({ params }: ContentPageProps) {
 
   // If this is a strategy guide, process markdown and render the comprehensive component
   if (strategyGuideSlugs[slug as keyof typeof strategyGuideSlugs]) {
-    // Process markdown content on the server side for strategy guides
-    const processedContent = await processMarkdownToHTML(content.content);
+    // Prefer html_body if available, otherwise process markdown
+    const processedContent = content.html_body || await processMarkdownToHTML(content.content);
     const tableOfContents = extractTableOfContents(content.content);
     const readingTime = calculateReadingTime(content.content);
 
@@ -167,8 +194,8 @@ export default async function ContentPage({ params }: ContentPageProps) {
     return <CalculatorComponent />;
   }
 
-  // Process markdown content on the server side
-  const processedContent = await processMarkdownToHTML(content.content);
+  // Prefer html_body if available, otherwise process markdown on the server side
+  const processedContent = content.html_body || await processMarkdownToHTML(content.content);
   const tableOfContents = extractTableOfContents(content.content);
   const readingTime = calculateReadingTime(content.content);
 
@@ -221,6 +248,15 @@ export default async function ContentPage({ params }: ContentPageProps) {
             case 'guide':
             case 'comparison':
             default:
-              return <EnhancedArticleDisplay article={enhancedArticle} />;
+              return (
+                <>
+                  {/* Structured Data for SEO/AEO */}
+                  <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+                  />
+                  <EnhancedArticleDisplay article={enhancedArticle} />
+                </>
+              );
   }
 }
