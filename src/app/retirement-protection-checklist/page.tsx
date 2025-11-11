@@ -157,7 +157,7 @@ export default function RetirementProtectionChecklistPage() {
           <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Retirement Protection Checklist</h1>
           <h2 className="text-xl md:text-2xl font-medium mb-4">10 Essential Points Every Pre-Retiree Should Know</h2>
           <div className="inline-block bg-white bg-opacity-20 px-6 py-2 rounded-full">
-            <span className="text-sm font-medium">For Americans with $250K+ in Retirement Savings</span>
+            <span className="text-sm font-medium text-[#36596A]">For Americans with $250K+ in Retirement Savings</span>
           </div>
         </div>
       </section>
