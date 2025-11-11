@@ -309,12 +309,13 @@ export default function RetirementProtectionChecklistPage() {
               </svg>
               <span className="text-lg">SeniorSimple.org | Retirement Rescue Division</span>
             </div>
-            <p className="text-lg font-medium">Connect with a Licensed Retirement Rescue Advisor</p>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4 inline-block">
-              <Link href="/retirement-rescue" className="text-xl font-bold hover:underline">
-                Visit: www.seniorsimple.org/retirement-rescue
-              </Link>
-            </div>
+            <p className="text-lg font-medium mb-6">Connect with a Licensed Retirement Rescue Advisor</p>
+            <Link 
+              href="/consultation"
+              className="inline-block bg-[#36596A] text-white py-3 px-8 rounded-lg font-medium hover:bg-[#2a4a5a] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              Schedule Your Complimentary Consultation
+            </Link>
           </div>
         </div>
       </section>
