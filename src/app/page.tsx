@@ -133,10 +133,10 @@ export default async function HomePage() {
                 No-cost education on annuities, taxes, estate planning, reverse mortgages, regenerative medicine, and housing.
               </p>
               <div className="flex flex-wrap gap-4 mb-8 animate-fade-in-delay-2">
-                <button className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                <Link href="/quiz" className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 group shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   Take the Retirement Quiz
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                </button>
+                </Link>
                 <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-[#36596A] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                   I&apos;m a Financial Advisor
                   <Users className="w-4 h-4" />
