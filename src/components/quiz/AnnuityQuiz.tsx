@@ -410,8 +410,8 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       
       // Branch based on skipOTP prop
       if (skipOTP) {
-        // NO OTP FLOW: Send directly to GHL
-        console.log('🚀 No OTP Flow - Sending directly to GHL:', {
+        // NO OTP FLOW: Send directly to GHL via new route
+        console.log('🚀 No OTP Flow - Submitting form without OTP:', {
           sessionId: quizSessionId || 'unknown',
           phoneNumber: answer.phone,
           timestamp: new Date().toISOString()
@@ -420,25 +420,53 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         // Store quiz answers for personalized thank you page
         sessionStorage.setItem('quiz_answers', JSON.stringify(updatedAnswers));
         
-        // Process lead and send to GHL directly
-        await processLeadAndSendToGHL({
-          contact: {
-            email: answer.email,
-            phone: answer.phone,
-            firstName: answer.firstName,
-            lastName: answer.lastName
-          },
-          quizAnswers: updatedAnswers,
-          calculatedResults: calculateResults(),
-          zipCode: updatedAnswers.locationInfo?.zipCode,
-          state: updatedAnswers.locationInfo?.state,
-          stateName: updatedAnswers.locationInfo?.stateName,
-          utmParams: utmParams,
-          sessionId: quizSessionId || 'unknown'
-        });
+        setShowProcessing(true);
         
-        setShowResults(true);
-        console.log('✅ No OTP Flow Complete - Results shown');
+        try {
+          // Use new route that handles database save + GHL webhook without OTP
+          const response = await fetch('/api/leads/submit-without-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: answer.email,
+              phoneNumber: answer.phone,
+              firstName: answer.firstName,
+              lastName: answer.lastName,
+              quizAnswers: updatedAnswers,
+              calculatedResults: calculateResults(),
+              zipCode: updatedAnswers.locationInfo?.zipCode,
+              state: updatedAnswers.locationInfo?.state,
+              stateName: updatedAnswers.locationInfo?.stateName,
+              licensingInfo: updatedAnswers.locationInfo?.licensing,
+              utmParams: utmParams,
+              sessionId: quizSessionId || 'unknown',
+              funnelType: funnelType
+            })
+          });
+
+          const result = await response.json();
+          
+          if (result.success) {
+            console.log('✅ Form submitted successfully (no OTP):', {
+              leadId: result.leadId,
+              contactId: result.contactId,
+              ghlStatus: result.ghlStatus,
+              timestamp: new Date().toISOString()
+            });
+            
+            setShowProcessing(false);
+            setShowResults(true);
+            console.log('✅ No OTP Flow Complete - Results shown');
+          } else {
+            console.error('❌ Form submission failed:', result.error);
+            setShowProcessing(false);
+            setShowResults(true); // Still show results even if submission failed
+          }
+        } catch (error) {
+          console.error('💥 Form submission exception:', error);
+          setShowProcessing(false);
+          setShowResults(true); // Still show results even if submission failed
+        }
       } else {
         // OTP FLOW: Show OTP verification
         console.log('📱 Personal Info Complete - Initiating OTP Flow:', {
