@@ -158,52 +158,21 @@ export default function BookingPage() {
     console.log('  - Last Name:', lastName || '❌ NOT FOUND')
     console.log('  - Phone:', phone || '❌ NOT FOUND')
     
-    // Build URL with GHL form parameters
-    // GHL forms typically use snake_case (first_name, last_name) or camelCase (firstName, lastName)
-    // We'll include email only (as requested) but with multiple name variations
-    const params = new URLSearchParams()
-    
+    // Build URL with GHL form parameter
+    // GHL form field name confirmed as: 'email'
     if (email) {
-      // Try multiple email parameter name variations that GHL forms commonly use
-      params.append('email', email)           // Most common
-      params.append('Email', email)           // Capitalized
-      params.append('contact_email', email)   // Alternative
-      params.append('e', email)               // Short form
+      // URL encode the email to handle special characters
+      const encodedEmail = encodeURIComponent(email)
+      const finalUrl = `${baseUrl}?email=${encodedEmail}`
+      
+      console.log('  - Final URL with GHL email parameter:', finalUrl)
+      console.log('  - GHL field name: email (confirmed)')
+      
+      return finalUrl
     }
     
-    // Note: User requested email only for minimal friction
-    // Uncomment below if you want to include other fields:
-    /*
-    if (firstName) {
-      params.append('first_name', firstName)    // snake_case (most common in GHL)
-      params.append('firstName', firstName)      // camelCase
-      params.append('FirstName', firstName)      // Capitalized
-      params.append('fname', firstName)          // Short form
-    }
-    
-    if (lastName) {
-      params.append('last_name', lastName)       // snake_case (most common in GHL)
-      params.append('lastName', lastName)        // camelCase
-      params.append('LastName', lastName)        // Capitalized
-      params.append('lname', lastName)           // Short form
-    }
-    
-    if (phone) {
-      params.append('phone', phone)              // Most common
-      params.append('Phone', phone)              // Capitalized
-      params.append('phoneNumber', phone)        // camelCase
-      params.append('phone_number', phone)       // snake_case
-    }
-    */
-    
-    const queryString = params.toString()
-    const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl
-    
-    console.log('  - Final URL with GHL parameters:', finalUrl)
-    console.log('  - Query string:', queryString)
-    console.log('  - Note: Using email parameter only (minimal friction)')
-    
-    return finalUrl
+    console.warn('⚠️ No email found - using base URL without email parameter')
+    return baseUrl
   }
 
   // Attempt to pass data to calendar widget via postMessage (backup method)
