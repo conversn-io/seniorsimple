@@ -64,7 +64,21 @@ export default function BookingPage() {
     return () => window.removeEventListener('message', handleMessage)
   }, [router])
 
-  // Attempt to pass data to calendar widget
+  // Build calendar URL with email parameter (primary method)
+  const buildCalendarUrl = () => {
+    const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+    const email = contactData?.personalInfo?.email || ''
+    
+    if (email) {
+      // URL encode the email to handle special characters
+      const encodedEmail = encodeURIComponent(email)
+      return `${baseUrl}?email=${encodedEmail}`
+    }
+    
+    return baseUrl
+  }
+
+  // Attempt to pass data to calendar widget via postMessage (backup method)
   useEffect(() => {
     if (!contactData || !isCalendarLoaded) return
 
@@ -75,21 +89,17 @@ export default function BookingPage() {
         const iframe = document.getElementById('conversn-calendar-iframe') as HTMLIFrameElement
         if (iframe && iframe.contentWindow) {
           const formData = {
+            email: contactData.personalInfo?.email || '',
+            // Keep other fields available in case widget supports them
             firstName: contactData.personalInfo?.firstName || '',
             lastName: contactData.personalInfo?.lastName || '',
-            email: contactData.personalInfo?.email || '',
             phone: contactData.personalInfo?.phone || '',
             zipCode: contactData.locationInfo?.zipCode || '',
             state: contactData.locationInfo?.state || '',
-            stateName: contactData.locationInfo?.stateName || '',
-            retirementSavings: contactData.retirementSavings || 0,
-            ageRange: contactData.ageRange || '',
-            retirementTimeline: contactData.retirementTimeline || '',
-            riskTolerance: contactData.riskTolerance || '',
-            quizAnswers: JSON.stringify(contactData)
+            stateName: contactData.locationInfo?.stateName || ''
           }
 
-          // Try to send data to calendar widget
+          // Try to send data to calendar widget via postMessage
           iframe.contentWindow.postMessage(
             {
               type: 'populateForm',
@@ -98,11 +108,11 @@ export default function BookingPage() {
             'https://link.conversn.io'
           )
 
-          console.log('📤 Attempted to pass data to calendar widget:', formData)
+          console.log('📤 Attempted to pass data to calendar widget via postMessage:', formData)
         }
       } catch (error) {
-        console.warn('⚠️ Could not pass data to calendar widget:', error)
-        // This is non-critical - calendar will still work, just won't be pre-populated
+        console.warn('⚠️ Could not pass data to calendar widget via postMessage:', error)
+        // This is non-critical - URL parameters are the primary method
       }
     }, 2000) // Wait 2 seconds for widget to fully load
 
@@ -145,13 +155,16 @@ export default function BookingPage() {
           <div className="w-full" style={{ minHeight: '600px' }}>
             <iframe
               id="conversn-calendar-iframe"
-              src="https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK"
+              src={buildCalendarUrl()}
               style={{ width: '100%', border: 'none', overflow: 'hidden' }}
               scrolling="no"
               title="Book Your Retirement Rescue Strategy Call"
               onLoad={() => {
                 setIsCalendarLoaded(true)
+                const email = contactData?.personalInfo?.email || ''
                 console.log('✅ Calendar widget loaded')
+                console.log('📧 Email status:', email ? `✅ Provided: ${email}` : '❌ Missing')
+                console.log('📋 Calendar URL:', buildCalendarUrl())
               }}
             />
           </div>
