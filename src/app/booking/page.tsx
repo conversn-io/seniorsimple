@@ -28,6 +28,7 @@ export default function BookingPage() {
   useFunnelLayout() // Sets header and footer to 'funnel'
   const [contactData, setContactData] = useState<QuizAnswers | null>(null)
   const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
+  const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
 
   useEffect(() => {
     // Get quiz answers from sessionStorage
@@ -95,6 +96,14 @@ export default function BookingPage() {
         if (!emailFromPersonalInfo && !emailFromRoot && !emailFromContactInfo) {
           console.warn('⚠️ WARNING: Email not found in quiz answers!')
           console.warn('⚠️ Available keys in answers:', Object.keys(answers))
+        }
+        
+        // Update calendar URL with email parameter now that we have contactData
+        if (email) {
+          const encodedEmail = encodeURIComponent(email)
+          const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
+          setCalendarUrl(urlWithEmail)
+          console.log('✅ Calendar URL updated with email parameter:', urlWithEmail)
         }
       } catch (error) {
         console.error('❌ Error parsing quiz answers:', error)
@@ -252,7 +261,8 @@ export default function BookingPage() {
           <div className="w-full" style={{ minHeight: '600px' }}>
             <iframe
               id="conversn-calendar-iframe"
-              src={buildCalendarUrl()}
+              key={calendarUrl} // Force re-render when URL changes
+              src={calendarUrl}
               style={{ width: '100%', border: 'none', overflow: 'hidden' }}
               scrolling="no"
               title="Book Your Retirement Rescue Strategy Call"
@@ -266,14 +276,13 @@ export default function BookingPage() {
                   contactData?.contactInfo?.email || 
                   ''
                 
-                const calendarUrl = buildCalendarUrl()
-                
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
                 console.log('✅ CALENDAR WIDGET LOADED')
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
                 console.log('📧 Email Status:', email ? `✅ FOUND: ${email}` : '❌ MISSING')
-                console.log('📋 Calendar URL:', calendarUrl)
+                console.log('📋 Calendar URL (iframe src):', calendarUrl)
                 console.log('🔍 Email in URL:', calendarUrl.includes('email=') ? '✅ YES' : '❌ NO')
+                console.log('🔍 Actual iframe src attribute:', document.getElementById('conversn-calendar-iframe')?.getAttribute('src'))
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
                 
                 // Also log to page for visual debugging (remove in production)
