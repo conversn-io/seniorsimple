@@ -37,6 +37,13 @@ export default function BookingPage() {
         const answers = JSON.parse(storedAnswers)
         setContactData(answers)
         
+        // Extract email from various possible locations
+        const email = 
+          answers?.personalInfo?.email || 
+          answers?.email || 
+          answers?.contactInfo?.email || 
+          ''
+        
         // Debug: Log the full structure to understand data format
         console.log('📋 Quiz Answers Retrieved for Booking Page:', answers)
         console.log('🔍 Debug - Full answers structure:', JSON.stringify(answers, null, 2))
@@ -51,6 +58,38 @@ export default function BookingPage() {
         console.log('  - answers.email:', emailFromRoot)
         console.log('  - answers.contactInfo?.email:', emailFromContactInfo)
         console.log('  - Full personalInfo object:', answers?.personalInfo)
+        
+        // Store contact data in format Conversn.io widget might expect
+        // Try multiple possible storage keys and formats
+        if (email) {
+          // Format 1: Simple contact object in sessionStorage
+          const contactData = {
+            email: email,
+            firstName: answers?.personalInfo?.firstName || '',
+            lastName: answers?.personalInfo?.lastName || '',
+            phone: answers?.personalInfo?.phone || ''
+          }
+          
+          // Try sessionStorage with various key names
+          sessionStorage.setItem('conversn_contact', JSON.stringify(contactData))
+          sessionStorage.setItem('conversn_session_data', JSON.stringify(contactData))
+          sessionStorage.setItem('contact_data', JSON.stringify(contactData))
+          
+          // Try localStorage as well (some widgets prefer this)
+          localStorage.setItem('conversn_contact', JSON.stringify(contactData))
+          localStorage.setItem('conversn_session_data', JSON.stringify(contactData))
+          localStorage.setItem('contact_data', JSON.stringify(contactData))
+          
+          // Also try storing just email in common keys
+          sessionStorage.setItem('email', email)
+          localStorage.setItem('email', email)
+          
+          console.log('💾 Stored contact data for Conversn.io widget:')
+          console.log('  - sessionStorage.conversn_contact:', contactData)
+          console.log('  - sessionStorage.conversn_session_data:', contactData)
+          console.log('  - localStorage.conversn_contact:', contactData)
+          console.log('  - localStorage.conversn_session_data:', contactData)
+        }
         
         // Warn if email is not found
         if (!emailFromPersonalInfo && !emailFromRoot && !emailFromContactInfo) {
@@ -85,6 +124,7 @@ export default function BookingPage() {
   }, [router])
 
   // Build calendar URL with email parameter (primary method)
+  // Try multiple parameter names as different widgets expect different formats
   const buildCalendarUrl = () => {
     const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
     
@@ -103,9 +143,19 @@ export default function BookingPage() {
     if (email) {
       // URL encode the email to handle special characters
       const encodedEmail = encodeURIComponent(email)
-      const finalUrl = `${baseUrl}?email=${encodedEmail}`
-      console.log('  - Final URL with email:', finalUrl)
-      return finalUrl
+      
+      // Try multiple URL parameter formats - widget might expect different names
+      // Format 1: Standard email parameter
+      const urlWithEmail = `${baseUrl}?email=${encodedEmail}`
+      // Format 2: Alternative parameter names (commented out - try if needed)
+      // const urlWithContactEmail = `${baseUrl}?contact_email=${encodedEmail}`
+      // const urlWithUserEmail = `${baseUrl}?user_email=${encodedEmail}`
+      // const urlWithE = `${baseUrl}?e=${encodedEmail}`
+      
+      console.log('  - Final URL with email parameter:', urlWithEmail)
+      console.log('  - Email parameter format: ?email={encoded_email}')
+      
+      return urlWithEmail
     }
     
     console.warn('⚠️ No email found - using base URL without email parameter')
