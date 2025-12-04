@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
 
@@ -23,7 +23,7 @@ interface QuizAnswers {
   [key: string]: any
 }
 
-export default function BookingPage() {
+function BookingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   useFunnelLayout() // Sets header and footer to 'funnel'
@@ -301,6 +301,21 @@ export default function BookingPage() {
         defer
       />
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BookingPageContent />
+    </Suspense>
   )
 }
 
