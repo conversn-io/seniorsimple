@@ -912,17 +912,38 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
     setQuizSessionId(null);
   };
 
-  // Handle redirect to quiz-submitted page when showResults is true
+  // Handle redirect based on landing page (conditional funnel logic)
   // IMPORTANT: This hook MUST come before any conditional returns to avoid React hooks errors
   useEffect(() => {
     if (showResults) {
-      console.log('🎯 Redirecting to Quiz Submitted Page:', {
+      // Check landing page from sessionStorage to determine redirect destination
+      const landingPage = typeof window !== 'undefined' 
+        ? sessionStorage.getItem('landing_page') 
+        : null;
+      
+      console.log('🎯 Determining Redirect Destination:', {
         sessionId: quizSessionId,
+        landingPage,
         timestamp: new Date().toISOString()
       });
+
       // Use setTimeout to avoid React state update during render
       const timeoutId = setTimeout(() => {
-        router.push('/quiz-submitted');
+        // If landing page is /quiz-book, redirect to booking page (booking funnel)
+        // Otherwise, redirect to quiz-submitted (existing flow)
+        if (landingPage === '/quiz-book') {
+          console.log('📅 Redirecting to Booking Page (Booking Funnel):', {
+            sessionId: quizSessionId,
+            timestamp: new Date().toISOString()
+          });
+          router.push('/booking');
+        } else {
+          console.log('✅ Redirecting to Quiz Submitted Page (Standard Flow):', {
+            sessionId: quizSessionId,
+            timestamp: new Date().toISOString()
+          });
+          router.push('/quiz-submitted');
+        }
       }, 0);
       return () => clearTimeout(timeoutId);
     }

@@ -41,7 +41,7 @@ const HomeModificationPlannerStrategyGuide: React.FC<HomeModificationPlannerStra
       {/* Article Content */}
       <div 
         className="prose prose-lg max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: article.content }}
+        dangerouslySetInnerHTML={{ __html: article.html_body || article.content }}
       />
 
       {/* Home Modification Planner Calculator Embed */}
