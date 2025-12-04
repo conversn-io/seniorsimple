@@ -153,3 +153,6 @@ Check if GA4 is actually loading by looking at:
 
 **Next:** Re-run Queries 1, 4, 5, 8 with the fixed column references to see GA vs Meta client ID comparison.
 
+
+
+

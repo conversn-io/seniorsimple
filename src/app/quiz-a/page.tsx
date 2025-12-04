@@ -4,3 +4,6 @@ export default function QuizAPage() {
   return <Quiz skipOTP={true} />;
 }
 
+
+
+

@@ -173,6 +173,35 @@ export async function notifyIndexNowForHomepage(): Promise<void> {
 }
 
 /**
+ * Submit article URLs to IndexNow (matches ParentSimple pattern)
+ * Submits both /articles/[slug] and /content/[slug] URLs
+ */
+export async function submitArticleToIndexNow(slug: string): Promise<{ success: boolean; errors: string[] }> {
+  const urls = [
+    `https://seniorsimple.org/articles/${slug}`,
+    `https://seniorsimple.org/content/${slug}`,
+  ]
+  
+  try {
+    const results = await submitUrlsToIndexNow(urls)
+    const successCount = results.filter((r) => r.success).length
+    const errors = results
+      .filter((r) => !r.success)
+      .map((r) => `${r.engine}: ${r.message || `HTTP ${r.status}`}`)
+    
+    return {
+      success: successCount > 0,
+      errors: errors,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      errors: [error instanceof Error ? error.message : String(error)],
+    }
+  }
+}
+
+/**
  * Get the IndexNow key (for key file generation)
  */
 export function getIndexNowKey(): string {
