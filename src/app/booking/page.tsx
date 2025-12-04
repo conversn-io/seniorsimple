@@ -36,7 +36,27 @@ export default function BookingPage() {
       try {
         const answers = JSON.parse(storedAnswers)
         setContactData(answers)
+        
+        // Debug: Log the full structure to understand data format
         console.log('📋 Quiz Answers Retrieved for Booking Page:', answers)
+        console.log('🔍 Debug - Full answers structure:', JSON.stringify(answers, null, 2))
+        
+        // Debug: Check email in various possible locations
+        const emailFromPersonalInfo = answers?.personalInfo?.email
+        const emailFromRoot = answers?.email
+        const emailFromContactInfo = answers?.contactInfo?.email
+        
+        console.log('📧 Email Debug Check:')
+        console.log('  - answers.personalInfo?.email:', emailFromPersonalInfo)
+        console.log('  - answers.email:', emailFromRoot)
+        console.log('  - answers.contactInfo?.email:', emailFromContactInfo)
+        console.log('  - Full personalInfo object:', answers?.personalInfo)
+        
+        // Warn if email is not found
+        if (!emailFromPersonalInfo && !emailFromRoot && !emailFromContactInfo) {
+          console.warn('⚠️ WARNING: Email not found in quiz answers!')
+          console.warn('⚠️ Available keys in answers:', Object.keys(answers))
+        }
       } catch (error) {
         console.error('❌ Error parsing quiz answers:', error)
       }
@@ -67,14 +87,28 @@ export default function BookingPage() {
   // Build calendar URL with email parameter (primary method)
   const buildCalendarUrl = () => {
     const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
-    const email = contactData?.personalInfo?.email || ''
+    
+    // Try multiple possible email locations
+    const email = 
+      contactData?.personalInfo?.email || 
+      contactData?.email || 
+      contactData?.contactInfo?.email || 
+      ''
+    
+    console.log('🔗 Building Calendar URL:')
+    console.log('  - Base URL:', baseUrl)
+    console.log('  - Email found:', email || '❌ NOT FOUND')
+    console.log('  - Contact data structure:', contactData ? '✅ Present' : '❌ Missing')
     
     if (email) {
       // URL encode the email to handle special characters
       const encodedEmail = encodeURIComponent(email)
-      return `${baseUrl}?email=${encodedEmail}`
+      const finalUrl = `${baseUrl}?email=${encodedEmail}`
+      console.log('  - Final URL with email:', finalUrl)
+      return finalUrl
     }
     
+    console.warn('⚠️ No email found - using base URL without email parameter')
     return baseUrl
   }
 
@@ -161,10 +195,29 @@ export default function BookingPage() {
               title="Book Your Retirement Rescue Strategy Call"
               onLoad={() => {
                 setIsCalendarLoaded(true)
-                const email = contactData?.personalInfo?.email || ''
-                console.log('✅ Calendar widget loaded')
-                console.log('📧 Email status:', email ? `✅ Provided: ${email}` : '❌ Missing')
-                console.log('📋 Calendar URL:', buildCalendarUrl())
+                
+                // Try multiple possible email locations
+                const email = 
+                  contactData?.personalInfo?.email || 
+                  contactData?.email || 
+                  contactData?.contactInfo?.email || 
+                  ''
+                
+                const calendarUrl = buildCalendarUrl()
+                
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log('✅ CALENDAR WIDGET LOADED')
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log('📧 Email Status:', email ? `✅ FOUND: ${email}` : '❌ MISSING')
+                console.log('📋 Calendar URL:', calendarUrl)
+                console.log('🔍 Email in URL:', calendarUrl.includes('email=') ? '✅ YES' : '❌ NO')
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                
+                // Also log to page for visual debugging (remove in production)
+                if (typeof window !== 'undefined' && email) {
+                  console.log(`%c📧 Email will be passed to calendar: ${email}`, 'color: green; font-weight: bold; font-size: 14px;')
+                  console.log(`%c🔗 Calendar URL: ${calendarUrl}`, 'color: blue; font-weight: bold; font-size: 12px;')
+                }
               }}
             />
           </div>

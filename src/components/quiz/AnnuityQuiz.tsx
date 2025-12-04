@@ -743,7 +743,24 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         setShowProcessing(false);
         
         // Store quiz answers for personalized thank you page
+        const emailInQuizAnswers = data.quizAnswers?.personalInfo?.email || data.quizAnswers?.email || ''
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('💾 STORING QUIZ ANSWERS TO SESSIONSTORAGE')
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('📧 Email in quizAnswers:', emailInQuizAnswers || '❌ NOT FOUND')
+        console.log('📋 Full quizAnswers structure:', JSON.stringify(data.quizAnswers, null, 2))
+        console.log('🔍 personalInfo object:', data.quizAnswers?.personalInfo)
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        
         sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        
+        // Verify it was stored correctly
+        const stored = sessionStorage.getItem('quiz_answers')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          const storedEmail = parsed?.personalInfo?.email || parsed?.email || ''
+          console.log('✅ Verification - Email in stored data:', storedEmail || '❌ NOT FOUND')
+        }
         
         setShowResults(true);
         console.log('🎯 Lead Processing Complete - Results shown');
@@ -782,18 +799,23 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
   };
 
   const handleOTPVerification = async () => {
-    console.log('🔐 OTP Verification Complete - Sending to GHL:', {
-      sessionId: quizSessionId,
-      phoneNumber: answers.personalInfo?.phone,
-      timestamp: new Date().toISOString()
-    });
+    const email = answers.personalInfo?.email || ''
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔐 OTP VERIFICATION COMPLETE')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📧 Email in answers:', email || '❌ NOT FOUND')
+    console.log('📱 Phone:', answers.personalInfo?.phone || '❌ NOT FOUND')
+    console.log('👤 Full personalInfo:', answers.personalInfo)
+    console.log('📋 Full answers structure:', JSON.stringify(answers, null, 2))
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     setShowOTP(false);
 
     // Use the same processLeadAndSendToGHL function for consistency
     await processLeadAndSendToGHL({
       contact: {
-        email: answers.personalInfo?.email || '',
+        email: email,
         phone: answers.personalInfo?.phone || '',
         firstName: answers.personalInfo?.firstName || '',
         lastName: answers.personalInfo?.lastName || ''
