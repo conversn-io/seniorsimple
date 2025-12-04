@@ -33,7 +33,7 @@ export default function BookingPage() {
 
   useEffect(() => {
     // PRIORITY 1: Get email from URL query parameter (passed from quiz redirect)
-    const emailFromUrl = searchParams.get('email')
+    const emailFromUrl = searchParams ? searchParams.get('email') : null
     
     // PRIORITY 2: Get quiz answers from sessionStorage
     const storedAnswers = sessionStorage.getItem('quiz_answers')
