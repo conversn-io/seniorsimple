@@ -954,11 +954,34 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         // If landing page is /quiz-book, redirect to booking page (booking funnel)
         // Otherwise, redirect to quiz-submitted (existing flow)
         if (landingPage === '/quiz-book') {
+          // Extract email from answers to pass in URL parameter
+          const email = 
+            answers?.personalInfo?.email || 
+            answers?.email || 
+            answers?.contactInfo?.email || 
+            ''
+          
+          // Build booking URL with email parameter
+          let bookingUrl = '/booking'
+          if (email) {
+            const encodedEmail = encodeURIComponent(email)
+            bookingUrl = `/booking?email=${encodedEmail}`
+            console.log('📧 Email found - adding to booking URL:', {
+              email,
+              encodedEmail,
+              bookingUrl
+            })
+          } else {
+            console.warn('⚠️ No email found in answers - redirecting without email parameter')
+          }
+          
           console.log('📅 Redirecting to Booking Page (Booking Funnel):', {
             sessionId: quizSessionId,
+            bookingUrl,
+            email: email || 'NOT FOUND',
             timestamp: new Date().toISOString()
           });
-          router.push('/booking');
+          router.push(bookingUrl);
         } else {
           console.log('✅ Redirecting to Quiz Submitted Page (Standard Flow):', {
             sessionId: quizSessionId,

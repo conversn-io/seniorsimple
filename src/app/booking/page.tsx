@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
 
 interface QuizAnswers {
@@ -25,85 +25,73 @@ interface QuizAnswers {
 
 export default function BookingPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   useFunnelLayout() // Sets header and footer to 'funnel'
   const [contactData, setContactData] = useState<QuizAnswers | null>(null)
   const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
   const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
 
   useEffect(() => {
-    // Get quiz answers from sessionStorage
+    // PRIORITY 1: Get email from URL query parameter (passed from quiz redirect)
+    const emailFromUrl = searchParams.get('email')
+    
+    // PRIORITY 2: Get quiz answers from sessionStorage
     const storedAnswers = sessionStorage.getItem('quiz_answers')
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📥 BOOKING PAGE LOADED')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📧 Email from URL query param:', emailFromUrl || '❌ NOT FOUND')
+    console.log('📋 Quiz answers in sessionStorage:', storedAnswers ? '✅ Present' : '❌ Missing')
+    
     if (storedAnswers) {
       try {
         const answers = JSON.parse(storedAnswers)
         setContactData(answers)
         
-        // Extract email from various possible locations
-        const email = 
+        // Extract email from various possible locations (fallback if not in URL)
+        const emailFromStorage = 
           answers?.personalInfo?.email || 
           answers?.email || 
           answers?.contactInfo?.email || 
           ''
         
-        // Debug: Log the full structure to understand data format
-        console.log('📋 Quiz Answers Retrieved for Booking Page:', answers)
-        console.log('🔍 Debug - Full answers structure:', JSON.stringify(answers, null, 2))
+        // Use email from URL (priority) or from storage (fallback)
+        const email = emailFromUrl || emailFromStorage
         
-        // Debug: Check email in various possible locations
-        const emailFromPersonalInfo = answers?.personalInfo?.email
-        const emailFromRoot = answers?.email
-        const emailFromContactInfo = answers?.contactInfo?.email
+        console.log('📧 Email Resolution:')
+        console.log('  - From URL:', emailFromUrl || '❌')
+        console.log('  - From Storage:', emailFromStorage || '❌')
+        console.log('  - Final email to use:', email || '❌ NONE')
         
-        console.log('📧 Email Debug Check:')
-        console.log('  - answers.personalInfo?.email:', emailFromPersonalInfo)
-        console.log('  - answers.email:', emailFromRoot)
-        console.log('  - answers.contactInfo?.email:', emailFromContactInfo)
-        console.log('  - Full personalInfo object:', answers?.personalInfo)
-        
-        // Store contact data in format Conversn.io widget might expect
-        // Try multiple possible storage keys and formats
+        // Build calendar URL with email parameter
         if (email) {
-          // Format 1: Simple contact object in sessionStorage
-          const contactData = {
+          const encodedEmail = encodeURIComponent(email)
+          const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
+          setCalendarUrl(urlWithEmail)
+          console.log('✅ Calendar URL built with email:', urlWithEmail)
+        } else {
+          console.warn('⚠️ No email found in URL or storage - using base URL')
+        }
+        
+        // Store contact data in multiple formats for widget compatibility
+        if (email) {
+          const contactDataObj = {
             email: email,
             firstName: answers?.personalInfo?.firstName || '',
             lastName: answers?.personalInfo?.lastName || '',
             phone: answers?.personalInfo?.phone || ''
           }
           
-          // Try sessionStorage with various key names
-          sessionStorage.setItem('conversn_contact', JSON.stringify(contactData))
-          sessionStorage.setItem('conversn_session_data', JSON.stringify(contactData))
-          sessionStorage.setItem('contact_data', JSON.stringify(contactData))
-          
-          // Try localStorage as well (some widgets prefer this)
-          localStorage.setItem('conversn_contact', JSON.stringify(contactData))
-          localStorage.setItem('conversn_session_data', JSON.stringify(contactData))
-          localStorage.setItem('contact_data', JSON.stringify(contactData))
-          
-          // Also try storing just email in common keys
+          // Store in multiple formats
+          sessionStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+          sessionStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+          sessionStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+          localStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+          localStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+          localStorage.setItem('contact_data', JSON.stringify(contactDataObj))
           sessionStorage.setItem('email', email)
           localStorage.setItem('email', email)
-          
-          console.log('💾 Stored contact data for Conversn.io widget:')
-          console.log('  - sessionStorage.conversn_contact:', contactData)
-          console.log('  - sessionStorage.conversn_session_data:', contactData)
-          console.log('  - localStorage.conversn_contact:', contactData)
-          console.log('  - localStorage.conversn_session_data:', contactData)
-        }
-        
-        // Warn if email is not found
-        if (!emailFromPersonalInfo && !emailFromRoot && !emailFromContactInfo) {
-          console.warn('⚠️ WARNING: Email not found in quiz answers!')
-          console.warn('⚠️ Available keys in answers:', Object.keys(answers))
-        }
-        
-        // Update calendar URL with email parameter now that we have contactData
-        if (email) {
-          const encodedEmail = encodeURIComponent(email)
-          const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
-          setCalendarUrl(urlWithEmail)
-          console.log('✅ Calendar URL updated with email parameter:', urlWithEmail)
         }
       } catch (error) {
         console.error('❌ Error parsing quiz answers:', error)
@@ -113,7 +101,7 @@ export default function BookingPage() {
       console.warn('⚠️ No quiz data found, redirecting to quiz')
       router.push('/quiz')
     }
-  }, [router])
+  }, [router, searchParams])
 
   // Listen for calendar booking completion
   useEffect(() => {
