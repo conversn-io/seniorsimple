@@ -992,7 +992,7 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [showResults, router, quizSessionId]);
+  }, [showResults, router, quizSessionId, answers]);
 
   if (showProcessing) {
     console.log('⏳ Showing Processing State:', {
