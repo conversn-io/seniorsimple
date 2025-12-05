@@ -5,8 +5,11 @@ import { submitArticleToIndexNow } from '@/lib/indexnow'
 /**
  * Article Publish Webhook
  * 
- * This endpoint handles article publishing and triggers revalidation
- * Matches ParentSimple pattern for consistency across platforms
+ * This endpoint handles article publishing and submits to IndexNow for instant indexing.
+ * Called automatically by Publishare CMS database trigger when articles are published.
+ * 
+ * Note: Revalidation is not needed because articles/[slug]/page.tsx uses
+ * `export const dynamic = 'force-dynamic'` which ensures fresh data on every request.
  * 
  * Usage:
  * POST /api/articles/publish
@@ -69,33 +72,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Revalidate the article path (if revalidate endpoint exists)
-    let revalidateResponse: Response | null = null
-    try {
-      revalidateResponse = await fetch(
-        `${request.nextUrl.origin}/api/revalidate`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            path: `/articles/${articleSlug}`,
-            secret: process.env.REVALIDATION_SECRET,
-          }),
-        }
-      )
-
-      if (!revalidateResponse.ok) {
-        const errorText = await revalidateResponse.text()
-        console.error('Revalidation failed:', errorText)
-      }
-    } catch (error) {
-      console.warn('Revalidation endpoint not available or failed:', error)
-      // Continue even if revalidation fails
-    }
-
     // Submit to IndexNow for instant search engine indexing
+    // Note: Revalidation is not needed because articles/[slug]/page.tsx uses
+    // `export const dynamic = 'force-dynamic'` which ensures fresh data on every request
     let indexNowResult = { success: false, errors: [] as string[] }
     try {
       indexNowResult = await submitArticleToIndexNow(articleSlug)
@@ -111,10 +90,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      revalidated: revalidateResponse?.ok ?? false,
       indexNow: indexNowResult.success,
       path: `/articles/${articleSlug}`,
-      message: 'Article published, revalidated, and submitted to IndexNow',
+      message: 'Article published and submitted to IndexNow',
     })
   } catch (error) {
     console.error('Publish webhook error:', error)
