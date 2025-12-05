@@ -896,16 +896,16 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         timestamp: new Date().toISOString()
       });
 
+      // Store quiz answers for personalized thank you message
+      sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
+      
       // Add delay to allow GTM to process tracking events before redirect
       console.log('⏳ Waiting for GTM to process tracking events...');
       setTimeout(() => {
         setShowProcessing(false);
         setShowResults(true);
-        
-        // Store quiz answers for personalized thank you message
-        sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
-        
-        try { router.push('/quiz-submitted'); } catch {}
+        // NOTE: Do NOT redirect here - let the useEffect handle conditional redirect
+        // based on landing_page in sessionStorage (booking funnel vs standard flow)
       }, 2000); // 2 second delay
     } catch (error) {
       console.error('💥 Lead Submission Error:', {
