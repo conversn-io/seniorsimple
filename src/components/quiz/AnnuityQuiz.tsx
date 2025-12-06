@@ -943,18 +943,29 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         ? sessionStorage.getItem('landing_page') 
         : null;
       
-      console.log('🎯 Determining Redirect Destination:', {
-        sessionId: quizSessionId,
-        landingPage,
-        timestamp: new Date().toISOString()
-      });
+      // Also check current URL path as fallback
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : null;
+      const isQuizBookPath = currentPath === '/quiz-book';
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🎯 Determining Redirect Destination:');
+      console.log('  Session ID:', quizSessionId);
+      console.log('  Landing Page (sessionStorage):', landingPage || '❌ NOT FOUND');
+      console.log('  Current Path:', currentPath);
+      console.log('  Is /quiz-book path?', isQuizBookPath);
+      console.log('  Show Results:', showResults);
+      console.log('  Answers:', answers ? '✅ Present' : '❌ Missing');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Use setTimeout to avoid React state update during render
       // Small delay ensures sessionStorage is ready
       const timeoutId = setTimeout(() => {
-        // If landing page is /quiz-book, redirect to booking page (booking funnel)
-        // Otherwise, redirect to quiz-submitted (existing flow)
-        if (landingPage === '/quiz-book') {
+        // Check if this is the booking funnel (either from sessionStorage or current path)
+        const isBookingFunnel = landingPage === '/quiz-book' || isQuizBookPath;
+        
+        if (isBookingFunnel) {
+          console.log('✅ BOOKING FUNNEL DETECTED - Redirecting to /booking');
+          
           // Extract email from answers to pass in URL parameter
           const email = 
             answers?.personalInfo?.email || 
@@ -991,13 +1002,41 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
               
               if (retryAnswers) {
                 console.log('✅ quiz_answers found on retry, redirecting to booking page')
-                router.push(bookingUrl)
+                console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+                try {
+                  router.push(bookingUrl)
+                  setTimeout(() => {
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                      console.warn('⚠️ router.push may have failed, using window.location fallback')
+                      window.location.href = bookingUrl
+                    }
+                  }, 1000)
+                } catch (error) {
+                  console.error('❌ router.push failed, using window.location:', error)
+                  if (typeof window !== 'undefined') {
+                    window.location.href = bookingUrl
+                  }
+                }
               } else {
                 console.error('❌ quiz_answers still not found after retry, redirecting anyway')
-                router.push(bookingUrl)
+                console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+                try {
+                  router.push(bookingUrl)
+                  setTimeout(() => {
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                      console.warn('⚠️ router.push may have failed, using window.location fallback')
+                      window.location.href = bookingUrl
+                    }
+                  }, 1000)
+                } catch (error) {
+                  console.error('❌ router.push failed, using window.location:', error)
+                  if (typeof window !== 'undefined') {
+                    window.location.href = bookingUrl
+                  }
+                }
               }
             }, 500)
-            return
+            return // Exit early, retry will handle redirect
           }
           
           console.log('📅 Redirecting to Booking Page (Booking Funnel):', {
@@ -1006,10 +1045,28 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
             email: email || 'NOT FOUND',
             timestamp: new Date().toISOString()
           });
-          router.push(bookingUrl);
+          console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+          
+          // Use router.push with fallback to window.location
+          try {
+            router.push(bookingUrl)
+            // Fallback: if router.push doesn't work, use window.location after a short delay
+            setTimeout(() => {
+              if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                console.warn('⚠️ router.push may have failed, using window.location fallback')
+                window.location.href = bookingUrl
+              }
+            }, 1000)
+          } catch (error) {
+            console.error('❌ router.push failed, using window.location:', error)
+            if (typeof window !== 'undefined') {
+              window.location.href = bookingUrl
+            }
+          }
         } else {
           console.log('✅ Redirecting to Quiz Submitted Page (Standard Flow):', {
             sessionId: quizSessionId,
+            landingPage: landingPage || 'NOT SET',
             timestamp: new Date().toISOString()
           });
           router.push('/quiz-submitted');
