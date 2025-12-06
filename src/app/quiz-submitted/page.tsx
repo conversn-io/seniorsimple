@@ -1,8 +1,7 @@
 'use client'
 
-// Force dynamic rendering - this page requires client-side sessionStorage access
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Note: This is a client component, so it's already dynamically rendered
+// No need for dynamic/revalidate exports which are server-only
 
 import { useEffect, useState } from 'react'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
