@@ -33,30 +33,69 @@ interface QuizAnswers {
 export default function QuizSubmittedPage() {
   useFunnelLayout() // Sets header and footer to 'funnel'
   const [quizAnswers, setQuizAnswers] = useState<QuizAnswers | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     initializeTracking()
     trackPageView('Quiz Submitted', '/quiz-submitted')
     
     // Get quiz answers from sessionStorage
-    const storedAnswers = sessionStorage.getItem('quiz_answers');
-    if (storedAnswers) {
-      try {
-        const answers = JSON.parse(storedAnswers);
-        setQuizAnswers(answers);
-        console.log('📋 Quiz Answers Retrieved:', answers);
-      } catch (error) {
-        console.error('❌ Error parsing quiz answers:', error);
+    const loadQuizAnswers = () => {
+      const storedAnswers = sessionStorage.getItem('quiz_answers');
+      if (storedAnswers) {
+        try {
+          const answers = JSON.parse(storedAnswers);
+          setQuizAnswers(answers);
+          setIsLoading(false);
+          console.log('📋 Quiz Answers Retrieved:', answers);
+        } catch (error) {
+          console.error('❌ Error parsing quiz answers:', error);
+          setIsLoading(false);
+        }
+      } else {
+        // If not found, wait a moment and retry (in case data is still being stored)
+        console.warn('⚠️ quiz_answers not found in sessionStorage, waiting before showing fallback...');
+        setTimeout(() => {
+          const retryAnswers = sessionStorage.getItem('quiz_answers');
+          if (retryAnswers) {
+            try {
+              const answers = JSON.parse(retryAnswers);
+              setQuizAnswers(answers);
+              setIsLoading(false);
+              console.log('✅ quiz_answers found on retry:', answers);
+            } catch (error) {
+              console.error('❌ Error parsing quiz answers on retry:', error);
+              setIsLoading(false);
+            }
+          } else {
+            console.warn('⚠️ quiz_answers still not found after retry');
+            setIsLoading(false);
+          }
+        }, 500);
       }
-    }
+    };
+
+    loadQuizAnswers();
   }, [])
 
-  // If we have quiz answers, show personalized message
+  // Show loading state while checking for quiz answers
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If we have quiz answers, show personalized message with videos
   if (quizAnswers) {
     return <PersonalizedQuizSubmitted quizAnswers={quizAnswers} />
   }
 
-  // Fallback to basic thank you
+  // Fallback to basic thank you (should rarely be seen)
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -100,7 +139,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             Congratulations, {firstName} - Here are Your Next Steps
           </h1>
           <h2 className="text-xl font-medium text-gray-700 mb-6">
-            Thanks for booking a call! You're one step closer to achieving your retirement goals.
+            You're one step closer to achieving your retirement goals.
           </h2>
         </div>
 
@@ -126,6 +165,11 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
           <h3 className="text-2xl font-semibold text-[#36596A] mb-4">
             <strong>Almost Done</strong>: Follow The Steps to Confirm Your Call
           </h3>
+          <p className="text-gray-600 mb-6">
+            {typeof window !== 'undefined' && sessionStorage.getItem('landing_page') === '/quiz-book' 
+              ? 'You\'ve booked your call! Now follow these steps to confirm your appointment.'
+              : 'We\'ll be reaching out to you soon. Here\'s what to expect next.'}
+          </p>
           
           <div className="space-y-6">
             <div className="flex items-start space-x-4">
