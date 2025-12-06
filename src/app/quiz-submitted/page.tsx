@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
 import { initializeTracking, trackPageView } from '@/lib/temp-tracking'
-import { FAQ } from '@/components/quiz/FAQ'
-import { CheckCircle, Mail, Clock, FileText } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
+import Script from 'next/script'
 
 interface QuizAnswers {
   firstName?: string;
@@ -104,19 +104,20 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
           </h2>
         </div>
 
-        {/* Video Embed Section */}
+        {/* Main Thank You Video - Large Container */}
         <div className="bg-white rounded-lg shadow-md p-8 mb-8">
           <h3 className="text-2xl font-semibold text-[#36596A] mb-4 text-center">
             Watch This Important Video
           </h3>
-          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Video embed will be added here</p>
-            {/* TODO: Add video embed when URL is provided */}
-            {/* <iframe 
-              src="VIDEO_URL_HERE"
-              className="w-full h-full rounded-lg"
-              allowFullScreen
-            /> */}
+          <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+            <iframe
+              src="https://player.vimeo.com/video/1144021770?badge=0&autopause=0&player_id=0&app_id=58479"
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              title="Retirement Rescue Thank You"
+            />
           </div>
         </div>
 
@@ -255,10 +256,169 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
           </div>
         </div>
 
-        {/* FAQ Section */}
-        <div className="mb-8">
-          <FAQ />
+        {/* FAQ Videos Section */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <h3 className="text-2xl font-semibold text-[#36596A] mb-6 text-center">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-8">
+            {/* FAQ 1 - Will I be pressured or sold to? */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Will I be pressured or sold to?
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021752?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ 1 - Will I be pressured or sold to?"
+                />
+              </div>
+            </div>
+
+            {/* RR-FAQ-What Actually Happens On the Call? */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                What Actually Happens On the Call?
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021752?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="RR-FAQ-What Actually Happens On the Call?"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Different_Advice */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Different Advice
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021738?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Different_Advice"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Free_Call */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Free Call
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021733?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Free_Call"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Legacy */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Legacy
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144022764?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Legacy"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Is_Annuity */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Is Annuity
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021726?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Is_Annuity"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_IUL */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                IUL
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021718?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_IUL"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Lockup_Concern */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Lockup Concern
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021708?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Lockup_Concern"
+                />
+              </div>
+            </div>
+
+            {/* FAQ_Safety_Concern */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Safety Concern
+              </h4>
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1144021702?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="FAQ_Safety_Concern"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Vimeo Player Script */}
+        <Script src="https://player.vimeo.com/api/player.js" strategy="afterInteractive" />
       </div>
     </div>
   )
