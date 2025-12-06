@@ -52,50 +52,82 @@ export default function QuizSubmittedPage() {
         return;
       }
 
-      const storedAnswers = sessionStorage.getItem('quiz_answers');
-      if (storedAnswers) {
-        try {
-          const answers = JSON.parse(storedAnswers);
-          setQuizAnswers(answers);
-          setIsLoading(false);
-          console.log('📋 Quiz Answers Retrieved:', answers);
-        } catch (error) {
-          console.error('❌ Error parsing quiz answers:', error);
-          setIsLoading(false);
-        }
-      } else {
-        // If not found, wait a moment and retry (in case data is still being stored)
-        console.warn('⚠️ quiz_answers not found in sessionStorage, waiting before showing fallback...');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🔍 QUIZ-SUBMITTED PAGE: Checking for quiz_answers');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // Try multiple times with increasing delays to catch data that might be stored asynchronously
+      let attemptCount = 0;
+      const maxAttempts = 5;
+      const attemptDelays = [0, 100, 300, 500, 1000]; // Try immediately, then with delays
+
+      const tryLoadAnswers = (delay: number) => {
         setTimeout(() => {
-          const retryAnswers = sessionStorage.getItem('quiz_answers');
-          if (retryAnswers) {
+          attemptCount++;
+          const storedAnswers = sessionStorage.getItem('quiz_answers');
+          
+          console.log(`📋 Attempt ${attemptCount}/${maxAttempts} (delay: ${delay}ms):`, {
+            found: !!storedAnswers,
+            length: storedAnswers?.length || 0
+          });
+
+          if (storedAnswers) {
             try {
-              const answers = JSON.parse(retryAnswers);
+              const answers = JSON.parse(storedAnswers);
+              console.log('✅ quiz_answers successfully parsed:', {
+                hasPersonalInfo: !!answers.personalInfo,
+                hasRetirementSavings: !!answers.retirementSavings,
+                keys: Object.keys(answers)
+              });
               setQuizAnswers(answers);
               setIsLoading(false);
-              console.log('✅ quiz_answers found on retry:', answers);
+              return; // Success, stop trying
             } catch (error) {
-              console.error('❌ Error parsing quiz answers on retry:', error);
-              setIsLoading(false);
+              console.error('❌ Error parsing quiz answers:', error);
+              if (attemptCount >= maxAttempts) {
+                setIsLoading(false);
+              }
             }
           } else {
-            console.warn('⚠️ quiz_answers still not found after retry');
-            setIsLoading(false);
+            // If not found and we haven't exhausted attempts, try again
+            if (attemptCount < maxAttempts) {
+              const nextDelay = attemptDelays[attemptCount] || 1000;
+              tryLoadAnswers(nextDelay);
+            } else {
+              console.warn('⚠️ quiz_answers not found after all attempts');
+              console.log('📋 All sessionStorage keys:', Object.keys(sessionStorage));
+              setIsLoading(false);
+            }
           }
-        }, 500);
-      }
+        }, delay);
+      };
+
+      // Start trying immediately
+      tryLoadAnswers(0);
     };
 
     loadQuizAnswers();
   }, [])
 
-  // Show loading state during SSR or while checking for quiz answers
+  // Timeout fallback: if loading takes too long, show content anyway
+  useEffect(() => {
+    if (isLoading && isClient) {
+      const timeout = setTimeout(() => {
+        console.warn('⏱️ Loading timeout - showing content anyway');
+        setIsLoading(false);
+      }, 3000); // 3 second max loading time
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading, isClient]);
+
+  // Show loading state only during initial client-side mount or while actively loading
   if (!isClient || isLoading) {
     return (
       <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">Loading...</p>
+          <p className="text-lg text-gray-600">Loading your results...</p>
         </div>
       </div>
     );
