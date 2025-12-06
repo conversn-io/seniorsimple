@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
+import Script from 'next/script'
 
 interface QuizAnswers {
   personalInfo?: {
@@ -246,14 +247,18 @@ function BookingPageContent() {
 
         {/* Calendar Embed */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h3 className="text-xl font-semibold text-[#36596A] mb-4 text-center">
+            Select Your Preferred Time
+          </h3>
           <div className="w-full" style={{ minHeight: '600px' }}>
             <iframe
               id="conversn-calendar-iframe"
               key={calendarUrl} // Force re-render when URL changes
               src={calendarUrl}
-              style={{ width: '100%', border: 'none', overflow: 'hidden' }}
+              style={{ width: '100%', height: '600px', border: 'none', overflow: 'hidden' }}
               scrolling="no"
               title="Book Your Retirement Rescue Strategy Call"
+              allow="autoplay; fullscreen; picture-in-picture"
               onLoad={() => {
                 setIsCalendarLoaded(true)
                 
@@ -295,10 +300,9 @@ function BookingPageContent() {
       </div>
 
       {/* Load Conversn.io script */}
-      <script
-        src="https://link.conversn.io/js/form_embed.js"
-        async
-        defer
+      <Script 
+        src="https://link.conversn.io/js/form_embed.js" 
+        strategy="afterInteractive"
       />
     </div>
   )
