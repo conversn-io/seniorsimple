@@ -98,9 +98,62 @@ function BookingPageContent() {
         console.error('❌ Error parsing quiz answers:', error)
       }
     } else {
-      // If no quiz data, redirect back to quiz
-      console.warn('⚠️ No quiz data found, redirecting to quiz')
-      router.push('/quiz')
+      // If no quiz data, wait a moment in case quiz_answers is still being stored
+      console.warn('⚠️ No quiz data found, waiting before redirect...')
+      setTimeout(() => {
+        const retryAnswers = sessionStorage.getItem('quiz_answers')
+        if (retryAnswers) {
+          console.log('✅ quiz_answers found on retry, processing...')
+          try {
+            const answers = JSON.parse(retryAnswers)
+            setContactData(answers)
+            
+            // Extract email from various possible locations
+            const emailFromStorage = 
+              answers?.personalInfo?.email || 
+              answers?.email || 
+              answers?.contactInfo?.email || 
+              ''
+            
+            // Use email from URL (priority) or from storage (fallback)
+            const email = emailFromUrl || emailFromStorage
+            
+            // Build calendar URL with email parameter
+            if (email) {
+              const encodedEmail = encodeURIComponent(email)
+              const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
+              setCalendarUrl(urlWithEmail)
+              console.log('✅ Calendar URL built with email:', urlWithEmail)
+            }
+            
+            // Store contact data in multiple formats for widget compatibility
+            if (email) {
+              const contactDataObj = {
+                email: email,
+                firstName: answers?.personalInfo?.firstName || '',
+                lastName: answers?.personalInfo?.lastName || '',
+                phone: answers?.personalInfo?.phone || ''
+              }
+              
+              sessionStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+              localStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+              localStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+              localStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('email', email)
+              localStorage.setItem('email', email)
+            }
+          } catch (error) {
+            console.error('❌ Error parsing quiz answers on retry:', error)
+            console.warn('⚠️ Still no valid quiz data, redirecting to quiz')
+            router.push('/quiz')
+          }
+        } else {
+          console.warn('⚠️ Still no quiz data after retry, redirecting to quiz')
+          router.push('/quiz')
+        }
+      }, 500)
     }
   }, [router, searchParams])
 

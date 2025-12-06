@@ -950,6 +950,7 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       });
 
       // Use setTimeout to avoid React state update during render
+      // Small delay ensures sessionStorage is ready
       const timeoutId = setTimeout(() => {
         // If landing page is /quiz-book, redirect to booking page (booking funnel)
         // Otherwise, redirect to quiz-submitted (existing flow)
@@ -975,6 +976,30 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
             console.warn('⚠️ No email found in answers - redirecting without email parameter')
           }
           
+          // Verify quiz_answers is in sessionStorage before redirecting
+          const storedAnswers = typeof window !== 'undefined' 
+            ? sessionStorage.getItem('quiz_answers') 
+            : null
+          
+          if (!storedAnswers) {
+            console.warn('⚠️ quiz_answers not found in sessionStorage, waiting before redirect...')
+            // Retry after a short delay to allow sessionStorage to be ready
+            setTimeout(() => {
+              const retryAnswers = typeof window !== 'undefined' 
+                ? sessionStorage.getItem('quiz_answers') 
+                : null
+              
+              if (retryAnswers) {
+                console.log('✅ quiz_answers found on retry, redirecting to booking page')
+                router.push(bookingUrl)
+              } else {
+                console.error('❌ quiz_answers still not found after retry, redirecting anyway')
+                router.push(bookingUrl)
+              }
+            }, 500)
+            return
+          }
+          
           console.log('📅 Redirecting to Booking Page (Booking Funnel):', {
             sessionId: quizSessionId,
             bookingUrl,
@@ -989,7 +1014,7 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
           });
           router.push('/quiz-submitted');
         }
-      }, 0);
+      }, 100); // Changed from 0 to 100ms to ensure sessionStorage is ready
       return () => clearTimeout(timeoutId);
     }
   }, [showResults, router, quizSessionId, answers]);
