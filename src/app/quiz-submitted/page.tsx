@@ -416,10 +416,10 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             </div>
           </div>
         </div>
-
-        {/* Vimeo Player Script */}
-        <Script src="https://player.vimeo.com/api/player.js" strategy="afterInteractive" />
       </div>
+      
+      {/* Vimeo Player Script - Load once for all videos */}
+      <Script src="https://player.vimeo.com/api/player.js" strategy="afterInteractive" />
     </div>
   )
 }
