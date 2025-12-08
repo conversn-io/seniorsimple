@@ -351,7 +351,7 @@ export default function QuizBookPage() {
 
         {/* Footer Note */}
         <div className="text-center text-sm text-gray-500">
-          <p>Questions? Contact us at <a href="tel:+1-XXX-XXX-XXXX" className="text-[#36596A] hover:underline">XXX-XXX-XXXX</a></p>
+          <p>Questions? Contact us at <a href="tel:+16193335531" className="text-[#36596A] hover:underline">+1 (619) 333-5531</a></p>
         </div>
       </div>
     </div>
