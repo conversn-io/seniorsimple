@@ -65,14 +65,36 @@ function BookingPageContent() {
         console.log('  - From Storage:', emailFromStorage || '❌')
         console.log('  - Final email to use:', email || '❌ NONE')
         
-        // Build calendar URL with email parameter
+        // Build calendar URL with email parameter and redirect URL
+        // NOTE: Conversn.io calendar widget may have its own redirect URL configured in the dashboard
+        // If the widget's native redirect overrides URL parameters, you may need to update the
+        // redirect URL in the Conversn.io dashboard settings for widget ID: 9oszv21kQ1Tx6jG4qopK
+        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const redirectUrl = `${siteUrl}/quiz-submitted`
+        
+        let urlParams = new URLSearchParams()
+        
+        // Add email if available
         if (email) {
-          const encodedEmail = encodeURIComponent(email)
-          const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
-          setCalendarUrl(urlWithEmail)
-          console.log('✅ Calendar URL built with email:', urlWithEmail)
+          urlParams.append('email', email)
+        }
+        
+        // Add redirect URL parameter (Conversn.io may support redirect_url, redirect, or return_url)
+        // Try multiple parameter names as different widgets use different conventions
+        urlParams.append('redirect_url', redirectUrl)
+        urlParams.append('redirect', redirectUrl)
+        urlParams.append('return_url', redirectUrl)
+        urlParams.append('success_url', redirectUrl)
+        
+        const calendarUrlWithParams = `${baseUrl}?${urlParams.toString()}`
+        setCalendarUrl(calendarUrlWithParams)
+        
+        if (email) {
+          console.log('✅ Calendar URL built with email and redirect:', calendarUrlWithParams)
         } else {
-          console.warn('⚠️ No email found in URL or storage - using base URL')
+          console.warn('⚠️ No email found - using base URL with redirect parameter')
+          console.log('📋 Calendar URL with redirect:', calendarUrlWithParams)
         }
         
         // Store contact data in multiple formats for widget compatibility
