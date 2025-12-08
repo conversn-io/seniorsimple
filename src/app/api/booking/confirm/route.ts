@@ -55,24 +55,49 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+    
+    // Active logging for debugging
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📥 BOOKING WEBHOOK POST RECEIVED')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📋 Full Request Body:', JSON.stringify(body, null, 2))
+    console.log('📋 Body Keys:', Object.keys(body))
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    
     const email = (body.email || '').toString().trim().toLowerCase()
     const phone = (body.phone || '').toString().trim()
     const name = (body.name || '').toString().trim()
     const appointmentId = body.appointmentId || body.id || body.appointment_id
     const source = body.event || body.source || 'webhook'
+    const bookingTimes = body.bookingTimes || body.start_time || body.appointment?.start_time
+
+    console.log('🔍 Extracted Data:')
+    console.log('  - Email:', email || '❌ NOT FOUND')
+    console.log('  - Phone:', phone || '❌ NOT FOUND')
+    console.log('  - Name:', name || '❌ NOT FOUND')
+    console.log('  - Appointment ID:', appointmentId || '❌ NOT FOUND')
+    console.log('  - Booking Times:', bookingTimes || '❌ NOT FOUND')
+    console.log('  - Source:', source)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     const key = email || phone
     if (!key) {
+      console.error('❌ Missing email or phone in webhook payload')
       return NextResponse.json({ error: 'Missing email or phone' }, { status: 400 })
     }
 
-    recordBooking(key, {
+    const bookingData = {
       email,
       phone,
       name,
       source,
-      payload: { appointmentId, raw: body },
-    })
+      payload: { appointmentId, bookingTimes, raw: body },
+    }
+    
+    console.log('💾 Storing booking data:', JSON.stringify(bookingData, null, 2))
+    recordBooking(key, bookingData)
+    console.log('✅ Booking data stored successfully')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return NextResponse.json(
       { success: true, key },
@@ -100,19 +125,43 @@ export async function GET(req: NextRequest) {
   const phone = (req.nextUrl.searchParams.get('phone') || '').toString().trim()
   const key = email || phone
 
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('📥 BOOKING CONFIRMATION GET REQUEST')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🔍 Query Params:', { email, phone, key })
+
   if (!key) {
+    console.error('❌ Missing email or phone in query params')
     return NextResponse.json({ error: 'Missing email or phone' }, { status: 400 })
   }
 
   const confirmed = hasBooking(key)
   const record = confirmed ? getBooking(key) : null
 
+  console.log('📋 Record Status:', {
+    confirmed,
+    hasRecord: !!record,
+    recordKeys: record ? Object.keys(record) : [],
+  })
+
+  if (record) {
+    console.log('📋 Full Record:', JSON.stringify(record, null, 2))
+    console.log('📋 Record Payload:', JSON.stringify(record.payload, null, 2))
+  }
+
   // Explicitly extract payload data for better serialization
   const payload = record?.payload || {}
   const appointmentId = payload?.appointmentId || payload?.id || payload?.appointment_id
   const rawPayload = payload?.raw || {}
+  const bookingTimes = payload?.bookingTimes || rawPayload?.bookingTimes || rawPayload?.start_time || rawPayload?.appointment?.start_time
 
-  return NextResponse.json({
+  console.log('🔍 Extracted Payload Data:')
+  console.log('  - Appointment ID:', appointmentId || '❌ NOT FOUND')
+  console.log('  - Booking Times:', bookingTimes || '❌ NOT FOUND')
+  console.log('  - Raw Payload Keys:', Object.keys(rawPayload))
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+  const response = {
     confirmed,
     name: record?.name,
     email: record?.email,
@@ -120,9 +169,14 @@ export async function GET(req: NextRequest) {
     source: record?.source,
     payload: {
       appointmentId,
-      bookingTimes: rawPayload?.bookingTimes || rawPayload?.start_time || rawPayload?.appointment?.start_time,
+      bookingTimes,
       raw: rawPayload,
     },
-  })
+  }
+
+  console.log('📤 Response:', JSON.stringify(response, null, 2))
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+  return NextResponse.json(response)
 }
 
