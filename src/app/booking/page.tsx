@@ -32,7 +32,6 @@ function BookingPageContent() {
   const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
   const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
   const [hasRedirected, setHasRedirected] = useState(false)
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null)
 
   useEffect(() => {
     // PRIORITY 1: Get email from URL query parameter (passed from quiz redirect)
@@ -230,8 +229,6 @@ function BookingPageContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    let fallbackTimer: ReturnType<typeof setTimeout> | null = null
-
     const handleMessage = (event: MessageEvent) => {
       // Listen for messages from Conversn.io widget
       // Try to catch multiple possible event shapes the widget may emit
@@ -251,7 +248,6 @@ function BookingPageContent() {
 
       if (isBookingComplete && !hasRedirected) {
         setHasRedirected(true)
-        setRedirectCountdown(null)
         console.log('✅ Booking complete event received, redirecting to thank-you page', { type, data })
         router.push('/quiz-submitted')
       }
@@ -260,7 +256,6 @@ function BookingPageContent() {
     window.addEventListener('message', handleMessage)
     return () => {
       window.removeEventListener('message', handleMessage)
-      if (fallbackTimer) clearTimeout(fallbackTimer)
     }
   }, [router, hasRedirected])
 
@@ -357,46 +352,6 @@ function BookingPageContent() {
     return () => clearTimeout(timer)
   }, [contactData, isCalendarLoaded])
 
-  // Fallback: If no booking_complete event arrives after calendar load, warn and redirect with countdown.
-  useEffect(() => {
-    if (!isCalendarLoaded) return
-    // Only run if we have some identity (email) indicating the session is valid.
-    const email =
-      contactData?.personalInfo?.email ||
-      contactData?.email ||
-      contactData?.contactInfo?.email ||
-      ''
-
-    if (!email || hasRedirected) return
-
-    const graceSeconds = 10
-    console.warn('⏳ Fallback redirect timer armed (no booking_complete yet). Will redirect in', graceSeconds, 's if no event.')
-    setRedirectCountdown(graceSeconds)
-
-    const interval = setInterval(() => {
-      setRedirectCountdown((prev) => {
-        if (prev === null) return null
-        if (prev <= 1) {
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    const fallback = setTimeout(() => {
-      setHasRedirected(true)
-      setRedirectCountdown(null)
-      console.warn('⚠️ No booking_complete event received; performing fallback redirect to /quiz-submitted')
-      router.push('/quiz-submitted')
-    }, graceSeconds * 1000)
-
-    return () => {
-      clearInterval(interval)
-      clearTimeout(fallback)
-      setRedirectCountdown(null)
-    }
-  }, [isCalendarLoaded, contactData, router, hasRedirected])
-
   const firstName = contactData?.personalInfo?.firstName || contactData?.firstName || 'there'
 
   if (!contactData) {
@@ -419,11 +374,6 @@ function BookingPageContent() {
         </h1>
       </div>
 
-      {redirectCountdown !== null && (
-        <div className="w-full bg-amber-100 border-b border-amber-300 text-amber-900 text-sm py-2 px-4 text-center">
-          Booking submitted. Redirecting to next steps in {redirectCountdown}s...
-        </div>
-      )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header Section */}
         <div className="text-center mb-8">
