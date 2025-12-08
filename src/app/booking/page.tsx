@@ -229,6 +229,7 @@ function BookingPageContent() {
     if (typeof window === 'undefined') return
 
     let hasRedirected = false
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null
 
     const handleMessage = (event: MessageEvent) => {
       // Listen for messages from Conversn.io widget
@@ -255,7 +256,10 @@ function BookingPageContent() {
     }
 
     window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      if (fallbackTimer) clearTimeout(fallbackTimer)
+    }
   }, [router])
 
   // Build calendar URL with GHL form parameters
@@ -350,6 +354,29 @@ function BookingPageContent() {
 
     return () => clearTimeout(timer)
   }, [contactData, isCalendarLoaded])
+
+  // Fallback: If we never receive a booking_complete event but the calendar loaded,
+  // and we have an email, force-redirect after a grace period to avoid the user being stuck.
+  useEffect(() => {
+    if (!isCalendarLoaded) return
+    // Only run if we have some identity (email) indicating the session is valid.
+    const email =
+      contactData?.personalInfo?.email ||
+      contactData?.email ||
+      contactData?.contactInfo?.email ||
+      ''
+
+    if (!email) return
+
+    const graceMs = 10000 // 10s after calendar load
+    console.warn('⏳ Fallback redirect timer armed (no booking_complete yet). Will redirect in', graceMs, 'ms if no event.')
+    const fallback = setTimeout(() => {
+      console.warn('⚠️ No booking_complete event received; performing fallback redirect to /quiz-submitted')
+      router.push('/quiz-submitted')
+    }, graceMs)
+
+    return () => clearTimeout(fallback)
+  }, [isCalendarLoaded, contactData, router])
 
   const firstName = contactData?.personalInfo?.firstName || contactData?.firstName || 'there'
 
