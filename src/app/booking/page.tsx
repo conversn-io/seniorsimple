@@ -31,6 +31,8 @@ function BookingPageContent() {
   const [contactData, setContactData] = useState<QuizAnswers | null>(null)
   const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
   const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
+  const [hasRedirected, setHasRedirected] = useState(false)
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null)
 
   useEffect(() => {
     // PRIORITY 1: Get email from URL query parameter (passed from quiz redirect)
@@ -228,7 +230,6 @@ function BookingPageContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    let hasRedirected = false
     let fallbackTimer: ReturnType<typeof setTimeout> | null = null
 
     const handleMessage = (event: MessageEvent) => {
@@ -249,7 +250,8 @@ function BookingPageContent() {
         type === 'conversn_booking_complete'
 
       if (isBookingComplete && !hasRedirected) {
-        hasRedirected = true
+        setHasRedirected(true)
+        setRedirectCountdown(null)
         console.log('✅ Booking complete event received, redirecting to thank-you page', { type, data })
         router.push('/quiz-submitted')
       }
@@ -260,7 +262,7 @@ function BookingPageContent() {
       window.removeEventListener('message', handleMessage)
       if (fallbackTimer) clearTimeout(fallbackTimer)
     }
-  }, [router])
+  }, [router, hasRedirected])
 
   // Build calendar URL with GHL form parameters
   // GHL forms require parameter names that match the form field 'name' attributes
@@ -355,8 +357,7 @@ function BookingPageContent() {
     return () => clearTimeout(timer)
   }, [contactData, isCalendarLoaded])
 
-  // Fallback: If we never receive a booking_complete event but the calendar loaded,
-  // and we have an email, force-redirect after a grace period to avoid the user being stuck.
+  // Fallback: If no booking_complete event arrives after calendar load, warn and redirect with countdown.
   useEffect(() => {
     if (!isCalendarLoaded) return
     // Only run if we have some identity (email) indicating the session is valid.
@@ -366,17 +367,35 @@ function BookingPageContent() {
       contactData?.contactInfo?.email ||
       ''
 
-    if (!email) return
+    if (!email || hasRedirected) return
 
-    const graceMs = 10000 // 10s after calendar load
-    console.warn('⏳ Fallback redirect timer armed (no booking_complete yet). Will redirect in', graceMs, 'ms if no event.')
+    const graceSeconds = 10
+    console.warn('⏳ Fallback redirect timer armed (no booking_complete yet). Will redirect in', graceSeconds, 's if no event.')
+    setRedirectCountdown(graceSeconds)
+
+    const interval = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev === null) return null
+        if (prev <= 1) {
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
     const fallback = setTimeout(() => {
+      setHasRedirected(true)
+      setRedirectCountdown(null)
       console.warn('⚠️ No booking_complete event received; performing fallback redirect to /quiz-submitted')
       router.push('/quiz-submitted')
-    }, graceMs)
+    }, graceSeconds * 1000)
 
-    return () => clearTimeout(fallback)
-  }, [isCalendarLoaded, contactData, router])
+    return () => {
+      clearInterval(interval)
+      clearTimeout(fallback)
+      setRedirectCountdown(null)
+    }
+  }, [isCalendarLoaded, contactData, router, hasRedirected])
 
   const firstName = contactData?.personalInfo?.firstName || contactData?.firstName || 'there'
 
@@ -393,6 +412,11 @@ function BookingPageContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
+      {redirectCountdown !== null && (
+        <div className="w-full bg-amber-100 border-b border-amber-300 text-amber-900 text-sm py-2 px-4 text-center">
+          Booking submitted. Redirecting to next steps in {redirectCountdown}s...
+        </div>
+      )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header Section */}
         <div className="text-center mb-8">
