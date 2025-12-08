@@ -152,46 +152,9 @@ export default function QuizSubmittedPage() {
   }
 
   // If we have quiz answers, show personalized message with videos
-  if (quizAnswers) {
-    return <PersonalizedQuizSubmitted quizAnswers={quizAnswers} />
-  }
-
-  // Fallback to basic thank you (should rarely be seen - only if quiz_answers truly missing)
-  // But even in fallback, we should try to show the video page structure
-  return (
-    <div className="min-h-screen bg-[#F5F5F0]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center mb-8">
-          <h1 className="text-3xl font-serif font-semibold text-[#36596A] mb-4">
-            Thank You!
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            We'll be in touch soon.
-          </p>
-        </div>
-        
-        {/* Show video content even in fallback */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-          <h3 className="text-2xl font-semibold text-[#36596A] mb-4 text-center">
-            Watch This Important Video
-          </h3>
-          <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
-            <iframe
-              src="https://player.vimeo.com/video/1144021770?badge=0&autopause=0&player_id=0&app_id=58479"
-              frameBorder={0}
-              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-              title="Retirement Rescue Thank You"
-            />
-          </div>
-        </div>
-      </div>
-      
-      {/* Vimeo Player Script */}
-      <Script src="https://player.vimeo.com/api/player.js" strategy="afterInteractive" />
-    </div>
-  )
+  // If no answers found (e.g. cross-domain redirect), still show the enhanced page with defaults
+  const displayAnswers = quizAnswers || {};
+  return <PersonalizedQuizSubmitted quizAnswers={displayAnswers} />
 }
 
 function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }) {
