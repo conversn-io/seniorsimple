@@ -64,12 +64,12 @@ export async function POST(req: NextRequest) {
     console.log('📋 Body Keys:', Object.keys(body))
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     
-    const email = (body.email || '').toString().trim().toLowerCase()
-    const phone = (body.phone || '').toString().trim()
-    const name = (body.name || '').toString().trim()
-    const appointmentId = body.appointmentId || body.id || body.appointment_id
-    const source = body.event || body.source || 'webhook'
-    const bookingTimes = body.bookingTimes || body.start_time || body.appointment?.start_time
+    const email = (body.email || body.customData?.email || '').toString().trim().toLowerCase()
+    const phone = (body.phone || body.customData?.phone || '').toString().trim().replace(/[^\d+]/g, '')
+    const name = (body.customData?.name || body.full_name || body.name || '').toString().trim()
+    const appointmentId = body.customData?.appointmentId || body.appointmentId || body.appointment?.id || body.id || body.appointment_id || ''
+    const source = body.customData?.event || body.event || body.source || 'webhook'
+    const bookingTimes = body.customData?.bookingTimes || body.customData?.bookingTimestamp || body.bookingTimes || body.appointment?.start_time || body.start_time || ''
 
     console.log('🔍 Extracted Data:')
     console.log('  - Email:', email || '❌ NOT FOUND')
@@ -78,6 +78,11 @@ export async function POST(req: NextRequest) {
     console.log('  - Appointment ID:', appointmentId || '❌ NOT FOUND')
     console.log('  - Booking Times:', bookingTimes || '❌ NOT FOUND')
     console.log('  - Source:', source)
+    console.log('')
+    console.log('🔍 Checking for appointment data in payload:')
+    console.log('  - body.appointment:', body.appointment ? JSON.stringify(body.appointment, null, 2) : '❌ NOT FOUND')
+    console.log('  - body.customData:', body.customData ? JSON.stringify(body.customData, null, 2) : '❌ NOT FOUND')
+    console.log('  - body.triggerData:', body.triggerData ? JSON.stringify(body.triggerData, null, 2) : '❌ NOT FOUND')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     const key = email || phone
