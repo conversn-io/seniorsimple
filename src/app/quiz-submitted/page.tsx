@@ -218,6 +218,28 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
   const riskTolerance = quizAnswers.riskTolerance;
   const zipCode = quizAnswers.locationInfo?.zipCode;
   const state = quizAnswers.locationInfo?.stateName || quizAnswers.locationInfo?.state;
+  const [appointmentData, setAppointmentData] = useState<{
+    appointmentId?: string;
+    startTime?: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    // Load appointment data from storage
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('appointment_data') || localStorage.getItem('appointment_data');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setAppointmentData(data);
+        } catch (error) {
+          console.warn('Failed to parse appointment data:', error);
+        }
+      }
+    }
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -226,6 +248,29 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const formatAppointmentTime = (timeString?: string) => {
+    if (!timeString) return null;
+    
+    try {
+      // Try parsing ISO 8601 format or other common formats
+      const date = new Date(timeString);
+      if (isNaN(date.getTime())) return timeString; // Return as-is if can't parse
+      
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short',
+      }).format(date);
+    } catch (error) {
+      return timeString; // Return as-is if parsing fails
+    }
   };
 
   return (
@@ -238,6 +283,28 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Appointment Confirmation Message */}
+        {appointmentData?.startTime && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
+            <div className="flex items-center justify-center mb-2">
+              <svg className="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 className="text-xl font-semibold text-[#36596A]">
+                Your Appointment is Confirmed!
+              </h2>
+            </div>
+            <p className="text-lg text-gray-700">
+              Scheduled for: <span className="font-semibold text-[#2f6d46]">{formatAppointmentTime(appointmentData.startTime)}</span>
+            </p>
+            {appointmentData.appointmentId && (
+              <p className="text-sm text-gray-500 mt-2">
+                Confirmation ID: {appointmentData.appointmentId}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Main Thank You Video - Large Container */}
         <div className="bg-white rounded-lg shadow-md p-8 mb-6">
           <h3 className="text-2xl font-semibold text-[#36596A] mb-4 text-center">

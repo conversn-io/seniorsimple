@@ -225,7 +225,7 @@ function BookingPageContent() {
     }
   }, [router, searchParams])
 
-  // Listen for calendar booking completion
+  // Listen for calendar booking completion via postMessage (backup)
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -258,6 +258,83 @@ function BookingPageContent() {
       window.removeEventListener('message', handleMessage)
     }
   }, [router, hasRedirected])
+
+  // Poll for booking confirmation via webhook (primary method)
+  useEffect(() => {
+    if (!isCalendarLoaded || !contactData || hasRedirected) return
+
+    // Extract email for polling
+    const email = 
+      contactData?.personalInfo?.email || 
+      contactData?.email || 
+      contactData?.contactInfo?.email || 
+      ''
+
+    if (!email) {
+      console.warn('⚠️ No email available for polling')
+      return
+    }
+
+    console.log('🔄 Starting booking confirmation polling for:', email)
+
+    let pollCount = 0
+    const maxPolls = 60 // Poll for up to 5 minutes (60 * 5s = 300s)
+    const pollInterval = 5000 // Poll every 5 seconds
+
+    const pollForConfirmation = async () => {
+      if (hasRedirected || pollCount >= maxPolls) {
+        if (pollCount >= maxPolls) {
+          console.warn('⏱️ Polling timeout - booking confirmation not received')
+        }
+        return
+      }
+
+      pollCount++
+
+      try {
+        const response = await fetch(`/api/booking/confirm?email=${encodeURIComponent(email)}`)
+        const data = await response.json()
+
+        if (data.confirmed && !hasRedirected) {
+          console.log('✅ Booking confirmed via webhook!', data)
+          setHasRedirected(true)
+
+          // Store appointment data for thank-you page
+          if (data.payload) {
+            const appointmentData = {
+              appointmentId: data.payload.appointmentId || data.payload.id || data.payload.appointment_id,
+              startTime: data.payload.raw?.bookingTimes || data.payload.raw?.start_time || data.payload.raw?.appointment?.start_time,
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+            }
+            sessionStorage.setItem('appointment_data', JSON.stringify(appointmentData))
+            localStorage.setItem('appointment_data', JSON.stringify(appointmentData))
+            console.log('💾 Appointment data stored:', appointmentData)
+          }
+
+          router.push('/quiz-submitted')
+        } else if (pollCount < maxPolls) {
+          // Continue polling
+          setTimeout(pollForConfirmation, pollInterval)
+        }
+      } catch (error) {
+        console.error('❌ Polling error:', error)
+        if (pollCount < maxPolls) {
+          setTimeout(pollForConfirmation, pollInterval)
+        }
+      }
+    }
+
+    // Start polling after a short delay to allow webhook to process
+    const initialDelay = setTimeout(() => {
+      pollForConfirmation()
+    }, 3000) // Wait 3 seconds before first poll
+
+    return () => {
+      clearTimeout(initialDelay)
+    }
+  }, [isCalendarLoaded, contactData, hasRedirected, router])
 
   // Build calendar URL with GHL form parameters
   // GHL forms require parameter names that match the form field 'name' attributes

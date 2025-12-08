@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
     email: record?.email,
     phone: record?.phone,
     source: record?.source,
+    payload: record?.payload, // Include full payload (appointmentId, bookingTimes, etc.)
   })
 }
 
