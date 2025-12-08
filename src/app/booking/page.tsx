@@ -183,11 +183,28 @@ function BookingPageContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    let hasRedirected = false
+
     const handleMessage = (event: MessageEvent) => {
       // Listen for messages from Conversn.io widget
-      // This is a placeholder - actual implementation depends on Conversn.io API
-      if (event.data && event.data.type === 'booking_complete') {
-        console.log('✅ Booking completed, redirecting to thank-you page')
+      // Try to catch multiple possible event shapes the widget may emit
+      const data = event.data
+      if (!data) return
+
+      const type =
+        data.type ||
+        data.event ||
+        (typeof data === 'string' ? data : undefined)
+
+      const isBookingComplete =
+        type === 'booking_complete' ||
+        type === 'bookingCompleted' ||
+        type === 'appointmentBooked' ||
+        type === 'conversn_booking_complete'
+
+      if (isBookingComplete && !hasRedirected) {
+        hasRedirected = true
+        console.log('✅ Booking complete event received, redirecting to thank-you page', { type, data })
         router.push('/quiz-submitted')
       }
     }
