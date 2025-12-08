@@ -120,8 +120,44 @@ function BookingPageContent() {
         console.error('❌ Error parsing quiz answers:', error)
       }
     } else {
-      // If no quiz data, wait a moment in case quiz_answers is still being stored
-      console.warn('⚠️ No quiz data found, waiting before redirect...')
+      // If no quiz data in sessionStorage:
+      // - If we have an email from URL, build a minimal contactData fallback and proceed
+      // - Otherwise, retry once; if still missing and no email, redirect to /quiz
+      console.warn('⚠️ No quiz data found on first check.')
+
+      if (emailFromUrl) {
+        const email = emailFromUrl
+        console.warn('⚠️ Using URL email as minimal fallback:', email)
+
+        // Build calendar URL with email + redirect params
+        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const redirectUrl = `${siteUrl}/quiz-submitted`
+        const urlParams = new URLSearchParams()
+        urlParams.append('email', email)
+        urlParams.append('redirect_url', redirectUrl)
+        urlParams.append('redirect', redirectUrl)
+        urlParams.append('return_url', redirectUrl)
+        urlParams.append('success_url', redirectUrl)
+        const calendarUrlWithParams = `${baseUrl}?${urlParams.toString()}`
+
+        // Minimal contact data
+        const minimalAnswers = { personalInfo: { email } }
+        setContactData(minimalAnswers as QuizAnswers)
+        setCalendarUrl(calendarUrlWithParams)
+
+        // Store minimal data so thank-you page can at least personalize by email
+        sessionStorage.setItem('quiz_answers', JSON.stringify(minimalAnswers))
+        localStorage.setItem('quiz_answers', JSON.stringify(minimalAnswers))
+        sessionStorage.setItem('email', email)
+        localStorage.setItem('email', email)
+
+        console.log('✅ Fallback contactData set from URL email')
+        console.log('🔗 Calendar URL with email + redirect:', calendarUrlWithParams)
+        return
+      }
+
+      console.warn('⚠️ No quiz data and no URL email; retrying in 500ms before redirecting...')
       setTimeout(() => {
         const retryAnswers = sessionStorage.getItem('quiz_answers')
         if (retryAnswers) {
@@ -142,10 +178,19 @@ function BookingPageContent() {
             
             // Build calendar URL with email parameter
             if (email) {
-              const encodedEmail = encodeURIComponent(email)
-              const urlWithEmail = `https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK?email=${encodedEmail}`
+              const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+              const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+              const redirectUrl = `${siteUrl}/quiz-submitted`
+              const urlParams = new URLSearchParams()
+              urlParams.append('email', email)
+              urlParams.append('redirect_url', redirectUrl)
+              urlParams.append('redirect', redirectUrl)
+              urlParams.append('return_url', redirectUrl)
+              urlParams.append('success_url', redirectUrl)
+              const urlWithEmail = `${baseUrl}?${urlParams.toString()}`
+
               setCalendarUrl(urlWithEmail)
-              console.log('✅ Calendar URL built with email:', urlWithEmail)
+              console.log('✅ Calendar URL built with email (retry):', urlWithEmail)
             }
             
             // Store contact data in multiple formats for widget compatibility
