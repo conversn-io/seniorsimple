@@ -418,7 +418,10 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         });
         
         // Store quiz answers for personalized thank you page
-        sessionStorage.setItem('quiz_answers', JSON.stringify(updatedAnswers));
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(updatedAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(true);
         
@@ -752,7 +755,10 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         console.log('🔍 personalInfo object:', data.quizAnswers?.personalInfo)
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
         
         // Verify it was stored correctly
         const stored = sessionStorage.getItem('quiz_answers')
@@ -774,7 +780,10 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         });
         
         // Store quiz answers even on failure
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(false);
         setShowResults(true); // Still show results even if GHL fails
@@ -787,8 +796,11 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       });
       
       // Store quiz answers even on exception
+      // Store in both sessionStorage and localStorage for persistence across redirects
       try {
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
       } catch (storageError) {
         console.warn('⚠️ Could not store quiz answers:', storageError);
       }
@@ -897,7 +909,11 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       });
 
       // Store quiz answers for personalized thank you message
-      sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
+      // Store in both sessionStorage and localStorage for persistence across redirects
+      const answersJson = JSON.stringify(answers);
+      sessionStorage.setItem('quiz_answers', answersJson);
+      localStorage.setItem('quiz_answers', answersJson); // Persist across calendar redirect
+      console.log('💾 Stored quiz_answers in both sessionStorage and localStorage');
       
       // Add delay to allow GTM to process tracking events before redirect
       console.log('⏳ Waiting for GTM to process tracking events...');

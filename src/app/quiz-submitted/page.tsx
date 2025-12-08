@@ -64,11 +64,28 @@ export default function QuizSubmittedPage() {
       const tryLoadAnswers = (delay: number) => {
         setTimeout(() => {
           attemptCount++;
-          const storedAnswers = sessionStorage.getItem('quiz_answers');
+          
+          // Try sessionStorage first (primary source)
+          let storedAnswers = sessionStorage.getItem('quiz_answers');
+          
+          // If not in sessionStorage, try localStorage as fallback (persists across redirects)
+          if (!storedAnswers) {
+            storedAnswers = localStorage.getItem('quiz_answers');
+            if (storedAnswers) {
+              console.log('📦 Found quiz_answers in localStorage (sessionStorage was empty)');
+              // Restore to sessionStorage for consistency
+              try {
+                sessionStorage.setItem('quiz_answers', storedAnswers);
+              } catch (e) {
+                console.warn('⚠️ Could not restore to sessionStorage:', e);
+              }
+            }
+          }
           
           console.log(`📋 Attempt ${attemptCount}/${maxAttempts} (delay: ${delay}ms):`, {
             found: !!storedAnswers,
-            length: storedAnswers?.length || 0
+            length: storedAnswers?.length || 0,
+            source: storedAnswers ? (sessionStorage.getItem('quiz_answers') ? 'sessionStorage' : 'localStorage') : 'none'
           });
 
           if (storedAnswers) {
@@ -96,6 +113,7 @@ export default function QuizSubmittedPage() {
             } else {
               console.warn('⚠️ quiz_answers not found after all attempts');
               console.log('📋 All sessionStorage keys:', Object.keys(sessionStorage));
+              console.log('📋 All localStorage keys:', Object.keys(localStorage));
               setIsLoading(false);
             }
           }
