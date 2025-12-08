@@ -38,6 +38,7 @@ export default function QuizSubmittedPage() {
   const [quizAnswers, setQuizAnswers] = useState<QuizAnswers | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [videoListenersReady, setVideoListenersReady] = useState(false);
 
   useEffect(() => {
     // Mark as client-side rendered
@@ -127,6 +128,58 @@ export default function QuizSubmittedPage() {
     loadQuizAnswers();
   }, [])
 
+  // Attach Vimeo player event listeners for engagement logging
+  useEffect(() => {
+    if (!isClient) return
+    if (videoListenersReady) return
+
+    const setupPlayers = () => {
+      try {
+        // @ts-ignore
+        const Vimeo = (window as any).Vimeo
+        if (!Vimeo || !Vimeo.Player) {
+          console.warn('⚠️ Vimeo Player API not available yet')
+          return false
+        }
+
+        const iframes = Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe.vimeo-track'))
+        if (!iframes.length) return false
+
+        iframes.forEach((iframe, idx) => {
+          const player = new Vimeo.Player(iframe)
+          const label = iframe.title || `vimeo-video-${idx}`
+
+          player.on('play', () => console.log(`▶️ Play: ${label}`))
+          player.on('pause', () => console.log(`⏸️ Pause: ${label}`))
+          player.on('ended', () => console.log(`🏁 Ended: ${label}`))
+          player.on('timeupdate', (data: any) => {
+            const t = Math.floor(data.seconds || 0)
+            if (t % 10 === 0) {
+              console.log(`⏱️ Progress ${label}: ${t}s`)
+            }
+          })
+        })
+
+        return true
+      } catch (e) {
+        console.warn('⚠️ Could not attach Vimeo listeners', e)
+        return false
+      }
+    }
+
+    const ok = setupPlayers()
+    if (ok) {
+      setVideoListenersReady(true)
+      return
+    }
+
+    const retry = setTimeout(() => {
+      if (setupPlayers()) setVideoListenersReady(true)
+    }, 1000)
+
+    return () => clearTimeout(retry)
+  }, [isClient, videoListenersReady])
+
   // Timeout fallback: if loading takes too long, show content anyway
   useEffect(() => {
     if (isLoading && isClient) {
@@ -177,24 +230,22 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header - Updated per requirements */}
-        <div className="bg-white rounded-lg shadow-md p-8 text-center mb-8">
-          <h1 className="text-3xl font-serif font-semibold text-[#36596A] mb-4">
-            Congratulations, {firstName} - Here are Your Next Steps
-          </h1>
-          <h2 className="text-xl font-medium text-gray-700 mb-6">
-            You're one step closer to achieving your retirement goals.
-          </h2>
-        </div>
+      {/* Success notification bar */}
+      <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
+        <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
+          Congratulations, {firstName} - Here are Your Next Steps
+        </h1>
+      </div>
 
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Main Thank You Video - Large Container */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-8 mb-6">
           <h3 className="text-2xl font-semibold text-[#36596A] mb-4 text-center">
             Watch This Important Video
           </h3>
           <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
             <iframe
+              className="vimeo-track"
               src="https://player.vimeo.com/video/1144021770?badge=0&autopause=0&player_id=0&app_id=58479"
               frameBorder={0}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -202,6 +253,11 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
               title="Retirement Rescue Thank You"
             />
+          </div>
+          <div className="flex justify-center mt-4">
+            <div className="animate-bounce text-[#36596A]" aria-hidden="true">
+              ↓
+            </div>
           </div>
         </div>
 
@@ -231,27 +287,9 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
                   <p className="text-sm text-gray-600">
                     Check your email inbox for a calendar confirmation. Click the "I know the sender" button to confirm your appointment.
                   </p>
-                  {/* TODO: Add email screenshot image when provided */}
                 </div>
               </div>
             </div>
-
-            {/* Step 2 - Only for Business Loans (not applicable here, but structure ready) */}
-            {/* <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-[#36596A] text-white rounded-full flex items-center justify-center font-bold">
-                  2
-                </div>
-              </div>
-              <div className="flex-1">
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                  Step 2: Upload your bank statements
-                </h4>
-                <p className="text-gray-600">
-                  (For Business loans or Bank Statement Loans)
-                </p>
-              </div>
-            </div> */}
 
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0">
@@ -358,6 +396,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021752?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -375,7 +414,8 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
-                  src="https://player.vimeo.com/video/1144021752?badge=0&autopause=0&player_id=0&app_id=58479"
+                  className="vimeo-track"
+                  src="https://player.vimeo.com/video/1144021743?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
@@ -392,6 +432,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021738?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -409,6 +450,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021733?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -426,6 +468,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144022764?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -443,6 +486,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021726?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -460,6 +504,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021718?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -477,6 +522,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021708?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -494,6 +540,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
+                  className="vimeo-track"
                   src="https://player.vimeo.com/video/1144021702?badge=0&autopause=0&player_id=0&app_id=58479"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
