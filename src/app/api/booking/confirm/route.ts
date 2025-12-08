@@ -107,13 +107,22 @@ export async function GET(req: NextRequest) {
   const confirmed = hasBooking(key)
   const record = confirmed ? getBooking(key) : null
 
+  // Explicitly extract payload data for better serialization
+  const payload = record?.payload || {}
+  const appointmentId = payload?.appointmentId || payload?.id || payload?.appointment_id
+  const rawPayload = payload?.raw || {}
+
   return NextResponse.json({
     confirmed,
     name: record?.name,
     email: record?.email,
     phone: record?.phone,
     source: record?.source,
-    payload: record?.payload, // Include full payload (appointmentId, bookingTimes, etc.)
+    payload: {
+      appointmentId,
+      bookingTimes: rawPayload?.bookingTimes || rawPayload?.start_time || rawPayload?.appointment?.start_time,
+      raw: rawPayload,
+    },
   })
 }
 
