@@ -40,9 +40,9 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
   const handleCallNow = () => {
     console.log("📞 Phone Click Tracked:", {
       timestamp: new Date().toISOString(),
-      phoneNumber: "+18777703306"
+      phoneNumber: "+16193335531"
     });
-    window.location.href = "tel:+18777703306";
+    window.location.href = "tel:+16193335531";
   };
 
   const handleScheduleConsultation = () => {
