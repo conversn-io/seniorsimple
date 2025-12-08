@@ -33,6 +33,18 @@ import { recordBooking, hasBooking, getBooking } from '@/lib/bookingConfirmation
 
 const REQUIRED_SECRET = process.env.BOOKING_WEBHOOK_SECRET
 
+// Handle OPTIONS for CORS preflight
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-booking-secret',
+    },
+  })
+}
+
 export async function POST(req: NextRequest) {
   if (REQUIRED_SECRET) {
     const headerSecret = req.headers.get('x-booking-secret')
@@ -62,7 +74,17 @@ export async function POST(req: NextRequest) {
       payload: { appointmentId, raw: body },
     })
 
-    return NextResponse.json({ success: true, key })
+    return NextResponse.json(
+      { success: true, key },
+      {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, x-booking-secret',
+        },
+      }
+    )
   } catch (error) {
     console.error('Booking webhook error:', error)
     return NextResponse.json(
