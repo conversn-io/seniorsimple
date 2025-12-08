@@ -412,20 +412,24 @@ function BookingPageContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
+      {/* Success notification bar for consistency with thank-you page */}
+      <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
+        <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
+          Congrats {firstName} - You're Qualified
+        </h1>
+      </div>
+
       {redirectCountdown !== null && (
         <div className="w-full bg-amber-100 border-b border-amber-300 text-amber-900 text-sm py-2 px-4 text-center">
           Booking submitted. Redirecting to next steps in {redirectCountdown}s...
         </div>
       )}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header Section */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-[#36596A] mb-4">
-            Congrats {firstName} - You're Qualified
-          </h1>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-6">
             STEP 2: Book Your Free Retirement Rescue Strategy Call
-          </h2>
+          </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             We help you ensure your retirement is tax optimized, income producing, 
             and structured to give you peace of mind for you and your family to enjoy. 
