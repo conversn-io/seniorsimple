@@ -7,8 +7,10 @@ export default function QuizBookNoOtpPage() {
   useEffect(() => {
     // Track landing page variant for direct confirmation (no calendar)
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('landing_page', '/quiz-book-b')
-      console.log('📍 Landing page set to /quiz-book-b (no-OTP, direct confirmation)')
+      // Use the same landing_page key as /quiz-book so the booking funnel triggers,
+      // but keep skipOTP true to bypass OTP and still route to /booking.
+      sessionStorage.setItem('landing_page', '/quiz-book')
+      console.log('📍 Landing page set to /quiz-book (no-OTP variant) for booking funnel')
     }
   }, [])
 
