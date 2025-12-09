@@ -114,10 +114,8 @@ export async function POST(req: NextRequest) {
     
     console.log('💾 Storing booking data:', JSON.stringify(bookingData, null, 2))
     console.log(`💾 Storage Key: ${key} | Instance: ${instanceId}`)
-    recordBooking(key, bookingData)
-    console.log('✅ Booking data stored successfully')
-    console.log(`⚠️  NOTE: In-memory store is per-instance. If GET hits different instance, data won't be found.`)
-    console.log(`⚠️  Consider using Vercel KV or database for persistent storage.`)
+    await recordBooking(key, bookingData)
+    console.log('✅ Booking data stored successfully in Vercel KV')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return NextResponse.json(
@@ -159,8 +157,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing email or phone' }, { status: 400 })
   }
 
-  const confirmed = hasBooking(key)
-  const record = confirmed ? getBooking(key) : null
+  const confirmed = await hasBooking(key)
+  const record = confirmed ? await getBooking(key) : null
 
   console.log('📋 Record Status:', {
     confirmed,
@@ -170,9 +168,7 @@ export async function GET(req: NextRequest) {
   
   if (!confirmed) {
     console.warn(`⚠️  No record found for key: ${key}`)
-    console.warn(`⚠️  This could be due to serverless instance isolation.`)
-    console.warn(`⚠️  POST may have hit a different instance than this GET request.`)
-    console.warn(`⚠️  Check Vercel Functions logs for POST requests to see if webhook was received.`)
+    console.warn(`⚠️  Check if webhook POST was received (check Vercel Functions logs).`)
   }
 
   if (record) {
