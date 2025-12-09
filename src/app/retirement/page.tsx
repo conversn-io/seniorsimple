@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calculator, BookOpen, TrendingUp, DollarSign, FileText, Video } from 'lucide-react'
-import Footer from '../../components/Footer'
 
 export default function RetirementPage() {
   return (
@@ -282,8 +281,6 @@ export default function RetirementPage() {
           </div>
         </div>
       </div>
-      
-      <Footer />
     </div>
   )
 }

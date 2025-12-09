@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calculator, Home, TrendingUp, BookOpen } from 'lucide-react'
-import Footer from '../../components/Footer'
 
 export default function HousingPage() {
   return (
@@ -282,8 +281,6 @@ export default function HousingPage() {
           </div>
         </div>
       </div>
-      
-      <Footer />
     </div>
   )
 }

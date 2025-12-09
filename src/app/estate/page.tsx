@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Shield, FileText, Heart, BookOpen, Download } from 'lucide-react'
-import Footer from '../../components/Footer'
 
 export default function EstatePage() {
   return (
@@ -282,8 +281,6 @@ export default function EstatePage() {
           </div>
         </div>
       </div>
-      
-      <Footer />
     </div>
   )
 }
