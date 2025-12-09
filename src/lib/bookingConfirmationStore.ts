@@ -1,11 +1,13 @@
 /**
- * Booking confirmation store using Supabase.
+ * Booking confirmation store using CallReady Quiz Database (Supabase).
  * 
  * Persistent across serverless instances, suitable for production.
  * Uses booking_confirmations table with 15-minute TTL.
+ * 
+ * Uses CallReady Quiz DB (jqjftrlnyysqcwbbigpw) since this is lead/funnel data.
  */
 
-import { supabase } from './supabase'
+import { callreadyQuizDb } from './callready-quiz-db'
 
 type BookingRecord = {
   email?: string
@@ -42,7 +44,7 @@ export async function recordBooking(key: string, data: Omit<BookingRecord, 'crea
     }
     
     // Use upsert to handle duplicates (ON CONFLICT key DO UPDATE)
-    const { error } = await supabase
+    const { error } = await callreadyQuizDb
       .from('booking_confirmations')
       .upsert(record, {
         onConflict: 'key',
@@ -65,7 +67,7 @@ export async function recordBooking(key: string, data: Omit<BookingRecord, 'crea
  */
 export async function getBooking(key: string): Promise<BookingRecord | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await callreadyQuizDb
       .from('booking_confirmations')
       .select('*')
       .eq('key', getKey(key))
@@ -118,7 +120,7 @@ export async function hasBooking(key: string): Promise<boolean> {
  */
 export async function clearBooking(key: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await callreadyQuizDb
       .from('booking_confirmations')
       .delete()
       .eq('key', getKey(key))
