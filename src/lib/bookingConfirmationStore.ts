@@ -67,23 +67,22 @@ export async function recordBooking(key: string, data: Omit<BookingRecord, 'crea
  */
 export async function getBooking(key: string): Promise<BookingRecord | null> {
   try {
+    // Use maybeSingle() instead of single() to handle "no rows found" gracefully
+    // single() returns 406 when no rows found, maybeSingle() returns null
     const { data, error } = await callreadyQuizDb
       .from('booking_confirmations')
       .select('*')
       .eq('key', getKey(key))
       .gt('expires_at', new Date().toISOString()) // Only get non-expired records
-      .single()
+      .maybeSingle()
     
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned (not found)
-        return null
-      }
       console.error('❌ Error getting booking from Supabase:', error)
       return null
     }
     
     if (!data) {
+      // No record found (maybeSingle returns null when no rows)
       return null
     }
     
