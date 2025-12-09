@@ -1,16 +1,11 @@
 /**
- * Booking confirmation store using Vercel KV (Redis).
+ * Booking confirmation store using Supabase.
  * 
  * Persistent across serverless instances, suitable for production.
- * 
- * Environment variables required:
- * - KV_URL (Vercel KV REST API URL)
- * - KV_REST_API_TOKEN (Vercel KV REST API token)
- * 
- * Or use @vercel/kv which auto-detects from Vercel environment.
+ * Uses booking_confirmations table with 15-minute TTL.
  */
 
-import { kv } from '@vercel/kv'
+import { supabase } from './supabase'
 
 type BookingRecord = {
   email?: string
@@ -21,11 +16,10 @@ type BookingRecord = {
   payload?: any
 }
 
-const TTL_SECONDS = 60 * 15 // 15 minutes
-const KEY_PREFIX = 'booking:confirm:'
+const TTL_MINUTES = 15
 
 function getKey(identifier: string): string {
-  return `${KEY_PREFIX}${identifier.toLowerCase()}`
+  return identifier.toLowerCase().trim()
 }
 
 /**
@@ -33,18 +27,35 @@ function getKey(identifier: string): string {
  */
 export async function recordBooking(key: string, data: Omit<BookingRecord, 'createdAt'>): Promise<void> {
   try {
-    const record: BookingRecord = {
-      ...data,
-      createdAt: Date.now(),
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + TTL_MINUTES * 60 * 1000)
+    
+    const record = {
+      key: getKey(key),
+      email: data.email?.toLowerCase().trim() || null,
+      phone: data.phone?.trim() || null,
+      name: data.name?.trim() || null,
+      source: data.source || 'webhook',
+      payload: data.payload || {},
+      created_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
     }
     
-    const kvKey = getKey(key)
-    // Store with TTL (expires after 15 minutes)
-    await kv.set(kvKey, record, { ex: TTL_SECONDS })
+    // Use upsert to handle duplicates (ON CONFLICT key DO UPDATE)
+    const { error } = await supabase
+      .from('booking_confirmations')
+      .upsert(record, {
+        onConflict: 'key',
+      })
     
-    console.log(`✅ Stored booking confirmation in KV: ${kvKey}`)
+    if (error) {
+      console.error('❌ Error storing booking in Supabase:', error)
+      throw error
+    }
+    
+    console.log(`✅ Stored booking confirmation in Supabase: ${record.key}`)
   } catch (error) {
-    console.error('❌ Error storing booking in KV:', error)
+    console.error('❌ Error storing booking confirmation:', error)
     throw error
   }
 }
@@ -54,25 +65,37 @@ export async function recordBooking(key: string, data: Omit<BookingRecord, 'crea
  */
 export async function getBooking(key: string): Promise<BookingRecord | null> {
   try {
-    const kvKey = getKey(key)
-    const record = await kv.get<BookingRecord>(kvKey)
+    const { data, error } = await supabase
+      .from('booking_confirmations')
+      .select('*')
+      .eq('key', getKey(key))
+      .gt('expires_at', new Date().toISOString()) // Only get non-expired records
+      .single()
     
-    if (!record) {
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned (not found)
+        return null
+      }
+      console.error('❌ Error getting booking from Supabase:', error)
       return null
     }
     
-    // Check if expired (backup check, though TTL should handle this)
-    const now = Date.now()
-    const age = now - record.createdAt
-    if (age > TTL_SECONDS * 1000) {
-      // Expired, delete it
-      await kv.del(kvKey)
+    if (!data) {
       return null
     }
     
-    return record
+    // Convert Supabase record to BookingRecord format
+    return {
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      name: data.name || undefined,
+      createdAt: new Date(data.created_at).getTime(),
+      source: data.source || undefined,
+      payload: data.payload || {},
+    }
   } catch (error) {
-    console.error('❌ Error getting booking from KV:', error)
+    console.error('❌ Error getting booking confirmation:', error)
     return null
   }
 }
@@ -85,7 +108,7 @@ export async function hasBooking(key: string): Promise<boolean> {
     const record = await getBooking(key)
     return record !== null
   } catch (error) {
-    console.error('❌ Error checking booking in KV:', error)
+    console.error('❌ Error checking booking in Supabase:', error)
     return false
   }
 }
@@ -95,11 +118,19 @@ export async function hasBooking(key: string): Promise<boolean> {
  */
 export async function clearBooking(key: string): Promise<void> {
   try {
-    const kvKey = getKey(key)
-    await kv.del(kvKey)
-    console.log(`🗑️  Deleted booking confirmation from KV: ${kvKey}`)
+    const { error } = await supabase
+      .from('booking_confirmations')
+      .delete()
+      .eq('key', getKey(key))
+    
+    if (error) {
+      console.error('❌ Error deleting booking from Supabase:', error)
+      throw error
+    }
+    
+    console.log(`🗑️  Deleted booking confirmation from Supabase: ${getKey(key)}`)
   } catch (error) {
-    console.error('❌ Error deleting booking from KV:', error)
+    console.error('❌ Error deleting booking confirmation:', error)
     throw error
   }
 }
