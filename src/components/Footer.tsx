@@ -11,7 +11,7 @@ const Footer = () => {
               <Link href="/contact" className="block hover:text-[#36596A] transition-colors">
                 Contact Us
               </Link>
-              <p>Phone: (888) 440-9669</p>
+              <p>Phone: <a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a></p>
               <p>Email: info@seniorsimple.com</p>
             </div>
           </div>

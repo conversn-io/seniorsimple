@@ -550,7 +550,7 @@ export default async function HomePage() {
                 </p>
                 <p className="flex items-center gap-2 hover:text-[#36596A] transition-colors duration-300 cursor-pointer">
                   <Phone className="w-4 h-4" />
-                  Phone: 800-555-2040
+                  Phone: <a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a>
                 </p>
                 <p className="flex items-center gap-2 hover:text-[#36596A] transition-colors duration-300 cursor-pointer">
                   <Mail className="w-4 h-4" />

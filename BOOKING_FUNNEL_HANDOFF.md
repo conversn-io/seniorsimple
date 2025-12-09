@@ -18,7 +18,7 @@ This document provides a complete handoff for continuing work on the SeniorSimpl
 - ✅ Polling mechanism for booking confirmation
 - ✅ Supabase database integration (CallReady Quiz DB)
 - ✅ Thank-you page with video embeds and appointment confirmation
-- ✅ Phone number updated across all pages (`+1 (619) 333-5531`)
+- ✅ Phone number updated across all pages (`+1 (858) 504-6544`)
 
 ### Recent Fixes (Dec 9, 2025)
 - Fixed 406 error in polling endpoint (replaced `maybeSingle()` with `limit(1)`)
@@ -226,7 +226,7 @@ All environment variables are set in Vercel project settings.
 ./test-booking-webhook.sh \
   https://seniorsimple-xxx.vercel.app \
   test@example.com \
-  +16193335531 \
+  +18585046544 \
   6af17ffe-d4fe-4b53-aa81-8f11e311aba4
 ```
 
@@ -381,7 +381,7 @@ The webhook expects these fields in the payload:
 - All lead/funnel data is stored in CallReady Quiz Database (not CMS Supabase)
 - Booking confirmations expire after 15 minutes
 - Polling runs for up to 5 minutes (60 attempts × 5 seconds)
-- Phone number updated to `+1 (619) 333-5531` across all pages
+- Phone number updated to `+1 (858) 504-6544` across all pages
 
 ---
 

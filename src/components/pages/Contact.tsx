@@ -132,7 +132,7 @@ const Contact = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      placeholder="(888) 440-9669"
+                      placeholder="+1 (858) 504-6544"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-transparent"
                     />
                   </div>
@@ -190,7 +190,7 @@ const Contact = () => {
                     <Phone className="h-6 w-6 text-[#36596A] mt-1" />
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">Phone</h3>
-                      <p className="text-gray-600">(888) 440-9669</p>
+                      <p className="text-gray-600"><a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a></p>
                       <p className="text-sm text-gray-500">Call for immediate assistance</p>
                     </div>
                   </div>

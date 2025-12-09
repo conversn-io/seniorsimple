@@ -288,7 +288,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <h3 className="text-lg font-semibold text-[#36596A] mb-4">Get in Touch</h3>
               <div className="space-y-2 text-gray-600">
                 <p>Contact Us</p>
-                <p>Phone: 800-555-2040</p>
+                <p>Phone: <a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a></p>
                 <p>Email: support@seniorsimple.org</p>
               </div>
             </div>

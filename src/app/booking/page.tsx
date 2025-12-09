@@ -511,8 +511,8 @@ function BookingPageContent() {
         <div className="text-center text-sm text-gray-500">
           <p>
             Questions? Contact us at{' '}
-            <a href="tel:+16193335531" className="text-[#36596A] hover:underline">
-              +1 (619) 333-5531
+            <a href="tel:+18585046544" className="text-[#36596A] hover:underline">
+              +1 (858) 504-6544
             </a>
           </p>
         </div>

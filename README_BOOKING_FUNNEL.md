@@ -47,7 +47,7 @@ http://localhost:3000/quiz-book
 ./test-booking-webhook.sh \
   https://your-preview-url.vercel.app \
   test@example.com \
-  +16193335531 \
+  +18585046544 \
   YOUR_SECRET
 ```
 

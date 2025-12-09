@@ -24,7 +24,7 @@ POST_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${ENDPOINT}" \
   -H "x-booking-secret: ${SECRET}" \
   -d "{
     \"email\": \"${TEST_EMAIL}\",
-    \"phone\": \"+16193335531\",
+    \"phone\": \"+18585046544\",
     \"name\": \"Test User\",
     \"appointmentId\": \"test-appt-123\",
     \"event\": \"appointment.created\",

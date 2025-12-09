@@ -109,11 +109,11 @@ const ConsultationConfirmed = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
-              href="tel:+16193335531"
+              href="tel:+18585046544"
               className="bg-[#E4CDA1] text-[#36596A] px-6 py-3 rounded-lg font-medium hover:bg-[#d4b885] transition-colors flex items-center justify-center"
             >
               <Phone className="h-4 w-4 mr-2" />
-              Call +1 (619) 333-5531
+              Call +1 (858) 504-6544
             </a>
             <Link 
               href="/contact"

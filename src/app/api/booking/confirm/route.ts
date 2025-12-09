@@ -20,7 +20,7 @@ import { randomUUID } from 'crypto'
  *   Body (example):
  *   {
  *     "email": "user@example.com",
- *     "phone": "+16193335531",
+ *     "phone": "+18585046544",
  *     "name": "Keenan Shaw",
  *     "appointmentId": "abc123",
  *     "event": "appointment.created",
