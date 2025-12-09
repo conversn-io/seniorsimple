@@ -12,7 +12,7 @@ const Footer = () => {
                 Contact Us
               </Link>
               <p>Phone: <a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a></p>
-              <p>Email: info@seniorsimple.com</p>
+              <p>Email: support@seniorsimple.org</p>
             </div>
           </div>
           <div>
@@ -61,9 +61,15 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal</h3>
             <div className="space-y-2 text-gray-600">
-              <p>Privacy Policy</p>
-              <p>Terms of Service</p>
-              <p>Disclaimers</p>
+              <Link href="/privacy-policy" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
+                Privacy Policy
+              </Link>
+              <Link href="/terms-of-service" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
+                Terms of Service
+              </Link>
+              <Link href="/disclaimers" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
+                Disclaimers
+              </Link>
             </div>
           </div>
         </div>

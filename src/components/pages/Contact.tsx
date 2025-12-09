@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { Shield, Phone, Mail, MapPin, Clock } from "lucide-react";
-import Footer from "../Footer";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -258,8 +257,6 @@ const Contact = () => {
           </div>
         </div>
       </section>
-      
-      <Footer />
     </div>
   );
 };
