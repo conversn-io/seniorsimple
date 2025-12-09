@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     console.log('💾 Storing booking data:', JSON.stringify(bookingData, null, 2))
     console.log(`💾 Storage Key: ${key} | Instance: ${instanceId}`)
     await recordBooking(key, bookingData)
-    console.log('✅ Booking data stored successfully in Vercel KV')
+    console.log('✅ Booking data stored successfully in CallReady Quiz Database')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return NextResponse.json(
