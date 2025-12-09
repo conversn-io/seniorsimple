@@ -495,7 +495,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Different_Advice */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Different Advice
+                How is this different from traditional advice
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -513,7 +513,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Free_Call */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Free Call
+                Is there a catch?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -531,7 +531,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Legacy */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Legacy
+                Will this help me leave a legacy for my family?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -549,7 +549,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Is_Annuity */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Is Annuity
+                Is this one of those annuity things?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -567,7 +567,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_IUL */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                IUL
+                Is this life insurance disguised as a retirement plan?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -585,7 +585,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Lockup_Concern */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Lockup Concern
+                Will I still have access to my money?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
@@ -603,7 +603,7 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
             {/* FAQ_Safety_Concern */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Safety Concern
+                Is this actually safe?
               </h4>
               <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
                 <iframe
