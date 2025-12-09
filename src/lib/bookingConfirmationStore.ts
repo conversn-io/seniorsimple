@@ -67,33 +67,35 @@ export async function recordBooking(key: string, data: Omit<BookingRecord, 'crea
  */
 export async function getBooking(key: string): Promise<BookingRecord | null> {
   try {
-    // Use maybeSingle() instead of single() to handle "no rows found" gracefully
-    // single() returns 406 when no rows found, maybeSingle() returns null
+    // Use limit(1) and check array to handle "no rows found" gracefully
+    // This avoids 406 errors from single() when no rows exist
     const { data, error } = await callreadyQuizDb
       .from('booking_confirmations')
       .select('*')
       .eq('key', getKey(key))
       .gt('expires_at', new Date().toISOString()) // Only get non-expired records
-      .maybeSingle()
+      .limit(1)
     
     if (error) {
       console.error('❌ Error getting booking from Supabase:', error)
       return null
     }
     
-    if (!data) {
-      // No record found (maybeSingle returns null when no rows)
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      // No record found
       return null
     }
     
+    const record = data[0]
+    
     // Convert Supabase record to BookingRecord format
     return {
-      email: data.email || undefined,
-      phone: data.phone || undefined,
-      name: data.name || undefined,
-      createdAt: new Date(data.created_at).getTime(),
-      source: data.source || undefined,
-      payload: data.payload || {},
+      email: record.email || undefined,
+      phone: record.phone || undefined,
+      name: record.name || undefined,
+      createdAt: new Date(record.created_at).getTime(),
+      source: record.source || undefined,
+      payload: record.payload || {},
     }
   } catch (error) {
     console.error('❌ Error getting booking confirmation:', error)
