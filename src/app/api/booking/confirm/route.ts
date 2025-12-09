@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { recordBooking, hasBooking, getBooking } from '@/lib/bookingConfirmationStore'
+import { randomUUID } from 'crypto'
 
 /**
  * Booking Confirmation Webhook
@@ -46,19 +47,31 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Instance tracking for debugging serverless isolation
+  const instanceId = process.env.VERCEL_REGION || 'local'
+  const requestId = randomUUID()
+  
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('📥 BOOKING WEBHOOK POST RECEIVED')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log(`🆔 Instance: ${instanceId} | Request ID: ${requestId}`)
+  console.log(`🕐 Timestamp: ${new Date().toISOString()}`)
+  
   if (REQUIRED_SECRET) {
     const headerSecret = req.headers.get('x-booking-secret')
+    console.log(`🔐 Secret Check: ${headerSecret ? 'Header present' : '❌ Missing'} | Expected: ${REQUIRED_SECRET ? 'Set' : '❌ Not set'}`)
     if (!headerSecret || headerSecret !== REQUIRED_SECRET) {
+      console.error('❌ UNAUTHORIZED - Secret mismatch or missing')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+  } else {
+    console.warn('⚠️ No REQUIRED_SECRET set - webhook is open (not recommended for production)')
   }
 
   try {
     const body = await req.json()
     
     // Active logging for debugging
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📥 BOOKING WEBHOOK POST RECEIVED')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('📋 Full Request Body:', JSON.stringify(body, null, 2))
     console.log('📋 Body Keys:', Object.keys(body))
@@ -100,8 +113,11 @@ export async function POST(req: NextRequest) {
     }
     
     console.log('💾 Storing booking data:', JSON.stringify(bookingData, null, 2))
+    console.log(`💾 Storage Key: ${key} | Instance: ${instanceId}`)
     recordBooking(key, bookingData)
     console.log('✅ Booking data stored successfully')
+    console.log(`⚠️  NOTE: In-memory store is per-instance. If GET hits different instance, data won't be found.`)
+    console.log(`⚠️  Consider using Vercel KV or database for persistent storage.`)
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return NextResponse.json(
@@ -126,6 +142,7 @@ export async function POST(req: NextRequest) {
 
 // Simple polling endpoint: GET /api/booking/confirm?email=... or ?phone=...
 export async function GET(req: NextRequest) {
+  const instanceId = process.env.VERCEL_REGION || 'local'
   const email = (req.nextUrl.searchParams.get('email') || '').toString().trim().toLowerCase()
   const phone = (req.nextUrl.searchParams.get('phone') || '').toString().trim()
   const key = email || phone
@@ -133,6 +150,8 @@ export async function GET(req: NextRequest) {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log('📥 BOOKING CONFIRMATION GET REQUEST')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log(`🆔 Instance: ${instanceId} | Key: ${key}`)
+  console.log(`🕐 Timestamp: ${new Date().toISOString()}`)
   console.log('🔍 Query Params:', { email, phone, key })
 
   if (!key) {
@@ -148,6 +167,13 @@ export async function GET(req: NextRequest) {
     hasRecord: !!record,
     recordKeys: record ? Object.keys(record) : [],
   })
+  
+  if (!confirmed) {
+    console.warn(`⚠️  No record found for key: ${key}`)
+    console.warn(`⚠️  This could be due to serverless instance isolation.`)
+    console.warn(`⚠️  POST may have hit a different instance than this GET request.`)
+    console.warn(`⚠️  Check Vercel Functions logs for POST requests to see if webhook was received.`)
+  }
 
   if (record) {
     console.log('📋 Full Record:', JSON.stringify(record, null, 2))
