@@ -11,8 +11,8 @@ const Footer = () => {
               <Link href="/contact" className="block hover:text-[#36596A] transition-colors">
                 Contact Us
               </Link>
-              <p>Phone: <a href="tel:+18585046544" className="hover:text-[#36596A]">+1 (858) 504-6544</a></p>
-              <p>Email: support@seniorsimple.org</p>
+              <p>Phone: (888) 440-9669</p>
+              <p>Email: info@seniorsimple.com</p>
             </div>
           </div>
           <div>
@@ -45,31 +45,25 @@ const Footer = () => {
                 Content Library
               </Link>
               <Link href="/content/tax-free-retirement-income-complete-guide" className="block hover:text-[#36596A] transition-colors">
-                Tax-Free Retirement Income Guide
+                Tax-Free Retirement Guide
               </Link>
               <Link href="/content/annuities-explained-secure-your-retirement-income-with-confidence" className="block hover:text-[#36596A] transition-colors">
-                Annuities Explained: Secure Your Retirement
+                Annuities Explained
               </Link>
               <Link href="/content/reverse-mortgage-vs-home-equity-loan-for-seniors-a-comprehensive-guide" className="block hover:text-[#36596A] transition-colors">
-                Reverse Mortgage vs Home Equity Loan
+                Reverse Mortgage Guide
               </Link>
               <Link href="/content/social-security-spousal-benefits-guide" className="block hover:text-[#36596A] transition-colors">
-                Social Security Spousal Benefits
+                Social Security Benefits
               </Link>
             </div>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal</h3>
             <div className="space-y-2 text-gray-600">
-              <Link href="/privacy-policy" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
-                Privacy Policy
-              </Link>
-              <Link href="/terms-of-service" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
-                Terms of Service
-              </Link>
-              <Link href="/disclaimers" className="block hover:text-[#36596A] transition-colors" prefetch={false}>
-                Disclaimers
-              </Link>
+              <p>Privacy Policy</p>
+              <p>Terms of Service</p>
+              <p>Disclaimers</p>
             </div>
           </div>
         </div>
