@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       .from('articles')
       .select('*')
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%,meta_keywords.cs.{${query}}`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)

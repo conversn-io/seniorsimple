@@ -21,6 +21,7 @@ export async function GET(
       .select('*')
       .eq('slug', slug)
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .single()
 
     if (error) {
