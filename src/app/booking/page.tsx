@@ -1,0 +1,572 @@
+'use client'
+
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useFunnelLayout } from '@/hooks/useFunnelFooter'
+import { trackGA4Event } from '@/lib/temp-tracking'
+import Script from 'next/script'
+
+interface QuizAnswers {
+  personalInfo?: {
+    firstName?: string
+    lastName?: string
+    email?: string
+    phone?: string
+  }
+  locationInfo?: {
+    zipCode?: string
+    state?: string
+    stateName?: string
+  }
+  retirementSavings?: number
+  ageRange?: string
+  retirementTimeline?: string
+  riskTolerance?: string
+  [key: string]: any
+}
+
+function BookingPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  useFunnelLayout() // Sets header and footer to 'funnel'
+  const [contactData, setContactData] = useState<QuizAnswers | null>(null)
+  const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
+  const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
+  const [hasRedirected, setHasRedirected] = useState(false)
+
+  useEffect(() => {
+    // PRIORITY 1: Get email from URL query parameter (passed from quiz redirect)
+    const emailFromUrl = searchParams ? searchParams.get('email') : null
+    
+    // PRIORITY 2: Get quiz answers from sessionStorage
+    const storedAnswers = sessionStorage.getItem('quiz_answers')
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📥 BOOKING PAGE LOADED')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📧 Email from URL query param:', emailFromUrl || '❌ NOT FOUND')
+    console.log('📋 Quiz answers in sessionStorage:', storedAnswers ? '✅ Present' : '❌ Missing')
+    
+    if (storedAnswers) {
+      try {
+        const answers = JSON.parse(storedAnswers)
+        setContactData(answers)
+        
+        // Extract email from various possible locations (fallback if not in URL)
+        const emailFromStorage = 
+          answers?.personalInfo?.email || 
+          answers?.email || 
+          answers?.contactInfo?.email || 
+          ''
+        
+        // Use email from URL (priority) or from storage (fallback)
+        const email = emailFromUrl || emailFromStorage
+        
+        console.log('📧 Email Resolution:')
+        console.log('  - From URL:', emailFromUrl || '❌')
+        console.log('  - From Storage:', emailFromStorage || '❌')
+        console.log('  - Final email to use:', email || '❌ NONE')
+        
+        // Build calendar URL with email parameter and redirect URL
+        // NOTE: Conversn.io calendar widget may have its own redirect URL configured in the dashboard
+        // If the widget's native redirect overrides URL parameters, you may need to update the
+        // redirect URL in the Conversn.io dashboard settings for widget ID: 9oszv21kQ1Tx6jG4qopK
+        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const redirectUrl = `${siteUrl}/quiz-submitted`
+        
+        let urlParams = new URLSearchParams()
+        
+        // Add email if available
+        if (email) {
+          urlParams.append('email', email)
+        }
+        
+        // Add redirect URL parameter (Conversn.io may support redirect_url, redirect, or return_url)
+        // Try multiple parameter names as different widgets use different conventions
+        urlParams.append('redirect_url', redirectUrl)
+        urlParams.append('redirect', redirectUrl)
+        urlParams.append('return_url', redirectUrl)
+        urlParams.append('success_url', redirectUrl)
+        
+        const calendarUrlWithParams = `${baseUrl}?${urlParams.toString()}`
+        setCalendarUrl(calendarUrlWithParams)
+        
+        if (email) {
+          console.log('✅ Calendar URL built with email and redirect:', calendarUrlWithParams)
+        } else {
+          console.warn('⚠️ No email found - using base URL with redirect parameter')
+          console.log('📋 Calendar URL with redirect:', calendarUrlWithParams)
+        }
+        
+        // Store contact data in multiple formats for widget compatibility
+        if (email) {
+          const contactDataObj = {
+            email: email,
+            firstName: answers?.personalInfo?.firstName || '',
+            lastName: answers?.personalInfo?.lastName || '',
+            phone: answers?.personalInfo?.phone || ''
+          }
+          
+          // Store in multiple formats
+          sessionStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+          sessionStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+          sessionStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+          localStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+          localStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+          localStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+          sessionStorage.setItem('email', email)
+          localStorage.setItem('email', email)
+        }
+      } catch (error) {
+        console.error('❌ Error parsing quiz answers:', error)
+      }
+    } else {
+      // If no quiz data in sessionStorage:
+      // - If we have an email from URL, build a minimal contactData fallback and proceed
+      // - Otherwise, retry once; if still missing and no email, redirect to /quiz
+      console.warn('⚠️ No quiz data found on first check.')
+
+      if (emailFromUrl) {
+        const email = emailFromUrl
+        console.warn('⚠️ Using URL email as minimal fallback:', email)
+
+        // Build calendar URL with email + redirect params
+        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const redirectUrl = `${siteUrl}/quiz-submitted`
+        const urlParams = new URLSearchParams()
+        urlParams.append('email', email)
+        urlParams.append('redirect_url', redirectUrl)
+        urlParams.append('redirect', redirectUrl)
+        urlParams.append('return_url', redirectUrl)
+        urlParams.append('success_url', redirectUrl)
+        const calendarUrlWithParams = `${baseUrl}?${urlParams.toString()}`
+
+        // Minimal contact data
+        const minimalAnswers = { personalInfo: { email } }
+        setContactData(minimalAnswers as QuizAnswers)
+        setCalendarUrl(calendarUrlWithParams)
+
+        // Store minimal data so thank-you page can at least personalize by email
+        sessionStorage.setItem('quiz_answers', JSON.stringify(minimalAnswers))
+        localStorage.setItem('quiz_answers', JSON.stringify(minimalAnswers))
+        sessionStorage.setItem('email', email)
+        localStorage.setItem('email', email)
+
+        console.log('✅ Fallback contactData set from URL email')
+        console.log('🔗 Calendar URL with email + redirect:', calendarUrlWithParams)
+        return
+      }
+
+      console.warn('⚠️ No quiz data and no URL email; retrying in 500ms before redirecting...')
+      setTimeout(() => {
+        const retryAnswers = sessionStorage.getItem('quiz_answers')
+        if (retryAnswers) {
+          console.log('✅ quiz_answers found on retry, processing...')
+          try {
+            const answers = JSON.parse(retryAnswers)
+            setContactData(answers)
+            
+            // Extract email from various possible locations
+            const emailFromStorage = 
+              answers?.personalInfo?.email || 
+              answers?.email || 
+              answers?.contactInfo?.email || 
+              ''
+            
+            // Use email from URL (priority) or from storage (fallback)
+            const email = emailFromUrl || emailFromStorage
+            
+            // Build calendar URL with email parameter
+            if (email) {
+              const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+              const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+              const redirectUrl = `${siteUrl}/quiz-submitted`
+              const urlParams = new URLSearchParams()
+              urlParams.append('email', email)
+              urlParams.append('redirect_url', redirectUrl)
+              urlParams.append('redirect', redirectUrl)
+              urlParams.append('return_url', redirectUrl)
+              urlParams.append('success_url', redirectUrl)
+              const urlWithEmail = `${baseUrl}?${urlParams.toString()}`
+
+              setCalendarUrl(urlWithEmail)
+              console.log('✅ Calendar URL built with email (retry):', urlWithEmail)
+            }
+            
+            // Store contact data in multiple formats for widget compatibility
+            if (email) {
+              const contactDataObj = {
+                email: email,
+                firstName: answers?.personalInfo?.firstName || '',
+                lastName: answers?.personalInfo?.lastName || '',
+                phone: answers?.personalInfo?.phone || ''
+              }
+              
+              sessionStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+              localStorage.setItem('conversn_contact', JSON.stringify(contactDataObj))
+              localStorage.setItem('conversn_session_data', JSON.stringify(contactDataObj))
+              localStorage.setItem('contact_data', JSON.stringify(contactDataObj))
+              sessionStorage.setItem('email', email)
+              localStorage.setItem('email', email)
+            }
+          } catch (error) {
+            console.error('❌ Error parsing quiz answers on retry:', error)
+            console.warn('⚠️ Still no valid quiz data, redirecting to quiz')
+            router.push('/quiz')
+          }
+        } else {
+          console.warn('⚠️ Still no quiz data after retry, redirecting to quiz')
+          router.push('/quiz')
+        }
+      }, 500)
+    }
+  }, [router, searchParams])
+
+  // Listen for calendar booking completion via postMessage (backup)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleMessage = (event: MessageEvent) => {
+      // Listen for messages from Conversn.io widget
+      // Try to catch multiple possible event shapes the widget may emit
+      const data = event.data
+      if (!data) return
+
+      const type =
+        data.type ||
+        data.event ||
+        (typeof data === 'string' ? data : undefined)
+
+      const isBookingComplete =
+        type === 'booking_complete' ||
+        type === 'bookingCompleted' ||
+        type === 'appointmentBooked' ||
+        type === 'conversn_booking_complete'
+
+      if (isBookingComplete && !hasRedirected) {
+        setHasRedirected(true)
+        console.log('✅ Booking complete event received, redirecting to thank-you page', { type, data })
+        
+        // Track booking-scheduled GA4 event (postMessage method)
+        const email = contactData?.personalInfo?.email || contactData?.email || contactData?.contactInfo?.email || ''
+        const phone = contactData?.personalInfo?.phone || contactData?.phone || contactData?.contactInfo?.phone || ''
+        const firstName = contactData?.personalInfo?.firstName || ''
+        const lastName = contactData?.personalInfo?.lastName || ''
+        
+        trackGA4Event('booking-scheduled', {
+          appointment_id: data.appointmentId || data.id || 'unknown',
+          appointment_time: data.startTime || data.bookingTime || data.appointment?.start_time || 'unknown',
+          email: email || 'unknown',
+          phone: phone || 'unknown',
+          name: `${firstName} ${lastName}`.trim() || 'unknown',
+          booking_method: 'postmessage'
+        })
+        
+        router.push('/quiz-submitted')
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [router, hasRedirected, contactData])
+
+  // Poll for booking confirmation via webhook (primary method)
+  useEffect(() => {
+    if (!isCalendarLoaded || !contactData || hasRedirected) return
+
+    // Extract email for polling
+    const email = 
+      contactData?.personalInfo?.email || 
+      contactData?.email || 
+      contactData?.contactInfo?.email || 
+      ''
+
+    if (!email) {
+      console.warn('⚠️ No email available for polling')
+      return
+    }
+
+    console.log('🔄 Starting booking confirmation polling for:', email)
+
+    let pollCount = 0
+    const maxPolls = 60 // Poll for up to 5 minutes (60 * 5s = 300s)
+    const pollInterval = 5000 // Poll every 5 seconds
+
+    const pollForConfirmation = async () => {
+      if (hasRedirected || pollCount >= maxPolls) {
+        if (pollCount >= maxPolls) {
+          console.warn('⏱️ Polling timeout - booking confirmation not received')
+        }
+        return
+      }
+
+      pollCount++
+
+      try {
+        const response = await fetch(`/api/booking/confirm?email=${encodeURIComponent(email)}`)
+        const data = await response.json()
+
+        if (data.confirmed && !hasRedirected) {
+          console.log('✅ Booking confirmed via webhook!', data)
+          setHasRedirected(true)
+
+          // Store appointment data for thank-you page
+          let appointmentData: any = null
+          if (data.payload) {
+            appointmentData = {
+              appointmentId: data.payload.appointmentId || data.payload.id || data.payload.appointment_id,
+              startTime: data.payload.raw?.bookingTimes || data.payload.raw?.start_time || data.payload.raw?.appointment?.start_time,
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+            }
+            sessionStorage.setItem('appointment_data', JSON.stringify(appointmentData))
+            localStorage.setItem('appointment_data', JSON.stringify(appointmentData))
+            console.log('💾 Appointment data stored:', appointmentData)
+          }
+
+          // Track booking-scheduled GA4 event
+          trackGA4Event('booking-scheduled', {
+            appointment_id: appointmentData?.appointmentId || data.payload?.appointmentId || 'unknown',
+            appointment_time: appointmentData?.startTime || data.payload?.raw?.bookingTimes || data.payload?.raw?.start_time || 'unknown',
+            email: data.email || contactData?.personalInfo?.email || 'unknown',
+            phone: data.phone || contactData?.personalInfo?.phone || 'unknown',
+            name: data.name || `${contactData?.personalInfo?.firstName || ''} ${contactData?.personalInfo?.lastName || ''}`.trim() || 'unknown',
+            booking_method: 'webhook_polling'
+          })
+
+          router.push('/quiz-submitted')
+        } else if (pollCount < maxPolls) {
+          // Continue polling
+          setTimeout(pollForConfirmation, pollInterval)
+        }
+      } catch (error) {
+        console.error('❌ Polling error:', error)
+        if (pollCount < maxPolls) {
+          setTimeout(pollForConfirmation, pollInterval)
+        }
+      }
+    }
+
+    // Start polling after a short delay to allow webhook to process
+    const initialDelay = setTimeout(() => {
+      pollForConfirmation()
+    }, 3000) // Wait 3 seconds before first poll
+
+    return () => {
+      clearTimeout(initialDelay)
+    }
+  }, [isCalendarLoaded, contactData, hasRedirected, router])
+
+  // Build calendar URL with GHL form parameters
+  // GHL forms require parameter names that match the form field 'name' attributes
+  // Common GHL field names: email, first_name, last_name, phone (snake_case) or firstName, lastName (camelCase)
+  const buildCalendarUrl = () => {
+    const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+    
+    // Extract contact data
+    const email = 
+      contactData?.personalInfo?.email || 
+      contactData?.email || 
+      contactData?.contactInfo?.email || 
+      ''
+    
+    const firstName = 
+      contactData?.personalInfo?.firstName || 
+      contactData?.firstName || 
+      ''
+    
+    const lastName = 
+      contactData?.personalInfo?.lastName || 
+      contactData?.lastName || 
+      ''
+    
+    const phone = 
+      contactData?.personalInfo?.phone || 
+      contactData?.phone || 
+      ''
+    
+    console.log('🔗 Building GHL Calendar URL:')
+    console.log('  - Base URL:', baseUrl)
+    console.log('  - Email found:', email || '❌ NOT FOUND')
+    console.log('  - First Name:', firstName || '❌ NOT FOUND')
+    console.log('  - Last Name:', lastName || '❌ NOT FOUND')
+    console.log('  - Phone:', phone || '❌ NOT FOUND')
+    
+    // Build URL with GHL form parameter
+    // GHL form field name confirmed as: 'email'
+    if (email) {
+      // URL encode the email to handle special characters
+      const encodedEmail = encodeURIComponent(email)
+      const finalUrl = `${baseUrl}?email=${encodedEmail}`
+      
+      console.log('  - Final URL with GHL email parameter:', finalUrl)
+      console.log('  - GHL field name: email (confirmed)')
+      
+      return finalUrl
+    }
+    
+    console.warn('⚠️ No email found - using base URL without email parameter')
+    return baseUrl
+  }
+
+  // Attempt to pass data to calendar widget via postMessage (backup method)
+  useEffect(() => {
+    if (!contactData || !isCalendarLoaded) return
+
+    // Wait for calendar widget to load, then try to populate fields
+    const timer = setTimeout(() => {
+      try {
+        // Attempt to populate calendar form via iframe postMessage
+        const iframe = document.getElementById('conversn-calendar-iframe') as HTMLIFrameElement
+        if (iframe && iframe.contentWindow) {
+          const formData = {
+            email: contactData.personalInfo?.email || '',
+            // Keep other fields available in case widget supports them
+            firstName: contactData.personalInfo?.firstName || '',
+            lastName: contactData.personalInfo?.lastName || '',
+            phone: contactData.personalInfo?.phone || '',
+            zipCode: contactData.locationInfo?.zipCode || '',
+            state: contactData.locationInfo?.state || '',
+            stateName: contactData.locationInfo?.stateName || ''
+          }
+
+          // Try to send data to calendar widget via postMessage
+          iframe.contentWindow.postMessage(
+            {
+              type: 'populateForm',
+              data: formData
+            },
+            'https://link.conversn.io'
+          )
+
+          console.log('📤 Attempted to pass data to calendar widget via postMessage:', formData)
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not pass data to calendar widget via postMessage:', error)
+        // This is non-critical - URL parameters are the primary method
+      }
+    }, 2000) // Wait 2 seconds for widget to fully load
+
+    return () => clearTimeout(timer)
+  }, [contactData, isCalendarLoaded])
+
+  const firstName = contactData?.personalInfo?.firstName || contactData?.firstName || 'there'
+
+  if (!contactData) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F5F5F0]">
+      {/* Success notification bar for consistency with thank-you page */}
+      <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
+        <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
+          Congrats {firstName} - You're Qualified
+        </h1>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-[#36596A] mb-4">
+            STEP 2: Book Your Free Retirement Rescue Strategy Call
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            We help you ensure your retirement is tax optimized, income producing, 
+            and structured to give you peace of mind for you and your family to enjoy. 
+            No stress or surprises - just strong, sound structure.
+          </p>
+        </div>
+
+        {/* Calendar Embed */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h3 className="text-xl font-semibold text-[#36596A] mb-4 text-center">
+            Select Your Preferred Time
+          </h3>
+          <div className="w-full" style={{ minHeight: '600px' }}>
+            <iframe
+              id="conversn-calendar-iframe"
+              key={calendarUrl} // Force re-render when URL changes
+              src={calendarUrl}
+              style={{ width: '100%', height: '600px', border: 'none', overflow: 'hidden' }}
+              scrolling="no"
+              title="Book Your Retirement Rescue Strategy Call"
+              allow="autoplay; fullscreen; picture-in-picture"
+              onLoad={() => {
+                setIsCalendarLoaded(true)
+                
+                // Try multiple possible email locations
+                const email = 
+                  contactData?.personalInfo?.email || 
+                  contactData?.email || 
+                  contactData?.contactInfo?.email || 
+                  ''
+                
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log('✅ CALENDAR WIDGET LOADED')
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                console.log('📧 Email Status:', email ? `✅ FOUND: ${email}` : '❌ MISSING')
+                console.log('📋 Calendar URL (iframe src):', calendarUrl)
+                console.log('🔍 Email in URL:', calendarUrl.includes('email=') ? '✅ YES' : '❌ NO')
+                console.log('🔍 Actual iframe src attribute:', document.getElementById('conversn-calendar-iframe')?.getAttribute('src'))
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                
+                // Also log to page for visual debugging (remove in production)
+                if (typeof window !== 'undefined' && email) {
+                  console.log(`%c📧 Email will be passed to calendar: ${email}`, 'color: green; font-weight: bold; font-size: 14px;')
+                  console.log(`%c🔗 Calendar URL: ${calendarUrl}`, 'color: blue; font-weight: bold; font-size: 12px;')
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Footer Note */}
+        <div className="text-center text-sm text-gray-500">
+          <p>
+            Questions? Contact us at{' '}
+            <a href="tel:+18585046544" className="text-[#36596A] hover:underline">
+              +1 (858) 504-6544
+            </a>
+          </p>
+        </div>
+      </div>
+
+      {/* Load Conversn.io script */}
+      <Script 
+        src="https://link.conversn.io/js/form_embed.js" 
+        strategy="afterInteractive"
+      />
+    </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#36596A] mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BookingPageContent />
+    </Suspense>
+  )
+}
+

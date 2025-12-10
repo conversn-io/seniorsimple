@@ -119,11 +119,11 @@ const BookConfirmation = () => {
               Schedule Free Consultation
             </Link>
             <a 
-              href="tel:8884409669"
+              href="tel:+18585046544"
               className="bg-white text-[#36596A] px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center justify-center"
             >
               <Phone className="h-4 w-4 mr-2" />
-              Call (888) 440-9669
+              Call +1 (858) 504-6544
             </a>
           </div>
         </div>

@@ -138,6 +138,17 @@ export async function POST(request: NextRequest) {
     const contactId = contact.id || contact;
     console.log('✅ Contact upserted:', contactId);
 
+    // Log UTM parameters received (including fbclid) for debugging
+    console.log('📊 UTM Parameters Received:', {
+      hasUtmParams: !!utmParams,
+      utmParams: utmParams || null,
+      fbclid: utmParams?.fbclid || null,
+      gclid: utmParams?.gclid || null,
+      utm_source: utmParams?.utm_source || null,
+      utm_medium: utmParams?.utm_medium || null,
+      utm_campaign: utmParams?.utm_campaign || null,
+    });
+
     // Extract UTM parameters - use null instead of defaults to clearly indicate missing UTM data
     const utmSource = utmParams?.utm_source || null;
     const utmMedium = utmParams?.utm_medium || null;

@@ -9,12 +9,14 @@ interface DownsizingStrategyGuideProps {
     title: string;
     excerpt: string;
     content: string; // This will now be pre-processed HTML
+    html_body?: string;
   };
 }
 
 const DownsizingStrategyGuide: React.FC<DownsizingStrategyGuideProps> = ({ article }) => {
   // Split the content at the placeholder to insert the React component
-  const contentParts = article.content.split('<div id="calculator-embed-point"></div>');
+  const contentToSplit = article.html_body || article.content;
+  const contentParts = contentToSplit.split('<div id="calculator-embed-point"></div>');
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

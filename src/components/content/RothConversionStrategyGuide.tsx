@@ -6,6 +6,7 @@ interface Article {
   id: string;
   title: string;
   content: string;
+    html_body?: string;
   excerpt: string;
   table_of_contents: any[];
   meta_title?: string;
@@ -45,7 +46,7 @@ export default function RothConversionStrategyGuide({ article }: RothConversionS
       {/* Content */}
       <div 
         className="prose prose-lg max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: article.content }}
+        dangerouslySetInnerHTML={{ __html: article.html_body || article.content }}
       />
 
       {/* Full-Width Calculator Embed */}

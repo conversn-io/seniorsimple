@@ -9,6 +9,7 @@ interface DisabilityInsuranceStrategyGuideProps {
   article: {
     title: string;
     content: string;
+    html_body?: string;
     meta_description?: string;
     featured_image_url?: string;
     reading_time?: number;
@@ -63,7 +64,7 @@ const DisabilityInsuranceStrategyGuide: React.FC<DisabilityInsuranceStrategyGuid
       {/* Article Content */}
       <div 
         className="prose prose-lg max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: article.content }}
+        dangerouslySetInnerHTML={{ __html: article.html_body || article.content }}
       />
 
       {/* Calculator Embed */}

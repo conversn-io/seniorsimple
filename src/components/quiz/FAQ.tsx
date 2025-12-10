@@ -73,10 +73,10 @@ export const FAQ = () => {
             Have more questions? Our specialist is here to help.
           </p>
           <a 
-            href="tel:+18777703306" 
+            href="tel:+18585046544" 
             className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
           >
-            Call (877) 770-3306
+            Call +1 (858) 504-6544
           </a>
         </div>
       </div>

@@ -142,7 +142,7 @@ const FAQ = () => {
               <div className="flex items-center justify-center gap-4 text-[#E4CDA1]">
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 mr-2" />
-                  (888) 440-9669
+                  <a href="tel:+18585046544" className="hover:text-[#E4CDA1]">+1 (858) 504-6544</a>
                 </div>
                 <div className="flex items-center">
                   <Mail className="h-5 w-5 mr-2" />

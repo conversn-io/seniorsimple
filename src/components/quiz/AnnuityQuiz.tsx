@@ -201,9 +201,10 @@ const SECONDARY_QUIZ_QUESTIONS = [
 
 interface AnnuityQuizProps {
   skipOTP?: boolean;
+  onStepChange?: (step: number) => void;
 }
 
-export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
+export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps) => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
@@ -228,6 +229,13 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
 
   const questions = getFilteredQuestions();
   const totalSteps = questions.length;
+
+  // Notify parent component when step changes (for headline visibility)
+  useEffect(() => {
+    if (onStepChange) {
+      onStepChange(currentStep);
+    }
+  }, [currentStep, onStepChange]);
 
   useEffect(() => {
     // Generate unique session ID for tracking
@@ -418,7 +426,10 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         });
         
         // Store quiz answers for personalized thank you page
-        sessionStorage.setItem('quiz_answers', JSON.stringify(updatedAnswers));
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(updatedAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(true);
         
@@ -743,7 +754,27 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         setShowProcessing(false);
         
         // Store quiz answers for personalized thank you page
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        const emailInQuizAnswers = data.quizAnswers?.personalInfo?.email || data.quizAnswers?.email || ''
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('💾 STORING QUIZ ANSWERS TO SESSIONSTORAGE')
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('📧 Email in quizAnswers:', emailInQuizAnswers || '❌ NOT FOUND')
+        console.log('📋 Full quizAnswers structure:', JSON.stringify(data.quizAnswers, null, 2))
+        console.log('🔍 personalInfo object:', data.quizAnswers?.personalInfo)
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
+        
+        // Verify it was stored correctly
+        const stored = sessionStorage.getItem('quiz_answers')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          const storedEmail = parsed?.personalInfo?.email || parsed?.email || ''
+          console.log('✅ Verification - Email in stored data:', storedEmail || '❌ NOT FOUND')
+        }
         
         setShowResults(true);
         console.log('🎯 Lead Processing Complete - Results shown');
@@ -757,7 +788,10 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         });
         
         // Store quiz answers even on failure
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        // Store in both sessionStorage and localStorage for persistence across redirects
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(false);
         setShowResults(true); // Still show results even if GHL fails
@@ -770,8 +804,11 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
       });
       
       // Store quiz answers even on exception
+      // Store in both sessionStorage and localStorage for persistence across redirects
       try {
-        sessionStorage.setItem('quiz_answers', JSON.stringify(data.quizAnswers));
+        const answersJson = JSON.stringify(data.quizAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
       } catch (storageError) {
         console.warn('⚠️ Could not store quiz answers:', storageError);
       }
@@ -782,18 +819,23 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
   };
 
   const handleOTPVerification = async () => {
-    console.log('🔐 OTP Verification Complete - Sending to GHL:', {
-      sessionId: quizSessionId,
-      phoneNumber: answers.personalInfo?.phone,
-      timestamp: new Date().toISOString()
-    });
+    const email = answers.personalInfo?.email || ''
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔐 OTP VERIFICATION COMPLETE')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📧 Email in answers:', email || '❌ NOT FOUND')
+    console.log('📱 Phone:', answers.personalInfo?.phone || '❌ NOT FOUND')
+    console.log('👤 Full personalInfo:', answers.personalInfo)
+    console.log('📋 Full answers structure:', JSON.stringify(answers, null, 2))
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     setShowOTP(false);
 
     // Use the same processLeadAndSendToGHL function for consistency
     await processLeadAndSendToGHL({
       contact: {
-        email: answers.personalInfo?.email || '',
+        email: email,
         phone: answers.personalInfo?.phone || '',
         firstName: answers.personalInfo?.firstName || '',
         lastName: answers.personalInfo?.lastName || ''
@@ -874,16 +916,20 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
         timestamp: new Date().toISOString()
       });
 
+      // Store quiz answers for personalized thank you message
+      // Store in both sessionStorage and localStorage for persistence across redirects
+      const answersJson = JSON.stringify(answers);
+      sessionStorage.setItem('quiz_answers', answersJson);
+      localStorage.setItem('quiz_answers', answersJson); // Persist across calendar redirect
+      console.log('💾 Stored quiz_answers in both sessionStorage and localStorage');
+      
       // Add delay to allow GTM to process tracking events before redirect
       console.log('⏳ Waiting for GTM to process tracking events...');
       setTimeout(() => {
         setShowProcessing(false);
         setShowResults(true);
-        
-        // Store quiz answers for personalized thank you message
-        sessionStorage.setItem('quiz_answers', JSON.stringify(answers));
-        
-        try { router.push('/quiz-submitted'); } catch {}
+        // NOTE: Do NOT redirect here - let the useEffect handle conditional redirect
+        // based on landing_page in sessionStorage (booking funnel vs standard flow)
       }, 2000); // 2 second delay
     } catch (error) {
       console.error('💥 Lead Submission Error:', {
@@ -912,21 +958,147 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
     setQuizSessionId(null);
   };
 
-  // Handle redirect to quiz-submitted page when showResults is true
+  // Handle redirect based on landing page (conditional funnel logic)
   // IMPORTANT: This hook MUST come before any conditional returns to avoid React hooks errors
   useEffect(() => {
     if (showResults) {
-      console.log('🎯 Redirecting to Quiz Submitted Page:', {
-        sessionId: quizSessionId,
-        timestamp: new Date().toISOString()
-      });
+      // Check landing page from sessionStorage to determine redirect destination
+      const landingPage = typeof window !== 'undefined' 
+        ? sessionStorage.getItem('landing_page') 
+        : null;
+      
+      // Also check current URL path as fallback
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : null;
+      const isQuizBookPath = currentPath === '/quiz-book';
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🎯 Determining Redirect Destination:');
+      console.log('  Session ID:', quizSessionId);
+      console.log('  Landing Page (sessionStorage):', landingPage || '❌ NOT FOUND');
+      console.log('  Current Path:', currentPath);
+      console.log('  Is /quiz-book path?', isQuizBookPath);
+      console.log('  Show Results:', showResults);
+      console.log('  Answers:', answers ? '✅ Present' : '❌ Missing');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
       // Use setTimeout to avoid React state update during render
+      // Small delay ensures sessionStorage is ready
       const timeoutId = setTimeout(() => {
-        router.push('/quiz-submitted');
-      }, 0);
+        // Check if this is the booking funnel (either from sessionStorage or current path)
+        const isBookingFunnel = landingPage === '/quiz-book' || isQuizBookPath;
+        
+        if (isBookingFunnel) {
+          console.log('✅ BOOKING FUNNEL DETECTED - Redirecting to /booking');
+          
+          // Extract email from answers to pass in URL parameter
+          const email = 
+            answers?.personalInfo?.email || 
+            answers?.email || 
+            answers?.contactInfo?.email || 
+            ''
+          
+          // Build booking URL with email parameter
+          let bookingUrl = '/booking'
+          if (email) {
+            const encodedEmail = encodeURIComponent(email)
+            bookingUrl = `/booking?email=${encodedEmail}`
+            console.log('📧 Email found - adding to booking URL:', {
+              email,
+              encodedEmail,
+              bookingUrl
+            })
+          } else {
+            console.warn('⚠️ No email found in answers - redirecting without email parameter')
+          }
+          
+          // Verify quiz_answers is in sessionStorage before redirecting
+          const storedAnswers = typeof window !== 'undefined' 
+            ? sessionStorage.getItem('quiz_answers') 
+            : null
+          
+          if (!storedAnswers) {
+            console.warn('⚠️ quiz_answers not found in sessionStorage, waiting before redirect...')
+            // Retry after a short delay to allow sessionStorage to be ready
+            setTimeout(() => {
+              const retryAnswers = typeof window !== 'undefined' 
+                ? sessionStorage.getItem('quiz_answers') 
+                : null
+              
+              if (retryAnswers) {
+                console.log('✅ quiz_answers found on retry, redirecting to booking page')
+                console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+                try {
+                  router.push(bookingUrl)
+                  setTimeout(() => {
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                      console.warn('⚠️ router.push may have failed, using window.location fallback')
+                      window.location.href = bookingUrl
+                    }
+                  }, 1000)
+                } catch (error) {
+                  console.error('❌ router.push failed, using window.location:', error)
+                  if (typeof window !== 'undefined') {
+                    window.location.href = bookingUrl
+                  }
+                }
+              } else {
+                console.error('❌ quiz_answers still not found after retry, redirecting anyway')
+                console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+                try {
+                  router.push(bookingUrl)
+                  setTimeout(() => {
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                      console.warn('⚠️ router.push may have failed, using window.location fallback')
+                      window.location.href = bookingUrl
+                    }
+                  }, 1000)
+                } catch (error) {
+                  console.error('❌ router.push failed, using window.location:', error)
+                  if (typeof window !== 'undefined') {
+                    window.location.href = bookingUrl
+                  }
+                }
+              }
+            }, 500)
+            return // Exit early, retry will handle redirect
+          }
+          
+          console.log('📅 Redirecting to Booking Page (Booking Funnel):', {
+            sessionId: quizSessionId,
+            bookingUrl,
+            email: email || 'NOT FOUND',
+            timestamp: new Date().toISOString()
+          });
+          console.log('🚀 EXECUTING REDIRECT TO:', bookingUrl)
+          
+          // Use router.push with fallback to window.location
+          try {
+            router.push(bookingUrl)
+            // Fallback: if router.push doesn't work, use window.location after a short delay
+            setTimeout(() => {
+              if (typeof window !== 'undefined' && window.location.pathname !== '/booking') {
+                console.warn('⚠️ router.push may have failed, using window.location fallback')
+                window.location.href = bookingUrl
+              }
+            }, 1000)
+          } catch (error) {
+            console.error('❌ router.push failed, using window.location:', error)
+            if (typeof window !== 'undefined') {
+              window.location.href = bookingUrl
+            }
+          }
+        } else {
+          console.log('✅ Redirecting to Quiz Submitted Page (Standard Flow):', {
+            sessionId: quizSessionId,
+            landingPage: landingPage || 'NOT SET',
+            timestamp: new Date().toISOString()
+          });
+          router.push('/quiz-submitted');
+        }
+      }, 100); // Changed from 0 to 100ms to ensure sessionStorage is ready
       return () => clearTimeout(timeoutId);
     }
-  }, [showResults, router, quizSessionId]);
+  }, [showResults, router, quizSessionId, answers]);
 
   if (showProcessing) {
     console.log('⏳ Showing Processing State:', {

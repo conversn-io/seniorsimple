@@ -131,7 +131,7 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="(888) 440-9669"
+                    placeholder="+1 (858) 504-6544"
                     className="h-12 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

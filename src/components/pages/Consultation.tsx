@@ -236,7 +236,7 @@ const Consultation = () => {
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <Phone className="h-5 w-5 text-[#E4CDA1] mr-3" />
-                    <span className="text-lg font-semibold">(888) 440-9669</span>
+                    <a href="tel:+18585046544" className="text-lg font-semibold hover:underline">+1 (858) 504-6544</a>
                   </div>
                   <div className="flex items-center">
                     <Mail className="h-5 w-5 text-[#E4CDA1] mr-3" />

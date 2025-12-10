@@ -26,7 +26,7 @@ const HealthcareCostPlanningStrategyGuide: React.FC<HealthcareCostPlanningStrate
         <div 
           className="prose-content"
           dangerouslySetInnerHTML={{ 
-            __html: article.content.split('[EMBEDDED CALCULATOR WILL APPEAR HERE]')[0]
+            __html: (article.html_body || article.content).split('[EMBEDDED CALCULATOR WILL APPEAR HERE]')[0]
           }} 
         />
       </div>
@@ -45,7 +45,7 @@ const HealthcareCostPlanningStrategyGuide: React.FC<HealthcareCostPlanningStrate
         <div 
           className="prose-content"
           dangerouslySetInnerHTML={{ 
-            __html: article.content.split('[EMBEDDED CALCULATOR WILL APPEAR HERE]')[1]
+            __html: (article.html_body || article.content).split('[EMBEDDED CALCULATOR WILL APPEAR HERE]')[1]
           }} 
         />
       </div>

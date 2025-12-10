@@ -22,6 +22,17 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Rewrite rules for IndexNow key file
+  // Makes the key file accessible at root: /{key}.txt
+  async rewrites() {
+    const indexNowKey = process.env.INDEXNOW_KEY || 'seniorsimple-indexnow-key-2024';
+    return [
+      {
+        source: `/${indexNowKey}.txt`,
+        destination: '/api/indexnow/key',
+      },
+    ];
+  },
   // Exclude Supabase Edge Functions from Next.js build
   webpack: (config) => {
     config.watchOptions = {

@@ -7,6 +7,10 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>
 }
 
+// Force dynamic rendering - fetch from database on every request
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
   const { article, error } = await getArticle(slug)
@@ -275,50 +279,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Get in Touch</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Contact Us</p>
-                <p>Phone: 800-555-2040</p>
-                <p>Email: support@seniorsimple.org</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Resources</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Annuities</p>
-                <p>Estate Planning</p>
-                <p>Health</p>
-                <p>Housing</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">About</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Mission</p>
-                <p>Team</p>
-                <p>Press</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#36596A] mb-4">Legal</h3>
-              <div className="space-y-2 text-gray-600">
-                <p>Privacy Policy</p>
-                <p>Terms of Service</p>
-                <p>Disclaimers</p>
-              </div>
-            </div>
-          </div>
-          <div className="text-center mt-8 pt-8 border-t border-gray-200">
-            <p className="text-sm text-gray-500">© 2024 SeniorSimple. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

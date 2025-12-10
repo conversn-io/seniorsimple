@@ -100,7 +100,7 @@ export function initializeTracking(): void {
 }
 
 // GA4 Event Tracking
-function trackGA4Event(eventName: string, parameters: Record<string, any>): void {
+export function trackGA4Event(eventName: string, parameters: Record<string, any>): void {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', eventName, {
       ...parameters,
