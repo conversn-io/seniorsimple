@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
-import { initializeTracking, trackPageView } from '@/lib/temp-tracking'
+import { initializeTracking, trackPageView, trackGA4Event } from '@/lib/temp-tracking'
 import { CheckCircle } from 'lucide-react'
 import Script from 'next/script'
 
@@ -234,12 +234,24 @@ function PersonalizedQuizSubmitted({ quizAnswers }: { quizAnswers: QuizAnswers }
         try {
           const data = JSON.parse(stored);
           setAppointmentData(data);
+          
+          // Track booking-confirmed GA4 event when appointment data exists
+          if (data.startTime || data.appointmentId) {
+            trackGA4Event('booking-confirmed', {
+              appointment_id: data.appointmentId || 'unknown',
+              appointment_time: data.startTime || 'unknown',
+              email: data.email || quizAnswers?.personalInfo?.email || 'unknown',
+              phone: data.phone || quizAnswers?.personalInfo?.phone || 'unknown',
+              name: data.name || `${quizAnswers?.personalInfo?.firstName || ''} ${quizAnswers?.personalInfo?.lastName || ''}`.trim() || 'unknown',
+              confirmation_page: 'quiz-submitted'
+            });
+          }
         } catch (error) {
           console.warn('Failed to parse appointment data:', error);
         }
       }
     }
-  }, []);
+  }, [quizAnswers]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

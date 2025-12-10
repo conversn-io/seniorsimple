@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
+import { trackGA4Event } from '@/lib/temp-tracking'
 import Script from 'next/script'
 
 interface QuizAnswers {
@@ -249,6 +250,22 @@ function BookingPageContent() {
       if (isBookingComplete && !hasRedirected) {
         setHasRedirected(true)
         console.log('✅ Booking complete event received, redirecting to thank-you page', { type, data })
+        
+        // Track booking-scheduled GA4 event (postMessage method)
+        const email = contactData?.personalInfo?.email || contactData?.email || contactData?.contactInfo?.email || ''
+        const phone = contactData?.personalInfo?.phone || contactData?.phone || contactData?.contactInfo?.phone || ''
+        const firstName = contactData?.personalInfo?.firstName || ''
+        const lastName = contactData?.personalInfo?.lastName || ''
+        
+        trackGA4Event('booking-scheduled', {
+          appointment_id: data.appointmentId || data.id || 'unknown',
+          appointment_time: data.startTime || data.bookingTime || data.appointment?.start_time || 'unknown',
+          email: email || 'unknown',
+          phone: phone || 'unknown',
+          name: `${firstName} ${lastName}`.trim() || 'unknown',
+          booking_method: 'postmessage'
+        })
+        
         router.push('/quiz-submitted')
       }
     }
@@ -257,7 +274,7 @@ function BookingPageContent() {
     return () => {
       window.removeEventListener('message', handleMessage)
     }
-  }, [router, hasRedirected])
+  }, [router, hasRedirected, contactData])
 
   // Poll for booking confirmation via webhook (primary method)
   useEffect(() => {
@@ -300,8 +317,9 @@ function BookingPageContent() {
           setHasRedirected(true)
 
           // Store appointment data for thank-you page
+          let appointmentData: any = null
           if (data.payload) {
-            const appointmentData = {
+            appointmentData = {
               appointmentId: data.payload.appointmentId || data.payload.id || data.payload.appointment_id,
               startTime: data.payload.raw?.bookingTimes || data.payload.raw?.start_time || data.payload.raw?.appointment?.start_time,
               name: data.name,
@@ -312,6 +330,16 @@ function BookingPageContent() {
             localStorage.setItem('appointment_data', JSON.stringify(appointmentData))
             console.log('💾 Appointment data stored:', appointmentData)
           }
+
+          // Track booking-scheduled GA4 event
+          trackGA4Event('booking-scheduled', {
+            appointment_id: appointmentData?.appointmentId || data.payload?.appointmentId || 'unknown',
+            appointment_time: appointmentData?.startTime || data.payload?.raw?.bookingTimes || data.payload?.raw?.start_time || 'unknown',
+            email: data.email || contactData?.personalInfo?.email || 'unknown',
+            phone: data.phone || contactData?.personalInfo?.phone || 'unknown',
+            name: data.name || `${contactData?.personalInfo?.firstName || ''} ${contactData?.personalInfo?.lastName || ''}`.trim() || 'unknown',
+            booking_method: 'webhook_polling'
+          })
 
           router.push('/quiz-submitted')
         } else if (pollCount < maxPolls) {
