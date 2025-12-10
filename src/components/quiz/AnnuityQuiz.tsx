@@ -201,9 +201,10 @@ const SECONDARY_QUIZ_QUESTIONS = [
 
 interface AnnuityQuizProps {
   skipOTP?: boolean;
+  onStepChange?: (step: number) => void;
 }
 
-export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
+export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps) => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
@@ -228,6 +229,13 @@ export const AnnuityQuiz = ({ skipOTP = false }: AnnuityQuizProps) => {
 
   const questions = getFilteredQuestions();
   const totalSteps = questions.length;
+
+  // Notify parent component when step changes (for headline visibility)
+  useEffect(() => {
+    if (onStepChange) {
+      onStepChange(currentStep);
+    }
+  }, [currentStep, onStepChange]);
 
   useEffect(() => {
     // Generate unique session ID for tracking
