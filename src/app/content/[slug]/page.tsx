@@ -45,6 +45,10 @@ interface ContentPageProps {
   }>;
 }
 
+// Force dynamic rendering - fetch from database on every request
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Generate metadata for SEO
 export async function generateMetadata({ params }: ContentPageProps): Promise<Metadata> {
   const { slug } = await params;

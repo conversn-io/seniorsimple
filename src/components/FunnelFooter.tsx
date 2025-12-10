@@ -46,16 +46,16 @@ const FunnelFooter = () => {
                 Content Library
               </Link>
               <Link href="/content/tax-free-retirement-income-complete-guide" className="block hover:text-[#36596A] transition-colors">
-                Tax-Free Retirement Guide
+                Tax-Free Retirement Income Guide
               </Link>
               <Link href="/content/annuities-explained-secure-your-retirement-income-with-confidence" className="block hover:text-[#36596A] transition-colors">
-                Annuities Explained
+                Annuities Explained: Secure Your Retirement
               </Link>
               <Link href="/content/reverse-mortgage-vs-home-equity-loan-for-seniors-a-comprehensive-guide" className="block hover:text-[#36596A] transition-colors">
-                Reverse Mortgage Guide
+                Reverse Mortgage vs Home Equity Loan
               </Link>
               <Link href="/content/social-security-spousal-benefits-guide" className="block hover:text-[#36596A] transition-colors">
-                Social Security Benefits
+                Social Security Spousal Benefits
               </Link>
             </div>
           </div>
