@@ -45,6 +45,7 @@ export async function getPublishedArticles(limit?: number): Promise<{ articles: 
         category_details:article_categories!articles_category_id_fkey(name, slug, description)
       `)
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .order('created_at', { ascending: false })
 
     if (limit) {
@@ -73,6 +74,7 @@ export async function getArticle(slug: string): Promise<{ article: ArticleWithCa
       `)
       .eq('slug', slug)
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .single()
 
     return { 
@@ -94,6 +96,7 @@ export async function getArticlesByCategory(categorySlug: string, limit?: number
         category_details:article_categories!articles_category_id_fkey(name, slug, description)
       `)
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .eq('category_details.slug', categorySlug)
       .order('created_at', { ascending: false })
 
@@ -136,6 +139,7 @@ export async function getRelatedArticles(currentArticleId: string, categoryId?: 
       .from('articles')
       .select('*')
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .neq('id', currentArticleId)
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -165,6 +169,7 @@ export async function searchArticles(searchTerm: string, limit: number = 10): Pr
         category_details:article_categories!articles_category_id_fkey(name, slug, description)
       `)
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%,excerpt.ilike.%${searchTerm}%`)
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -185,6 +190,7 @@ export async function getFeaturedArticles(limit: number = 6): Promise<{ articles
       .from('articles')
       .select('*')
       .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
       .order('created_at', { ascending: false })
       .limit(limit)
 
