@@ -85,6 +85,66 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   }, [zipCode, question.type]);
 
+  // Debounced phone API validation (Level 3)
+  useEffect(() => {
+    // Only trigger API validation if:
+    // 1. Question type is personal-info
+    // 2. Phone format is valid (10 digits)
+    // 3. No existing format/fake errors
+    if (question.type === 'personal-info' && phoneValidationState === 'valid' && phone.length === 10 && !phoneError) {
+      setIsValidatingPhone(true);
+      const timeoutId = setTimeout(async () => {
+        try {
+          const apiResult = await validatePhoneAPI(phone);
+          if (!apiResult.valid) {
+            setPhoneError(apiResult.error || 'Invalid phone number');
+            setPhoneValidationState('invalid');
+          }
+        } catch (error) {
+          console.error('Phone API validation error:', error);
+          // Don't block submission if API fails - graceful fallback
+        } finally {
+          setIsValidatingPhone(false);
+        }
+      }, 500); // 500ms debounce
+      
+      return () => {
+        clearTimeout(timeoutId);
+        setIsValidatingPhone(false);
+      };
+    }
+  }, [phone, phoneValidationState, phoneError, question.type]);
+
+  // Debounced email API validation (Level 3)
+  useEffect(() => {
+    // Only trigger API validation if:
+    // 1. Question type is personal-info
+    // 2. Email format is valid
+    // 3. No existing format/fake errors
+    if (question.type === 'personal-info' && emailValidationState === 'valid' && email.includes('@') && !emailError) {
+      setIsValidatingEmail(true);
+      const timeoutId = setTimeout(async () => {
+        try {
+          const apiResult = await validateEmailAPI(email);
+          if (!apiResult.valid) {
+            setEmailError(apiResult.error || 'Invalid email address');
+            setEmailValidationState('invalid');
+          }
+        } catch (error) {
+          console.error('Email API validation error:', error);
+          // Don't block submission if API fails - graceful fallback
+        } finally {
+          setIsValidatingEmail(false);
+        }
+      }, 500); // 500ms debounce
+      
+      return () => {
+        clearTimeout(timeoutId);
+        setIsValidatingEmail(false);
+      };
+    }
+  }, [email, emailValidationState, emailError, question.type]);
+
   const validateZipCode = async (zip: string) => {
     if (!zip || zip.length < 5) {
       setZipValidationResult(null);
