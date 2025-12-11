@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { formatPhoneForInput, formatPhoneForGHL, extractUSPhoneNumber } from '@/utils/phone-utils';
 import { buildApiUrl } from '@/lib/api-config';
 import { getPhoneValidationState, validatePhoneFormat, validatePhoneAPI } from '@/utils/phone-validation';
-import { getEmailValidationState, validateEmailFormat, validateEmailAPI } from '@/utils/email-validation';
+import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation';
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface QuizQuestionProps {
@@ -69,7 +69,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   // Email validation state
   const [emailValidationState, setEmailValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
   const [emailError, setEmailError] = useState('');
-  const [isValidatingEmail, setIsValidatingEmail] = useState(false);
 
   // Phone API validation state
   const [isValidatingPhone, setIsValidatingPhone] = useState(false);
@@ -114,36 +113,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
       };
     }
   }, [phone, phoneValidationState, phoneError, question.type]);
-
-  // Debounced email API validation (Level 3)
-  useEffect(() => {
-    // Only trigger API validation if:
-    // 1. Question type is personal-info
-    // 2. Email format is valid
-    // 3. No existing format/fake errors
-    if (question.type === 'personal-info' && emailValidationState === 'valid' && email.includes('@') && !emailError) {
-      setIsValidatingEmail(true);
-      const timeoutId = setTimeout(async () => {
-        try {
-          const apiResult = await validateEmailAPI(email);
-          if (!apiResult.valid) {
-            setEmailError(apiResult.error || 'Invalid email address');
-            setEmailValidationState('invalid');
-          }
-        } catch (error) {
-          console.error('Email API validation error:', error);
-          // Don't block submission if API fails - graceful fallback
-        } finally {
-          setIsValidatingEmail(false);
-        }
-      }, 500); // 500ms debounce
-      
-      return () => {
-        clearTimeout(timeoutId);
-        setIsValidatingEmail(false);
-      };
-    }
-  }, [email, emailValidationState, emailError, question.type]);
 
   const validateZipCode = async (zip: string) => {
     if (!zip || zip.length < 5) {
@@ -416,20 +385,17 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                   disabled={isLoading}
                   style={{ minHeight: '56px' }}
                 />
-                {isValidatingEmail && (
-                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
-                )}
-                {!isValidatingEmail && emailValidationState === 'invalid' && email && (
+                {emailValidationState === 'invalid' && email && (
                   <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
                 )}
-                {!isValidatingEmail && emailValidationState === 'valid' && email && (
+                {emailValidationState === 'valid' && email && (
                   <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
                 )}
               </div>
               {emailValidationState === 'invalid' && emailError && (
                 <p className="text-red-600 text-sm mt-2">{emailError}</p>
               )}
-              {emailValidationState === 'valid' && email && !isValidatingEmail && (
+              {emailValidationState === 'valid' && email && (
                 <p className="text-green-600 text-sm mt-2">✓ Email address is valid</p>
               )}
             </div>
@@ -525,7 +491,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 !consentChecked || 
                 emailValidationState !== 'valid' ||
                 phoneValidationState !== 'valid' ||
-                isValidatingEmail ||
                 isValidatingPhone ||
                 isLoading
               }
