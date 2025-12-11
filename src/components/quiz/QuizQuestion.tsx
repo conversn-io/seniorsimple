@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { formatPhoneForInput, formatPhoneForGHL, extractUSPhoneNumber } from '@/utils/phone-utils';
 import { buildApiUrl } from '@/lib/api-config';
+import { getPhoneValidationState, validatePhoneFormat, validatePhoneAPI } from '@/utils/phone-validation';
+import { getEmailValidationState, validateEmailFormat, validateEmailAPI } from '@/utils/email-validation';
+import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface QuizQuestionProps {
   question: {
@@ -59,8 +62,17 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   const [isValidatingZip, setIsValidatingZip] = useState(false);
   const [zipError, setZipError] = useState('');
 
-  // Phone error state
+  // Phone validation state
+  const [phoneValidationState, setPhoneValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
   const [phoneError, setPhoneError] = useState('');
+
+  // Email validation state
+  const [emailValidationState, setEmailValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
+  const [emailError, setEmailError] = useState('');
+  const [isValidatingEmail, setIsValidatingEmail] = useState(false);
+
+  // Phone API validation state
+  const [isValidatingPhone, setIsValidatingPhone] = useState(false);
 
   // Debounced zip validation
   useEffect(() => {
@@ -322,15 +334,44 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 Email Address *
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
-                required
-                disabled={isLoading}
-                style={{ minHeight: '56px' }}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    const newEmail = e.target.value;
+                    setEmail(newEmail);
+                    const state = getEmailValidationState(newEmail);
+                    setEmailValidationState(state);
+                    const validation = validateEmailFormat(newEmail);
+                    setEmailError(validation.error || '');
+                  }}
+                  className={`
+                    quiz-input w-full px-6 py-4 pr-12 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${emailValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${emailValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${emailValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                />
+                {isValidatingEmail && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {!isValidatingEmail && emailValidationState === 'invalid' && email && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {!isValidatingEmail && emailValidationState === 'valid' && email && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {emailValidationState === 'invalid' && emailError && (
+                <p className="text-red-600 text-sm mt-2">{emailError}</p>
+              )}
+              {emailValidationState === 'valid' && email && !isValidatingEmail && (
+                <p className="text-green-600 text-sm mt-2">✓ Email address is valid</p>
+              )}
             </div>
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
@@ -389,7 +430,18 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
             <button
               type="submit"
               className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
-              disabled={!firstName || !lastName || !email || !phone || !consentChecked || isLoading}
+              disabled={
+                !firstName || 
+                !lastName || 
+                !email || 
+                !phone || 
+                !consentChecked || 
+                emailValidationState !== 'valid' ||
+                phoneValidationState !== 'valid' ||
+                isValidatingEmail ||
+                isValidatingPhone ||
+                isLoading
+              }
               style={{ minHeight: '64px' }}
             >
               Continue
@@ -483,8 +535,18 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     // Limit to 10 digits
                     const limitedDigits = digits.slice(0, 10);
                     setPhone(limitedDigits);
+                    // Validate phone in real-time
+                    const state = getPhoneValidationState(limitedDigits);
+                    setPhoneValidationState(state);
+                    const validation = validatePhoneFormat(limitedDigits);
+                    setPhoneError(validation.error || '');
                   }}
-                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  className={`
+                    quiz-input w-full pr-12 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${phoneValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${phoneValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${phoneValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
                   placeholder="(555) 123-4567"
                   required
                   disabled={isLoading}
@@ -494,10 +556,27 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     paddingLeft: '100px'
                   }}
                 />
+                {isValidatingPhone && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
-                We'll send a verification code to this number
-              </p>
+              {phoneValidationState === 'invalid' && phoneError && (
+                <p className="text-red-600 text-sm mt-2">{phoneError}</p>
+              )}
+              {phoneValidationState === 'valid' && phone && !isValidatingPhone && (
+                <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
+              )}
+              {phoneValidationState === 'empty' && (
+                <p className="text-sm text-gray-500 mt-2">
+                  We'll send a verification code to this number
+                </p>
+              )}
             </div>
             <div className="flex items-start space-x-4">
               <input
@@ -522,7 +601,13 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
             <button
               type="submit"
               className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
-              disabled={!phone || !consentChecked || isLoading}
+              disabled={
+                !phone || 
+                !consentChecked || 
+                phoneValidationState !== 'valid' ||
+                isValidatingPhone ||
+                isLoading
+              }
               style={{ minHeight: '64px' }}
             >
               Continue
