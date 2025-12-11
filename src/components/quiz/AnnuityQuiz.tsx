@@ -36,14 +36,16 @@ type FunnelType = 'primary' | 'secondary';
 const PRIMARY_QUIZ_QUESTIONS = [
   {
     id: 'ageRange',
-    title: 'What is your current age range?',
-    subtitle: 'This helps us recommend the right strategy for your timeline',
+    title: 'How old are you?',
+    subtitle: 'We use your age to determine eligibility for key retirement protections.',
     type: 'multiple-choice' as const,
     options: [
-      '50 or Younger',
-      '51 - 60',
-      '61 - 70',
-      '70+'
+      'Under 55',
+      '55–59',
+      '60–64',
+      '65–69',
+      '70–75',
+      'Over 75'
     ],
   },
   {
@@ -126,14 +128,16 @@ const PRIMARY_QUIZ_QUESTIONS = [
 const SECONDARY_QUIZ_QUESTIONS = [
   {
     id: 'ageRange',
-    title: 'What is your current age range?',
-    subtitle: 'This helps us recommend the right strategy for your timeline',
+    title: 'How old are you?',
+    subtitle: 'We use your age to determine eligibility for key retirement protections.',
     type: 'multiple-choice' as const,
     options: [
-      '50 or Younger',
-      '51 - 60',
-      '61 - 70',
-      '70+'
+      'Under 55',
+      '55–59',
+      '60–64',
+      '65–69',
+      '70–75',
+      'Over 75'
     ],
   },
   {
@@ -1177,11 +1181,21 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
             totalSavings={answers.retirementSavings}
           />
         ) : (
-          <QuizQuestion
-            question={currentQuestion}
-            onAnswer={handleAnswer}
-            currentAnswer={answers[currentQuestion.id]}
-          />
+          <>
+            <QuizQuestion
+              question={currentQuestion}
+              onAnswer={handleAnswer}
+              currentAnswer={answers[currentQuestion.id]}
+            />
+            {/* Mini CTA / Preview text for first question */}
+            {currentStep === 0 && (
+              <div className="mt-6 text-center">
+                <p className="text-sm sm:text-base text-gray-600 font-medium">
+                  <strong>Next:</strong> Income, protection & withdrawal risk
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
