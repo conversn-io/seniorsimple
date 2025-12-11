@@ -6,6 +6,7 @@ import QuizErrorBoundary from "../quiz/QuizErrorBoundary";
 import { AnnuityQuiz } from "../quiz/AnnuityQuiz";
 import { useFunnelLayout } from "../../hooks/useFunnelFooter";
 import "../../styles/quiz-mobile.css";
+import { AlertTriangle } from "lucide-react";
 
 interface QuizProps {
   skipOTP?: boolean;
@@ -24,14 +25,17 @@ const Quiz = ({ skipOTP = false }: QuizProps) => {
   return (
     <QuizErrorBoundary onReset={handleQuizReset}>
       <div className="min-h-screen bg-[#F5F5F0]">
+        {/* Header Alert Bar - Light green background with dark green text */}
+        <div className="bg-green-100 text-[#2f6d46] py-2 px-4 text-center text-sm font-medium">
+          <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            Only 30% of Americans with $250K+ qualify for this retirement strategy.
+          </div>
+        </div>
+        
         <section className={`${showHeadline ? 'py-8 sm:py-12' : 'pt-4 pb-8 sm:pb-12'} px-4 sm:px-6 lg:px-8`}>
           {showHeadline && (
             <div className="max-w-4xl mx-auto text-center mb-8">
-              {/* Pre-Header: Scarcity Frame */}
-              <p className="text-sm sm:text-base text-[#2f6d46] font-medium mb-3 sm:mb-4">
-                Only 30% of Americans with $250K+ qualify for this retirement strategy.
-              </p>
-              
               {/* Headline: Emotional Hook - Reduced by 25% */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
                 Will Your Retirement Survive the Next Market Crash?
