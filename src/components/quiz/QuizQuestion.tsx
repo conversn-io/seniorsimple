@@ -391,8 +391,18 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     // Limit to 10 digits
                     const limitedDigits = digits.slice(0, 10);
                     setPhone(limitedDigits);
+                    // Validate phone in real-time
+                    const state = getPhoneValidationState(limitedDigits);
+                    setPhoneValidationState(state);
+                    const validation = validatePhoneFormat(limitedDigits);
+                    setPhoneError(validation.error || '');
                   }}
-                  className="quiz-input w-full pr-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  className={`
+                    quiz-input w-full pr-12 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${phoneValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${phoneValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${phoneValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
                   placeholder="(555) 123-4567"
                   required
                   disabled={isLoading}
@@ -402,10 +412,27 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     paddingLeft: '100px'
                   }}
                 />
+                {isValidatingPhone && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
-                We'll send a verification code to this number
-              </p>
+              {phoneValidationState === 'invalid' && phoneError && (
+                <p className="text-red-600 text-sm mt-2">{phoneError}</p>
+              )}
+              {phoneValidationState === 'valid' && phone && !isValidatingPhone && (
+                <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
+              )}
+              {phoneValidationState === 'empty' && (
+                <p className="text-sm text-gray-500 mt-2">
+                  We'll send a verification code to this number
+                </p>
+              )}
             </div>
             <div className="flex items-start space-x-4">
               <input
