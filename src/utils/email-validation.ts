@@ -3,7 +3,9 @@
  * Provides format validation, state management, and fake domain detection
  */
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Stricter email regex: requires valid domain (min 2 chars) and TLD (min 2 chars)
+// Format: local@domain.tld where domain has at least 2 chars and TLD has at least 2 chars
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]{2,}\.[^\s@]{2,}$/;
 
 const FAKE_EMAIL_DOMAINS = [
   'email.com', 'test.com', 'example.com', 'mail.com',
