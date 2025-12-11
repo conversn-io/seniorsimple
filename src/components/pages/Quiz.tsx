@@ -38,7 +38,9 @@ const Quiz = ({ skipOTP = false }: QuizProps) => {
             <div className="max-w-4xl mx-auto text-center mb-8">
               {/* Headline: Emotional Hook - Reduced by 25% */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
-                Will Your Retirement Survive the Next Market Crash?
+                Will Your Retirement Survive
+                <br />
+                the Next Market Crash?
               </h1>
               
               {/* Subhead: Builds Value - Reduced by 25% */}
