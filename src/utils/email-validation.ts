@@ -47,8 +47,41 @@ export function validateEmailFormat(email: string): { isValid: boolean; error?: 
     return { isValid: false, error: undefined }; // Empty state
   }
   
+  // Basic format check with regex
   if (!EMAIL_REGEX.test(email)) {
+    return { isValid: false, error: 'Please enter a valid email address (e.g., name@example.com)' };
+  }
+  
+  // Additional validation: check for minimum lengths
+  const parts = email.split('@');
+  if (parts.length !== 2) {
     return { isValid: false, error: 'Please enter a valid email address' };
+  }
+  
+  const [localPart, domainPart] = parts;
+  const domainParts = domainPart.split('.');
+  
+  // Validate local part (before @)
+  if (!localPart || localPart.length === 0) {
+    return { isValid: false, error: 'Email address must have a name before @' };
+  }
+  
+  // Validate domain structure
+  if (domainParts.length < 2) {
+    return { isValid: false, error: 'Email address must include a domain and extension (e.g., .com)' };
+  }
+  
+  const domain = domainParts[0];
+  const tld = domainParts[domainParts.length - 1];
+  
+  // Domain must be at least 2 characters
+  if (!domain || domain.length < 2) {
+    return { isValid: false, error: 'Please enter a valid email address' };
+  }
+  
+  // TLD must be at least 2 characters
+  if (!tld || tld.length < 2) {
+    return { isValid: false, error: 'Email address must have a valid extension (e.g., .com, .org)' };
   }
   
   // Check for fake domains
