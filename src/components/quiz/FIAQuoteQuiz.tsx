@@ -133,6 +133,19 @@ export const FIAQuoteQuiz = () => {
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
 
+  // Helper function to get session ID - prioritizes sessionStorage (sess_ format from trackPageView)
+  // This ensures leads link correctly to analytics_events table
+  const getSessionId = (): string => {
+    if (typeof window !== 'undefined') {
+      const sessionId = sessionStorage.getItem('session_id');
+      if (sessionId) {
+        return sessionId; // Use the sess_... format from trackPageView (matches analytics_events)
+      }
+    }
+    // Fallback to quizSessionId only if sessionStorage is empty (backward compatibility)
+    return quizSessionId || 'unknown';
+  };
+
   // Filter questions based on conditional logic
   const getFilteredQuestions = () => {
     // Skip allocation slider if savings < $100k
@@ -245,7 +258,7 @@ export const FIAQuoteQuiz = () => {
         firstName: answer.firstName,
         lastName: answer.lastName,
         quizAnswers: updatedAnswers,
-        sessionId: quizSessionId || 'unknown',
+        sessionId: getSessionId(), // Use sessionStorage session_id to link with analytics_events
         funnelType: 'fia_quote',
         zipCode: updatedAnswers.locationInfo?.zipCode,
         state: updatedAnswers.locationInfo?.state,
@@ -451,7 +464,7 @@ export const FIAQuoteQuiz = () => {
         body: JSON.stringify({
           site_key: 'SENIORSIMPLE',
           funnel_type: 'fia_quote',
-          session_id: quizSessionId || 'unknown',
+          session_id: getSessionId(), // Use sessionStorage session_id to link with analytics_events
           user_id: answers.personalInfo?.email,
           contact: {
             email: answers.personalInfo?.email,

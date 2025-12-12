@@ -219,6 +219,19 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
 
+  // Helper function to get session ID - prioritizes sessionStorage (sess_ format from trackPageView)
+  // This ensures leads link correctly to analytics_events table
+  const getSessionId = (): string => {
+    if (typeof window !== 'undefined') {
+      const sessionId = sessionStorage.getItem('session_id');
+      if (sessionId) {
+        return sessionId; // Use the sess_... format from trackPageView (matches analytics_events)
+      }
+    }
+    // Fallback to quizSessionId only if sessionStorage is empty (backward compatibility)
+    return quizSessionId || 'unknown';
+  };
+
   // Filter questions based on conditional logic
   const getFilteredQuestions = () => {
     const baseQuestions = funnelType === 'primary' ? PRIMARY_QUIZ_QUESTIONS : SECONDARY_QUIZ_QUESTIONS;
@@ -362,7 +375,7 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
         lastName: answer.lastName,
         phoneNumber: answer.phone, // Now included in consolidated form
         quizAnswers: updatedAnswers,
-        sessionId: quizSessionId || 'unknown',
+        sessionId: getSessionId(), // Use sessionStorage session_id to link with analytics_events
         funnelType: funnelType,
         zipCode: updatedAnswers.locationInfo?.zipCode,
         state: updatedAnswers.locationInfo?.state,
@@ -454,7 +467,7 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
               stateName: updatedAnswers.locationInfo?.stateName,
               licensingInfo: updatedAnswers.locationInfo?.licensing,
               utmParams: utmParams,
-              sessionId: quizSessionId || 'unknown',
+              sessionId: getSessionId(), // Use sessionStorage session_id to link with analytics_events
               funnelType: funnelType
             })
           });
@@ -850,7 +863,7 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
       state: answers.locationInfo?.state,
       stateName: answers.locationInfo?.stateName,
       utmParams: utmParams,
-      sessionId: quizSessionId || 'unknown'
+      sessionId: getSessionId() // Use sessionStorage session_id to link with analytics_events
     });
   };
 
