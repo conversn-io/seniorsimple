@@ -72,6 +72,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
   // Phone API validation state
   const [isValidatingPhone, setIsValidatingPhone] = useState(false);
+  const [phoneAPIValid, setPhoneAPIValid] = useState(false);
 
   // Debounced zip validation
   useEffect(() => {
@@ -84,8 +85,11 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   }, [zipCode, question.type]);
 
-  // Debounced phone API validation (Level 3)
+  // Debounced phone API validation (Level 3) - REQUIRED
   useEffect(() => {
+    // Reset API validation state when phone changes
+    setPhoneAPIValid(false);
+    
     // Only trigger API validation if:
     // 1. Question type is personal-info
     // 2. Phone format is valid (10 digits)
@@ -95,13 +99,19 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
       const timeoutId = setTimeout(async () => {
         try {
           const apiResult = await validatePhoneAPI(phone);
-          if (!apiResult.valid) {
+          if (apiResult.valid) {
+            setPhoneAPIValid(true);
+            setPhoneError(''); // Clear any previous errors
+          } else {
+            setPhoneAPIValid(false);
             setPhoneError(apiResult.error || 'Invalid phone number');
             setPhoneValidationState('invalid');
           }
         } catch (error) {
           console.error('Phone API validation error:', error);
-          // Don't block submission if API fails - graceful fallback
+          setPhoneAPIValid(false);
+          setPhoneError('Unable to verify phone number. Please try again.');
+          setPhoneValidationState('invalid');
         } finally {
           setIsValidatingPhone(false);
         }
@@ -111,6 +121,9 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         clearTimeout(timeoutId);
         setIsValidatingPhone(false);
       };
+    } else if (phone.length === 0) {
+      // Reset when phone is cleared
+      setPhoneAPIValid(false);
     }
   }, [phone, phoneValidationState, phoneError, question.type]);
 
@@ -444,20 +457,22 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
                   <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
                 )}
-                {!isValidatingPhone && phoneValidationState === 'valid' && phone && (
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && phoneAPIValid && (
                   <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
                 )}
               </div>
-              {phoneValidationState === 'invalid' && phoneError && (
-                <p className="text-red-600 text-sm mt-2">{phoneError}</p>
-              )}
-              {phoneValidationState === 'valid' && phone && !isValidatingPhone && (
+              {phoneValidationState === 'valid' && phone && !isValidatingPhone && phoneAPIValid && (
                 <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
               )}
               {phoneValidationState === 'empty' && (
                 <p className="text-sm text-gray-500 mt-2">
                   We'll send a verification code to this number
                 </p>
+              )}
+              {phoneError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                  <p className="text-red-600 text-sm">{phoneError}</p>
+                </div>
               )}
             </div>
             <div className="flex items-start space-x-4">
@@ -474,12 +489,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
               </label>
             </div>
 
-            {phoneError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm">{phoneError}</p>
-              </div>
-            )}
-
             <button
               type="submit"
               className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
@@ -491,6 +500,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 !consentChecked || 
                 emailValidationState !== 'valid' ||
                 phoneValidationState !== 'valid' ||
+                !phoneAPIValid ||
                 isValidatingPhone ||
                 isLoading
               }
@@ -614,7 +624,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
                   <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
                 )}
-                {!isValidatingPhone && phoneValidationState === 'valid' && phone && (
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && phoneAPIValid && (
                   <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
                 )}
               </div>
