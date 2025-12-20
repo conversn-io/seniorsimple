@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert into analytics_events
-    const { data, error } = await callreadyQuizDb
+    // Insert into analytics_events with timeout protection
+    // Use Promise.race to timeout after 2 seconds
+    const insertPromise = callreadyQuizDb
       .from('analytics_events')
       .insert({
         event_name,
@@ -54,26 +55,40 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ Supabase PageView insert error:', error);
+    const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) => {
+      setTimeout(() => resolve({ data: null, error: { message: 'Timeout after 2 seconds' } }), 2000);
+    });
+
+    // Race between insert and timeout
+    const result = await Promise.race([insertPromise, timeoutPromise]) as { data: any; error: any };
+
+    if (result.error) {
+      // Log error but return success to prevent blocking client
+      console.warn('⚠️ Supabase PageView insert timeout/error (non-blocking):', result.error.message);
+      
+      // Return 202 Accepted - fire and forget pattern
+      // Client doesn't need to wait for Supabase response
       return NextResponse.json(
-        { error: 'Failed to save PageView event', details: error.message },
-        { status: 500 }
+        { success: true, queued: true, message: 'Event accepted, processing in background' },
+        { status: 202 }
       );
     }
 
-    console.log('✅ PageView saved to Supabase:', data.id);
+    console.log('✅ PageView saved to Supabase:', result.data?.id);
 
     return NextResponse.json({
       success: true,
-      event_id: data.id
+      event_id: result.data?.id
     });
 
   } catch (error: any) {
-    console.error('❌ PageView tracking error:', error);
+    // Log error but return success to prevent blocking
+    console.error('❌ PageView tracking error (non-blocking):', error);
+    
+    // Return 202 Accepted - fire and forget
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { success: true, queued: true, message: 'Event accepted, processing may be delayed' },
+      { status: 202 }
     );
   }
 }
