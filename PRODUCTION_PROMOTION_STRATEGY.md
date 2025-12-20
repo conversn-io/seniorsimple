@@ -325,3 +325,5 @@ This approach minimizes risk to production while allowing incremental improvemen
 - **Supabase Dashboard**: https://supabase.com/dashboard/project/vpysqshhafthuxvokwqj
 - **GitHub Repo**: https://github.com/conversn-io/seniorsimple
 
+
+

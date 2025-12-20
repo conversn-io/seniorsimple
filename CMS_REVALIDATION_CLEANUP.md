@@ -184,3 +184,5 @@ This creates a cleaner, more maintainable architecture where:
 - **Sites** handle indexing and content delivery
 - **No cache management** needed due to dynamic rendering
 
+
+

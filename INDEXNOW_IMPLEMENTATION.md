@@ -187,3 +187,5 @@ curl -X POST https://seniorsimple.org/api/indexnow/submit \
 - [IndexNow FAQ](https://www.indexnow.org/faq)
 - [Bing IndexNow](https://www.bing.com/indexnow)
 
+
+

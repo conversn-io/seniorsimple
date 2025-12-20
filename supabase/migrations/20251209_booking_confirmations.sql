@@ -46,3 +46,5 @@ CREATE POLICY "Anon can read booking confirmations"
   FOR SELECT
   USING (true);
 
+
+

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
@@ -94,23 +95,17 @@ export default function RootLayout({
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/images/logos/senior-simple-logo-circle-mark-favicon.png" />
         
-        {/* ❌ TEMPORARILY DISABLED: Google Tag Manager - Using direct tracking */}
-        {/* 
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-T75CL8X9');`,
-          }}
-        />
-        */}
-        
-        {/* ✅ DIRECT TRACKING: GA4 Base Code (Synchronous Loading) */}
+        {/* Critical scripts only - analytics deferred to afterInteractive */}
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {/* Deferred Analytics Scripts - Load after page is interactive */}
         {process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE && (
           <>
-            <script
+            <Script
+              id="ga4-init"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
@@ -120,15 +115,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 `
               }}
             />
-            <script
-              async
+            <Script
+              id="ga4-loader"
+              strategy="afterInteractive"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID_SENIORSIMPLE}`}
             />
           </>
         )}
         
-        {/* ✅ DIRECT TRACKING: Meta Pixel Base Code (with bot detection) */}
-        <script
+        {/* Meta Pixel - Deferred */}
+        <Script
+          id="meta-pixel"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               !function(f,b,e,v,n,t,s)
@@ -152,7 +150,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   fbq('init', '24221789587508633');
                   fbq('track', 'PageView');
                 } else {
-                  // Still initialize but don't track PageView for bots
                   fbq('init', '24221789587508633');
                 }
               })();
@@ -164,40 +161,34 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                src="https://www.facebook.com/tr?id=24221789587508633&ev=PageView&noscript=1" />
         </noscript>
         
-        {/* ✅ PageTest.ai Testing Script */}
-        <script
+        {/* PageTest.ai - Lazy Load */}
+        <Script
+          id="pagetest-init"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `window.ptaiParams = { team: 'iEnn6B' };`
           }}
         />
-        <script
+        <Script
+          id="pagetest-loader"
+          strategy="lazyOnload"
           src="https://app.pagetest.ai/build/snippet/ptai.js?v=1.0.5"
-          async
         />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* Consolidata Analytics & Visitor Tracking */}
+        
+        {/* Consolidata Analytics - Lazy Load */}
         <div id="consolidata-hm-script-loader" consolidata-hm-23-data-name="1241781759524463-3923"></div>
-        <script 
-          id="consolidata-hm-23-domain-name" 
-          consolidata-hm-23-data-name="1241781759524463-3923" 
-          type="text/javascript" 
+        <Script
+          id="consolidata-loader"
+          strategy="lazyOnload"
           src="https://ms1.consolidata.ai/analytics/script-loader/1241781759524463-3923"
-        ></script>
-        <script async src="https://api.visitoredge.com/api/website/run-cookie-script"></script>
-        {/* ❌ TEMPORARILY DISABLED: Google Tag Manager (noscript) - Using direct tracking */}
-        {/*
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-T75CL8X9"
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
-          />
-        </noscript>
-        */}
+        />
+        
+        {/* Visitoredge - Lazy Load */}
+        <Script
+          id="visitoredge-loader"
+          strategy="lazyOnload"
+          src="https://api.visitoredge.com/api/website/run-cookie-script"
+        />
         
         <LayoutProvider>
           <ConditionalHeader />

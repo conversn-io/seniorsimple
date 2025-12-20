@@ -85,9 +85,23 @@ export const metadata: Metadata = {
   },
 }
 
+// Enable ISR (Incremental Static Regeneration) for better performance
+export const revalidate = 300; // Revalidate every 5 minutes
+
 export default async function HomePage() {
-  // Fetch featured articles for the homepage
-  const { articles: featuredArticles, error } = await getFeaturedArticles(3)
+  // Fetch featured articles for the homepage (with error handling to prevent blocking)
+  let featuredArticles: any[] = [];
+  let error: Error | null = null;
+  
+  try {
+    const result = await getFeaturedArticles(3);
+    featuredArticles = result.articles || [];
+    error = result.error;
+  } catch (err) {
+    console.error('Failed to load featured articles:', err);
+    // Continue rendering even if articles fail to load
+    featuredArticles = [];
+  }
 
   // FAQ data for structured data
   const faqData = [

@@ -309,3 +309,5 @@ This would eliminate the need for two separate footer components.
 3. Begin implementation
 4. Test and verify
 
+
+
