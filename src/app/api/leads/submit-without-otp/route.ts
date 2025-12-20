@@ -439,7 +439,11 @@ export async function POST(request: NextRequest) {
       await callreadyQuizDb
         .from('leads')
         .update({ 
-          ghlStatus: ghlResponse.status 
+          ghl_status: {
+            status: ghlResponse.status,
+            timestamp: new Date().toISOString(),
+            success: true
+          }
         })
         .eq('id', lead.id);
 
@@ -463,9 +467,14 @@ export async function POST(request: NextRequest) {
       await callreadyQuizDb
         .from('leads')
         .update({ 
-          ghlStatus: ghlResponse.status,
-          ghlStatusText: ghlResponse.statusText,
-          ghlResponse: ghlResponseData
+          ghl_status: {
+            status: ghlResponse.status,
+            statusText: ghlResponse.statusText,
+            response: ghlResponseData,
+            timestamp: new Date().toISOString(),
+            success: false,
+            error: `HTTP ${ghlResponse.status}: ${ghlResponse.statusText}`
+          }
         })
         .eq('id', lead.id);
 
