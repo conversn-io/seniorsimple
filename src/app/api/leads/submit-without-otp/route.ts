@@ -161,19 +161,55 @@ async function upsertLead(
   }
   
   // Get contact data for contact JSONB field
-  const { data: contact } = await callreadyQuizDb
+  const { data: contact, error: contactFetchError } = await callreadyQuizDb
     .from('contacts')
     .select('email, phone_e164, first_name, last_name, zip_code')
     .eq('id', contactId)
     .maybeSingle();
   
+  // Log errors for debugging
+  if (contactFetchError) {
+    console.error('❌ Error fetching contact data:', {
+      contactId,
+      error: contactFetchError,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  if (!contact) {
+    console.error('⚠️ WARNING: Contact not found in database!', {
+      contactId,
+      willUseFallback: true,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  // Use contact from DB if available, otherwise fallback to data from request
+  // This prevents NULL contact fields if the DB query fails
   const contactData = contact ? {
     email: contact.email,
     phone: contact.phone_e164 || null,
     first_name: contact.first_name,
     last_name: contact.last_name,
     zip_code: contact.zip_code || zipCode || null
-  } : null;
+  } : {
+    // Fallback: use data from the current request
+    email: email || null,
+    phone: phoneNumber || null,
+    first_name: firstName || null,
+    last_name: lastName || null,
+    zip_code: zipCode || null
+  };
+  
+  // Log if we're using fallback data
+  if (!contact && contactData.email) {
+    console.warn('✅ Using fallback contact data from request', {
+      contactId,
+      hasEmail: !!contactData.email,
+      hasPhone: !!contactData.phone,
+      hasName: !!(contactData.first_name && contactData.last_name)
+    });
+  }
 
   const leadData: any = {
     contact_id: contactId,
