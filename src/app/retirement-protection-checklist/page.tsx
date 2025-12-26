@@ -1,15 +1,14 @@
-import { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
-import { CheckCircle2, Shield, Calculator, Receipt, Clock, UserCheck, TrendingUp, DollarSign, Heart, ClipboardList } from 'lucide-react'
+import { CheckCircle2, Shield, Calculator, Receipt, Clock, UserCheck, TrendingUp, DollarSign, Heart, ClipboardList, Download } from 'lucide-react'
 import InteractiveCheckbox from '@/components/checklist/InteractiveCheckbox'
 
-export const metadata: Metadata = {
-  title: 'Retirement Protection Checklist - 10 Essential Points Every Pre-Retiree Should Know',
-  description: 'Complete this checklist to identify gaps in your retirement protection strategy. Essential for Americans with $250K+ in retirement savings.',
-  keywords: ['retirement protection', 'retirement checklist', 'pre-retirement planning', 'retirement security', 'retirement strategy'],
-}
-
 export default function RetirementProtectionChecklistPage() {
+  const handleDownloadPDF = () => {
+    // Open print dialog which allows users to save as PDF
+    window.print()
+  }
   const checklistItems = [
     {
       id: 1,
@@ -145,7 +144,23 @@ export default function RetirementProtectionChecklistPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0]">
+    <>
+      {/* Print Styles */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+          body {
+            background: white;
+          }
+          .min-h-screen {
+            min-height: auto;
+          }
+        }
+      `}} />
+      
+      <div className="min-h-screen bg-[#F5F5F0]">
       {/* Header Section */}
       <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
         <div className="max-w-4xl mx-auto text-center text-white">
@@ -156,9 +171,16 @@ export default function RetirementProtectionChecklistPage() {
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Retirement Protection Checklist</h1>
           <h2 className="text-xl md:text-2xl font-medium mb-4">10 Essential Points Every Pre-Retiree Should Know</h2>
-          <div className="inline-block bg-white bg-opacity-20 px-6 py-2 rounded-full">
+          <div className="inline-block bg-white bg-opacity-20 px-6 py-2 rounded-full mb-6">
             <span className="text-sm font-medium text-[#36596A]">For Americans with $250K+ in Retirement Savings</span>
           </div>
+          <button
+            onClick={handleDownloadPDF}
+            className="no-print inline-flex items-center space-x-2 bg-white text-[#36596A] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          >
+            <Download className="w-5 h-5" />
+            <span>Download PDF</span>
+          </button>
         </div>
       </section>
 
@@ -334,8 +356,11 @@ export default function RetirementProtectionChecklistPage() {
       </section>
 
       {/* Interactive Checkbox Component */}
-      <InteractiveCheckbox />
-    </div>
+      <div className="no-print">
+        <InteractiveCheckbox />
+      </div>
+      </div>
+    </>
   )
 }
 
