@@ -120,7 +120,11 @@ async function upsertLead(
   calculatedResults: any,
   licensingInfo: any,
   utmParams: any,
-  isVerified: boolean = false
+  isVerified: boolean = false,
+  fallbackEmail?: string | null,
+  fallbackPhone?: string | null,
+  fallbackFirstName?: string | null,
+  fallbackLastName?: string | null
 ) {
   const verifiedAt = isVerified ? new Date().toISOString() : null;
   
@@ -206,10 +210,10 @@ async function upsertLead(
     zip_code: contact.zip_code || zipCode || null
   } : {
     // Fallback: reconstruct from the contact record we just created/updated
-    email: email || null,
-    phone: phoneNumber || null,
-    first_name: firstName || null,
-    last_name: lastName || null,
+    email: fallbackEmail || null,
+    phone: fallbackPhone || null,
+    first_name: fallbackFirstName || null,
+    last_name: fallbackLastName || null,
     zip_code: zipCode || null
   };
   
@@ -380,7 +384,11 @@ export async function POST(request: NextRequest) {
         calculatedResults,
         licensingInfo,
         utmParams,
-        true // is_verified = true
+        true, // is_verified = true
+        email, // fallbackEmail
+        phoneNumber, // fallbackPhone
+        firstName, // fallbackFirstName
+        lastName // fallbackLastName
       );
     } else {
       // Update existing lead to verified status WITH ALL NEW DATA

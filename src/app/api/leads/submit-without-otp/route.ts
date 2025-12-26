@@ -108,7 +108,11 @@ async function upsertLead(
   calculatedResults: any,
   licensingInfo: any,
   utmParams: any,
-  isVerified: boolean = true // Default to true for no-OTP flow
+  isVerified: boolean = true, // Default to true for no-OTP flow
+  fallbackEmail?: string | null,
+  fallbackPhone?: string | null,
+  fallbackFirstName?: string | null,
+  fallbackLastName?: string | null
 ) {
   const verifiedAt = isVerified ? new Date().toISOString() : null;
   
@@ -194,10 +198,10 @@ async function upsertLead(
     zip_code: contact.zip_code || zipCode || null
   } : {
     // Fallback: use data from the current request
-    email: email || null,
-    phone: phoneNumber || null,
-    first_name: firstName || null,
-    last_name: lastName || null,
+    email: fallbackEmail || null,
+    phone: fallbackPhone || null,
+    first_name: fallbackFirstName || null,
+    last_name: fallbackLastName || null,
     zip_code: zipCode || null
   };
   
@@ -327,7 +331,11 @@ export async function POST(request: NextRequest) {
       calculatedResults,
       licensingInfo,
       utmParams,
-      true // is_verified = true (no OTP required)
+      true, // is_verified = true (no OTP required)
+      email, // fallbackEmail
+      phoneNumber, // fallbackPhone
+      firstName, // fallbackFirstName
+      lastName // fallbackLastName
     );
     console.log('✅ Lead upserted:', lead.id);
 
