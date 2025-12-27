@@ -31,7 +31,7 @@ function BookingPageContent() {
   useFunnelLayout() // Sets header and footer to 'funnel'
   const [contactData, setContactData] = useState<QuizAnswers | null>(null)
   const [isCalendarLoaded, setIsCalendarLoaded] = useState(false)
-  const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK')
+  const [calendarUrl, setCalendarUrl] = useState<string>('https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom')
   const [hasRedirected, setHasRedirected] = useState(false)
 
   useEffect(() => {
@@ -70,8 +70,8 @@ function BookingPageContent() {
         // Build calendar URL with email parameter and redirect URL
         // NOTE: Conversn.io calendar widget may have its own redirect URL configured in the dashboard
         // If the widget's native redirect overrides URL parameters, you may need to update the
-        // redirect URL in the Conversn.io dashboard settings for widget ID: 9oszv21kQ1Tx6jG4qopK
-        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        // redirect URL in the Conversn.io dashboard settings for widget ID: 8ATad4yjNpsCln3IEYom
+        const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
         const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
         const redirectUrl = `${siteUrl}/quiz-submitted`
         
@@ -132,7 +132,7 @@ function BookingPageContent() {
         console.warn('⚠️ Using URL email as minimal fallback:', email)
 
         // Build calendar URL with email + redirect params
-        const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+        const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
         const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
         const redirectUrl = `${siteUrl}/quiz-submitted`
         const urlParams = new URLSearchParams()
@@ -164,7 +164,7 @@ function BookingPageContent() {
       console.log('ℹ️ No quiz data found - allowing direct booking (calendar will collect user info)')
       
       // Build calendar URL with redirect params (no email pre-fill)
-      const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+      const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
       const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
       const redirectUrl = `${siteUrl}/quiz-submitted`
       const urlParams = new URLSearchParams()
@@ -330,7 +330,7 @@ function BookingPageContent() {
   // GHL forms require parameter names that match the form field 'name' attributes
   // Common GHL field names: email, first_name, last_name, phone (snake_case) or firstName, lastName (camelCase)
   const buildCalendarUrl = () => {
-    const baseUrl = 'https://link.conversn.io/widget/booking/9oszv21kQ1Tx6jG4qopK'
+    const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
     
     // Extract contact data
     const email = 
