@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
 import { trackGA4Event } from '@/lib/temp-tracking'
 import Script from 'next/script'
+import { getStoredUTMParameters, UTMParameters } from '@/utils/utm-utils'
 
 interface QuizAnswers {
   personalInfo?: {
@@ -77,9 +78,24 @@ function BookingPageContent() {
         
         let urlParams = new URLSearchParams()
         
-        // Add email if available
+        // Add email if available (required for form pre-fill)
         if (email) {
           urlParams.append('email', email)
+        }
+        
+        // Add UTM parameters from sessionStorage (critical for attribution)
+        const utmParams = getStoredUTMParameters()
+        if (utmParams) {
+          if (utmParams.utm_source) urlParams.append('utm_source', utmParams.utm_source)
+          if (utmParams.utm_medium) urlParams.append('utm_medium', utmParams.utm_medium)
+          if (utmParams.utm_campaign) urlParams.append('utm_campaign', utmParams.utm_campaign)
+          if (utmParams.utm_term) urlParams.append('utm_term', utmParams.utm_term)
+          if (utmParams.utm_content) urlParams.append('utm_content', utmParams.utm_content)
+          if (utmParams.utm_id) urlParams.append('utm_id', utmParams.utm_id)
+          if (utmParams.gclid) urlParams.append('gclid', utmParams.gclid)
+          if (utmParams.fbclid) urlParams.append('fbclid', utmParams.fbclid)
+          if (utmParams.msclkid) urlParams.append('msclkid', utmParams.msclkid)
+          console.log('📊 UTM parameters added to calendar URL:', utmParams)
         }
         
         // Add redirect URL parameter (Conversn.io may support redirect_url, redirect, or return_url)
@@ -93,7 +109,7 @@ function BookingPageContent() {
         setCalendarUrl(calendarUrlWithParams)
         
         if (email) {
-          console.log('✅ Calendar URL built with email and redirect:', calendarUrlWithParams)
+          console.log('✅ Calendar URL built with email, UTM params, and redirect:', calendarUrlWithParams)
         } else {
           console.warn('⚠️ No email found - using base URL with redirect parameter')
           console.log('📋 Calendar URL with redirect:', calendarUrlWithParams)
@@ -137,6 +153,21 @@ function BookingPageContent() {
         const redirectUrl = `${siteUrl}/quiz-submitted`
         const urlParams = new URLSearchParams()
         urlParams.append('email', email)
+        
+        // Add UTM parameters from sessionStorage
+        const utmParams = getStoredUTMParameters()
+        if (utmParams) {
+          if (utmParams.utm_source) urlParams.append('utm_source', utmParams.utm_source)
+          if (utmParams.utm_medium) urlParams.append('utm_medium', utmParams.utm_medium)
+          if (utmParams.utm_campaign) urlParams.append('utm_campaign', utmParams.utm_campaign)
+          if (utmParams.utm_term) urlParams.append('utm_term', utmParams.utm_term)
+          if (utmParams.utm_content) urlParams.append('utm_content', utmParams.utm_content)
+          if (utmParams.utm_id) urlParams.append('utm_id', utmParams.utm_id)
+          if (utmParams.gclid) urlParams.append('gclid', utmParams.gclid)
+          if (utmParams.fbclid) urlParams.append('fbclid', utmParams.fbclid)
+          if (utmParams.msclkid) urlParams.append('msclkid', utmParams.msclkid)
+        }
+        
         urlParams.append('redirect_url', redirectUrl)
         urlParams.append('redirect', redirectUrl)
         urlParams.append('return_url', redirectUrl)
@@ -168,6 +199,21 @@ function BookingPageContent() {
       const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
       const redirectUrl = `${siteUrl}/quiz-submitted`
       const urlParams = new URLSearchParams()
+      
+      // Add UTM parameters from sessionStorage (even without email)
+      const utmParams = getStoredUTMParameters()
+      if (utmParams) {
+        if (utmParams.utm_source) urlParams.append('utm_source', utmParams.utm_source)
+        if (utmParams.utm_medium) urlParams.append('utm_medium', utmParams.utm_medium)
+        if (utmParams.utm_campaign) urlParams.append('utm_campaign', utmParams.utm_campaign)
+        if (utmParams.utm_term) urlParams.append('utm_term', utmParams.utm_term)
+        if (utmParams.utm_content) urlParams.append('utm_content', utmParams.utm_content)
+        if (utmParams.utm_id) urlParams.append('utm_id', utmParams.utm_id)
+        if (utmParams.gclid) urlParams.append('gclid', utmParams.gclid)
+        if (utmParams.fbclid) urlParams.append('fbclid', utmParams.fbclid)
+        if (utmParams.msclkid) urlParams.append('msclkid', utmParams.msclkid)
+      }
+      
       urlParams.append('redirect_url', redirectUrl)
       urlParams.append('redirect', redirectUrl)
       urlParams.append('return_url', redirectUrl)
@@ -361,20 +407,36 @@ function BookingPageContent() {
     console.log('  - Last Name:', lastName || '❌ NOT FOUND')
     console.log('  - Phone:', phone || '❌ NOT FOUND')
     
-    // Build URL with GHL form parameter
-    // GHL form field name confirmed as: 'email'
+    // Build URL with email and UTM parameters
+    const urlParams = new URLSearchParams()
+    
+    // Add email if available (required for form pre-fill)
     if (email) {
-      // URL encode the email to handle special characters
-      const encodedEmail = encodeURIComponent(email)
-      const finalUrl = `${baseUrl}?email=${encodedEmail}`
-      
-      console.log('  - Final URL with GHL email parameter:', finalUrl)
-      console.log('  - GHL field name: email (confirmed)')
-      
+      urlParams.append('email', email)
+    }
+    
+    // Add UTM parameters from sessionStorage (critical for attribution)
+    const utmParams = getStoredUTMParameters()
+    if (utmParams) {
+      if (utmParams.utm_source) urlParams.append('utm_source', utmParams.utm_source)
+      if (utmParams.utm_medium) urlParams.append('utm_medium', utmParams.utm_medium)
+      if (utmParams.utm_campaign) urlParams.append('utm_campaign', utmParams.utm_campaign)
+      if (utmParams.utm_term) urlParams.append('utm_term', utmParams.utm_term)
+      if (utmParams.utm_content) urlParams.append('utm_content', utmParams.utm_content)
+      if (utmParams.utm_id) urlParams.append('utm_id', utmParams.utm_id)
+      if (utmParams.gclid) urlParams.append('gclid', utmParams.gclid)
+      if (utmParams.fbclid) urlParams.append('fbclid', utmParams.fbclid)
+      if (utmParams.msclkid) urlParams.append('msclkid', utmParams.msclkid)
+      console.log('  - UTM parameters added:', utmParams)
+    }
+    
+    if (urlParams.toString()) {
+      const finalUrl = `${baseUrl}?${urlParams.toString()}`
+      console.log('  - Final URL with email and UTM parameters:', finalUrl)
       return finalUrl
     }
     
-    console.warn('⚠️ No email found - using base URL without email parameter')
+    console.warn('⚠️ No email or UTM parameters found - using base URL')
     return baseUrl
   }
 
