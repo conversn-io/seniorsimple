@@ -101,10 +101,11 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     setPhoneAPIValid(false);
     
     // Only trigger API validation if:
-    // 1. Question type is personal-info
+    // 1. Question type is personal-info or personal-info-with-benefits
     // 2. Phone format is valid (10 digits)
     // 3. No existing format/fake errors
-    if (question.type === 'personal-info' && phoneValidationState === 'valid' && phone.length === 10 && !phoneError) {
+    const isPersonalInfoType = question.type === 'personal-info' || question.type === 'personal-info-with-benefits';
+    if (isPersonalInfoType && phoneValidationState === 'valid' && phone.length === 10 && !phoneError) {
       setIsValidatingPhone(true);
       const timeoutId = setTimeout(async () => {
         try {
@@ -209,6 +210,26 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('📝 Form submit handler called:', {
+      questionType: question.type,
+      firstName: !!firstName,
+      lastName: !!lastName,
+      email: !!email,
+      phone: !!phone,
+      emailValid: emailValidationState === 'valid',
+      phoneValid: phoneValidationState === 'valid',
+      phoneAPIValid,
+      isValidatingPhone,
+      isLoading
+    });
+    
+    // Prevent double submission
+    if (isLoading) {
+      console.log('⚠️ Submission prevented - already loading');
+      return;
+    }
+    
     // For personal-info-with-benefits, consent is implied by clicking the button
     // For regular personal-info, require checkbox
     const requiresConsent = question.type === 'personal-info';
@@ -227,12 +248,22 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
       // Format phone with +1 for storage/submission
       const formattedPhoneNumber = formatPhoneForGHL(digits);
       
+      console.log('✅ Calling onAnswer with form data');
       onAnswer({
         firstName,
         lastName,
         email,
         phone: formattedPhoneNumber,
         consent: requiresConsent ? consentChecked : true // Implied consent for personal-info-with-benefits
+      });
+    } else {
+      console.error('❌ Form validation failed:', {
+        firstName: !!firstName,
+        lastName: !!lastName,
+        email: !!email,
+        phone: !!phone,
+        requiresConsent,
+        consentChecked
       });
     }
   };
@@ -679,7 +710,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
             <button
               type="submit"
-              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
                 !firstName || 
                 !lastName || 
@@ -687,13 +718,24 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 !phone || 
                 emailValidationState !== 'valid' ||
                 phoneValidationState !== 'valid' ||
-                !phoneAPIValid ||
-                isValidatingPhone ||
                 isLoading
               }
+              onClick={(e) => {
+                console.log('🔘 Button clicked:', {
+                  firstName: !!firstName,
+                  lastName: !!lastName,
+                  email: !!email,
+                  phone: !!phone,
+                  emailValid: emailValidationState === 'valid',
+                  phoneValid: phoneValidationState === 'valid',
+                  isValidatingPhone,
+                  isLoading,
+                  disabled: !firstName || !lastName || !email || !phone || emailValidationState !== 'valid' || phoneValidationState !== 'valid' || isLoading
+                });
+              }}
               style={{ minHeight: '64px' }}
             >
-              Get Your Free Quote
+              {isLoading ? 'Submitting...' : 'Get Your Free Quote'}
             </button>
 
             <div className="mt-4">

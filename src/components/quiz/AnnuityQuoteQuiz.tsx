@@ -222,6 +222,14 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
     setAnswers(updatedAnswers);
 
     if (currentQuestion.id === 'personalInfo') {
+      console.log('📝 Personal Info Submitted:', {
+        email: answer.email,
+        phone: answer.phone,
+        firstName: answer.firstName,
+        lastName: answer.lastName,
+        sessionId: getSessionId()
+      });
+      
       setShowProcessing(true);
       
       try {
@@ -242,23 +250,40 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
           })
         });
 
-        const result = await response.json();
+        console.log('📡 API Response Status:', response.status);
         
-        if (result.success) {
-          const answersJson = JSON.stringify(updatedAnswers);
-          sessionStorage.setItem('quiz_answers', answersJson);
-          localStorage.setItem('quiz_answers', answersJson);
-          
-          setShowProcessing(false);
-          setShowResults(true);
-        } else {
-          setShowProcessing(false);
-          setShowResults(true);
+        let result;
+        try {
+          result = await response.json();
+        } catch (parseError) {
+          const text = await response.text();
+          console.error('❌ Failed to parse response:', text);
+          result = { success: false, error: 'Invalid response from server' };
         }
-      } catch (error) {
-        console.error('Form submission error:', error);
+        
+        console.log('📡 API Response:', result);
+        
+        // Store answers regardless of API response
+        const answersJson = JSON.stringify(updatedAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
+        
+        // Always show results page, even if API call failed
         setShowProcessing(false);
         setShowResults(true);
+        console.log('✅ Showing results page');
+      } catch (error) {
+        console.error('💥 Form submission error:', error);
+        
+        // Store answers even on error
+        const answersJson = JSON.stringify(updatedAnswers);
+        sessionStorage.setItem('quiz_answers', answersJson);
+        localStorage.setItem('quiz_answers', answersJson);
+        
+        // Show results page even on error
+        setShowProcessing(false);
+        setShowResults(true);
+        console.log('✅ Showing results page (error case)');
       }
       return;
     }
@@ -342,6 +367,7 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
             question={currentQuestion}
             onAnswer={handleAnswer}
             currentAnswer={answers[currentQuestion.id]}
+            isLoading={showProcessing}
           />
         )}
       </div>
