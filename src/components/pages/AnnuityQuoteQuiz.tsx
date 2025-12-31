@@ -80,30 +80,9 @@ const AnnuityQuoteQuizPage = ({ skipOTP = false }: AnnuityQuoteQuizProps) => {
                     Compare today's top annuity options and see how much lifetime income your savings can safely generate
                   </p>
                   
-                  <div className="mt-6 mb-4">
-                    <button
-                      onClick={() => {
-                        trackGA4Event('cta_click', {
-                          test_name: 'annuity_quote_headline',
-                          variant: 'A',
-                          cta_text: 'Get My Personalized Annuity Quote',
-                          page_path: '/annuity-quote',
-                          event_category: 'ab_testing'
-                        });
-                        // Scroll to quiz smoothly
-                        const quizElement = document.querySelector('.max-w-2xl');
-                        if (quizElement) {
-                          quizElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                      }}
-                      className="inline-block bg-[#36596A] text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-[#2a4a5a] transition-colors shadow-lg hover:shadow-xl"
-                    >
-                      Get My Personalized Annuity Quote
-                    </button>
-                    <p className="text-sm text-gray-600 mt-3">
-                      Free • Secure • Takes 2–3 minutes
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-600 mt-4">
+                    Free • Secure • Takes 2–3 minutes
+                  </p>
                 </>
               ) : (
                 <>
@@ -116,30 +95,9 @@ const AnnuityQuoteQuizPage = ({ skipOTP = false }: AnnuityQuoteQuizProps) => {
                     See how an annuity can provide guaranteed monthly income for the rest of your life
                   </p>
                   
-                  <div className="mt-6 mb-4">
-                    <button
-                      onClick={() => {
-                        trackGA4Event('cta_click', {
-                          test_name: 'annuity_quote_headline',
-                          variant: 'B',
-                          cta_text: 'See My Income Options',
-                          page_path: '/annuity-quote',
-                          event_category: 'ab_testing'
-                        });
-                        // Scroll to quiz smoothly
-                        const quizElement = document.querySelector('.max-w-2xl');
-                        if (quizElement) {
-                          quizElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                      }}
-                      className="inline-block bg-[#36596A] text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-[#2a4a5a] transition-colors shadow-lg hover:shadow-xl"
-                    >
-                      See My Income Options
-                    </button>
-                    <p className="text-sm text-gray-600 mt-3">
-                      Free • Secure • Retirement-focused
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-600 mt-4">
+                    Free • Secure • Retirement-focused
+                  </p>
                 </>
               )}
             </div>
