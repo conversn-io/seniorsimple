@@ -209,7 +209,12 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (firstName && lastName && email && phone && consentChecked) {
+    // For personal-info-with-benefits, consent is implied by clicking the button
+    // For regular personal-info, require checkbox
+    const requiresConsent = question.type === 'personal-info';
+    const canSubmit = firstName && lastName && email && phone && (requiresConsent ? consentChecked : true);
+    
+    if (canSubmit) {
       // Extract 10 digits from phone input
       const digits = extractUSPhoneNumber(phone);
       
@@ -227,7 +232,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         lastName,
         email,
         phone: formattedPhoneNumber,
-        consent: consentChecked
+        consent: requiresConsent ? consentChecked : true // Implied consent for personal-info-with-benefits
       });
     }
   };
@@ -671,19 +676,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 </div>
               )}
             </div>
-            <div className="flex items-start space-x-4">
-              <input
-                type="checkbox"
-                id="consent-quote"
-                checked={consentChecked}
-                onChange={(e) => setConsentChecked(e.target.checked)}
-                className="mt-2 w-6 h-6 text-[#36596A] border-2 border-gray-300 rounded focus:ring-4 focus:ring-[#36596A]/20"
-                disabled={isLoading}
-              />
-              <label htmlFor="consent-quote" className="text-sm text-gray-600 leading-relaxed">
-                By clicking "Submit", you provide your express written consent to receive communications from SeniorSimple.org and its marketing partners at the phone number and email address provided using automated technology, including calls, text messages and pre-recorded messages regarding annuity products or services that may be of interest. Consent is not required to purchase. Message and data rates may apply. You may opt out at any time. See our <a href="/privacy-policy" className="text-[#36596A] underline">privacy policy</a> and <a href="/terms-of-service" className="text-[#36596A] underline">terms and conditions</a>.
-              </label>
-            </div>
 
             <button
               type="submit"
@@ -693,7 +685,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 !lastName || 
                 !email || 
                 !phone || 
-                !consentChecked || 
                 emailValidationState !== 'valid' ||
                 phoneValidationState !== 'valid' ||
                 !phoneAPIValid ||
@@ -702,8 +693,14 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
               }
               style={{ minHeight: '64px' }}
             >
-              Submit
+              Get Your Free Quote
             </button>
+
+            <div className="mt-4">
+              <p className="text-xs text-gray-600 leading-relaxed text-center">
+                By clicking "Get Your Free Quote", you provide your express written consent to receive communications from SeniorSimple.org and its marketing partners at the phone number and email address provided using automated technology, including calls, text messages and pre-recorded messages regarding annuity products or services that may be of interest. Consent is not required to purchase. Message and data rates may apply. You may opt out at any time. See our <a href="/privacy-policy" className="text-[#36596A] underline">privacy policy</a> and <a href="/terms-of-service" className="text-[#36596A] underline">terms and conditions</a>.
+              </p>
+            </div>
           </form>
         );
 
