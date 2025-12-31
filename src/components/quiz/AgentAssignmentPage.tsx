@@ -3,7 +3,6 @@
 import { CheckCircle } from "lucide-react";
 import { useEffect } from "react";
 import { FAQ } from "./FAQ";
-import { AlertTriangle } from "lucide-react";
 
 interface AgentAssignmentPageProps {
   answers: Record<string, any>;
@@ -36,20 +35,27 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
     submitAssignment();
   }, [answers]);
 
-  const firstName = answers.personalInfo?.firstName || answers.firstName || 'there';
+  const firstName = answers.personalInfo?.firstName || answers.firstName || 'Keenan';
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      {/* Announcement Bar - Directly under header nav */}
+      <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
+        <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
+          Well done, {firstName}! Your Quote Is Being Generated
+        </h1>
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-white pt-16 pb-3">
-        <div className="max-w-4xl mx-auto px-6">
+      <section className="bg-white pt-8 pb-3">
+        <div className="max-w-4xl mx-auto px-6" style={{ paddingLeft: 'calc(1.5rem + 2em)', paddingRight: 'calc(1.5rem + 2em)' }}>
           {/* Progress Steps - Matching quiz progress bar style */}
-          <div className="mb-8">
-            {/* Progress Bar */}
+          <div className="mb-4">
+            {/* Progress Bar - Set to 50% */}
             <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
               <div 
                 className="bg-[#36596A] h-4 rounded-full transition-all duration-500 ease-out shadow-sm" 
-                style={{ width: '100%' }}
+                style={{ width: '50%' }}
               />
             </div>
             
@@ -76,36 +82,23 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
             </div>
           </div>
 
-          {/* Announcement Bar - Moved here */}
-          <div className="bg-green-100 text-[#2f6d46] py-2 px-4 text-center text-sm font-medium mb-6 rounded-lg">
-            <div className="flex items-center justify-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              Only 30% of Americans with $250K+ qualify for this retirement strategy.
-            </div>
-          </div>
-
-          {/* Personalization Line */}
-          <h1 className="text-3xl md:text-4xl font-bold mb-6 text-slate-800 text-center">
-            Well done, {firstName}! Your Quote Is Being Generated
-          </h1>
-          
-          {/* Main Headline */}
-          <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-slate-700 text-center">
+          {/* Main Headline - Right below progress bar */}
+          <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-slate-700 text-center">
             You'll be getting a call now from a licensed agent to go over your details
           </h2>
         </div>
       </section>
 
       {/* Agent Assignment */}
-      <section className="bg-white py-12">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="bg-white py-8">
+        <div className="max-w-6xl mx-auto px-6" style={{ paddingLeft: 'calc(1.5rem + 2em)', paddingRight: 'calc(1.5rem + 2em)' }}>
           <div className="bg-slate-50 rounded-2xl p-8 mb-8">
-            <div className="max-w-md mx-auto mb-8">
-              {/* Agent Photo - Full crop, no circle */}
+            <div className="max-w-md mx-auto">
+              {/* Agent Photo - Full crop, no circle - Reduced spacing by 50% */}
               <img 
                 src="/images/team/agent-advisor.png" 
                 alt="Senior Retirement Income Specialist"
-                className="w-full max-w-sm mx-auto mb-6 object-cover rounded-lg"
+                className="w-full max-w-sm mx-auto mb-3 object-cover rounded-lg"
               />
               
               {/* What Happens Next - Vertical Stack */}
