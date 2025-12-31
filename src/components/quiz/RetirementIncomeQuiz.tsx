@@ -16,6 +16,10 @@ import {
   sendCAPIViewContentEventMultiSite,
   trackGA4Event
 } from '@/lib/temp-tracking';
+import { formatPhoneForGHL, extractUSPhoneNumber, formatPhoneForInput } from '@/utils/phone-utils';
+import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation';
+import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -150,6 +154,13 @@ const calculateScore = (answers: QuizAnswer): number => {
   return score;
 };
 
+// Calculate percentile score (0-100) based on raw score (0-9)
+const calculatePercentile = (rawScore: number): number => {
+  // Convert raw score (0-9) to percentile (0-100)
+  // Using a simple linear conversion: (score / 9) * 100
+  return Math.round((rawScore / 9) * 100);
+};
+
 // Determine results page based on score
 const getResultsPath = (score: number): string => {
   if (score >= 7) return '/quiz-results/high';
@@ -165,9 +176,21 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
+  const [showLeadCapture, setShowLeadCapture] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
+  
+  // Lead capture form state
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [emailValidationState, setEmailValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
+  const [phoneValidationState, setPhoneValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
 
   const questions = RETIREMENT_INCOME_QUIZ_QUESTIONS;
   const totalSteps = questions.length;
@@ -231,56 +254,8 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
 
     // Check if this is the last question
     if (currentStep === questions.length - 1) {
-      // Calculate score and redirect to appropriate results page
-      const score = calculateScore(updatedAnswers);
-      const resultsPath = getResultsPath(score);
-      
-      // Store answers and score in sessionStorage
-      const quizData = {
-        answers: updatedAnswers,
-        score: score,
-        resultsPath: resultsPath,
-        sessionId: quizSessionId
-      };
-      sessionStorage.setItem('retirement_income_quiz_data', JSON.stringify(quizData));
-      
-      // Track quiz completion
-      try {
-        const completionTime = Date.now() - ((window as any).quizStartTime || Date.now());
-        trackQuizComplete('retirement-income', quizSessionId || 'unknown', 'retirement-income', completionTime);
-        
-        // Track score bracket
-        if (score >= 7) {
-          trackGA4Event('score_high', {
-            test_name: 'retirement_income_quiz',
-            score: score,
-            page_path: '/retirement-income-quiz',
-            event_category: 'quiz_scoring'
-          });
-        } else if (score >= 4) {
-          trackGA4Event('score_mid', {
-            test_name: 'retirement_income_quiz',
-            score: score,
-            page_path: '/retirement-income-quiz',
-            event_category: 'quiz_scoring'
-          });
-        } else {
-          trackGA4Event('score_low', {
-            test_name: 'retirement_income_quiz',
-            score: score,
-            page_path: '/retirement-income-quiz',
-            event_category: 'quiz_scoring'
-          });
-        }
-      } catch {}
-      
-      setShowProcessing(true);
-      
-      // Small delay for processing state, then redirect
-      setTimeout(() => {
-        router.push(resultsPath);
-      }, 1500);
-      
+      // Show lead capture form instead of going directly to results
+      setShowLeadCapture(true);
       return;
     }
 
@@ -288,8 +263,248 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
     setCurrentStep(currentStep + 1);
   };
 
+  const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!firstName || !lastName || !email || !phone) return;
+    if (emailValidationState !== 'valid' || phoneValidationState !== 'valid') return;
+    
+    setIsSubmittingLead(true);
+    
+    // Extract 10 digits from phone
+    const digits = extractUSPhoneNumber(phone);
+    if (digits.length !== 10) {
+      setPhoneError('Please enter a valid 10-digit US phone number.');
+      setIsSubmittingLead(false);
+      return;
+    }
+    
+    const formattedPhone = formatPhoneForGHL(digits);
+    
+    // Store lead data
+    const leadData = {
+      firstName,
+      lastName,
+      email,
+      phone: formattedPhone,
+      quizAnswers: answers,
+      sessionId: quizSessionId
+    };
+    
+    // Save to sessionStorage
+    const rawScore = calculateScore(answers);
+    const percentile = calculatePercentile(rawScore);
+    const resultsPath = getResultsPath(rawScore);
+    
+    const quizData = {
+      answers: answers,
+      rawScore: rawScore,
+      percentile: percentile,
+      resultsPath: resultsPath,
+      sessionId: quizSessionId,
+      leadData: leadData
+    };
+    sessionStorage.setItem('retirement_income_quiz_data', JSON.stringify(quizData));
+    
+    // Track quiz completion
+    try {
+      const completionTime = Date.now() - ((window as any).quizStartTime || Date.now());
+      trackQuizComplete('retirement-income', quizSessionId || 'unknown', 'retirement-income', completionTime);
+      
+      // Track score bracket
+      if (rawScore >= 7) {
+        trackGA4Event('score_high', {
+          test_name: 'retirement_income_quiz',
+          raw_score: rawScore,
+          percentile: percentile,
+          page_path: '/retirement-income-quiz',
+          event_category: 'quiz_scoring'
+        });
+      } else if (rawScore >= 4) {
+        trackGA4Event('score_mid', {
+          test_name: 'retirement_income_quiz',
+          raw_score: rawScore,
+          percentile: percentile,
+          page_path: '/retirement-income-quiz',
+          event_category: 'quiz_scoring'
+        });
+      } else {
+        trackGA4Event('score_low', {
+          test_name: 'retirement_income_quiz',
+          raw_score: rawScore,
+          percentile: percentile,
+          page_path: '/retirement-income-quiz',
+          event_category: 'quiz_scoring'
+        });
+      }
+    } catch {}
+    
+    setIsSubmittingLead(false);
+    setShowLeadCapture(false);
+    setShowProcessing(true);
+    
+    // Show anticipation screen for 3 seconds, then redirect
+    setTimeout(() => {
+      router.push(resultsPath);
+    }, 3000);
+  };
+
   if (showProcessing) {
-    return <ProcessingState message="Calculating your personalized results..." />;
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#36596A] mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-[#36596A] mb-4">
+            Calculating Your Personalized Results...
+          </h2>
+          <p className="text-lg text-gray-600">
+            We're analyzing your responses to create your custom retirement income assessment.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showLeadCapture) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-[#36596A] mb-4 text-center">
+            Get Your Personalized Results
+          </h2>
+          <p className="text-gray-600 mb-6 text-center">
+            Enter your information below to receive your custom retirement income assessment.
+          </p>
+          
+          <form onSubmit={handleLeadCaptureSubmit} className="space-y-6">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-2">
+                First Name *
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isSubmittingLead}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-2">
+                Last Name *
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isSubmittingLead}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-2">
+                Email Address *
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    const newEmail = e.target.value;
+                    setEmail(newEmail);
+                    const state = getEmailValidationState(newEmail);
+                    setEmailValidationState(state);
+                    const validation = validateEmailFormat(newEmail);
+                    setEmailError(validation.error || '');
+                  }}
+                  className={`
+                    w-full px-4 py-3 pr-12 text-lg border-2 rounded-lg focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${emailValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${emailValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${emailValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  required
+                  disabled={isSubmittingLead}
+                />
+                {emailValidationState === 'invalid' && email && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {emailValidationState === 'valid' && email && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {emailValidationState === 'invalid' && emailError && (
+                <p className="text-red-600 text-sm mt-2">{emailError}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-2">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
+                </div>
+                <input
+                  type="tel"
+                  value={formatPhoneForInput(phone)}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    const digits = inputValue.replace(/\D/g, '');
+                    const limitedDigits = digits.slice(0, 10);
+                    setPhone(limitedDigits);
+                    const state = getPhoneValidationState(limitedDigits);
+                    setPhoneValidationState(state);
+                    const validation = validatePhoneFormat(limitedDigits);
+                    setPhoneError(validation.error || '');
+                  }}
+                  className={`
+                    w-full pr-12 py-3 text-lg border-2 rounded-lg focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${phoneValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${phoneValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${phoneValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  placeholder="(555) 123-4567"
+                  required
+                  disabled={isSubmittingLead}
+                  style={{ paddingLeft: '60px' }}
+                />
+                {phoneValidationState === 'invalid' && phone && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {phoneValidationState === 'valid' && phone && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {phoneValidationState === 'invalid' && phoneError && (
+                <p className="text-red-600 text-sm mt-2">{phoneError}</p>
+              )}
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-[#36596A] text-white py-4 px-8 rounded-lg font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={
+                !firstName ||
+                !lastName ||
+                !email ||
+                !phone ||
+                emailValidationState !== 'valid' ||
+                phoneValidationState !== 'valid' ||
+                isSubmittingLead
+              }
+            >
+              {isSubmittingLead ? 'Submitting...' : 'Get My Results'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   const currentQuestion = questions[currentStep];
@@ -308,4 +523,3 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
     </div>
   );
 };
-
