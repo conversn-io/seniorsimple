@@ -160,17 +160,6 @@ export default function RetirementIncomeBlueprintPage() {
         </div>
       </section>
 
-      {/* Section Divider 1 */}
-      <div className="w-full py-8">
-        <Image
-          src="/images/offer/divider-section-pattern.png"
-          alt=""
-          width={1200}
-          height={100}
-          className="w-full h-auto mx-auto"
-        />
-      </div>
-
       {/* Personalized Recommendations Section */}
       {isLoadingRecommendations ? (
         <section className="bg-[#F9F9F9] py-12">
@@ -225,7 +214,19 @@ export default function RetirementIncomeBlueprintPage() {
                 
                 <p>You&apos;re not alone.</p>
                 <p>Even people with <strong>$500,000&hellip; $750,000&hellip; even over a million dollars saved</strong> are worried about the same thing:</p>
-                <p className="text-xl font-semibold">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
+                
+                {/* Inline advisor image with question */}
+                <div className="flex items-start gap-4 my-6">
+                  <p className="text-xl font-semibold flex-1">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
+                  <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
+                    <Image
+                      src="/images/offer/credibility-advisor.png"
+                      alt="Financial advisor consultation"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
                 
                 <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">📉 Retirement is More Confusing Now Than Ever Before</h3>
                 <p>Gone are the days of guaranteed pensions.</p>
@@ -245,69 +246,43 @@ export default function RetirementIncomeBlueprintPage() {
               </div>
             </div>
             
-            {/* Image Column */}
-            <div className="hidden md:block">
-              <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden shadow-xl">
-                <Image
-                  src="/images/offer/credibility-advisor.png"
-                  alt="Financial advisor consultation"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Section Divider 2 */}
-      <div className="w-full py-8">
-        <Image
-          src="/images/offer/divider-subtle-wave.png"
-          alt=""
-          width={1200}
-          height={100}
-          className="w-full h-auto mx-auto"
-        />
-      </div>
-
-      {/* Section 3: Introduce the Solution - Two Column with Product Image */}
+      {/* Section 3: Introduce the Solution */}
       <section className="bg-white py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Image Column */}
-            <div>
-              <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
-                <Image
-                  src="/images/offer/retirement-income-product-mockup-v2.png"
-                  alt="Retirement Income Blueprint product"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6 text-center">
+            There&apos;s a Better Way to Retire — One That Puts You in Control
+          </h2>
+          
+          <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
+            <p>Imagine waking up and knowing exactly what your income will be every month — not guessing, not hoping, not watching the markets with crossed fingers.</p>
+            <p>Imagine having a clear, step-by-step plan that shows you:</p>
+            
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>How much income you can safely draw</strong></li>
+              <li><strong>How to stretch your savings over 25–30 years</strong></li>
+              <li><strong>How to protect yourself from taxes, inflation, and downturns</strong></li>
+              <li><strong>And how to retire with true financial peace of mind</strong></li>
+            </ul>
+            
+            <p>That&apos;s exactly what you&apos;ll get with:</p>
+            
+            <h3 className="text-3xl font-bold text-[#0D3B66] mt-8 mb-4 text-center">✅ The Retirement Income Blueprint™</h3>
+            
+            {/* Inline product image below heading */}
+            <div className="relative w-full max-w-2xl mx-auto aspect-[4/3] rounded-lg overflow-hidden shadow-xl mb-6">
+              <Image
+                src="/images/offer/retirement-income-product-mockup-v2.png"
+                alt="Retirement Income Blueprint product"
+                fill
+                className="object-cover"
+              />
             </div>
             
-            {/* Text Column */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6">
-                There&apos;s a Better Way to Retire — One That Puts You in Control
-              </h2>
-              
-              <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
-                <p>Imagine waking up and knowing exactly what your income will be every month — not guessing, not hoping, not watching the markets with crossed fingers.</p>
-                <p>Imagine having a clear, step-by-step plan that shows you:</p>
-                
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>How much income you can safely draw</strong></li>
-                  <li><strong>How to stretch your savings over 25–30 years</strong></li>
-                  <li><strong>How to protect yourself from taxes, inflation, and downturns</strong></li>
-                  <li><strong>And how to retire with true financial peace of mind</strong></li>
-                </ul>
-                
-                <p>That&apos;s exactly what you&apos;ll get with:</p>
-                
-                <h3 className="text-3xl font-bold text-[#0D3B66] mt-8 mb-4">✅ The Retirement Income Blueprint™</h3>
-                <p className="text-xl font-semibold mb-4">A straightforward, no-fluff system that helps you turn your nest egg into a reliable income stream — even if you&apos;re not a financial expert.</p>
+            <p className="text-xl font-semibold mb-4 text-center">A straightforward, no-fluff system that helps you turn your nest egg into a reliable income stream — even if you&apos;re not a financial expert.</p>
                 
                 <p>This isn&apos;t a theory.</p>
                 <p>It&apos;s not a &quot;magic formula&quot; or some new investment scheme.</p>
@@ -328,22 +303,9 @@ export default function RetirementIncomeBlueprintPage() {
                 <p>Whether you&apos;re managing your own money or working with a planner, this blueprint will help you make smarter decisions, ask the right questions, and feel more confident about your next 20–30 years.</p>
                 <p>Because at this stage, it&apos;s not about growing your wealth.</p>
                 <p>It&apos;s about <strong>preserving it</strong>&hellip; and using it <strong>wisely</strong>.</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
-
-      {/* Section Divider 3 */}
-      <div className="w-full py-8">
-        <Image
-          src="/images/offer/divider-line.png"
-          alt=""
-          width={1200}
-          height={100}
-          className="w-full h-auto mx-auto"
-        />
-      </div>
 
       {/* Section 4: Establish Credibility - Testimonials with Backgrounds */}
       <section className="bg-[#F9F9F9] py-12 md:py-16">
@@ -391,9 +353,9 @@ export default function RetirementIncomeBlueprintPage() {
                   className="object-cover"
                 />
               </div>
-              <div className="relative p-6 text-white">
+              <div className="relative p-6 text-[#0D3B66]">
                 <div className="flex items-center mb-4">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-white">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-[#0D3B66]">
                     <Image
                       src="/images/offer/testimonial-headshot-man.png"
                       alt="David S."
@@ -403,7 +365,7 @@ export default function RetirementIncomeBlueprintPage() {
                   </div>
                   <div>
                     <p className="font-semibold">David S.</p>
-                    <p className="text-sm opacity-90">68, Retired Engineer</p>
+                    <p className="text-sm opacity-80">68, Retired Engineer</p>
                   </div>
                 </div>
                 <p className="text-lg italic leading-relaxed">
@@ -430,9 +392,9 @@ export default function RetirementIncomeBlueprintPage() {
                   className="object-cover"
                 />
               </div>
-              <div className="relative p-6 text-white">
+              <div className="relative p-6 text-[#0D3B66]">
                 <div className="flex items-center mb-4">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-white">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-[#0D3B66]">
                     <Image
                       src="/images/offer/testimonial-headshot-woman.png"
                       alt="Karen M."
@@ -442,7 +404,7 @@ export default function RetirementIncomeBlueprintPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Karen M.</p>
-                    <p className="text-sm opacity-90">63, Retired Nurse</p>
+                    <p className="text-sm opacity-80">63, Retired Nurse</p>
                   </div>
                 </div>
                 <p className="text-lg italic leading-relaxed">
@@ -469,9 +431,9 @@ export default function RetirementIncomeBlueprintPage() {
                   className="object-cover"
                 />
               </div>
-              <div className="relative p-6 text-white">
+              <div className="relative p-6 text-[#0D3B66]">
                 <div className="flex items-center mb-4">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-white">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-[#0D3B66]">
                     <Image
                       src="/images/offer/testimonial-headshot-couple.png"
                       alt="Paul & Jenny"
@@ -481,7 +443,7 @@ export default function RetirementIncomeBlueprintPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Paul & Jenny</p>
-                    <p className="text-sm opacity-90">70 & 67, Empty Nesters</p>
+                    <p className="text-sm opacity-80">70 & 67, Empty Nesters</p>
                   </div>
                 </div>
                 <p className="text-lg italic leading-relaxed">
@@ -502,17 +464,6 @@ export default function RetirementIncomeBlueprintPage() {
           </p>
         </div>
       </section>
-
-      {/* Section Divider 4 */}
-      <div className="w-full py-8">
-        <Image
-          src="/images/offer/divider-section-pattern.png"
-          alt=""
-          width={1200}
-          height={100}
-          className="w-full h-auto mx-auto"
-        />
-      </div>
 
       {/* Section 5: Product Preview */}
       <section className="py-12 md:py-16">
@@ -596,84 +547,103 @@ export default function RetirementIncomeBlueprintPage() {
         </div>
       </section>
 
-      {/* Section Divider 5 */}
-      <div className="w-full py-8">
-        <Image
-          src="/images/offer/divider-subtle-wave.png"
-          alt=""
-          width={1200}
-          height={100}
-          className="w-full h-auto mx-auto"
-        />
-      </div>
-
-      {/* Section 6: Build Desire (Future Pacing) */}
+      {/* Section 6: Build Desire (Future Pacing) - Single Column with Wrapped Image */}
       <section className="bg-white py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Text Column */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6">
-                What If You Could Finally Stop Worrying About Money — and Start Enjoying the Retirement You Worked For?
-              </h2>
-              
-              <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
-                <p className="text-xl font-semibold">Picture this&hellip;</p>
-                <p>You wake up on a Tuesday morning.</p>
-                <p>No alarm. No deadlines. No commute.</p>
-                <p>You pour a cup of coffee, check your calendar, and realize&hellip; You don&apos;t have to worry about how the markets are doing today.</p>
-                <p>You&apos;re not wondering if your account balance is up or down.</p>
-                <p>You&apos;re not worried about the IRS, the next recession, or whether your advisor is doing a good job.</p>
-                <p className="text-xl font-semibold">Why?</p>
-                <p>Because you&apos;ve got <strong>a plan.</strong> A clear, simple, predictable income plan that tells you:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>How much money is coming in this month</li>
-                  <li>Where it&apos;s coming from</li>
-                  <li>How long it will last</li>
-                  <li>And how little of it is going to taxes</li>
-                </ul>
-                <p>Instead of fear, you feel <strong>confidence</strong>. Instead of confusion, you feel <strong>clarity</strong>. Instead of pressure, you feel <strong>peace.</strong></p>
-                <ul className="list-none space-y-2">
-                  <li>✅ You know your bills are covered</li>
-                  <li>✅ You know your lifestyle is safe</li>
-                  <li>✅ And you know your money will last — for as long as you do</li>
-                </ul>
-                <p>You&apos;re not just &quot;getting by&quot; in retirement anymore.</p>
-                <p className="text-xl font-semibold">You&apos;re in control.</p>
-                <p className="text-xl font-semibold">And that&hellip; is priceless.</p>
-                
-                <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">🎯 This Isn&apos;t About Getting Rich.</h3>
-                <p>This is about <strong>feeling secure.</strong> It&apos;s about having <strong>enough.</strong> It&apos;s about making smart, measured decisions with the wealth you&apos;ve already built — so you can enjoy the next 20–30 years of your life without constant financial anxiety.</p>
-                <p>The Retirement Income Blueprint™ gives you that.</p>
-                <p>It won&apos;t make you rich overnight. But it will help you finally feel <strong>rich in the ways that matter</strong>: freedom, peace of mind, and stability.</p>
-              </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6 text-center">
+            What If You Could Finally Stop Worrying About Money — and Start Enjoying the Retirement You Worked For?
+          </h2>
+          
+          <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
+            <p className="text-xl font-semibold">Picture this&hellip;</p>
+            <p>You wake up on a Tuesday morning.</p>
+            <p>No alarm. No deadlines. No commute.</p>
+            <p>You pour a cup of coffee, check your calendar, and realize&hellip; You don&apos;t have to worry about how the markets are doing today.</p>
+            <p>You&apos;re not wondering if your account balance is up or down.</p>
+            <p>You&apos;re not worried about the IRS, the next recession, or whether your advisor is doing a good job.</p>
+            <p className="text-xl font-semibold">Why?</p>
+            <p>Because you&apos;ve got <strong>a plan.</strong> A clear, simple, predictable income plan that tells you:</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>How much money is coming in this month</li>
+              <li>Where it&apos;s coming from</li>
+              <li>How long it will last</li>
+              <li>And how little of it is going to taxes</li>
+            </ul>
+            <p>Instead of fear, you feel <strong>confidence</strong>. Instead of confusion, you feel <strong>clarity</strong>. Instead of pressure, you feel <strong>peace.</strong></p>
+            <ul className="list-none space-y-2">
+              <li>✅ You know your bills are covered</li>
+              <li>✅ You know your lifestyle is safe</li>
+              <li>✅ And you know your money will last — for as long as you do</li>
+            </ul>
+            <p>You&apos;re not just &quot;getting by&quot; in retirement anymore.</p>
+            <p className="text-xl font-semibold">You&apos;re in control.</p>
+            <p className="text-xl font-semibold">And that&hellip; is priceless.</p>
+            
+            {/* Wrapped image */}
+            <div className="relative w-full max-w-lg mx-auto aspect-[4/3] rounded-lg overflow-hidden shadow-xl my-8">
+              <Image
+                src="/images/offer/future-pacing.png"
+                alt="Peaceful retirement morning scene"
+                fill
+                className="object-cover"
+              />
             </div>
             
-            {/* Image Column */}
-            <div>
-              <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
-                <Image
-                  src="/images/offer/future-pacing.png"
-                  alt="Peaceful retirement morning scene"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
+            <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">🎯 This Isn&apos;t About Getting Rich.</h3>
+            <p>This is about <strong>feeling secure.</strong> It&apos;s about having <strong>enough.</strong> It&apos;s about making smart, measured decisions with the wealth you&apos;ve already built — so you can enjoy the next 20–30 years of your life without constant financial anxiety.</p>
+            <p>The Retirement Income Blueprint™ gives you that.</p>
+            <p>It won&apos;t make you rich overnight. But it will help you finally feel <strong>rich in the ways that matter</strong>: freedom, peace of mind, and stability.</p>
           </div>
         </div>
       </section>
 
-      {/* Section 7: Stack the Value */}
+      {/* Section 7: Stack the Value - Single Column Stacked */}
       <section className="bg-[#FFFCEB] py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-12 text-center">
             Here&apos;s Everything You&apos;re Getting When You Grab the Retirement Income Blueprint™ Today
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+            {/* Retirement Income Blueprint First */}
+            <div>
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-2">✅ The Retirement Income Blueprint™</h3>
+              <p className="text-gray-700 mb-2">The complete step-by-step digital system to help you safely and confidently turn your savings into a predictable, monthly income stream — one that lasts as long as you do.</p>
+              <p className="text-lg font-semibold text-gray-500 line-through">Value: $197</p>
+            </div>
+            
+            {/* Small break */}
+            <div className="border-t border-gray-200 pt-6 mt-6">
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-4">Plus These 4 Exclusive Bonuses:</h3>
+            </div>
+            
+            {/* Bonuses Stacked */}
+            <div>
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #1: The 7-Figure Retirement Toolkit</h3>
+              <p className="text-gray-700 mb-2">Plug-and-play calculators, checklists, and worksheets that make the entire process simple. No spreadsheets. No tech headaches. Just clarity.</p>
+              <p className="text-lg font-semibold text-gray-500 line-through">Value: $97</p>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #2: &quot;The 5 Income Killers&quot; Video Mini-Class</h3>
+              <p className="text-gray-700 mb-2">Discover the 5 most common income mistakes retirees make — and how to sidestep them to keep your retirement on track.</p>
+              <p className="text-lg font-semibold text-gray-500 line-through">Value: $67</p>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #3: The Social Security Optimization Cheatsheet</h3>
+              <p className="text-gray-700 mb-2">Learn exactly how to get the most from Social Security — when to claim, how to coordinate, and what traps to avoid.</p>
+              <p className="text-lg font-semibold text-gray-500 line-through">Value: $47</p>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🧠 Bonus #4: &quot;How to Fire Your Advisor (or Not)&quot; Interview</h3>
+              <p className="text-gray-700 mb-2">The no-B.S. guide to knowing if you&apos;re overpaying, being misled, or actually in good hands. Includes 10 smart questions to ask <em>today</em>.</p>
+              <p className="text-lg font-semibold text-gray-500 line-through">Value: $47</p>
+            </div>
+            
             {/* Bonus Visual Stack Image */}
-            <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
+            <div className="relative w-full max-w-lg mx-auto aspect-[4/3] rounded-lg overflow-hidden shadow-xl my-6">
               <Image
                 src="/images/offer/bonus-visual-stack.png"
                 alt="All bonuses included"
@@ -682,61 +652,29 @@ export default function RetirementIncomeBlueprintPage() {
               />
             </div>
             
-            {/* Value Stack Content */}
-            <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
-              <div>
-                <h3 className="text-xl font-bold text-[#0D3B66] mb-2">✅ The Retirement Income Blueprint™</h3>
-                <p className="text-gray-700 mb-2">The complete step-by-step digital system to help you safely and confidently turn your savings into a predictable, monthly income stream — one that lasts as long as you do.</p>
-                <p className="text-lg font-semibold text-gray-500 line-through">Value: $197</p>
-              </div>
+            <div className="border-t-2 border-[#0D3B66] pt-6 mt-6">
+              <p className="text-2xl font-bold text-gray-700 mb-4">📦 TOTAL REAL VALUE: <span className="line-through">$455.00</span></p>
+              <p className="text-gray-700 mb-6">And honestly? At that price, it would still be worth every penny — especially when a single mistake in retirement can cost you tens of thousands of dollars.</p>
+              <p className="text-gray-700 mb-6">But you&apos;re not going to pay $455.</p>
+              <p className="text-gray-700 mb-6">You won&apos;t even pay $197.</p>
               
-              <div>
-                <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #1: The 7-Figure Retirement Toolkit</h3>
-                <p className="text-gray-700 mb-2">Plug-and-play calculators, checklists, and worksheets that make the entire process simple. No spreadsheets. No tech headaches. Just clarity.</p>
-                <p className="text-lg font-semibold text-gray-500 line-through">Value: $97</p>
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #2: &quot;The 5 Income Killers&quot; Video Mini-Class</h3>
-                <p className="text-gray-700 mb-2">Discover the 5 most common income mistakes retirees make — and how to sidestep them to keep your retirement on track.</p>
-                <p className="text-lg font-semibold text-gray-500 line-through">Value: $67</p>
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🎁 Bonus #3: The Social Security Optimization Cheatsheet</h3>
-                <p className="text-gray-700 mb-2">Learn exactly how to get the most from Social Security — when to claim, how to coordinate, and what traps to avoid.</p>
-                <p className="text-lg font-semibold text-gray-500 line-through">Value: $47</p>
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-bold text-[#0D3B66] mb-2">🧠 Bonus #4: &quot;How to Fire Your Advisor (or Not)&quot; Interview</h3>
-                <p className="text-gray-700 mb-2">The no-B.S. guide to knowing if you&apos;re overpaying, being misled, or actually in good hands. Includes 10 smart questions to ask <em>today</em>.</p>
-                <p className="text-lg font-semibold text-gray-500 line-through">Value: $47</p>
-              </div>
-              
-              <div className="border-t-2 border-[#0D3B66] pt-6 mt-6">
-                <p className="text-2xl font-bold text-gray-700 mb-4">📦 TOTAL REAL VALUE: <span className="line-through">$455.00</span></p>
-                <p className="text-gray-700 mb-6">And honestly? At that price, it would still be worth every penny — especially when a single mistake in retirement can cost you tens of thousands of dollars.</p>
-                <p className="text-gray-700 mb-6">But you&apos;re not going to pay $455.</p>
-                <p className="text-gray-700 mb-6">You won&apos;t even pay $197.</p>
-                
-                <div className="bg-[#0D3B66] text-white rounded-lg p-6 text-center">
-                  <p className="text-3xl font-bold mb-2">🎯 Today Only: Just $47</p>
-                  <p className="text-lg mb-2">One-time payment.</p>
-                  <p className="text-lg mb-2">No upsells.</p>
-                  <p className="text-lg mb-2">No subscriptions.</p>
-                  <p className="text-lg">Instant access to the entire system + all bonuses.</p>
-                </div>
+              <div className="bg-[#0D3B66] text-white rounded-lg p-6 text-center">
+                <p className="text-3xl font-bold mb-2">🎯 Today Only: Just $47</p>
+                <p className="text-lg mb-2">One-time payment.</p>
+                <p className="text-lg mb-2">No upsells.</p>
+                <p className="text-lg mb-2">No subscriptions.</p>
+                <p className="text-lg">Instant access to the entire system + all bonuses.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 8: Guarantee */}
+      {/* Section 8: Guarantee - Header 2-col, Content Single Column */}
       <section className="bg-[#F4F4F4] py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Header: 2-column */}
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-8">
             {/* Guarantee Badge Image */}
             <div className="flex justify-center md:justify-start">
               <div className="relative w-64 h-64 md:w-80 md:h-80">
@@ -749,29 +687,30 @@ export default function RetirementIncomeBlueprintPage() {
               </div>
             </div>
             
-            {/* Guarantee Copy */}
+            {/* Header Text */}
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66]">
                 Try the Entire Retirement Income Blueprint™ for a Full 60 Days — 100% Risk-Free
               </h2>
-              
-              <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
-                <p>We know this decision matters.</p>
-                <p>It&apos;s your money. It&apos;s your future. It&apos;s your peace of mind.</p>
-                <p>So here&apos;s the deal:</p>
-                <p><strong>Try the Retirement Income Blueprint™ for a full 60 days. Go through every module. Use the checklists. Run the numbers. Watch the bonuses.</strong></p>
-                <p>And if you don&apos;t feel <strong>more confident</strong>, more prepared, and more in control of your retirement income than ever before&hellip;</p>
-                <p>Just send us a one-line email.</p>
-                <p>We&apos;ll refund <strong>every penny.</strong> No questions. No hassle. No hoops to jump through.</p>
-                
-                <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">✅ You Have Everything to Gain — and Nothing to Lose.</h3>
-                <p>✘ If the system helps you create a smarter retirement income plan? That&apos;s a win.</p>
-                <p>✘ If it gives you clarity you never got from your advisor? That&apos;s a win.</p>
-                <p>✘ And even if it&apos;s not for you? You still risk nothing.</p>
-                <p>We don&apos;t want your money unless this actually <em>helps</em> you.</p>
-                <p className="text-xl font-semibold">Fair?</p>
-              </div>
             </div>
+          </div>
+          
+          {/* Content: Single Column */}
+          <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
+            <p>We know this decision matters.</p>
+            <p>It&apos;s your money. It&apos;s your future. It&apos;s your peace of mind.</p>
+            <p>So here&apos;s the deal:</p>
+            <p><strong>Try the Retirement Income Blueprint™ for a full 60 days. Go through every module. Use the checklists. Run the numbers. Watch the bonuses.</strong></p>
+            <p>And if you don&apos;t feel <strong>more confident</strong>, more prepared, and more in control of your retirement income than ever before&hellip;</p>
+            <p>Just send us a one-line email.</p>
+            <p>We&apos;ll refund <strong>every penny.</strong> No questions. No hassle. No hoops to jump through.</p>
+            
+            <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">✅ You Have Everything to Gain — and Nothing to Lose.</h3>
+            <p>✘ If the system helps you create a smarter retirement income plan? That&apos;s a win.</p>
+            <p>✘ If it gives you clarity you never got from your advisor? That&apos;s a win.</p>
+            <p>✘ And even if it&apos;s not for you? You still risk nothing.</p>
+            <p>We don&apos;t want your money unless this actually <em>helps</em> you.</p>
+            <p className="text-xl font-semibold">Fair?</p>
           </div>
         </div>
       </section>
@@ -835,7 +774,7 @@ export default function RetirementIncomeBlueprintPage() {
           <button
             onClick={handleCTAClick}
             className="bg-[#F4D35E] hover:bg-[#EACB4F] text-[#0D3B66] px-12 py-6 rounded-lg font-bold text-2xl transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl mb-6"
-            style={{ width: '300px', maxWidth: '100%' }}
+            style={{ width: '600px', maxWidth: '100%' }}
           >
             Yes — I Want the Retirement Income Blueprint™
           </button>
