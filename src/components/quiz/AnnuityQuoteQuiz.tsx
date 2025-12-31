@@ -8,11 +8,11 @@
 // 4. Updates GHL payload with IP, phone last 4, coverage_amount, and address fields
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
 import { SavingsSlider } from './SavingsSlider';
 import { AllocationSlider } from './AllocationSlider';
-import { AgentAssignmentPage } from './AgentAssignmentPage';
 import { OTPVerification } from './OTPVerification';
 import { ProcessingState } from './ProcessingState';
 import { extractUTMParameters, storeUTMParameters, getStoredUTMParameters, hasUTMParameters, UTMParameters } from '@/utils/utm-utils';
@@ -134,6 +134,7 @@ interface AnnuityQuoteQuizProps {
 }
 
 export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuoteQuizProps) => {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
   const [funnelType, setFunnelType] = useState<FunnelType>('primary');
@@ -263,34 +264,36 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
         
         console.log('📡 API Response:', result);
         
-        // Store answers regardless of API response
+        // Store answers and navigate to results page
         const answersJson = JSON.stringify(updatedAnswers);
         sessionStorage.setItem('quiz_answers', answersJson);
         localStorage.setItem('quiz_answers', answersJson);
         
-        // Always show results page, even if API call failed
         setShowProcessing(false);
-        setShowResults(true);
-        console.log('✅ Showing results page');
+        console.log('✅ Navigating to results page');
+        router.push('/annuity-quote/results');
       } catch (error) {
         console.error('💥 Form submission error:', error);
         
-        // Store answers even on error
+        // Store answers even on error and navigate to results page
         const answersJson = JSON.stringify(updatedAnswers);
         sessionStorage.setItem('quiz_answers', answersJson);
         localStorage.setItem('quiz_answers', answersJson);
         
-        // Show results page even on error
         setShowProcessing(false);
-        setShowResults(true);
-        console.log('✅ Showing results page (error case)');
+        console.log('✅ Navigating to results page (error case)');
+        router.push('/annuity-quote/results');
       }
       return;
     }
 
     if (currentStep === questions.length - 1) {
-      setShowResults(true);
+      // Store answers and navigate to results page
+      const answersJson = JSON.stringify(updatedAnswers);
+      sessionStorage.setItem('quiz_answers', answersJson);
+      localStorage.setItem('quiz_answers', answersJson);
       calculateResults();
+      router.push('/annuity-quote/results');
     } else {
       setCurrentStep(currentStep + 1);
     }
@@ -331,16 +334,16 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
       <OTPVerification
         phoneNumber={phoneNumber}
         onVerificationComplete={() => {
+          // Store answers and navigate to results page
+          const answersJson = JSON.stringify(answers);
+          sessionStorage.setItem('quiz_answers', answersJson);
+          localStorage.setItem('quiz_answers', answersJson);
           setShowOTP(false);
-          setShowResults(true);
+          router.push('/annuity-quote/results');
         }}
         onBack={() => setShowOTP(false)}
       />
     );
-  }
-
-  if (showResults) {
-    return <AgentAssignmentPage answers={answers} onRestart={handleRestart} />;
   }
 
   const currentQuestion = questions[currentStep];

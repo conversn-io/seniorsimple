@@ -165,3 +165,4 @@ WHERE properties->>'site_key' = 'seniorsimple.org'
 GROUP BY device_type
 ORDER BY sessions DESC;
 
+
