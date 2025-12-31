@@ -351,7 +351,7 @@ export async function POST(request: NextRequest) {
                      null;
     
     // Extract address info from quizAnswers, addressInfo parameter, or locationInfo
-    const addressData = addressInfo || quizAnswers?.addressInfo || quizAnswers?.locationInfo || {};
+    const addressData = quizAnswers?.addressInfo || quizAnswers?.locationInfo || {};
     const streetNumber = addressData.streetNumber || '';
     const address = addressData.street || addressData.fullAddress || '';
     const city = addressData.city || '';
