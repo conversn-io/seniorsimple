@@ -6,13 +6,14 @@ import { buildApiUrl } from '@/lib/api-config';
 import { getPhoneValidationState, validatePhoneFormat, validatePhoneAPI } from '@/utils/phone-validation';
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation';
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { AddressAutocomplete, AddressData } from './AddressAutocomplete';
 
 interface QuizQuestionProps {
   question: {
     id: string;
     title: string;
     subtitle?: string;
-    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent';
+    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent' | 'personal-info-with-benefits';
     options?: string[];
     min?: number;
     max?: number;
@@ -56,6 +57,15 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [zipCode, setZipCode] = useState('');
+  
+  // Address autocomplete fields
+  const [addressData, setAddressData] = useState<AddressData | null>(() => {
+    if (currentAnswer && typeof currentAnswer === 'object') {
+      return currentAnswer as AddressData;
+    }
+    return null;
+  });
+  const [isAddressValid, setIsAddressValid] = useState(!!currentAnswer);
   
   // Zip validation state
   const [zipValidationResult, setZipValidationResult] = useState<ZipValidationResult | null>(null);
@@ -504,6 +514,238 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 isValidatingPhone ||
                 isLoading
               }
+              style={{ minHeight: '64px' }}
+            >
+              Continue
+            </button>
+          </form>
+        );
+
+      case 'personal-info-with-benefits':
+        return (
+          <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
+            {/* Benefits Section */}
+            <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
+              <h3 className="text-xl font-bold text-[#36596A] mb-4">What You'll Get:</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Free confidential consultation and estimated monthly income</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Personalized review of annuities you may qualify for</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Help planning your retirement for the future</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                First Name *
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isLoading}
+                style={{ minHeight: '56px' }}
+              />
+            </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Last Name *
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isLoading}
+                style={{ minHeight: '56px' }}
+              />
+            </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Email Address *
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    const newEmail = e.target.value;
+                    setEmail(newEmail);
+                    const state = getEmailValidationState(newEmail);
+                    setEmailValidationState(state);
+                    const validation = validateEmailFormat(newEmail);
+                    setEmailError(validation.error || '');
+                  }}
+                  className={`
+                    quiz-input w-full px-6 py-4 pr-12 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${emailValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${emailValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${emailValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                />
+                {emailValidationState === 'invalid' && email && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {emailValidationState === 'valid' && email && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {emailValidationState === 'invalid' && emailError && (
+                <p className="text-red-600 text-sm mt-2">{emailError}</p>
+              )}
+              {emailValidationState === 'valid' && email && (
+                <p className="text-green-600 text-sm mt-2">✓ Email address is valid</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
+                </div>
+                <input
+                  type="tel"
+                  value={formatPhoneForInput(phone)}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    const digits = inputValue.replace(/\D/g, '');
+                    const limitedDigits = digits.slice(0, 10);
+                    setPhone(limitedDigits);
+                    const state = getPhoneValidationState(limitedDigits);
+                    setPhoneValidationState(state);
+                    const validation = validatePhoneFormat(limitedDigits);
+                    setPhoneError(validation.error || '');
+                  }}
+                  className={`
+                    quiz-input w-full pr-12 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${phoneValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${phoneValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${phoneValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  placeholder="(555) 123-4567"
+                  required
+                  disabled={isLoading}
+                  autoComplete="tel-national"
+                  style={{ 
+                    minHeight: '56px',
+                    paddingLeft: '100px'
+                  }}
+                />
+                {isValidatingPhone && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && phoneAPIValid && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {phoneValidationState === 'valid' && phone && !isValidatingPhone && phoneAPIValid && (
+                <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
+              )}
+              {phoneValidationState === 'empty' && (
+                <p className="text-sm text-gray-500 mt-2">
+                  We'll send a verification code to this number
+                </p>
+              )}
+              {phoneError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                  <p className="text-red-600 text-sm">{phoneError}</p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-start space-x-4">
+              <input
+                type="checkbox"
+                id="consent-quote"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-2 w-6 h-6 text-[#36596A] border-2 border-gray-300 rounded focus:ring-4 focus:ring-[#36596A]/20"
+                disabled={isLoading}
+              />
+              <label htmlFor="consent-quote" className="text-sm text-gray-600 leading-relaxed">
+                By clicking "Submit", you provide your express written consent to receive communications from SeniorSimple.org and its marketing partners at the phone number and email address provided using automated technology, including calls, text messages and pre-recorded messages regarding annuity products or services that may be of interest. Consent is not required to purchase. Message and data rates may apply. You may opt out at any time. See our <a href="/privacy-policy" className="text-[#36596A] underline">privacy policy</a> and <a href="/terms-of-service" className="text-[#36596A] underline">terms and conditions</a>.
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={
+                !firstName || 
+                !lastName || 
+                !email || 
+                !phone || 
+                !consentChecked || 
+                emailValidationState !== 'valid' ||
+                phoneValidationState !== 'valid' ||
+                !phoneAPIValid ||
+                isValidatingPhone ||
+                isLoading
+              }
+              style={{ minHeight: '64px' }}
+            >
+              Submit
+            </button>
+          </form>
+        );
+
+      case 'address-info':
+        const handleAddressSubmit = (e: React.FormEvent) => {
+          e.preventDefault();
+          if (addressData) {
+            onAnswer({
+              streetNumber: addressData.streetNumber,
+              street: addressData.street,
+              fullAddress: addressData.fullAddress,
+              city: addressData.city,
+              state: addressData.state,
+              stateAbbr: addressData.stateAbbr,
+              zipCode: addressData.zipCode,
+              formatted: addressData.formatted
+            });
+          }
+        };
+
+        return (
+          <form onSubmit={handleAddressSubmit} className="space-y-8">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Get connected to an advisor in your area *
+              </label>
+              <AddressAutocomplete
+                value={addressData?.formatted || ''}
+                onChange={(data) => {
+                  setAddressData(data);
+                  setIsAddressValid(true);
+                }}
+                onValidationChange={setIsAddressValid}
+                disabled={isLoading}
+                isLoading={isLoading}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={!addressData || !isAddressValid || isLoading}
               style={{ minHeight: '64px' }}
             >
               Continue

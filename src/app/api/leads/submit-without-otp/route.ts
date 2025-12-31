@@ -341,14 +341,47 @@ export async function POST(request: NextRequest) {
 
     // Prepare GHL webhook payload
     const formattedPhone = formatPhoneForGHL(phoneNumber);
+    
+    // Extract phone last 4 digits
+    const phoneLast4 = phoneNumber ? phoneNumber.slice(-4) : '';
+    
+    // Extract IP address from request headers
+    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                     request.headers.get('x-real-ip') || 
+                     null;
+    
+    // Extract address info from quizAnswers, addressInfo parameter, or locationInfo
+    const addressData = addressInfo || quizAnswers?.addressInfo || quizAnswers?.locationInfo || {};
+    const streetNumber = addressData.streetNumber || '';
+    const address = addressData.street || addressData.fullAddress || '';
+    const city = addressData.city || '';
+    const addressState = addressData.stateAbbr || addressData.state || state || '';
+    const addressZip = addressData.zipCode || zipCode || '';
+    
+    // Extract coverage_amount from retirement allocation
+    const retirementSavings = quizAnswers?.retirementSavings || 0;
+    const allocationPercent = quizAnswers?.allocationPercent?.percentage || quizAnswers?.allocationPercent || 0;
+    const coverageAmount = typeof allocationPercent === 'number' && allocationPercent > 0
+      ? Math.round((retirementSavings * allocationPercent) / 100)
+      : retirementSavings;
+    
+    // Extract originally_created timestamp
+    const originallyCreated = new Date().toISOString();
+    
     const ghlPayload = {
       firstName: firstName || contact.first_name,
       lastName: lastName || contact.last_name,
       email: email,
       phone: formattedPhone,
-      zipCode: zipCode || lead.zip_code,
-      state: state || lead.state,
-      stateName: stateName || lead.state_name,
+      phoneLast4: phoneLast4,
+      zipCode: addressZip,
+      state: addressState,
+      stateName: addressData.state || stateName || lead.state_name,
+      address: streetNumber ? `${streetNumber} ${address}`.trim() : address,
+      city: city,
+      ipAddress: ipAddress,
+      coverageAmount: coverageAmount,
+      originallyCreated: originallyCreated,
       source: 'SeniorSimple Quiz',
       funnelType: funnelType || lead.funnel_type || 'insurance',
       quizAnswers: lead.quiz_answers || quizAnswers,

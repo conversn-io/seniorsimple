@@ -99,7 +99,7 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
           </h1>
           
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-slate-700">
-            Here is the best next step for you:
+            You'll be getting a call right now
           </h2>
 
           {/* Recommended Badge */}
