@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFunnelLayout } from '@/hooks/useFunnelFooter';
 import { initializeTracking, trackPageView, trackGA4Event } from '@/lib/temp-tracking';
-import { Shield, Lock, CreditCard, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface QuizData {
   answers: Record<string, any>;
@@ -67,11 +67,8 @@ export const RetirementIncomeResults = ({ tier }: RetirementIncomeResultsProps) 
       page_path: `/quiz-results/${tier}`,
       event_category: 'quiz_results'
     });
-    // Scroll to iframe instead of navigating
-    const iframeElement = document.getElementById('checkout-iframe');
-    if (iframeElement) {
-      iframeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Navigate to offer page
+    router.push('/retirement-income-blueprint');
   };
 
   if (isLoading) {
@@ -330,51 +327,6 @@ export const RetirementIncomeResults = ({ tier }: RetirementIncomeResultsProps) 
           <p className="text-base text-gray-600 italic border-t pt-6">
             <strong>P.S.</strong> {tierContent.ps}
           </p>
-        </div>
-
-        {/* Checkout Iframe Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8" id="checkout-iframe">
-          <h2 className="text-2xl font-bold text-[#36596A] mb-4 text-center">
-            Complete Your Order
-          </h2>
-          
-          {/* Iframe Container - Tightened to reduce whitespace */}
-          <div className="w-full overflow-hidden rounded-lg border-2 border-gray-200" style={{ minHeight: '600px', maxHeight: '800px' }}>
-            <iframe
-              src="https://offers.callready.io/2-step-order-form-page"
-              className="w-full border-0"
-              style={{ 
-                minHeight: '600px',
-                width: '100%',
-                border: 'none',
-                display: 'block'
-              }}
-              title="Retirement Income Blueprint Order Form"
-              allow="payment"
-              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
-              id="checkout-iframe"
-            />
-          </div>
-
-          {/* Trust Icons */}
-          <div className="mt-6 flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
-            <div className="flex items-center">
-              <Shield className="w-5 h-5 text-green-600 mr-2" />
-              Secure Checkout
-            </div>
-            <div className="flex items-center">
-              <Lock className="w-5 h-5 text-green-600 mr-2" />
-              SSL Encrypted
-            </div>
-            <div className="flex items-center">
-              <CreditCard className="w-5 h-5 text-green-600 mr-2" />
-              Safe Payment
-            </div>
-            <div className="flex items-center">
-              <CheckCircle2 className="w-5 h-5 text-green-600 mr-2" />
-              60-Day Money-Back Guarantee
-            </div>
-          </div>
         </div>
 
         {/* Disclaimer */}
