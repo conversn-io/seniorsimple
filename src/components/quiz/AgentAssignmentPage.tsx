@@ -42,7 +42,7 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
       {/* Announcement Bar - Directly under header nav */}
       <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
         <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
-          Well done, {firstName}! Your Quote Is Being Generated
+          Well done, {firstName}! Your Personalized Annuity Quote is Now Being Generated...
         </h1>
       </div>
 
