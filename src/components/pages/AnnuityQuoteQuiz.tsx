@@ -5,7 +5,6 @@ import QuizErrorBoundary from "../quiz/QuizErrorBoundary";
 import { AnnuityQuoteQuiz } from "../quiz/AnnuityQuoteQuiz";
 import { useFunnelLayout } from "../../hooks/useFunnelFooter";
 import "../../styles/quiz-mobile.css";
-import { AlertTriangle } from "lucide-react";
 
 interface AnnuityQuoteQuizProps {
   skipOTP?: boolean;
@@ -24,14 +23,6 @@ const AnnuityQuoteQuizPage = ({ skipOTP = false }: AnnuityQuoteQuizProps) => {
   return (
     <QuizErrorBoundary onReset={handleQuizReset}>
       <div className="min-h-screen bg-[#F5F5F0]">
-        {/* Header Alert Bar - Light green background with dark green text */}
-        <div className="bg-green-100 text-[#2f6d46] py-2 px-4 text-center text-sm font-medium">
-          <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            Only 30% of Americans with $250K+ qualify for this retirement strategy.
-          </div>
-        </div>
-        
         <section className={`${showHeadline ? 'py-8 sm:py-12' : 'pt-4 pb-8 sm:pb-12'} px-4 sm:px-6 lg:px-8`}>
           {showHeadline && (
             <div className="max-w-4xl mx-auto text-center mb-8">
