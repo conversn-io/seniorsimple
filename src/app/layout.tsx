@@ -190,6 +190,34 @@ export default function RootLayout({
           src="https://api.visitoredge.com/api/website/run-cookie-script"
         />
         
+        {/* LeadID Tracking - Deferred */}
+        <Script
+          id="LeadiDscript"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var s = document.createElement('script');
+                s.id = 'LeadiDscript_campaign';
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = '//create.lidstatic.com/campaign/70649a2a-2d75-9934-b3c7-c2dc8d4efaa9.js?snippet_version=2';
+                var LeadiDscript = document.getElementById('LeadiDscript');
+                if (LeadiDscript && LeadiDscript.parentNode) {
+                  LeadiDscript.parentNode.insertBefore(s, LeadiDscript);
+                }
+              })();
+            `
+          }}
+        />
+        <noscript>
+          <img 
+            src="//create.leadid.com/noscript.gif?lac=0D21F4C3-03E6-60BE-6B6C-E5A390EB0ADF&lck=70649a2a-2d75-9934-b3c7-c2dc8d4efaa9&snippet_version=2" 
+            alt="" 
+            style={{display: 'none'}}
+          />
+        </noscript>
+        
         <LayoutProvider>
           <ConditionalHeader />
           <main>{children}</main>
