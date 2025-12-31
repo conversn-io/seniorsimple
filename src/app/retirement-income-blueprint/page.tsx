@@ -191,7 +191,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Section 2: Agitate the Problem - Two Column with Image */}
       <section className="py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Text Column */}
             <div>
@@ -252,7 +252,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Section 3: Introduce the Solution */}
       <section className="bg-white py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6 text-center">
             There&apos;s a Better Way to Retire — One That Puts You in Control
           </h2>
@@ -309,7 +309,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Section 4: Establish Credibility - Testimonials with Backgrounds */}
       <section className="bg-[#F9F9F9] py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-12 text-center">
             This Isn&apos;t Theory. It&apos;s a Proven System That&apos;s Helped Over 12,000+ Retirees Create Steady, Predictable Income — Without Guesswork or Gamble.
           </h2>
@@ -467,7 +467,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Section 5: Product Preview */}
       <section className="py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-12 text-center">
             Here&apos;s Exactly What You&apos;ll Learn Inside the Retirement Income Blueprint™
           </h2>
@@ -672,7 +672,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Section 8: Guarantee - Header 2-col, Content Single Column */}
       <section className="bg-[#F4F4F4] py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header: 2-column */}
           <div className="grid md:grid-cols-2 gap-12 items-center mb-8">
             {/* Guarantee Badge Image */}
@@ -794,7 +794,7 @@ export default function RetirementIncomeBlueprintPage() {
 
       {/* Trust Badge Banner */}
       <section className="bg-white py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="hidden md:block relative w-full h-32">
             <Image
               src="/images/offer/retirement-income-trust.png"
