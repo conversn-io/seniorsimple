@@ -35,6 +35,14 @@ export const SavingsSlider = ({
     }).format(num);
   };
 
+  const formatNumberCompact = (num: number) => {
+    if (num >= 1000) {
+      const thousands = num / 1000;
+      return `$${thousands.toFixed(thousands % 1 === 0 ? 0 : 1)}K`;
+    }
+    return formatNumber(num);
+  };
+
   const handleSliderChange = (newValue: number) => {
     setValue(newValue);
     setIsValid(newValue >= question.min);
@@ -93,11 +101,8 @@ export const SavingsSlider = ({
           />
           
           <div className="slider-labels flex justify-between mt-2 text-sm text-gray-500">
-            <span>{formatNumber(question.min)}</span>
-            <span>{formatNumber(question.min + (question.max - question.min) / 4)}</span>
-            <span>{formatNumber(question.min + (question.max - question.min) / 2)}</span>
-            <span>{formatNumber(question.min + ((question.max - question.min) * 3) / 4)}</span>
-            <span>{formatNumber(question.max)}</span>
+            <span>{formatNumberCompact(question.min)}</span>
+            <span>{formatNumberCompact(question.max)}</span>
           </div>
         </div>
 
