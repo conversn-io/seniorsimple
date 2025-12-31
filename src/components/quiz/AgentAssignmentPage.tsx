@@ -133,7 +133,7 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
             <div className="mb-6">
               {/* Agent Photo */}
               <img 
-                src="/images/team/advisor-headshot.svg" 
+                src="/images/team/agent-advisor.png" 
                 alt="Senior Retirement Income Specialist"
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
               />
