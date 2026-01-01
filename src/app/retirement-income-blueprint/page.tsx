@@ -189,63 +189,57 @@ export default function RetirementIncomeBlueprintPage() {
         </section>
       ) : null}
 
-      {/* Section 2: Agitate the Problem - Two Column with Image */}
+      {/* Section 2: Agitate the Problem - Single Column with Inline Image */}
       <section className="py-12 md:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Text Column */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6">
-                &quot;You Saved for Retirement&hellip; But Nobody Showed You How to Actually <em>Use</em> That Money, Did They?&quot;
-              </h2>
-              
-              <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
-                <p>You did what you were told.</p>
-                <p>You worked hard. You saved diligently. You lived below your means. Maybe you even maxed out your 401(k) or IRA every year.</p>
-                <p>But now that retirement is here — or just around the corner — you&apos;re facing questions you were never taught to answer:</p>
-                
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>&quot;How much can I take out each month without running out?&quot;</li>
-                  <li>&quot;What happens to my income if the market drops 30% again?&quot;</li>
-                  <li>&quot;Am I taking too much risk&hellip; or not enough?&quot;</li>
-                  <li>&quot;How do I make this money <em>last</em> — without giving up my lifestyle?&quot;</li>
-                  <li>&quot;What about taxes&hellip; Medicare premiums&hellip; RMDs&hellip; inflation?&quot;</li>
-                </ul>
-                
-                <p>You&apos;re not alone.</p>
-                <p>Even people with <strong>$500,000&hellip; $750,000&hellip; even over a million dollars saved</strong> are worried about the same thing:</p>
-                
-                {/* Inline advisor image with question */}
-                <div className="flex items-start gap-4 my-6">
-                  <p className="text-xl font-semibold flex-1">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
-                  <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
-                    <Image
-                      src="/images/offer/credibility-advisor.png"
-                      alt="Financial advisor consultation"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">📉 Retirement is More Confusing Now Than Ever Before</h3>
-                <p>Gone are the days of guaranteed pensions.</p>
-                <p>Interest rates are all over the place.</p>
-                <p>Markets are unpredictable, Social Security is unclear, and the advice you&apos;re getting is&hellip;</p>
-                <p>Conflicting. Overwhelming. Or straight-up biased.</p>
-                <p>And let&apos;s be honest&hellip;</p>
-                <p>Most of what&apos;s out there is <strong>either too basic</strong> (&quot;Just take 4% a year&quot;) or <strong>too complex</strong> (&quot;Use a backdoor Roth glidepath with a dynamic decumulation model&quot;).</p>
-                <p>What are you supposed to do with that?</p>
-                <p>You&apos;re stuck in the middle — with <strong>real money on the line</strong>&hellip; and no clear answers.</p>
-                
-                <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">😔 The Truth?</h3>
-                <p>Most people are better prepared to <em>get</em> to retirement&hellip; Than they are to <em>get through</em> retirement.</p>
-                <p>And if you&apos;re feeling anxious, hesitant, or unsure about how to turn your savings into dependable income&hellip;</p>
-                <p>You&apos;re not broken. You&apos;re not behind. <strong>You&apos;ve just never been given the blueprint.</strong></p>
-                <p className="text-xl font-semibold">Until now.</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6">
+            &quot;You Saved for Retirement&hellip; But Nobody Showed You How to Actually <em>Use</em> That Money, Did They?&quot;
+          </h2>
+          
+          <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
+            <p>You did what you were told.</p>
+            <p>You worked hard. You saved diligently. You lived below your means. Maybe you even maxed out your 401(k) or IRA every year.</p>
+            <p>But now that retirement is here — or just around the corner — you&apos;re facing questions you were never taught to answer:</p>
+            
+            <ul className="list-disc pl-6 space-y-2">
+              <li>&quot;How much can I take out each month without running out?&quot;</li>
+              <li>&quot;What happens to my income if the market drops 30% again?&quot;</li>
+              <li>&quot;Am I taking too much risk&hellip; or not enough?&quot;</li>
+              <li>&quot;How do I make this money <em>last</em> — without giving up my lifestyle?&quot;</li>
+              <li>&quot;What about taxes&hellip; Medicare premiums&hellip; RMDs&hellip; inflation?&quot;</li>
+            </ul>
+            
+            <p>You&apos;re not alone.</p>
+            <p>Even people with <strong>$500,000&hellip; $750,000&hellip; even over a million dollars saved</strong> are worried about the same thing:</p>
+            
+            {/* Inline advisor image with question */}
+            <div className="flex items-start gap-4 my-6">
+              <p className="text-xl font-semibold flex-1">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
+              <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
+                <Image
+                  src="/images/offer/credibility-advisor.png"
+                  alt="Financial advisor consultation"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
             
+            <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">📉 Retirement is More Confusing Now Than Ever Before</h3>
+            <p>Gone are the days of guaranteed pensions.</p>
+            <p>Interest rates are all over the place.</p>
+            <p>Markets are unpredictable, Social Security is unclear, and the advice you&apos;re getting is&hellip;</p>
+            <p>Conflicting. Overwhelming. Or straight-up biased.</p>
+            <p>And let&apos;s be honest&hellip;</p>
+            <p>Most of what&apos;s out there is <strong>either too basic</strong> (&quot;Just take 4% a year&quot;) or <strong>too complex</strong> (&quot;Use a backdoor Roth glidepath with a dynamic decumulation model&quot;).</p>
+            <p>What are you supposed to do with that?</p>
+            <p>You&apos;re stuck in the middle — with <strong>real money on the line</strong>&hellip; and no clear answers.</p>
+            
+            <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">😔 The Truth?</h3>
+            <p>Most people are better prepared to <em>get</em> to retirement&hellip; Than they are to <em>get through</em> retirement.</p>
+            <p>And if you&apos;re feeling anxious, hesitant, or unsure about how to turn your savings into dependable income&hellip;</p>
+            <p>You&apos;re not broken. You&apos;re not behind. <strong>You&apos;ve just never been given the blueprint.</strong></p>
+            <p className="text-xl font-semibold">Until now.</p>
           </div>
         </div>
       </section>
