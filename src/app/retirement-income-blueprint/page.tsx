@@ -211,18 +211,16 @@ export default function RetirementIncomeBlueprintPage() {
             
             <p>You&apos;re not alone.</p>
             <p>Even people with <strong>$500,000&hellip; $750,000&hellip; even over a million dollars saved</strong> are worried about the same thing:</p>
+            <p className="text-xl font-semibold">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
             
-            {/* Inline advisor image with question */}
-            <div className="flex items-start gap-4 my-6">
-              <p className="text-xl font-semibold flex-1">👉 &quot;Do I have <em>enough</em> to retire and stay retired — for good?&quot;</p>
-              <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  src="/images/offer/credibility-advisor.png"
-                  alt="Financial advisor consultation"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+            {/* Full-width inline advisor image */}
+            <div className="relative w-full max-w-lg mx-auto aspect-[4/3] rounded-lg overflow-hidden shadow-xl my-8">
+              <Image
+                src="/images/offer/credibility-advisor.png"
+                alt="Financial advisor consultation"
+                fill
+                className="object-cover"
+              />
             </div>
             
             <h3 className="text-2xl font-bold text-[#0D3B66] mt-8 mb-4">📉 Retirement is More Confusing Now Than Ever Before</h3>
