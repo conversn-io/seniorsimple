@@ -596,6 +596,16 @@ export default function RetirementIncomeBlueprintPage() {
             Here&apos;s Everything You&apos;re Getting When You Grab the Retirement Income Blueprint™ Today
           </h2>
           
+          {/* Product Mockup Image - Full Width */}
+          <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden shadow-xl mb-8">
+            <Image
+              src="/images/offer/retirement-income-product-mockup.png"
+              alt="Retirement Income Blueprint product"
+              fill
+              className="object-cover"
+            />
+          </div>
+          
           <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
             {/* Retirement Income Blueprint First */}
             <div>
@@ -655,7 +665,21 @@ export default function RetirementIncomeBlueprintPage() {
                 <p className="text-lg mb-2">One-time payment.</p>
                 <p className="text-lg mb-2">No upsells.</p>
                 <p className="text-lg mb-2">No subscriptions.</p>
-                <p className="text-lg">Instant access to the entire system + all bonuses.</p>
+                <p className="text-lg mb-6">Instant access to the entire system + all bonuses.</p>
+                
+                {/* CTA Button - Anchors to 2-step checkout */}
+                <a
+                  href="#checkout"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCTAClick();
+                    document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="bg-[#F4D35E] hover:bg-[#EACB4F] text-[#0D3B66] px-12 py-6 rounded-lg font-bold text-2xl transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl mb-6 inline-block"
+                  style={{ width: '600px', maxWidth: '100%' }}
+                >
+                  Yes — I Want the Retirement Income Blueprint™
+                </a>
               </div>
             </div>
           </div>
@@ -669,12 +693,13 @@ export default function RetirementIncomeBlueprintPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center mb-8">
             {/* Guarantee Badge Image */}
             <div className="flex justify-center md:justify-start">
-              <div className="relative w-64 h-64 md:w-80 md:h-80">
+              <div className="relative w-64 h-64 md:w-80 md:h-80 bg-transparent">
                 <Image
                   src="/images/offer/60-day-guarantee.png"
                   alt="60-day money-back guarantee"
                   fill
                   className="object-contain"
+                  style={{ backgroundColor: 'transparent' }}
                 />
               </div>
             </div>
@@ -763,13 +788,18 @@ export default function RetirementIncomeBlueprintPage() {
             <p>Just a small investment that could pay off for the rest of your life.</p>
           </div>
           
-          <button
-            onClick={handleCTAClick}
-            className="bg-[#F4D35E] hover:bg-[#EACB4F] text-[#0D3B66] px-12 py-6 rounded-lg font-bold text-2xl transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl mb-6"
+          <a
+            href="#checkout"
+            onClick={(e) => {
+              e.preventDefault();
+              handleCTAClick();
+              document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-[#F4D35E] hover:bg-[#EACB4F] text-[#0D3B66] px-12 py-6 rounded-lg font-bold text-2xl transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl mb-6 inline-block"
             style={{ width: '600px', maxWidth: '100%' }}
           >
             Yes — I Want the Retirement Income Blueprint™
-          </button>
+          </a>
           
           <p className="text-sm text-gray-600 mb-8">(Get instant access now for just $47)</p>
           
@@ -807,7 +837,7 @@ export default function RetirementIncomeBlueprintPage() {
       </section>
 
       {/* Checkout Iframe Section */}
-      <section className="bg-white py-12 md:py-16" id="checkout-iframe">
+      <section className="bg-white py-12 md:py-16" id="checkout">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] mb-6 text-center">
             Complete Your Order
