@@ -13,14 +13,20 @@ interface QuizQuestionProps {
     id: string;
     title: string;
     subtitle?: string;
-    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent' | 'personal-info-with-benefits';
-    options?: string[];
+    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent' | 'personal-info-with-benefits' | 'coverage-amount-buttons' | 'yes-no' | 'full-name' | 'phone-only' | 'date-of-birth-dropdowns';
+    options?: string[] | Array<{ value: number | null; label: string; description?: string; popular?: boolean }>;
     min?: number;
     max?: number;
     step?: number;
     defaultValue?: number | string;
     placeholder?: string;
     isQualifying?: boolean;
+    benefits?: string[];
+    headline?: string;
+    subheadline?: string;
+    reassuranceText?: string;
+    minYear?: number;
+    maxYear?: number;
   };
   onAnswer: (answer: any) => void;
   currentAnswer?: any;
@@ -84,6 +90,53 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
   const [isValidatingPhone, setIsValidatingPhone] = useState(false);
   const [phoneAPIValid, setPhoneAPIValid] = useState(false);
 
+  // Full name fields (for full-name type)
+  const [fullNameFirstName, setFullNameFirstName] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.firstName) {
+      return currentAnswer.firstName;
+    }
+    return '';
+  });
+  const [fullNameLastName, setFullNameLastName] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.lastName) {
+      return currentAnswer.lastName;
+    }
+    return '';
+  });
+
+  // Date of birth fields (for date-of-birth-dropdowns type)
+  const [dobMonth, setDobMonth] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.month) {
+      return currentAnswer.month;
+    }
+    return '';
+  });
+  const [dobDay, setDobDay] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.day) {
+      return currentAnswer.day;
+    }
+    return '';
+  });
+  const [dobYear, setDobYear] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.year) {
+      return currentAnswer.year;
+    }
+    return '';
+  });
+
+  // Initialize phone for phone-only type
+  useEffect(() => {
+    if (question.type === 'phone-only' && currentAnswer && typeof currentAnswer === 'string') {
+      // Extract digits from formatted phone
+      const digits = currentAnswer.replace(/\D/g, '').slice(-10);
+      if (digits.length === 10) {
+        setPhone(digits);
+        const state = getPhoneValidationState(digits);
+        setPhoneValidationState(state);
+      }
+    }
+  }, [question.type, currentAnswer]);
+
   // Debounced zip validation
   useEffect(() => {
     if (question.type === 'location-info' && zipCode.length >= 5) {
@@ -101,11 +154,13 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     setPhoneAPIValid(false);
     
     // Only trigger API validation if:
-    // 1. Question type is personal-info or personal-info-with-benefits
+    // 1. Question type is personal-info, personal-info-with-benefits, or phone-only
     // 2. Phone format is valid (10 digits)
     // 3. No existing format/fake errors
-    const isPersonalInfoType = question.type === 'personal-info' || question.type === 'personal-info-with-benefits';
-    if (isPersonalInfoType && phoneValidationState === 'valid' && phone.length === 10 && !phoneError) {
+    const isPhoneQuestionType = question.type === 'personal-info' || 
+                                question.type === 'personal-info-with-benefits' ||
+                                question.type === 'phone-only';
+    if (isPhoneQuestionType && phoneValidationState === 'valid' && phone.length === 10 && !phoneError) {
       setIsValidatingPhone(true);
       const timeoutId = setTimeout(async () => {
         try {
@@ -280,13 +335,107 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   };
 
+  // Handler for coverage amount buttons
+  const handleCoverageAmountSelect = (value: number | null) => {
+    setSelectedAnswer(value);
+    onAnswer(value);
+  };
+
+  // Handler for yes/no questions
+  const handleYesNo = (answer: boolean) => {
+    setSelectedAnswer(answer);
+    onAnswer(answer);
+  };
+
+  // Handler for full name submit
+  const handleFullNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (fullNameFirstName && fullNameLastName) {
+      onAnswer({
+        firstName: fullNameFirstName,
+        lastName: fullNameLastName
+      });
+    }
+  };
+
+  // Handler for phone-only submit
+  const handlePhoneOnlySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const digits = extractUSPhoneNumber(phone);
+    if (digits.length === 10 && phoneValidationState === 'valid' && phoneAPIValid) {
+      const formattedPhoneNumber = formatPhoneForGHL(digits);
+      onAnswer(formattedPhoneNumber);
+    }
+  };
+
+  // Handler for date of birth change - checks if all fields are filled and submits
+  const handleDOBChange = () => {
+    if (dobMonth && dobDay && dobYear) {
+      // Format as ISO date string: YYYY-MM-DD
+      const month = dobMonth.padStart(2, '0');
+      const day = dobDay.padStart(2, '0');
+      const dateString = `${dobYear}-${month}-${day}`;
+      onAnswer({
+        month: dobMonth,
+        day: dobDay,
+        year: dobYear,
+        dateString: dateString,
+        iso: dateString
+      });
+    }
+  };
+
+  // Auto-submit date of birth when all three fields are selected
+  useEffect(() => {
+    if (question.type === 'date-of-birth-dropdowns' && dobMonth && dobDay && dobYear) {
+      // Small delay to ensure state is updated
+      const timeoutId = setTimeout(() => {
+        handleDOBChange();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [dobMonth, dobDay, dobYear, question.type]);
+
+  // Generate year options for DOB dropdown
+  const generateYearOptions = () => {
+    const years = [];
+    const minYear = question.minYear || 1935;
+    const maxYear = question.maxYear || 1976;
+    for (let year = maxYear; year >= minYear; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
+  // Generate day options based on selected month/year
+  const generateDayOptions = () => {
+    const days = [];
+    let maxDays = 31;
+    if (dobMonth && dobYear) {
+      const monthNum = parseInt(dobMonth);
+      const yearNum = parseInt(dobYear);
+      // Handle February
+      if (monthNum === 2) {
+        // Check for leap year
+        const isLeapYear = (yearNum % 4 === 0 && yearNum % 100 !== 0) || (yearNum % 400 === 0);
+        maxDays = isLeapYear ? 29 : 28;
+      } else if ([4, 6, 9, 11].includes(monthNum)) {
+        maxDays = 30;
+      }
+    }
+    for (let day = 1; day <= maxDays; day++) {
+      days.push(day);
+    }
+    return days;
+  };
+
 
   const renderQuestion = () => {
     switch (question.type) {
       case 'multiple-choice':
         return (
           <div className="space-y-4">
-            {question.options?.map((option, index) => (
+            {(question.options as string[])?.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleMultipleChoice(option)}
@@ -315,7 +464,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         return (
           <div className="space-y-6">
             <div className="space-y-4">
-              {question.options?.map((option, index) => (
+              {(question.options as string[])?.map((option, index) => (
                 <button
                   key={index}
                   onClick={() => handleMultiSelect(option)}
@@ -558,24 +707,25 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         );
 
       case 'personal-info-with-benefits':
+        const defaultBenefits = [
+          'Free confidential consultation and estimated monthly income',
+          'Personalized review of annuities you may qualify for',
+          'Help planning your retirement for the future'
+        ];
+        const benefits = question.benefits || defaultBenefits;
+        
         return (
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
             {/* Benefits Section */}
             <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
               <h3 className="text-xl font-bold text-[#36596A] mb-4">What You'll Get:</h3>
               <ul className="space-y-3">
-                <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Free confidential consultation and estimated monthly income</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Personalized review of annuities you may qualify for</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Help planning your retirement for the future</span>
-                </li>
+                {benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700">{benefit}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -718,6 +868,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 !phone || 
                 emailValidationState !== 'valid' ||
                 phoneValidationState !== 'valid' ||
+                !phoneAPIValid ||
+                isValidatingPhone ||
                 isLoading
               }
               onClick={(e) => {
@@ -728,9 +880,10 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                   phone: !!phone,
                   emailValid: emailValidationState === 'valid',
                   phoneValid: phoneValidationState === 'valid',
+                  phoneAPIValid,
                   isValidatingPhone,
                   isLoading,
-                  disabled: !firstName || !lastName || !email || !phone || emailValidationState !== 'valid' || phoneValidationState !== 'valid' || isLoading
+                  disabled: !firstName || !lastName || !email || !phone || emailValidationState !== 'valid' || phoneValidationState !== 'valid' || !phoneAPIValid || isValidatingPhone || isLoading
                 });
               }}
               style={{ minHeight: '64px' }}
@@ -740,7 +893,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
 
             <div className="mt-4">
               <p className="text-xs text-gray-600 leading-relaxed text-center">
-                By clicking "Get Your Free Quote", you provide your express written consent to receive communications from SeniorSimple.org and its marketing partners at the phone number and email address provided using automated technology, including calls, text messages and pre-recorded messages regarding annuity products or services that may be of interest. Consent is not required to purchase. Message and data rates may apply. You may opt out at any time. See our <a href="/privacy-policy" className="text-[#36596A] underline">privacy policy</a> and <a href="/terms-of-service" className="text-[#36596A] underline">terms and conditions</a>.
+                By clicking "Get Your Free Quote", you provide your express written consent to receive communications from SeniorSimple.org and its marketing partners at the phone number and email address provided using automated technology, including calls, text messages and pre-recorded messages regarding insurance products or services that may be of interest. Consent is not required to purchase. Message and data rates may apply. You may opt out at any time. See our <a href="/privacy-policy" className="text-[#36596A] underline">privacy policy</a> and <a href="/terms-of-service" className="text-[#36596A] underline">terms and conditions</a>.
               </p>
             </div>
           </form>
@@ -956,6 +1109,314 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
               Continue
             </button>
           </form>
+        );
+
+      case 'coverage-amount-buttons':
+        const coverageOptions = question.options as Array<{ value: number | null; label: string; description?: string; popular?: boolean }> | undefined;
+        return (
+          <div className="space-y-4">
+            {coverageOptions?.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleCoverageAmountSelect(option.value)}
+                className={`quiz-button w-full p-6 text-left border-3 rounded-xl transition-all duration-200 transform active:scale-95 ${
+                  selectedAnswer === option.value
+                    ? 'border-[#36596A] bg-white text-[#36596A] shadow-lg'
+                    : option.popular
+                    ? 'border-green-300 bg-green-50 hover:border-[#36596A] hover:shadow-lg text-gray-700'
+                    : 'border-gray-200 bg-white hover:border-[#36596A] hover:shadow-lg text-gray-700'
+                }`}
+                disabled={isLoading}
+                style={{ minHeight: '80px' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-2xl">💰</span>
+                      <span className="font-bold text-xl text-gray-900">{option.label}</span>
+                      {option.popular && (
+                        <span className="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                          Most Popular
+                        </span>
+                      )}
+                    </div>
+                    {option.description && (
+                      <p className="text-sm text-gray-600 ml-11">{option.description}</p>
+                    )}
+                  </div>
+                  {selectedAnswer === option.value && (
+                    <div className="w-6 h-6 bg-[#36596A] rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-3 h-3 bg-white rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        );
+
+      case 'yes-no':
+        return (
+          <div className="space-y-4">
+            <button
+              onClick={() => handleYesNo(false)}
+              className={`quiz-button w-full p-8 text-center border-3 rounded-xl transition-all duration-200 transform active:scale-95 ${
+                selectedAnswer === false
+                  ? 'border-green-500 bg-green-50 text-green-700 shadow-lg'
+                  : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-lg text-gray-700'
+              }`}
+              disabled={isLoading}
+              style={{ minHeight: '80px' }}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl">✓</span>
+                <span className="font-bold text-xl">No</span>
+              </div>
+            </button>
+            <button
+              onClick={() => handleYesNo(true)}
+              className={`quiz-button w-full p-8 text-center border-3 rounded-xl transition-all duration-200 transform active:scale-95 ${
+                selectedAnswer === true
+                  ? 'border-red-500 bg-red-50 text-red-700 shadow-lg'
+                  : 'border-gray-200 bg-white hover:border-red-300 hover:shadow-lg text-gray-700'
+              }`}
+              disabled={isLoading}
+              style={{ minHeight: '80px' }}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl">✗</span>
+                <span className="font-bold text-xl">Yes</span>
+              </div>
+            </button>
+            {question.reassuranceText && (
+              <p className="text-sm text-gray-600 text-center mt-4 italic">
+                {question.reassuranceText}
+              </p>
+            )}
+          </div>
+        );
+
+      case 'full-name':
+        return (
+          <form onSubmit={handleFullNameSubmit} className="space-y-6">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                First Name *
+              </label>
+              <input
+                type="text"
+                value={fullNameFirstName}
+                onChange={(e) => setFullNameFirstName(e.target.value)}
+                className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isLoading}
+                autoFocus
+                autoComplete="given-name"
+                style={{ minHeight: '56px' }}
+              />
+            </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Last Name *
+              </label>
+              <input
+                type="text"
+                value={fullNameLastName}
+                onChange={(e) => setFullNameLastName(e.target.value)}
+                className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                required
+                disabled={isLoading}
+                autoComplete="family-name"
+                style={{ minHeight: '56px' }}
+              />
+            </div>
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={!fullNameFirstName || !fullNameLastName || isLoading}
+              style={{ minHeight: '64px' }}
+            >
+              Next →
+            </button>
+          </form>
+        );
+
+      case 'phone-only':
+        return (
+          <form onSubmit={handlePhoneOnlySubmit} className="space-y-6">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <span className="text-gray-500 text-lg font-medium">+1</span>
+                </div>
+                <input
+                  type="tel"
+                  value={formatPhoneForInput(phone)}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    const digits = inputValue.replace(/\D/g, '');
+                    const limitedDigits = digits.slice(0, 10);
+                    setPhone(limitedDigits);
+                    const state = getPhoneValidationState(limitedDigits);
+                    setPhoneValidationState(state);
+                    const validation = validatePhoneFormat(limitedDigits);
+                    setPhoneError(validation.error || '');
+                  }}
+                  className={`
+                    quiz-input w-full pr-12 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${phoneValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${phoneValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${phoneValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  placeholder="(555) 123-4567"
+                  required
+                  disabled={isLoading}
+                  autoComplete="tel-national"
+                  style={{ 
+                    minHeight: '56px',
+                    paddingLeft: '100px'
+                  }}
+                />
+                {isValidatingPhone && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'invalid' && phone && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {!isValidatingPhone && phoneValidationState === 'valid' && phone && phoneAPIValid && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {phoneValidationState === 'valid' && phone && !isValidatingPhone && phoneAPIValid && (
+                <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
+              )}
+              {phoneError && (
+                <p className="text-red-600 text-sm mt-2">{phoneError}</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={
+                !phone || 
+                phoneValidationState !== 'valid' ||
+                !phoneAPIValid ||
+                isValidatingPhone ||
+                isLoading
+              }
+              style={{ minHeight: '64px' }}
+            >
+              Get My Rates →
+            </button>
+          </form>
+        );
+
+      case 'date-of-birth-dropdowns':
+        const months = [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        const days = generateDayOptions();
+        const years = generateYearOptions();
+
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Month
+                </label>
+                <select
+                  value={dobMonth}
+                  onChange={(e) => {
+                    const newMonth = e.target.value;
+                    setDobMonth(newMonth);
+                    setDobDay(''); // Reset day when month changes
+                    // If day and year already selected, wait for state update then submit
+                    if (dobDay && dobYear && newMonth) {
+                      setTimeout(() => handleDOBChange(), 50);
+                    }
+                  }}
+                  className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                >
+                  <option value="">Select Month</option>
+                  {months.map((month, index) => (
+                    <option key={index} value={String(index + 1).padStart(2, '0')}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Day
+                </label>
+                <select
+                  value={dobDay}
+                  onChange={(e) => {
+                    const newDay = e.target.value;
+                    setDobDay(newDay);
+                    // If month and year already selected, submit
+                    if (dobMonth && dobYear && newDay) {
+                      setTimeout(() => handleDOBChange(), 50);
+                    }
+                  }}
+                  className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  required
+                  disabled={!dobMonth || isLoading}
+                  style={{ minHeight: '56px' }}
+                >
+                  <option value="">Select Day</option>
+                  {days.map((day) => (
+                    <option key={day} value={String(day).padStart(2, '0')}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Year
+                </label>
+                <select
+                  value={dobYear}
+                  onChange={(e) => {
+                    const newYear = e.target.value;
+                    setDobYear(newYear);
+                    setDobDay(''); // Reset day when year changes (for leap year handling)
+                    // If month and day already selected, wait for state update then submit
+                    if (dobMonth && dobDay && newYear) {
+                      setTimeout(() => handleDOBChange(), 50);
+                    }
+                  }}
+                  className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                >
+                  <option value="">Select Year</option>
+                  {years.map((year) => (
+                    <option key={year} value={String(year)}>
+                      {year} (Age {new Date().getFullYear() - year})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {dobMonth && dobDay && dobYear && (
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <p className="text-green-700 text-sm font-semibold">
+                  ✓ Date of Birth: {months[parseInt(dobMonth) - 1]} {dobDay}, {dobYear}
+                </p>
+              </div>
+            )}
+          </div>
         );
 
       default:

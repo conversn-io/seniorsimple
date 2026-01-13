@@ -5,6 +5,7 @@ import "./globals.css";
 import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
+import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -123,9 +124,9 @@ export default function RootLayout({
           </>
         )}
         
-        {/* Meta Pixel - Deferred */}
+        {/* Meta Pixel Script Loader - Loads fbq function */}
         <Script
-          id="meta-pixel"
+          id="meta-pixel-loader"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
@@ -137,29 +138,20 @@ export default function RootLayout({
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              
-              // Bot detection - only track if not a bot
-              (function() {
-                var isBot = false;
-                if (typeof navigator !== 'undefined') {
-                  var ua = navigator.userAgent || '';
-                  isBot = /bot|crawler|spider|crawling|facebookexternalhit|Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|Exabot|facebot|ia_archiver/i.test(ua);
-                }
-                
-                if (!isBot) {
-                  fbq('init', '24221789587508633');
-                  fbq('track', 'PageView');
-                } else {
-                  fbq('init', '24221789587508633');
-                }
-              })();
             `
           }}
         />
+        
+        {/* Noscript fallbacks for both pixels */}
         <noscript>
           <img height="1" width="1" style={{display:'none'}} 
                src="https://www.facebook.com/tr?id=24221789587508633&ev=PageView&noscript=1" />
+          <img height="1" width="1" style={{display:'none'}} 
+               src="https://www.facebook.com/tr?id=1963989871164856&ev=PageView&noscript=1" />
         </noscript>
+        
+        {/* Client-side pixel initializer - handles route-based initialization */}
+        <MetaPixelInitializer />
         
         {/* PageTest.ai - Lazy Load */}
         <Script

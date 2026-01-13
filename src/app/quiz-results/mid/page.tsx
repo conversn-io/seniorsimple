@@ -4,3 +4,4 @@ export default function MidResultsPage() {
   return <RetirementIncomeResults tier="mid" />;
 }
 
+

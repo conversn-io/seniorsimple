@@ -166,3 +166,4 @@ GROUP BY device_type
 ORDER BY sessions DESC;
 
 
+

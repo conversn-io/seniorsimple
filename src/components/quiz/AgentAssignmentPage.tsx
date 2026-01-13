@@ -7,15 +7,21 @@ import { FAQ } from "./FAQ";
 interface AgentAssignmentPageProps {
   answers: Record<string, any>;
   onRestart: () => void;
+  funnelType?: string;
 }
 
-export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageProps) => {
+export const AgentAssignmentPage = ({ answers, onRestart, funnelType }: AgentAssignmentPageProps) => {
+  // Detect funnel type from answers or prop
+  const detectedFunnelType = funnelType || answers.funnelType || (typeof window !== 'undefined' ? window.location.pathname.includes('final-expense') ? 'final-expense-quote' : 'annuity-quote' : 'annuity-quote');
+  const isFinalExpense = detectedFunnelType === 'final-expense-quote';
+  
   useEffect(() => {
     // Track page view for analytics
     console.log("🎯 Agent Assignment Page Loaded:", {
       timestamp: new Date().toISOString(),
       answers: Object.keys(answers),
-      firstName: answers.personalInfo?.firstName || answers.firstName
+      firstName: answers.personalInfo?.firstName || answers.firstName,
+      funnelType: detectedFunnelType
     });
     
     // Submit agent assignment form when component mounts
@@ -42,7 +48,10 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
       {/* Announcement Bar - Directly under header nav */}
       <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
         <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
-          Well done, {firstName}! Your Personalized Annuity Quote is Now Being Generated...
+          {isFinalExpense 
+            ? `Well done, ${firstName}! Your Final Expense Insurance Quote is Now Being Generated...`
+            : `Well done, ${firstName}! Your Personalized Annuity Quote is Now Being Generated...`
+          }
         </h1>
       </div>
 
@@ -77,14 +86,17 @@ export const AgentAssignmentPage = ({ answers, onRestart }: AgentAssignmentPageP
                 <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
                   <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                 </div>
-                <span className="text-gray-500">Get Annuity</span>
+                <span className="text-gray-500">{isFinalExpense ? 'Get Coverage' : 'Get Annuity'}</span>
               </div>
             </div>
           </div>
 
           {/* Main Headline - Right below progress bar */}
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-slate-700 text-center">
-            You'll be getting a call now from a licensed agent to go over your details
+            {isFinalExpense 
+              ? "You'll be getting a call now from a licensed final expense insurance agent to go over your details"
+              : "You'll be getting a call now from a licensed agent to go over your details"
+            }
           </h2>
         </div>
       </section>

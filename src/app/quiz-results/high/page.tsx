@@ -4,3 +4,4 @@ export default function HighResultsPage() {
   return <RetirementIncomeResults tier="high" />;
 }
 
+

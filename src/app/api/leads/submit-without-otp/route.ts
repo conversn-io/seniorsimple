@@ -4,7 +4,17 @@ import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
 import { formatPhoneForGHL, formatE164 } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
 
-const GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
+// Webhook URLs by funnel type
+const ANNUITY_GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
+const FINAL_EXPENSE_GHL_WEBHOOK_URL = process.env.final_expense_GHL_webhook || process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
+
+// Helper function to get webhook URL based on funnel type
+function getGHLWebhookUrl(funnelType: string | null | undefined): string {
+  if (funnelType === 'final-expense-quote') {
+    return FINAL_EXPENSE_GHL_WEBHOOK_URL;
+  }
+  return ANNUITY_GHL_WEBHOOK_URL;
+}
 
 export async function OPTIONS() {
   return handleCorsOptions();
@@ -276,7 +286,6 @@ async function upsertLead(
 
 export async function POST(request: NextRequest) {
   console.log('📝 Form Submission (No OTP) & GHL Webhook API Called');
-  console.log('🔗 GHL Webhook URL:', GHL_WEBHOOK_URL);
   console.log('🌍 Environment:', process.env.NODE_ENV);
   console.log('⏰ Timestamp:', new Date().toISOString());
 
@@ -358,43 +367,113 @@ export async function POST(request: NextRequest) {
     const addressState = addressData.stateAbbr || addressData.state || state || '';
     const addressZip = addressData.zipCode || zipCode || '';
     
-    // Extract coverage_amount from retirement allocation
+    // Extract coverage_amount - handle both annuity and final expense quizzes
     const retirementSavings = quizAnswers?.retirementSavings || 0;
     const allocationPercent = quizAnswers?.allocationPercent?.percentage || quizAnswers?.allocationPercent || 0;
-    const coverageAmount = typeof allocationPercent === 'number' && allocationPercent > 0
-      ? Math.round((retirementSavings * allocationPercent) / 100)
-      : retirementSavings;
+    const finalExpenseCoverage = quizAnswers?.coverageAmount || 0;
+    
+    // For final expense, use coverageAmount directly; for annuity, calculate from allocation
+    const coverageAmount = funnelType === 'final-expense-quote' && finalExpenseCoverage > 0
+      ? finalExpenseCoverage
+      : (typeof allocationPercent === 'number' && allocationPercent > 0
+          ? Math.round((retirementSavings * allocationPercent) / 100)
+          : retirementSavings);
     
     // Extract originally_created timestamp
     const originallyCreated = new Date().toISOString();
     
-    const ghlPayload = {
+    // Get the appropriate webhook URL based on funnel type
+    const ghlWebhookUrl = getGHLWebhookUrl(funnelType);
+    
+    // Extract UTM parameters (flatten for final-expense-quote)
+    const utmSource = utmParams?.utm_source || lead.quiz_answers?.utm_parameters?.utm_source || '';
+    const utmMedium = utmParams?.utm_medium || lead.quiz_answers?.utm_parameters?.utm_medium || '';
+    const utmCampaign = utmParams?.utm_campaign || lead.quiz_answers?.utm_parameters?.utm_campaign || '';
+    const utmTerm = utmParams?.utm_term || lead.quiz_answers?.utm_parameters?.utm_term || '';
+    const utmContent = utmParams?.utm_content || lead.quiz_answers?.utm_parameters?.utm_content || '';
+    
+    // Get referrer and landing page from analytics_events
+    let referrer = null;
+    let landingPage = null;
+    if (sessionId) {
+      const { data: sessionEvent } = await callreadyQuizDb
+        .from('analytics_events')
+        .select('referrer, page_url')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (sessionEvent) {
+        referrer = sessionEvent.referrer || null;
+        landingPage = sessionEvent.page_url || null;
+      }
+    }
+    
+    // Extract final expense specific fields from quiz answers
+    const quizData = lead.quiz_answers || quizAnswers || {};
+    const ageRange = quizData.ageRange || '';
+    const healthStatus = quizData.healthStatus || '';
+    const tobaccoUse = quizData.tobaccoUse || '';
+    const coveragePurpose = Array.isArray(quizData.coveragePurpose) 
+      ? quizData.coveragePurpose.join(',') 
+      : (quizData.coveragePurpose || '');
+    
+    // Build flat payload structure (no nested objects)
+    const ghlPayload: Record<string, any> = {
+      // Contact Information
       firstName: firstName || contact.first_name,
       lastName: lastName || contact.last_name,
       email: email,
       phone: formattedPhone,
       phoneLast4: phoneLast4,
-      zipCode: addressZip,
-      state: addressState,
-      stateName: addressData.state || stateName || lead.state_name,
+      
+      // Address Information
       address: streetNumber ? `${streetNumber} ${address}`.trim() : address,
       city: city,
+      state: addressState,
+      stateName: addressData.state || stateName || lead.state_name,
+      zipCode: addressZip,
+      
+      // System Fields
       ipAddress: ipAddress,
-      coverageAmount: coverageAmount,
-      originallyCreated: originallyCreated,
-      source: 'SeniorSimple Quiz',
+      source: funnelType === 'final-expense-quote' 
+        ? 'SeniorSimple Final Expense Quiz' 
+        : 'SeniorSimple Quiz',
       funnelType: funnelType || lead.funnel_type || 'insurance',
-      quizAnswers: lead.quiz_answers || quizAnswers,
-      calculatedResults: calculatedResults,
-      licensingInfo: licensingInfo,
-      leadScore: 75, // Default lead score
+      originallyCreated: originallyCreated,
       timestamp: new Date().toISOString(),
-      utmParams: utmParams || lead.quiz_answers?.utm_parameters || {},
-      skipOTP: true // Flag to indicate this was submitted without OTP
+      sessionId: sessionId || lead.session_id || '',
+      leadScore: 75, // Default lead score
     };
+    
+    // Add final expense specific fields if this is a final expense quote
+    if (funnelType === 'final-expense-quote') {
+      ghlPayload.coverageAmount = coverageAmount;
+      ghlPayload.ageRange = ageRange;
+      ghlPayload.healthStatus = healthStatus;
+      ghlPayload.tobaccoUse = tobaccoUse;
+      if (coveragePurpose) {
+        ghlPayload.coveragePurpose = coveragePurpose;
+      }
+    } else {
+      // For annuity quotes, keep coverageAmount
+      ghlPayload.coverageAmount = coverageAmount;
+    }
+    
+    // Add UTM parameters (flat structure)
+    if (utmSource) ghlPayload.utmSource = utmSource;
+    if (utmMedium) ghlPayload.utmMedium = utmMedium;
+    if (utmCampaign) ghlPayload.utmCampaign = utmCampaign;
+    if (utmTerm) ghlPayload.utmTerm = utmTerm;
+    if (utmContent) ghlPayload.utmContent = utmContent;
+    
+    // Add additional context if available
+    if (landingPage) ghlPayload.landingPage = landingPage;
+    if (referrer) ghlPayload.referrer = referrer;
 
     console.log('📤 Sending to GHL Webhook:', {
-      url: GHL_WEBHOOK_URL,
+      url: ghlWebhookUrl,
+      funnelType: funnelType,
       payload: ghlPayload
     });
 
@@ -407,7 +486,7 @@ export async function POST(request: NextRequest) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT);
       
-      ghlResponse = await fetch(GHL_WEBHOOK_URL, {
+      ghlResponse = await fetch(ghlWebhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -420,7 +499,8 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.error('❌ GHL Webhook Timeout:', {
-          url: GHL_WEBHOOK_URL,
+          url: ghlWebhookUrl,
+          funnelType: funnelType,
           timeout: WEBHOOK_TIMEOUT
         });
         return createCorsResponse({ 
@@ -461,7 +541,8 @@ export async function POST(request: NextRequest) {
           user_id: email,
           event_data: {
             lead_id: lead.id,
-            webhook_url: GHL_WEBHOOK_URL,
+            webhook_url: ghlWebhookUrl,
+            funnel_type: funnelType,
             request_payload: ghlPayload,
             response_status: ghlResponse.status,
             response_body: ghlResponseData,
@@ -501,7 +582,8 @@ export async function POST(request: NextRequest) {
         statusText: ghlResponse.statusText,
         response: ghlResponseData,
         payload: ghlPayload,
-        url: GHL_WEBHOOK_URL,
+        url: ghlWebhookUrl,
+        funnelType: funnelType,
       });
 
       // Update lead with failed GHL status

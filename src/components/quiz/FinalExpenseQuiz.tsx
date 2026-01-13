@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
-import { SavingsSlider } from './SavingsSlider';
 import { OTPVerification } from './OTPVerification';
 import { ProcessingState } from './ProcessingState';
 import { extractUTMParameters, storeUTMParameters, getStoredUTMParameters, hasUTMParameters, UTMParameters } from '@/utils/utm-utils';
@@ -438,20 +437,12 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
 
       {/* Question Content */}
       <div className="mt-2">
-        {currentQuestion.type === 'savings-slider' ? (
-          <SavingsSlider
-            question={currentQuestion}
-            onAnswer={handleAnswer}
-            currentAnswer={answers[currentQuestion.id]}
-          />
-        ) : (
-          <QuizQuestion
-            question={currentQuestion}
-            onAnswer={handleAnswer}
-            currentAnswer={answers[currentQuestion.id]}
-            isLoading={showProcessing}
-          />
-        )}
+        <QuizQuestion
+          question={currentQuestion}
+          onAnswer={handleAnswer}
+          currentAnswer={answers[currentQuestion.id]}
+          isLoading={showProcessing}
+        />
       </div>
 
       {/* Trust Badge (on first screen) */}

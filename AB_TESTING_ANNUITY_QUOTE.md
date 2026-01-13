@@ -113,3 +113,4 @@ Track how each variant performs through the funnel:
 4. **Weighted splits** - Adjust split ratio (e.g., 70/30) if one variant performs better
 5. **Multi-variant testing** - Test more than 2 variants simultaneously
 
+

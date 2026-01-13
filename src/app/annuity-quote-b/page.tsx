@@ -4,3 +4,4 @@ export default function AnnuityQuoteBPage() {
   return <AnnuityQuoteQuiz skipOTP={true} />;
 }
 
+

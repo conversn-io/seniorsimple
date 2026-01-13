@@ -111,9 +111,29 @@ export function trackGA4Event(eventName: string, parameters: Record<string, any>
 }
 
 // Meta Pixel Event Tracking
+// Note: When multiple pixels are initialized, fbq('track') sends events to all initialized pixels
 function trackMetaEvent(eventName: string, parameters: Record<string, any>): void {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq('track', eventName, parameters);
+  }
+}
+
+// Track Meta Pixel event with funnel context
+export function trackMetaPixelEvent(
+  eventName: string, 
+  parameters: Record<string, any> = {},
+  funnelType?: string
+): void {
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+    // Add funnel context to parameters
+    const enrichedParams = {
+      ...parameters,
+      funnel_type: funnelType || 'unknown',
+      site_key: 'SENIORSIMPLE',
+    };
+    
+    window.fbq('track', eventName, enrichedParams);
+    console.log('📊 Meta Pixel Event:', eventName, enrichedParams);
   }
 }
 

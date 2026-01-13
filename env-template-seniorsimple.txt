@@ -37,6 +37,10 @@ NEXT_PUBLIC_GTM_CONTAINER_ID=GTM-XXXXXXX
 SENIORSIMPLE_GHL_WEBHOOK=https://services.leadconnectorhq.com/hooks/seniorsimple-webhook
 GHL_WEBHOOK=https://services.leadconnectorhq.com/hooks/seniorsimple-webhook
 
+# Funnel-specific GHL Webhooks
+annuity_GHL_webhook=https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6
+final_expense_GHL_webhook=https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6
+
 # =============================================================================
 # API CONFIGURATION
 # =============================================================================
