@@ -115,7 +115,7 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
   {
     id: 'addressInfo',
     title: 'What\'s your address?',
-    subtitle: 'We only operate in [your service states]. Don\'t worry - we never share your information.',
+    subtitle: 'Rates differ depending on your area. Don\'t worry - we never share your information.',
     type: 'address-info' as const,
   },
   
