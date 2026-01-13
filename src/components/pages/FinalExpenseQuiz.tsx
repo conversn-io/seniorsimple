@@ -27,13 +27,26 @@ const FinalExpenseQuizPage = ({ skipOTP = false }: FinalExpenseQuizProps) => {
         <section className={`${showHeadline ? 'py-8 sm:py-12' : 'pt-4 pb-8 sm:pb-12'} px-4 sm:px-6 lg:px-8`}>
           {showHeadline && (
             <div className="max-w-4xl mx-auto text-center mb-8">
+              {/* Headline: Benefit-focused */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
-                Get Your Free Final Expense Life Insurance Quote
+                Protect Your Family From Funeral Costs Without Breaking the Bank
               </h1>
+              
+              {/* Subheadline: Value proposition */}
+              <p className="text-base sm:text-lg lg:text-xl text-gray-700 mb-4 sm:mb-6 leading-relaxed max-w-3xl mx-auto font-medium">
+                Get matched with licensed agents who specialize in final expense insurance. Compare quotes from top-rated carriers and find coverage that fits your budget — no medical exam required.
+              </p>
+              
+              {/* Tagline */}
+              <p className="text-sm text-gray-600 mt-4">
+                Free • Secure • Takes 2–3 minutes
+              </p>
             </div>
           )}
           
-          <FinalExpenseQuiz skipOTP={skipOTP} onStepChange={setCurrentStep} />
+          <div className="max-w-2xl mx-auto">
+            <FinalExpenseQuiz skipOTP={skipOTP} onStepChange={setCurrentStep} />
+          </div>
         </section>
       </div>
     </QuizErrorBoundary>

@@ -45,8 +45,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       'For a family member (I\'m helping someone)',
       'Just researching options'
     ],
-    headline: 'Let\'s Find Your Perfect Coverage',
-    subheadline: 'Answer a few quick questions to see your personalized rates (takes 60 seconds)',
   },
   
   // Screen 2: Coverage Amount
@@ -61,8 +59,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       { value: 20000, label: '$20,000', description: 'Complete coverage' },
       { value: null, label: 'Not sure yet', description: 'We\'ll help you decide' }
     ],
-    headline: 'How Much Coverage Do You Need?',
-    subheadline: 'Most people choose between $5,000-$20,000 to cover funeral and final expenses',
   },
   
   // Screen 3: Age
@@ -77,8 +73,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       '70-79 years old',
       '80+ years old'
     ],
-    headline: 'Almost There!',
-    subheadline: 'Your age helps us calculate accurate rates',
   },
   
   // Screen 4: Smoker Status
@@ -91,8 +85,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       'Non-smoker - I don\'t use tobacco/nicotine',
       'Smoker or tobacco user - I currently use tobacco/nicotine'
     ],
-    headline: 'Your Health Matters',
-    subheadline: 'Non-smokers typically qualify for lower rates',
   },
   
   // Screen 5: Health Question 1
@@ -101,8 +93,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     title: 'Are you currently hospitalized, in a nursing home, or receiving hospice care?',
     subtitle: 'Answering "Yes" doesn\'t disqualify you - we have options for all situations',
     type: 'yes-no' as const,
-    headline: 'Quick Health Questions',
-    subheadline: 'These help us match you with the right policy (most people answer "No")',
   },
   
   // Screen 6: Health Question 2
@@ -111,8 +101,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     title: 'Have you been diagnosed with a terminal illness expected to result in death within the next 12 months?',
     subtitle: 'Your honesty helps us find the best coverage for your situation',
     type: 'yes-no' as const,
-    headline: 'Quick Health Questions',
-    subheadline: 'Question 2 of 3',
   },
   
   // Screen 7: Health Question 3
@@ -121,8 +109,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     title: 'In the past 2 years, have you had a heart attack, stroke, or been diagnosed with cancer?',
     subtitle: 'Excludes basal or squamous cell skin cancer',
     type: 'yes-no' as const,
-    headline: 'Quick Health Questions',
-    subheadline: 'Last health question!',
   },
   
   // Screen 8: Address
@@ -131,8 +117,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     title: 'What\'s your address?',
     subtitle: 'We only operate in [your service states]. Don\'t worry - we never share your information.',
     type: 'address-info' as const,
-    headline: 'Where Should We Send Your Quote?',
-    subheadline: 'We\'ll email your personalized rates instantly',
   },
   
   // Screen 9: Date of Birth
@@ -141,8 +125,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     title: 'What\'s your date of birth?',
     subtitle: 'We need your exact date of birth to generate accurate quotes',
     type: 'date-of-birth-dropdowns' as const,
-    headline: 'Almost There!',
-    subheadline: 'This helps us find you the absolute best rates',
     minYear: 1935, // Age 91
     maxYear: 1976, // Age 50
   },
@@ -159,8 +141,6 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       'Personalized final expense insurance quotes',
       'Help finding coverage that fits your budget and needs'
     ],
-    headline: 'Last Step - Complete Your Information',
-    subheadline: 'A licensed agent will call you with your personalized rates',
   },
 ];
 
@@ -395,45 +375,10 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
   }
 
   const currentQuestion = questions[currentStep];
-  const progressPercentage = Math.round(((currentStep + 1) / totalSteps) * 100);
-  const progressBar = '━'.repeat(currentStep + 1) + '○'.repeat(totalSteps - currentStep - 1);
-
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {/* Progress Indicator */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-gray-600">
-            {currentStep + 1} of {totalSteps}
-          </span>
-          <span className="text-sm font-semibold text-gray-600">
-            {progressPercentage}%
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-[#36596A] h-2 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-        <div className="text-center mt-2">
-          <span className="text-xs text-gray-500 font-mono">{progressBar}</span>
-        </div>
-      </div>
-
-      {/* Page Headline & Subheadline */}
-      {currentQuestion.headline && (
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            {currentQuestion.headline}
-          </h1>
-          {currentQuestion.subheadline && (
-            <p className="text-lg text-gray-600">
-              {currentQuestion.subheadline}
-            </p>
-          )}
-        </div>
-      )}
+      {/* Progress Indicator - Matches CRO standard */}
+      <QuizProgress currentStep={currentStep} totalSteps={totalSteps} />
 
       {/* Question Content */}
       <div className="mt-2">
@@ -443,16 +388,16 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
           currentAnswer={answers[currentQuestion.id]}
           isLoading={showProcessing}
         />
+        
+        {/* Mini CTA / Preview text for first question - Matches CRO standard */}
+        {currentStep === 0 && (
+          <div className="mt-6 text-center">
+            <p className="text-sm sm:text-base text-gray-600 font-medium">
+              <strong>Next:</strong> Coverage amount & eligibility
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Trust Badge (on first screen) */}
-      {currentStep === 0 && (
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            🔒 Your information is private and secure
-          </p>
-        </div>
-      )}
     </div>
   );
 };
