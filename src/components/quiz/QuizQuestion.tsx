@@ -385,16 +385,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   };
 
-  // Auto-submit date of birth when all three fields are selected
-  useEffect(() => {
-    if (question.type === 'date-of-birth-dropdowns' && dobMonth && dobDay && dobYear) {
-      // Small delay to ensure state is updated
-      const timeoutId = setTimeout(() => {
-        handleDOBChange();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [dobMonth, dobDay, dobYear, question.type]);
+  // Note: DOB no longer auto-submits - requires button click
 
   // Generate year options for DOB dropdown
   const generateYearOptions = () => {
@@ -1335,10 +1326,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     const newMonth = e.target.value;
                     setDobMonth(newMonth);
                     setDobDay(''); // Reset day when month changes
-                    // If day and year already selected, wait for state update then submit
-                    if (dobDay && dobYear && newMonth) {
-                      setTimeout(() => handleDOBChange(), 50);
-                    }
                   }}
                   className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   required
@@ -1360,12 +1347,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 <select
                   value={dobDay}
                   onChange={(e) => {
-                    const newDay = e.target.value;
-                    setDobDay(newDay);
-                    // If month and year already selected, submit
-                    if (dobMonth && dobYear && newDay) {
-                      setTimeout(() => handleDOBChange(), 50);
-                    }
+                    setDobDay(e.target.value);
                   }}
                   className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   required
@@ -1390,10 +1372,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                     const newYear = e.target.value;
                     setDobYear(newYear);
                     setDobDay(''); // Reset day when year changes (for leap year handling)
-                    // If month and day already selected, wait for state update then submit
-                    if (dobMonth && dobDay && newYear) {
-                      setTimeout(() => handleDOBChange(), 50);
-                    }
                   }}
                   className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   required
@@ -1416,6 +1394,19 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 </p>
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                if (dobMonth && dobDay && dobYear) {
+                  handleDOBChange();
+                }
+              }}
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!dobMonth || !dobDay || !dobYear || isLoading}
+              style={{ minHeight: '64px' }}
+            >
+              Continue →
+            </button>
           </div>
         );
 
