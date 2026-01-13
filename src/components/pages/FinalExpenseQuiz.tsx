@@ -30,14 +30,6 @@ const FinalExpenseQuizPage = ({ skipOTP = false }: FinalExpenseQuizProps) => {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
                 Get Your Free Final Expense Life Insurance Quote
               </h1>
-              
-              <p className="text-base sm:text-lg lg:text-xl text-gray-700 mb-4 sm:mb-6 leading-relaxed max-w-3xl mx-auto font-medium">
-                Protect your loved ones from funeral and burial expenses. Get matched with licensed agents in your area who specialize in final expense insurance.
-              </p>
-              
-              <p className="text-sm text-gray-600 mt-4">
-                Free • Secure • Takes 2–3 minutes • No medical exam required
-              </p>
             </div>
           )}
           
