@@ -420,6 +420,25 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     return days;
   };
 
+  // Check if current day is valid for the selected month/year
+  const isDayValidForMonthYear = (day: string, month: string, year: string): boolean => {
+    if (!day || !month || !year) return true; // Valid if any is empty
+    
+    const dayNum = parseInt(day);
+    const monthNum = parseInt(month);
+    const yearNum = parseInt(year);
+    
+    let maxDays = 31;
+    if (monthNum === 2) {
+      const isLeapYear = (yearNum % 4 === 0 && yearNum % 100 !== 0) || (yearNum % 400 === 0);
+      maxDays = isLeapYear ? 29 : 28;
+    } else if ([4, 6, 9, 11].includes(monthNum)) {
+      maxDays = 30;
+    }
+    
+    return dayNum <= maxDays;
+  };
+
 
   const renderQuestion = () => {
     switch (question.type) {
@@ -1325,7 +1344,10 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                   onChange={(e) => {
                     const newMonth = e.target.value;
                     setDobMonth(newMonth);
-                    setDobDay(''); // Reset day when month changes
+                    // Only reset day if it becomes invalid (e.g., day 31 in April)
+                    if (dobDay && dobYear && !isDayValidForMonthYear(dobDay, newMonth, dobYear)) {
+                      setDobDay('');
+                    }
                   }}
                   className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   required
@@ -1371,7 +1393,10 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                   onChange={(e) => {
                     const newYear = e.target.value;
                     setDobYear(newYear);
-                    setDobDay(''); // Reset day when year changes (for leap year handling)
+                    // Only reset day if it becomes invalid (e.g., Feb 29 in non-leap year)
+                    if (dobDay && dobMonth && !isDayValidForMonthYear(dobDay, dobMonth, newYear)) {
+                      setDobDay('');
+                    }
                   }}
                   className="quiz-input w-full px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   required
