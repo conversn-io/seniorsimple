@@ -520,6 +520,9 @@ export async function POST(request: NextRequest) {
     // Extract originally_created timestamp
     const originallyCreated = new Date().toISOString();
     
+    // Flatten key quiz fields for GHL mapping
+    const quizData = lead.quiz_answers || quizAnswers || {};
+    
     const ghlPayload = {
       firstName: firstName || contact.first_name,
       lastName: lastName || contact.last_name,
@@ -536,12 +539,33 @@ export async function POST(request: NextRequest) {
       originallyCreated: originallyCreated,
       source: 'SeniorSimple Quiz',
       funnelType: funnelType || lead.funnel_type || 'insurance',
-      quizAnswers: lead.quiz_answers || quizAnswers,
+      quizAnswers: lead.quiz_answers || quizAnswers, // Keep nested for backwards compatibility
       calculatedResults: calculatedResults,
       licensingInfo: licensingInfo,
       leadScore: 75, // Default lead score
       timestamp: new Date().toISOString(),
-      utmParams: utmParams || lead.quiz_answers?.utm_parameters || {} // Include UTM parameters in GHL webhook
+      utmParams: utmParams || lead.quiz_answers?.utm_parameters || {}, // Include UTM parameters in GHL webhook
+      
+      // Flatten key retirement/annuity quiz fields for easier GHL mapping
+      retirementSavings: quizData.retirementSavings,
+      ageRange: quizData.ageRange,
+      retirementTimeline: quizData.retirementTimeline,
+      riskTolerance: quizData.riskTolerance,
+      
+      // Allocation percentage (flatten from object if needed)
+      allocationPercent: typeof quizData.allocationPercent === 'object' 
+        ? (quizData.allocationPercent?.percentage || quizData.allocationPercent?.allocation)
+        : quizData.allocationPercent,
+      allocationAmount: quizData.allocationPercent?.amount,
+      
+      // Current retirement plans (convert array to comma-separated string)
+      currentRetirementPlans: Array.isArray(quizData.currentRetirementPlans)
+        ? quizData.currentRetirementPlans.join(', ')
+        : quizData.currentRetirementPlans,
+      
+      // Projected income from calculated results
+      projectedMonthlyIncomeMin: quizData.calculated_results?.projected_monthly_income_min,
+      projectedMonthlyIncomeMax: quizData.calculated_results?.projected_monthly_income_max,
     };
 
     console.log('📤 Sending to GHL Webhook:', {

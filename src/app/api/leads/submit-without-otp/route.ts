@@ -456,8 +456,33 @@ export async function POST(request: NextRequest) {
         ghlPayload.coveragePurpose = coveragePurpose;
       }
     } else {
-      // For annuity quotes, keep coverageAmount
+      // For annuity/retirement quotes - include all quiz fields
       ghlPayload.coverageAmount = coverageAmount;
+      ghlPayload.retirementSavings = quizData.retirementSavings;
+      ghlPayload.ageRange = quizData.ageRange;
+      ghlPayload.retirementTimeline = quizData.retirementTimeline;
+      ghlPayload.riskTolerance = quizData.riskTolerance;
+      
+      // Allocation percentage (flatten from object if needed)
+      if (quizData.allocationPercent) {
+        if (typeof quizData.allocationPercent === 'object') {
+          ghlPayload.allocationPercent = quizData.allocationPercent.percentage || quizData.allocationPercent.allocation;
+          ghlPayload.allocationAmount = quizData.allocationPercent.amount;
+        } else {
+          ghlPayload.allocationPercent = quizData.allocationPercent;
+        }
+      }
+      
+      // Current retirement plans (convert array to comma-separated string for GHL)
+      if (quizData.currentRetirementPlans && Array.isArray(quizData.currentRetirementPlans)) {
+        ghlPayload.currentRetirementPlans = quizData.currentRetirementPlans.join(', ');
+      }
+      
+      // Calculated results (projected income)
+      if (quizData.calculated_results) {
+        ghlPayload.projectedMonthlyIncomeMin = quizData.calculated_results.projected_monthly_income_min;
+        ghlPayload.projectedMonthlyIncomeMax = quizData.calculated_results.projected_monthly_income_max;
+      }
     }
     
     // Add UTM parameters (flat structure)
