@@ -11,16 +11,18 @@ export async function POST(request: NextRequest) {
     // Sample flat payload for final-expense-quote with realistic test data
     // This payload is designed to activate Facebook Pixel and CAPI tracking in GHL
     // Includes DOB and country for US and Canada support
+    // Uses unique name for easy identification in GHL for field mapping testing
     const now = Date.now();
     const testDate = new Date(1965, 5, 15); // June 15, 1965 (age ~60)
+    const uniqueId = now.toString().slice(-6); // Last 6 digits for uniqueness
     
     const flatPayload = {
-      // Contact Information
-      firstName: "Test",
-      lastName: "Conversion",
-      email: `test.conversion.${now}@seniorsimple.org`,
-      phone: "+15551234567",
-      phoneLast4: "4567",
+      // Contact Information - Unique name for field mapping testing
+      firstName: `FEX-Test-${uniqueId}`,
+      lastName: `FieldMapping-${uniqueId}`,
+      email: `fex.test.fieldmapping.${now}@seniorsimple.org`,
+      phone: `+1555${uniqueId}`, // Unique phone with last 6 digits
+      phoneLast4: uniqueId.slice(-4), // Last 4 digits
       
       // Address Information
       address: "123 Main Street",
