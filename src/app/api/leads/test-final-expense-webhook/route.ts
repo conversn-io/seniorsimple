@@ -10,11 +10,15 @@ export async function POST(request: NextRequest) {
   try {
     // Sample flat payload for final-expense-quote with realistic test data
     // This payload is designed to activate Facebook Pixel and CAPI tracking in GHL
+    // Includes DOB and country for US and Canada support
+    const now = Date.now();
+    const testDate = new Date(1965, 5, 15); // June 15, 1965 (age ~60)
+    
     const flatPayload = {
       // Contact Information
       firstName: "Test",
       lastName: "Conversion",
-      email: `test.conversion.${Date.now()}@seniorsimple.org`,
+      email: `test.conversion.${now}@seniorsimple.org`,
       phone: "+15551234567",
       phoneLast4: "4567",
       
@@ -24,6 +28,13 @@ export async function POST(request: NextRequest) {
       state: "AZ",
       stateName: "Arizona",
       zipCode: "85001",
+      country: "US", // US or CA for Canada
+      
+      // Date of Birth (ISO format: YYYY-MM-DD)
+      dateOfBirth: testDate.toISOString().split('T')[0], // "1965-06-15"
+      dobMonth: "06",
+      dobDay: "15",
+      dobYear: "1965",
       
       // Final Expense Specific Fields
       coverageAmount: 15000,
@@ -47,7 +58,7 @@ export async function POST(request: NextRequest) {
       utmContent: "test_conversion_webhook",
       
       // Session Tracking - Important for deduplication
-      sessionId: `test_conversion_${Date.now()}`,
+      sessionId: `test_conversion_${now}`,
       
       // Lead Scoring
       leadScore: 85,

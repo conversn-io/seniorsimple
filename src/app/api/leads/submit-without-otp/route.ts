@@ -418,6 +418,33 @@ export async function POST(request: NextRequest) {
       ? quizData.coveragePurpose.join(',') 
       : (quizData.coveragePurpose || '');
     
+    // Extract Date of Birth (format: { month, day, year, dateString, iso })
+    const dateOfBirth = quizData.dateOfBirth;
+    let dobFormatted = '';
+    let dobMonth = '';
+    let dobDay = '';
+    let dobYear = '';
+    if (dateOfBirth) {
+      if (typeof dateOfBirth === 'object') {
+        dobMonth = String(dateOfBirth.month || '').padStart(2, '0');
+        dobDay = String(dateOfBirth.day || '').padStart(2, '0');
+        dobYear = String(dateOfBirth.year || '');
+        if (dobYear && dobMonth && dobDay) {
+          dobFormatted = `${dobYear}-${dobMonth}-${dobDay}`;
+        } else if (dateOfBirth.iso) {
+          dobFormatted = dateOfBirth.iso.split('T')[0];
+        } else if (dateOfBirth.dateString) {
+          dobFormatted = dateOfBirth.dateString;
+        }
+      } else if (typeof dateOfBirth === 'string') {
+        dobFormatted = dateOfBirth;
+      }
+    }
+    
+    // Extract country from addressInfo or default to 'US'
+    const addressInfo = quizData.addressInfo || {};
+    const country = addressInfo.country || addressInfo.countryCode || 'US';
+    
     // Build flat payload structure (no nested objects)
     const ghlPayload: Record<string, any> = {
       // Contact Information
@@ -433,6 +460,7 @@ export async function POST(request: NextRequest) {
       state: addressState,
       stateName: addressData.state || stateName || lead.state_name,
       zipCode: addressZip,
+      country: country, // US or CA for Canada
       
       // System Fields
       ipAddress: ipAddress,
@@ -445,6 +473,14 @@ export async function POST(request: NextRequest) {
       sessionId: sessionId || lead.session_id || '',
       leadScore: 75, // Default lead score
     };
+    
+    // Add Date of Birth if available
+    if (dobFormatted) {
+      ghlPayload.dateOfBirth = dobFormatted;
+      if (dobMonth) ghlPayload.dobMonth = dobMonth;
+      if (dobDay) ghlPayload.dobDay = dobDay;
+      if (dobYear) ghlPayload.dobYear = dobYear;
+    }
     
     // Add final expense specific fields if this is a final expense quote
     if (funnelType === 'final-expense-quote') {
