@@ -8,12 +8,13 @@ const FINAL_EXPENSE_GHL_WEBHOOK_URL = "https://services.leadconnectorhq.com/hook
  */
 export async function POST(request: NextRequest) {
   try {
-    // Sample flat payload for final-expense-quote
+    // Sample flat payload for final-expense-quote with realistic test data
+    // This payload is designed to activate Facebook Pixel and CAPI tracking in GHL
     const flatPayload = {
       // Contact Information
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
+      firstName: "Test",
+      lastName: "Conversion",
+      email: `test.conversion.${Date.now()}@seniorsimple.org`,
       phone: "+15551234567",
       phoneLast4: "4567",
       
@@ -38,21 +39,21 @@ export async function POST(request: NextRequest) {
       originallyCreated: new Date().toISOString(),
       timestamp: new Date().toISOString(),
       
-      // UTM Parameters (flat)
+      // UTM Parameters (flat) - Critical for Facebook CAPI tracking
       utmSource: "facebook",
       utmMedium: "cpc",
-      utmCampaign: "final_expense_2024",
-      utmTerm: "",
-      utmContent: "",
+      utmCampaign: "final_expense_test_conversion",
+      utmTerm: "test",
+      utmContent: "test_conversion_webhook",
       
-      // Session Tracking
-      sessionId: `test_${Date.now()}`,
+      // Session Tracking - Important for deduplication
+      sessionId: `test_conversion_${Date.now()}`,
       
       // Lead Scoring
       leadScore: 85,
       
-      // Additional Context
-      landingPage: "/free-burial-life-insurance-guide",
+      // Additional Context - Helps with attribution
+      landingPage: "/final-expense-quote",
       referrer: "https://www.facebook.com",
     };
 
