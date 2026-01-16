@@ -377,6 +377,8 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
           </p>
           
           <form onSubmit={handleLeadCaptureSubmit} className="space-y-6">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-2">
                 First Name *

@@ -6,6 +6,7 @@ import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
 import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
+import { TrustedForm } from "../components/tracking/TrustedForm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -210,6 +211,7 @@ export default function RootLayout({
           />
         </noscript>
         
+        <TrustedForm />
         <LayoutProvider>
           <ConditionalHeader />
           <main>{children}</main>

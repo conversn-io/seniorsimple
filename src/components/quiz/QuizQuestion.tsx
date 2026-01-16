@@ -645,6 +645,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
       case 'personal-info':
         return (
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 First Name *
@@ -822,6 +824,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
         
         return (
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             {/* Benefits Section */}
             <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
               <h3 className="text-xl font-bold text-[#36596A] mb-4">What You'll Get:</h3>
@@ -1038,6 +1042,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
 
         return (
           <form onSubmit={handleAddressSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 Get connected to an advisor in your area *
@@ -1068,6 +1074,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
       case 'location-info':
         return (
           <form onSubmit={handleLocationInfoSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 ZIP Code *
@@ -1136,6 +1144,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
         // Handle phone-consent the same way as personal-info (phone + consent only)
         return (
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 Phone Number *
@@ -1322,6 +1332,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
       case 'full-name':
         return (
           <form onSubmit={handleFullNameSubmit} className="space-y-6">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 First Name *
@@ -1367,6 +1379,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
       case 'phone-only':
         return (
           <form onSubmit={handlePhoneOnlySubmit} className="space-y-6">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 Phone Number *
@@ -1637,6 +1651,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
 
         return (
           <form onSubmit={handleZipOnlySubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 ZIP Code / Postal Code *
@@ -1723,6 +1739,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
 
         return (
           <form onSubmit={handleBeneficiaryContactSubmit} className="space-y-8">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             {/* Beneficiary Relationship Section */}
             <div className="space-y-4">
               <div>

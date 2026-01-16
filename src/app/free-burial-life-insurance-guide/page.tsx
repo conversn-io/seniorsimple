@@ -283,7 +283,9 @@ export default function FreeBurialLifeInsuranceGuidePage() {
               Where should we send your free guide?
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* TrustedForm hidden input */}
+                  <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
                   <AlertCircle className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" />

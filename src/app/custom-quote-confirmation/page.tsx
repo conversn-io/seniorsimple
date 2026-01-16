@@ -87,6 +87,8 @@ export default function CustomQuoteConfirmationPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* TrustedForm hidden input */}
+            <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
                 <AlertCircle className="w-5 h-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
