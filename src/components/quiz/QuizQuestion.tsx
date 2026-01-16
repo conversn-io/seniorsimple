@@ -241,6 +241,32 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
   }, [phone, phoneValidationState, phoneError, question.type]);
 
+  // Beneficiary form phone validation (must be at top level, not in switch case)
+  useEffect(() => {
+    if (question.type === 'beneficiary-contact' && beneficiaryPhone) {
+      const state = getPhoneValidationState(beneficiaryPhone);
+      setBeneficiaryPhoneValidationState(state);
+      if (state === 'invalid') {
+        setPhoneError('Please enter a valid 10-digit US phone number.');
+      } else {
+        setPhoneError('');
+      }
+    }
+  }, [beneficiaryPhone, question.type]);
+
+  // Beneficiary form email validation (must be at top level, not in switch case)
+  useEffect(() => {
+    if (question.type === 'beneficiary-contact' && beneficiaryEmail) {
+      const state = getEmailValidationState(beneficiaryEmail);
+      setBeneficiaryEmailValidationState(state);
+      if (state === 'invalid') {
+        setEmailError('Please enter a valid email address.');
+      } else {
+        setEmailError('');
+      }
+    }
+  }, [beneficiaryEmail, question.type]);
+
   const validateZipCode = async (zip: string) => {
     if (!zip || zip.length < 5) {
       setZipValidationResult(null);
@@ -1634,32 +1660,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
             phone: beneficiaryPhone
           });
         };
-
-        // Phone validation for beneficiary form
-        useEffect(() => {
-          if (question.type === 'beneficiary-contact' && beneficiaryPhone) {
-            const state = getPhoneValidationState(beneficiaryPhone);
-            setBeneficiaryPhoneValidationState(state);
-            if (state === 'invalid') {
-              setPhoneError('Please enter a valid 10-digit US phone number.');
-            } else {
-              setPhoneError('');
-            }
-          }
-        }, [beneficiaryPhone, question.type]);
-
-        // Email validation for beneficiary form
-        useEffect(() => {
-          if (question.type === 'beneficiary-contact' && beneficiaryEmail) {
-            const state = getEmailValidationState(beneficiaryEmail);
-            setBeneficiaryEmailValidationState(state);
-            if (state === 'invalid') {
-              setEmailError('Please enter a valid email address.');
-            } else {
-              setEmailError('');
-            }
-          }
-        }, [beneficiaryEmail, question.type]);
 
         return (
           <form onSubmit={handleBeneficiaryContactSubmit} className="space-y-8">
