@@ -1,0 +1,36 @@
+Field Name,Data Type,Required,Description,Example Value,GHL Field Mapping
+firstName,string,Yes,Lead's first name,FEX-Test-900205,Contact First Name
+lastName,string,Yes,Lead's last name,FieldMapping-900205,Contact Last Name
+email,string,Yes,Lead's email address,fex.test.fieldmapping.1768515900205@seniorsimple.org,Contact Email
+phone,string,Yes,Phone number in E.164 format,+1555900205,Contact Phone
+phoneLast4,string,No,Last 4 digits of phone number,0205,Custom Field: Phone Last 4
+address,string,Yes,Street address (number + street),123 Main Street,Contact Address Line 1
+city,string,Yes,City name,Phoenix,Contact City
+state,string,Yes,State abbreviation (2 letters),AZ,Contact State
+stateName,string,No,Full state name,Arizona,Custom Field: State Name
+zipCode,string,Yes,ZIP/Postal code,85001,Contact ZIP Code
+country,string,Yes,Country code (US or CA),US,Contact Country
+dateOfBirth,string,No,Date of birth in ISO format (YYYY-MM-DD),1965-06-15,Custom Field: Date of Birth
+dobMonth,string,No,Month of birth (2 digits),06,Custom Field: DOB Month
+dobDay,string,No,Day of birth (2 digits),15,Custom Field: DOB Day
+dobYear,string,No,Year of birth (4 digits),1965,Custom Field: DOB Year
+coverageAmount,number,Yes,Desired coverage amount in USD,15000,Custom Field: Coverage Amount
+ageRange,string,Yes,Age range selection,60-69,Custom Field: Age Range
+healthStatus,string,Yes,Health status description,Good - Managed conditions no recent hospitalizations,Custom Field: Health Status
+tobaccoUse,string,Yes,Tobacco use status,No never,Custom Field: Tobacco Use
+coveragePurpose,string,No,Comma-separated list of coverage purposes,Funeral & Burial Costs Leave Money to Family,Custom Field: Coverage Purpose
+funnelType,string,Yes,Always "final-expense-quote",final-expense-quote,Custom Field: Funnel Type
+source,string,Yes,Lead source identifier,SeniorSimple Final Expense Quiz,Custom Field: Lead Source
+ipAddress,string,No,Lead's IP address,192.168.1.1,Custom Field: IP Address
+sessionId,string,Yes,Unique session identifier,test_conversion_1768515900205,Custom Field: Session ID
+leadScore,number,No,Lead quality score (0-100),85,Custom Field: Lead Score
+originallyCreated,string,Yes,ISO 8601 timestamp of lead creation,2026-01-15T22:25:00.205Z,Custom Field: Originally Created
+timestamp,string,Yes,ISO 8601 timestamp of webhook send,2026-01-15T22:25:00.205Z,Custom Field: Timestamp
+utmSource,string,No,UTM source parameter,facebook,Custom Field: UTM Source
+utmMedium,string,No,UTM medium parameter,cpc,Custom Field: UTM Medium
+utmCampaign,string,No,UTM campaign parameter,final_expense_test_conversion,Custom Field: UTM Campaign
+utmTerm,string,No,UTM term parameter,test,Custom Field: UTM Term
+utmContent,string,No,UTM content parameter,test_conversion_webhook,Custom Field: UTM Content
+landingPage,string,No,Initial landing page URL path,/final-expense-quote,Custom Field: Landing Page
+referrer,string,No,HTTP referrer URL,https://www.facebook.com,Custom Field: Referrer
+

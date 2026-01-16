@@ -19,6 +19,8 @@ export interface AddressData {
   state: string
   stateAbbr: string
   zipCode: string
+  country: string
+  countryCode: string
   formatted: string
 }
 
@@ -80,7 +82,7 @@ export const AddressAutocomplete = ({
 
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['address'],
-        componentRestrictions: { country: 'us' },
+        componentRestrictions: { country: ['us', 'ca'] }, // Support both US and Canada
         fields: ['address_components', 'formatted_address']
       })
 
@@ -116,7 +118,12 @@ export const AddressAutocomplete = ({
             addressComponents.state = component.long_name
           }
           if (types.includes('postal_code')) {
+            // Handle both US ZIP codes and Canadian postal codes
             addressComponents.zipCode = component.long_name
+          }
+          if (types.includes('country')) {
+            addressComponents.countryCode = component.short_name // 'US' or 'CA'
+            addressComponents.country = component.long_name // 'United States' or 'Canada'
           }
         })
 
@@ -128,6 +135,8 @@ export const AddressAutocomplete = ({
           state: addressComponents.state || '',
           stateAbbr: addressComponents.stateAbbr || '',
           zipCode: addressComponents.zipCode || '',
+          country: addressComponents.country || '',
+          countryCode: addressComponents.countryCode || 'US', // Default to US if not found
           formatted: place.formatted_address || addressValue
         }
 
@@ -208,6 +217,9 @@ export const AddressAutocomplete = ({
         <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
           <p className="text-green-800 text-sm font-medium">
             ✓ Address verified: {addressData.city}, {addressData.stateAbbr} {addressData.zipCode}
+            {addressData.countryCode === 'CA' && (
+              <span className="ml-2 text-xs">({addressData.country})</span>
+            )}
           </p>
         </div>
       )}
