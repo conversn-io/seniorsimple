@@ -362,6 +362,11 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Capture TrustedForm certificate URL from hidden input
+    const trustedFormCertUrl = typeof document !== 'undefined' 
+      ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
+      : '';
+    
     console.log('📝 Form submit handler called:', {
       questionType: question.type,
       firstName: !!firstName,
@@ -372,7 +377,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
       phoneValid: phoneValidationState === 'valid',
       phoneAPIValid,
       isValidatingPhone,
-      isLoading
+      isLoading,
+      trustedFormCertUrl: trustedFormCertUrl ? 'present' : 'missing'
     });
     
     // Prevent double submission
@@ -405,7 +411,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
         lastName,
         email,
         phone: formattedPhoneNumber,
-        consent: requiresConsent ? consentChecked : true // Implied consent for personal-info-with-benefits
+        consent: requiresConsent ? consentChecked : true, // Implied consent for personal-info-with-benefits
+        trustedFormCertUrl: trustedFormCertUrl || null // Include TrustedForm certificate URL
       });
     } else {
       console.error('❌ Form validation failed:', {

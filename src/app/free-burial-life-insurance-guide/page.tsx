@@ -122,6 +122,11 @@ export default function FreeBurialLifeInsuranceGuidePage() {
       };
       sessionStorage.setItem('final_expense_funnel_data', JSON.stringify(funnelData));
 
+      // Capture TrustedForm certificate URL from hidden input
+      const trustedFormCertUrl = typeof document !== 'undefined' 
+        ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
+        : '';
+
       // Submit to API for lead capture
       const response = await fetch('/api/leads/capture-email', {
         method: 'POST',
@@ -133,7 +138,8 @@ export default function FreeBurialLifeInsuranceGuidePage() {
           phoneNumber: phone,
           funnelType: 'final-expense-quote',
           sessionId: sessionStorage.getItem('session_id') || null,
-          utmParams: JSON.parse(sessionStorage.getItem('utm_params') || '{}')
+          utmParams: JSON.parse(sessionStorage.getItem('utm_params') || '{}'),
+          trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
         })
       });
 

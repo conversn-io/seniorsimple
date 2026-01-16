@@ -234,6 +234,11 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
       setShowProcessing(true);
       
       try {
+        // Capture TrustedForm certificate URL from hidden input
+        const trustedFormCertUrl = typeof document !== 'undefined' 
+          ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
+          : '';
+
         const response = await fetch('/api/leads/submit-without-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -247,7 +252,8 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
             addressInfo: updatedAnswers.addressInfo,
             utmParams: utmParams,
             sessionId: getSessionId(),
-            funnelType: 'annuity-quote'
+            funnelType: 'annuity-quote',
+            trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
           })
         });
 

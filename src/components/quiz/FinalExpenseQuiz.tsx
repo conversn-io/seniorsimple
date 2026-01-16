@@ -316,6 +316,11 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
           }
         } catch {}
 
+        // Capture TrustedForm certificate URL from hidden input
+        const trustedFormCertUrl = typeof document !== 'undefined' 
+          ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
+          : '';
+
         const response = await fetch('/api/leads/submit-without-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -333,7 +338,8 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
             beneficiaryRelationship: updatedAnswers.beneficiaryRelationship,
             utmParams: utmParams,
             sessionId: getSessionId(),
-            funnelType: 'final-expense-quote'
+            funnelType: 'final-expense-quote',
+            trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
           })
         });
 

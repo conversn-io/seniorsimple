@@ -122,7 +122,8 @@ async function upsertLead(
   fallbackEmail?: string | null,
   fallbackPhone?: string | null,
   fallbackFirstName?: string | null,
-  fallbackLastName?: string | null
+  fallbackLastName?: string | null,
+  trustedFormCertUrl?: string | null // TrustedForm certificate URL (stored as origin)
 ) {
   const verifiedAt = isVerified ? new Date().toISOString() : null;
   
@@ -245,10 +246,12 @@ async function upsertLead(
       calculated_results: calculatedResults,
       licensing_info: licensingInfo,
       utm_parameters: utmParams || {},
+      trusted_form_cert_url: trustedFormCertUrl || null, // Store in quiz_answers
     },
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
+    origin: trustedFormCertUrl || null, // Store as origin field in leads table
   };
   
   if (existingLead?.id) {
@@ -306,7 +309,8 @@ export async function POST(request: NextRequest) {
       stateName,
       licensingInfo,
       calculatedResults,
-      utmParams 
+      utmParams,
+      trustedFormCertUrl // TrustedForm certificate URL
     } = body;
 
     console.log('📊 Extracted Data:', {
@@ -344,7 +348,8 @@ export async function POST(request: NextRequest) {
       email, // fallbackEmail
       phoneNumber, // fallbackPhone
       firstName, // fallbackFirstName
-      lastName // fallbackLastName
+      lastName, // fallbackLastName
+      trustedFormCertUrl || null // TrustedForm certificate URL (stored as origin)
     );
     console.log('✅ Lead upserted:', lead.id);
 

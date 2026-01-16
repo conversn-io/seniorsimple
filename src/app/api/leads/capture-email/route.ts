@@ -126,7 +126,8 @@ export async function POST(request: NextRequest) {
       stateName,
       licensingInfo,
       calculatedResults,
-      utmParams 
+      utmParams,
+      trustedFormCertUrl // TrustedForm certificate URL
     } = body;
 
     if (!email) {
@@ -217,6 +218,7 @@ export async function POST(request: NextRequest) {
         calculated_results: calculatedResults,
         licensing_info: licensingInfo,
         utm_parameters: utmParams || {}, // Ensure UTM is stored even if empty object
+        trusted_form_cert_url: trustedFormCertUrl || null, // Store in quiz_answers as well
       },
       utm_source: utmSource,
       utm_medium: utmMedium,

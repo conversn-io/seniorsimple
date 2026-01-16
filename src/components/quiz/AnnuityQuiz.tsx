@@ -452,6 +452,11 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
         setShowProcessing(true);
         
         try {
+          // Capture TrustedForm certificate URL from hidden input
+          const trustedFormCertUrl = typeof document !== 'undefined' 
+            ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
+            : '';
+
           // Use new route that handles database save + GHL webhook without OTP
           const response = await fetch('/api/leads/submit-without-otp', {
             method: 'POST',
@@ -469,7 +474,8 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
               licensingInfo: updatedAnswers.locationInfo?.licensing,
               utmParams: utmParams,
               sessionId: getSessionId(), // Use sessionStorage session_id to link with analytics_events
-              funnelType: funnelType
+              funnelType: funnelType,
+              trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
             })
           });
 
