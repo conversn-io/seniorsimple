@@ -22,6 +22,7 @@ import {
   trackQuizComplete,
   sendCAPILeadEventMultiSite,
   sendCAPIViewContentEventMultiSite,
+  trackQuizStepViewed,
   LeadData
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
@@ -1199,6 +1200,9 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
               question={currentQuestion}
               onAnswer={handleAnswer}
               currentAnswer={answers[currentQuestion.id]}
+              funnelType={funnelType === 'primary' ? 'primary' : 'secondary'}
+              stepNumber={currentStep + 1}
+              sessionId={getSessionId()}
             />
             {/* Mini CTA / Preview text for first question */}
             {currentStep === 0 && (

@@ -47,9 +47,11 @@ export async function POST(request: NextRequest) {
         properties: {
           ...properties,
           page_title,
-          page_path,
+          page_path: page_path || (page_url ? new URL(page_url).pathname : null),
+          path: page_path || (page_url ? new URL(page_url).pathname : null), // Always include path
+          search: page_url ? new URL(page_url).search : null, // Always include search params
           site_key: 'seniorsimple.org',
-          funnel_type: properties?.funnel_type || 'insurance'
+          funnel_type: properties?.funnel_type || (page_url?.includes('final-expense') ? 'final-expense-quote' : 'primary')
         }
       })
       .select()

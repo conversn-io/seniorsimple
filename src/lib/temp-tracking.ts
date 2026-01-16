@@ -290,7 +290,9 @@ async function sendPageViewToSupabase(
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
         properties: {
           site_key: 'seniorsimple.org',
-          funnel_type: 'insurance',
+          path: pagePath, // Always include path
+          search: typeof window !== 'undefined' ? window.location.search : null, // Always include search params
+          funnel_type: pagePath?.includes('final-expense') ? 'final-expense-quote' : 'primary', // Determine from path
           utm_parameters: utmParams,
           contact: {
             ga_client_id: gaClientId,
@@ -405,4 +407,148 @@ export function sendCAPILeadEventMultiSite(leadData: LeadData): void {
 export function sendCAPIViewContentEventMultiSite(params: any): void {
   console.log('📊 CAPI view content handled client-side:', params);
   // This is now handled by trackQuizStart above
+}
+
+/**
+ * Track quiz step view event
+ * Fires when user views a new step in the quiz
+ */
+export async function trackQuizStepViewed(params: {
+  stepNumber: number;
+  stepName: string;
+  funnelType: string;
+  previousStep?: string | null;
+  timeOnPreviousStep?: number | null;
+  sessionId: string;
+}): Promise<void> {
+  if (isBot()) {
+    return;
+  }
+
+  try {
+    const { stepNumber, stepName, funnelType, previousStep, timeOnPreviousStep, sessionId } = params;
+    
+    // Get UTM parameters if available
+    const utmParams = typeof window !== 'undefined' 
+      ? JSON.parse(sessionStorage.getItem('utm_params') || '{}')
+      : {};
+
+    // Track to Supabase analytics_events
+    await fetch('/api/analytics/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'quiz_step_viewed',
+        properties: {
+          step_number: stepNumber,
+          step_name: stepName,
+          funnel_type: funnelType,
+          previous_step: previousStep || null,
+          time_on_previous_step: timeOnPreviousStep || null
+        },
+        session_id: sessionId,
+        user_id: sessionId, // Use session_id as user_id for anonymous users
+        page_url: typeof window !== 'undefined' ? window.location.href : '',
+        referrer: typeof document !== 'undefined' ? document.referrer : '',
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+        event_category: 'quiz',
+        event_label: 'step_view',
+        utm_source: utmParams.utm_source || null,
+        utm_medium: utmParams.utm_medium || null,
+        utm_campaign: utmParams.utm_campaign || null,
+        utm_term: utmParams.utm_term || null,
+        utm_content: utmParams.utm_content || null
+      })
+    }).catch(err => {
+      console.warn('⚠️ Failed to track quiz step view (non-blocking):', err);
+    });
+
+    // Also track to GA4
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', 'quiz_step_viewed', {
+        step_number: stepNumber,
+        step_name: stepName,
+        funnel_type: funnelType,
+        session_id: sessionId,
+        event_category: 'quiz'
+      });
+    }
+  } catch (error) {
+    console.warn('⚠️ Error tracking quiz step view (non-blocking):', error);
+  }
+}
+
+/**
+ * Track address entered event
+ * Fires when user completes address/zip code field (primary funnel only)
+ */
+export async function trackAddressEntered(params: {
+  hasZip: boolean;
+  hasState: boolean;
+  funnelType: string;
+  stepNumber: number;
+  fieldInteractionCount: number;
+  sessionId: string;
+}): Promise<void> {
+  // Only track for primary funnel, not final-expense
+  if (params.funnelType === 'final-expense-quote') {
+    return;
+  }
+
+  if (isBot()) {
+    return;
+  }
+
+  try {
+    const { hasZip, hasState, funnelType, stepNumber, fieldInteractionCount, sessionId } = params;
+    
+    // Get UTM parameters if available
+    const utmParams = typeof window !== 'undefined' 
+      ? JSON.parse(sessionStorage.getItem('utm_params') || '{}')
+      : {};
+
+    // Track to Supabase analytics_events
+    await fetch('/api/analytics/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'address_entered',
+        properties: {
+          has_zip: hasZip,
+          has_state: hasState,
+          funnel_type: funnelType,
+          step_number: stepNumber,
+          field_interaction_count: fieldInteractionCount
+        },
+        session_id: sessionId,
+        user_id: sessionId,
+        page_url: typeof window !== 'undefined' ? window.location.href : '',
+        referrer: typeof document !== 'undefined' ? document.referrer : '',
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+        event_category: 'quiz',
+        event_label: 'address_capture',
+        utm_source: utmParams.utm_source || null,
+        utm_medium: utmParams.utm_medium || null,
+        utm_campaign: utmParams.utm_campaign || null,
+        utm_term: utmParams.utm_term || null,
+        utm_content: utmParams.utm_content || null
+      })
+    }).catch(err => {
+      console.warn('⚠️ Failed to track address entered (non-blocking):', err);
+    });
+
+    // Also track to GA4
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', 'address_entered', {
+        has_zip: hasZip,
+        has_state: hasState,
+        funnel_type: funnelType,
+        step_number: stepNumber,
+        session_id: sessionId,
+        event_category: 'quiz'
+      });
+    }
+  } catch (error) {
+    console.warn('⚠️ Error tracking address entered (non-blocking):', error);
+  }
 }

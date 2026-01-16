@@ -20,6 +20,7 @@ import {
   trackQuizComplete,
   sendCAPILeadEventMultiSite,
   sendCAPIViewContentEventMultiSite,
+  trackQuizStepViewed,
   LeadData
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
@@ -126,6 +127,9 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
   const [showProcessing, setShowProcessing] = useState(false);
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
+  const [previousStep, setPreviousStep] = useState<string | null>(null);
+  const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
+  const [previousStepTime, setPreviousStepTime] = useState<number>(0);
 
   const getSessionId = (): string => {
     if (typeof window !== 'undefined') {
@@ -145,6 +149,28 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
       onStepChange(currentStep);
     }
   }, [currentStep, onStepChange]);
+
+  // Track step view when currentStep changes
+  useEffect(() => {
+    if (currentStep >= 0 && currentStep < questions.length && quizSessionId) {
+      const currentQuestion = questions[currentStep];
+      const timeOnPrevious = previousStepTime > 0 ? Math.round((Date.now() - stepStartTime) / 1000) : null;
+      
+      trackQuizStepViewed({
+        stepNumber: currentStep + 1,
+        stepName: currentQuestion.id,
+        funnelType: 'final-expense-quote',
+        previousStep: previousStep,
+        timeOnPreviousStep: timeOnPrevious,
+        sessionId: getSessionId()
+      });
+
+      // Update tracking state
+      setPreviousStep(currentQuestion.id);
+      setStepStartTime(Date.now());
+      setPreviousStepTime(timeOnPrevious || 0);
+    }
+  }, [currentStep, quizSessionId]);
 
   useEffect(() => {
     const sessionId = `final_expense_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

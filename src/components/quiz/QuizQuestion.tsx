@@ -7,6 +7,7 @@ import { getPhoneValidationState, validatePhoneFormat, validatePhoneAPI } from '
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation';
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 import { AddressAutocomplete, AddressData } from './AddressAutocomplete';
+import { trackAddressEntered } from '@/lib/temp-tracking';
 
 interface QuizQuestionProps {
   question: {
@@ -36,6 +37,9 @@ interface QuizQuestionProps {
   onAnswer: (answer: any) => void;
   currentAnswer?: any;
   isLoading?: boolean;
+  funnelType?: string; // For address tracking (primary vs final-expense)
+  stepNumber?: number; // For address tracking
+  sessionId?: string; // For address tracking
 }
 
 interface ZipValidationResult {
@@ -51,7 +55,7 @@ interface ZipValidationResult {
   error?: string;
 }
 
-export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: QuizQuestionProps) => {
+export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, funnelType = 'primary', stepNumber = 0, sessionId }: QuizQuestionProps) => {
   const [selectedAnswer, setSelectedAnswer] = useState<any>(currentAnswer || question.defaultValue);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(currentAnswer || []);
   const [sliderValue, setSliderValue] = useState(question.defaultValue as number || question.min || 0);
@@ -117,6 +121,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     return '';
   });
   const [zipOnlyError, setZipOnlyError] = useState('');
+  const [zipOnlyInteractionCount, setZipOnlyInteractionCount] = useState(0);
 
   // Beneficiary-contact fields
   const [beneficiaryRelationship, setBeneficiaryRelationship] = useState<string>(() => {
@@ -195,6 +200,23 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
       return () => clearTimeout(timeoutId);
     }
   }, [zipCode, question.type]);
+
+  // Track address_entered when ZIP is validated (location-info type, primary funnel only)
+  // Note: zipInteractionCount is only defined for zip-only type, so we use 1 as default for location-info
+  useEffect(() => {
+    if (question.type === 'location-info' && zipValidationResult?.valid && sessionId && funnelType === 'primary') {
+      trackAddressEntered({
+        hasZip: !!zipCode,
+        hasState: !!zipValidationResult.state,
+        funnelType: funnelType,
+        stepNumber: stepNumber || 0,
+        fieldInteractionCount: 1, // Location-info typically one interaction (ZIP validation)
+        sessionId: sessionId
+      }).catch(err => {
+        console.warn('⚠️ Failed to track address entered (non-blocking):', err);
+      });
+    }
+  }, [zipValidationResult?.valid, zipCode, zipValidationResult?.state, question.type, sessionId, funnelType, stepNumber]);
 
   // Debounced phone API validation (Level 3) - REQUIRED
   useEffect(() => {
@@ -987,6 +1009,20 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         const handleAddressSubmit = (e: React.FormEvent) => {
           e.preventDefault();
           if (addressData) {
+            // Track address_entered when address is submitted (primary funnel only)
+            if (sessionId && funnelType === 'primary') {
+              trackAddressEntered({
+                hasZip: !!addressData.zipCode,
+                hasState: !!addressData.state,
+                funnelType: funnelType,
+                stepNumber: stepNumber,
+                fieldInteractionCount: 1, // Address autocomplete typically one interaction
+                sessionId: sessionId
+              }).catch(err => {
+                console.warn('⚠️ Failed to track address entered (non-blocking):', err);
+              });
+            }
+
             onAnswer({
               streetNumber: addressData.streetNumber,
               street: addressData.street,
@@ -1040,7 +1076,10 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                 <input
                   type="text"
                   value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').substring(0, 5))}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').substring(0, 5);
+                    setZipCode(value);
+                  }}
                   className={`quiz-input w-full px-6 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all ${
                     zipError ? 'border-red-500' : zipValidationResult?.valid ? 'border-green-500' : 'border-gray-300'
                   }`}
@@ -1569,6 +1608,26 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
           
           setZipOnly(value);
           setZipOnlyError('');
+          
+          // Track interaction count for address_entered event
+          if (value.length > 0) {
+            setZipOnlyInteractionCount(prev => prev + 1);
+          }
+        };
+
+        const handleZipOnlyBlur = async () => {
+          // Track address_entered when user leaves the field (if valid)
+          if (zipOnly && isZipValid() && sessionId) {
+            const isCanadian = /^[A-Z]/.test(zipOnly);
+            await trackAddressEntered({
+              hasZip: true,
+              hasState: false, // ZIP-only doesn't collect state
+              funnelType: funnelType,
+              stepNumber: stepNumber,
+              fieldInteractionCount: zipOnlyInteractionCount,
+              sessionId: sessionId
+            });
+          }
         };
 
         const isZipValid = () => {
@@ -1587,6 +1646,7 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
                   type="text"
                   value={zipOnly}
                   onChange={handleZipOnlyChange}
+                  onBlur={handleZipOnlyBlur}
                   className={`quiz-input w-full px-6 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all ${
                     zipOnlyError ? 'border-red-500 bg-red-50' : isZipValid() ? 'border-green-500 bg-green-50' : 'border-gray-300'
                   }`}
