@@ -13,7 +13,7 @@ interface QuizQuestionProps {
     id: string;
     title: string;
     subtitle?: string;
-    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent' | 'personal-info-with-benefits' | 'coverage-amount-buttons' | 'yes-no' | 'full-name' | 'phone-only' | 'date-of-birth-dropdowns';
+    type: 'multiple-choice' | 'multi-select' | 'slider' | 'input' | 'personal-info' | 'location-info' | 'address-info' | 'phone-consent' | 'personal-info-with-benefits' | 'coverage-amount-buttons' | 'yes-no' | 'full-name' | 'phone-only' | 'date-of-birth-dropdowns' | 'zip-only' | 'beneficiary-contact';
     options?: string[] | Array<{ value: number | null; label: string; description?: string; popular?: boolean }>;
     min?: number;
     max?: number;
@@ -27,6 +27,11 @@ interface QuizQuestionProps {
     reassuranceText?: string;
     minYear?: number;
     maxYear?: number;
+    maxlength?: number;
+    prompt?: string;
+    microcopy?: string;
+    beneficiaryOptions?: string[];
+    consentText?: string;
   };
   onAnswer: (answer: any) => void;
   currentAnswer?: any;
@@ -103,6 +108,49 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
     }
     return '';
   });
+
+  // ZIP-only field (simplified, no autocomplete dependency)
+  const [zipOnly, setZipOnly] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'string') {
+      return currentAnswer;
+    }
+    return '';
+  });
+  const [zipOnlyError, setZipOnlyError] = useState('');
+
+  // Beneficiary-contact fields
+  const [beneficiaryRelationship, setBeneficiaryRelationship] = useState<string>(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.beneficiaryRelationship) {
+      return String(currentAnswer.beneficiaryRelationship);
+    }
+    return '';
+  });
+  const [beneficiaryFirstName, setBeneficiaryFirstName] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.firstName) {
+      return currentAnswer.firstName;
+    }
+    return '';
+  });
+  const [beneficiaryLastName, setBeneficiaryLastName] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.lastName) {
+      return currentAnswer.lastName;
+    }
+    return '';
+  });
+  const [beneficiaryEmail, setBeneficiaryEmail] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.email) {
+      return currentAnswer.email;
+    }
+    return '';
+  });
+  const [beneficiaryPhone, setBeneficiaryPhone] = useState(() => {
+    if (currentAnswer && typeof currentAnswer === 'object' && currentAnswer.phone) {
+      return currentAnswer.phone;
+    }
+    return '';
+  });
+  const [beneficiaryPhoneValidationState, setBeneficiaryPhoneValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
+  const [beneficiaryEmailValidationState, setBeneficiaryEmailValidationState] = useState<'empty' | 'invalid' | 'valid'>('empty');
 
   // Date of birth fields (for date-of-birth-dropdowns type)
   const [dobMonth, setDobMonth] = useState(() => {
@@ -1435,6 +1483,379 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
           </div>
         );
 
+      case 'zip-only':
+        const validateZipOrPostalCode = (value: string): { valid: boolean; error?: string; isCanadian?: boolean } => {
+          // US ZIP code: 5 digits
+          const usZipRegex = /^[0-9]{5}$/;
+          // Canadian postal code: A1A 1A1 or A1A1A1 (with or without space)
+          const canadianPostalRegex = /^[A-Za-z][0-9][A-Za-z]\s?[0-9][A-Za-z][0-9]$/;
+          
+          const cleanValue = value.trim().toUpperCase();
+          
+          if (usZipRegex.test(cleanValue)) {
+            return { valid: true, isCanadian: false };
+          }
+          
+          if (canadianPostalRegex.test(cleanValue)) {
+            // Format Canadian postal code with space: A1A 1A1
+            const formatted = cleanValue.length === 6 
+              ? `${cleanValue.substring(0, 3)} ${cleanValue.substring(3)}`
+              : cleanValue;
+            return { valid: true, isCanadian: true };
+          }
+          
+          return { 
+            valid: false, 
+            error: 'Please enter a valid 5-digit US ZIP code or Canadian postal code (e.g., K1A 0B1)' 
+          };
+        };
+
+        const handleZipOnlySubmit = async (e: React.FormEvent) => {
+          e.preventDefault();
+          
+          const validation = validateZipOrPostalCode(zipOnly);
+          if (!validation.valid) {
+            setZipOnlyError(validation.error || 'Invalid format');
+            return;
+          }
+          
+          // Format the value properly
+          let formattedValue = zipOnly.trim().toUpperCase();
+          if (validation.isCanadian && formattedValue.length === 6) {
+            formattedValue = `${formattedValue.substring(0, 3)} ${formattedValue.substring(3)}`;
+          }
+          
+          setZipOnlyError('');
+          onAnswer(formattedValue);
+        };
+
+        const handleZipOnlyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          let value = e.target.value.toUpperCase();
+          
+          // Allow both US ZIP (numeric) and Canadian postal (alphanumeric)
+          // Remove invalid characters but keep letters, numbers, and spaces
+          value = value.replace(/[^A-Z0-9\s]/g, '');
+          
+          // Limit length: US ZIP = 5, Canadian = 7 (with space) or 6 (without)
+          if (value.length > 7) {
+            value = value.substring(0, 7);
+          }
+          
+          setZipOnly(value);
+          setZipOnlyError('');
+        };
+
+        const isZipValid = () => {
+          const validation = validateZipOrPostalCode(zipOnly);
+          return validation.valid;
+        };
+
+        return (
+          <form onSubmit={handleZipOnlySubmit} className="space-y-8">
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                ZIP Code / Postal Code *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={zipOnly}
+                  onChange={handleZipOnlyChange}
+                  className={`quiz-input w-full px-6 py-4 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all ${
+                    zipOnlyError ? 'border-red-500 bg-red-50' : isZipValid() ? 'border-green-500 bg-green-50' : 'border-gray-300'
+                  }`}
+                  placeholder={question.placeholder || 'Enter ZIP (12345) or Postal Code (K1A 0B1)'}
+                  maxLength={7}
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                />
+                {isZipValid() && !zipOnlyError && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <CheckCircle className="w-6 h-6 text-green-500" />
+                  </div>
+                )}
+                {zipOnlyError && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  </div>
+                )}
+              </div>
+              
+              {zipOnlyError && (
+                <p className="text-red-500 text-sm mt-2">{zipOnlyError}</p>
+              )}
+              
+              {isZipValid() && !zipOnlyError && (
+                <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
+                  <p className="text-green-800 text-sm font-medium">
+                    ✓ {zipOnly.match(/^[A-Z]/) ? 'Postal code' : 'ZIP code'} entered
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <button
+              type="submit"
+              className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isZipValid() || isLoading}
+              style={{ minHeight: '64px' }}
+            >
+              Continue
+            </button>
+          </form>
+        );
+
+      case 'beneficiary-contact':
+        const handleBeneficiaryContactSubmit = (e: React.FormEvent) => {
+          e.preventDefault();
+          
+          // Validate all fields
+          if (!beneficiaryRelationship) {
+            return;
+          }
+          
+          const phoneDigits = extractUSPhoneNumber(beneficiaryPhone);
+          if (phoneDigits.length !== 10) {
+            setBeneficiaryPhoneValidationState('invalid');
+            return;
+          }
+          
+          if (beneficiaryEmailValidationState !== 'valid') {
+            setBeneficiaryEmailValidationState('invalid');
+            return;
+          }
+          
+          onAnswer({
+            beneficiaryRelationship,
+            firstName: beneficiaryFirstName,
+            lastName: beneficiaryLastName,
+            email: beneficiaryEmail,
+            phone: beneficiaryPhone
+          });
+        };
+
+        // Phone validation for beneficiary form
+        useEffect(() => {
+          if (question.type === 'beneficiary-contact' && beneficiaryPhone) {
+            const state = getPhoneValidationState(beneficiaryPhone);
+            setBeneficiaryPhoneValidationState(state);
+            if (state === 'invalid') {
+              setPhoneError('Please enter a valid 10-digit US phone number.');
+            } else {
+              setPhoneError('');
+            }
+          }
+        }, [beneficiaryPhone, question.type]);
+
+        // Email validation for beneficiary form
+        useEffect(() => {
+          if (question.type === 'beneficiary-contact' && beneficiaryEmail) {
+            const state = getEmailValidationState(beneficiaryEmail);
+            setBeneficiaryEmailValidationState(state);
+            if (state === 'invalid') {
+              setEmailError('Please enter a valid email address.');
+            } else {
+              setEmailError('');
+            }
+          }
+        }, [beneficiaryEmail, question.type]);
+
+        return (
+          <form onSubmit={handleBeneficiaryContactSubmit} className="space-y-8">
+            {/* Beneficiary Relationship Section */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Who would receive the benefit?</h3>
+                {question.subtitle && (
+                  <p className="text-sm text-gray-600 mb-4">{question.subtitle}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {question.beneficiaryOptions?.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setBeneficiaryRelationship(option)}
+                    className={`p-4 text-left border-2 rounded-xl transition-all ${
+                      beneficiaryRelationship === option
+                        ? 'border-[#36596A] bg-[#36596A] text-white'
+                        : 'border-gray-300 hover:border-[#36596A] hover:bg-[#36596A]/5'
+                    }`}
+                  >
+                    <span className="font-medium">{option}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Contact Information Section */}
+            <div className="space-y-6 pt-6 border-t border-gray-200">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Your contact information</h3>
+                
+                {/* Value Prop Box */}
+                {question.benefits && question.benefits.length > 0 && (
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">What you'll get</h4>
+                    <ul className="space-y-2">
+                      {question.benefits.map((benefit, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={beneficiaryFirstName}
+                    onChange={(e) => setBeneficiaryFirstName(e.target.value)}
+                    className="quiz-input w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                    required
+                    disabled={isLoading}
+                    style={{ minHeight: '56px' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={beneficiaryLastName}
+                    onChange={(e) => setBeneficiaryLastName(e.target.value)}
+                    className="quiz-input w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+                    required
+                    disabled={isLoading}
+                    style={{ minHeight: '56px' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={beneficiaryEmail}
+                    onChange={(e) => {
+                      setBeneficiaryEmail(e.target.value);
+                      const state = getEmailValidationState(e.target.value);
+                      setBeneficiaryEmailValidationState(state);
+                    }}
+                    className={`quiz-input w-full px-4 py-3 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all ${
+                      beneficiaryEmailValidationState === 'invalid' && beneficiaryEmail
+                        ? 'border-red-500 bg-red-50'
+                        : beneficiaryEmailValidationState === 'valid'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-300'
+                    }`}
+                    required
+                    disabled={isLoading}
+                    style={{ minHeight: '56px' }}
+                  />
+                  {beneficiaryEmailValidationState === 'valid' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                  )}
+                  {beneficiaryEmailValidationState === 'invalid' && beneficiaryEmail && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                    </div>
+                  )}
+                </div>
+                {emailError && beneficiaryEmail && (
+                  <p className="text-red-500 text-sm mt-2">{emailError}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Phone Number *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                    <span className="text-gray-500 text-lg font-medium">+1</span>
+                  </div>
+                  <input
+                    type="tel"
+                    value={formatPhoneForInput(beneficiaryPhone)}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      const digits = inputValue.replace(/\D/g, '').slice(0, 10);
+                      setBeneficiaryPhone(digits);
+                      const state = getPhoneValidationState(digits);
+                      setBeneficiaryPhoneValidationState(state);
+                    }}
+                    className={`quiz-input w-full pl-12 pr-4 py-3 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all ${
+                      beneficiaryPhoneValidationState === 'invalid' && beneficiaryPhone
+                        ? 'border-red-500 bg-red-50'
+                        : beneficiaryPhoneValidationState === 'valid'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-300'
+                    }`}
+                    placeholder="(555) 123-4567"
+                    required
+                    disabled={isLoading}
+                    style={{ minHeight: '56px' }}
+                  />
+                  {beneficiaryPhoneValidationState === 'valid' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                  )}
+                  {beneficiaryPhoneValidationState === 'invalid' && beneficiaryPhone && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                    </div>
+                  )}
+                </div>
+                {phoneError && beneficiaryPhone && (
+                  <p className="text-red-500 text-sm mt-2">{phoneError}</p>
+                )}
+              </div>
+
+              {/* Consent Text */}
+              {question.consentText && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-700">{question.consentText}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-xl hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  !beneficiaryRelationship ||
+                  !beneficiaryFirstName ||
+                  !beneficiaryLastName ||
+                  !beneficiaryEmail ||
+                  beneficiaryEmailValidationState !== 'valid' ||
+                  !beneficiaryPhone ||
+                  beneficiaryPhoneValidationState !== 'valid' ||
+                  isLoading
+                }
+                style={{ minHeight: '64px' }}
+              >
+                Get Your Free Quote
+              </button>
+            </div>
+          </form>
+        );
+
       default:
         return <div>Unsupported question type</div>;
     }
@@ -1446,6 +1867,14 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading }: Q
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">{question.title}</h2>
         {question.subtitle && (
           <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">{question.subtitle}</p>
+        )}
+        {/* Show prompt if provided (for smoker question) */}
+        {question.prompt && (
+          <p className="text-xl sm:text-2xl font-semibold text-gray-900 mt-4 mb-2">{question.prompt}</p>
+        )}
+        {/* Show microcopy if provided (for smoker question) */}
+        {question.microcopy && (
+          <p className="text-sm text-gray-600 mt-2 mb-4">{question.microcopy}</p>
         )}
       </div>
       

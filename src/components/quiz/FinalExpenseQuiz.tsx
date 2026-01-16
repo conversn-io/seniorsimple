@@ -30,28 +30,30 @@ interface QuizAnswer {
 
 type FunnelType = 'primary' | 'secondary';
 
-// Final Expense Quiz Questions - 11-Screen CRO-Optimized Model
-// Based on FEX-Quiz.md CRO specification (one question per screen)
+// Final Expense Quiz Questions - CRO-Optimized 5-Step Model
+// P0: Maximize conversion rate while meeting buyer-required fields
+// Removed: intent question, full address, DOB, non-required health questions
 
 const FINAL_EXPENSE_QUIZ_QUESTIONS = [
-  // Screen 1: Gatekeeper Question
+  // Step 1: Age Range
   {
-    id: 'decisionMaker',
-    title: 'Are you making this decision for yourself or a loved one?',
-    subtitle: 'Don\'t worry - all options continue. We just want to personalize your experience.',
+    id: 'ageRange',
+    title: 'What is your age range?',
+    subtitle: 'We offer coverage for ages 50–89.',
     type: 'multiple-choice' as const,
     options: [
-      'For myself (I\'m the decision maker)',
-      'For a family member (I\'m helping someone)',
-      'Just researching options'
+      '50–59',
+      '60–69',
+      '70–79',
+      '80+'
     ],
   },
   
-  // Screen 2: Coverage Amount
+  // Step 2: Coverage Amount
   {
     id: 'coverageAmount',
-    title: 'What coverage amount works best for your budget?',
-    subtitle: 'Average funeral costs: $7,000-$12,000',
+    title: 'What coverage amount fits your budget?',
+    subtitle: 'Average funeral costs: $7,000–$12,000.',
     type: 'coverage-amount-buttons' as const,
     options: [
       { value: 5000, label: '$5,000', description: 'Basic coverage' },
@@ -61,86 +63,51 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     ],
   },
   
-  // Screen 3: Age
+  // Step 3: ZIP Code Only (no address autocomplete)
   {
-    id: 'ageRange',
-    title: 'What is your age?',
-    subtitle: 'We offer coverage for ages 50-89',
-    type: 'multiple-choice' as const,
-    options: [
-      '50-59 years old',
-      '60-69 years old',
-      '70-79 years old',
-      '80+ years old'
-    ],
+    id: 'zipCode',
+    title: 'What is your ZIP code?',
+    subtitle: 'Rates can vary by area.',
+    type: 'zip-only' as const,
+    placeholder: 'Enter 5-digit ZIP',
+    maxlength: 5,
   },
   
-  // Screen 4: Smoker Status
+  // Step 4: Smoker Status (past 12 months) - Required
   {
     id: 'tobaccoUse',
-    title: 'Do you currently use tobacco or nicotine products?',
-    subtitle: 'Includes cigarettes, cigars, chewing tobacco, vaping, or nicotine patches used in the last 12 months',
+    title: 'Tobacco / nicotine use',
+    subtitle: 'This helps us match you with the right options.',
+    prompt: 'Have you used tobacco or nicotine in the past 12 months?',
+    microcopy: 'Includes cigarettes, cigars, chewing tobacco, vaping, or nicotine pouches.',
     type: 'multiple-choice' as const,
     options: [
-      'Non-smoker - I don\'t use tobacco/nicotine',
-      'Smoker or tobacco user - I currently use tobacco/nicotine'
+      'No',
+      'Yes'
     ],
   },
   
-  // Screen 5: Health Question 1
+  // Step 5: Beneficiary Relationship + Contact Info
   {
-    id: 'healthQuestion1',
-    title: 'Are you currently hospitalized, in a nursing home, or receiving hospice care?',
-    subtitle: 'Answering "Yes" doesn\'t disqualify you - we have options for all situations',
-    type: 'yes-no' as const,
-  },
-  
-  // Screen 6: Health Question 2
-  {
-    id: 'healthQuestion2',
-    title: 'Have you been diagnosed with a terminal illness expected to result in death within the next 12 months?',
-    subtitle: 'Your honesty helps us find the best coverage for your situation',
-    type: 'yes-no' as const,
-  },
-  
-  // Screen 7: Health Question 3
-  {
-    id: 'healthQuestion3',
-    title: 'In the past 2 years, have you had a heart attack, stroke, or been diagnosed with cancer?',
-    subtitle: 'Excludes basal or squamous cell skin cancer',
-    type: 'yes-no' as const,
-  },
-  
-  // Screen 8: Address
-  {
-    id: 'addressInfo',
-    title: 'What\'s your address?',
-    subtitle: 'Rates differ depending on your area. Don\'t worry - we never share your information.',
-    type: 'address-info' as const,
-  },
-  
-  // Screen 9: Date of Birth
-  {
-    id: 'dateOfBirth',
-    title: 'What\'s your date of birth?',
-    subtitle: 'We need your exact date of birth to generate accurate quotes',
-    type: 'date-of-birth-dropdowns' as const,
-    minYear: 1935, // Age 91
-    maxYear: 1976, // Age 50
-  },
-  
-  // Screen 10: Final Combined Form (Name, Email, Phone, TCPA)
-  // Uses existing personal-info-with-benefits protocol (same as quiz-b)
-  {
-    id: 'personalInfoFinal',
-    title: 'Final Step: Complete Your Information',
-    subtitle: 'We\'ll use this to send you personalized quotes and connect you with a licensed agent',
-    type: 'personal-info-with-benefits' as const,
+    id: 'beneficiaryAndContact',
+    title: 'Where should we send your options?',
+    type: 'beneficiary-contact' as const,
+    beneficiaryOptions: [
+      'Spouse',
+      'Child',
+      'Grandchild',
+      'Other family member',
+      'Friend',
+      'Trust / Estate',
+      'Charity',
+      'Not sure yet'
+    ],
     benefits: [
-      'Free confidential consultation with a licensed agent',
-      'Personalized final expense insurance quotes',
-      'Help finding coverage that fits your budget and needs'
+      'A quick call from a licensed final expense agent',
+      'Personalized options based on your answers',
+      'Help choosing coverage that fits your budget'
     ],
+    consentText: 'By submitting, you agree to be contacted by a licensed insurance agent by phone, text, or email. Consent is not a condition of purchase.',
   },
 ];
 
@@ -155,7 +122,7 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
   const [answers, setAnswers] = useState<QuizAnswer>({});
   const [funnelType, setFunnelType] = useState<FunnelType>('primary');
   const [showResults, setShowResults] = useState(false);
-  const [showOTP, setShowOTP] = useState(false);
+  // OTP disabled - no blocking flow
   const [showProcessing, setShowProcessing] = useState(false);
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
@@ -223,37 +190,91 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
   const handleAnswer = async (answer: any) => {
     const currentQuestion = questions[currentStep];
     
+    // Track step view and completion events
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        const stepEventName = `fe_step_view_${currentQuestion.id}`;
+        window.gtag('event', stepEventName, {
+          step_number: currentStep + 1,
+          total_steps: questions.length,
+          session_id: getSessionId(),
+          funnel_type: 'final-expense-quote'
+        });
+      }
+    } catch {}
+    
     try {
       trackQuestionAnswer(currentQuestion.id, answer, currentStep + 1, questions.length, quizSessionId || 'unknown', 'final-expense-quote');
+    } catch {}
+    
+    // Track step completion
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        const stepCompleteEventName = `fe_step_complete_${currentQuestion.id}`;
+        window.gtag('event', stepCompleteEventName, {
+          step_number: currentStep + 1,
+          total_steps: questions.length,
+          session_id: getSessionId(),
+          funnel_type: 'final-expense-quote',
+          answer: typeof answer === 'object' ? JSON.stringify(answer) : answer
+        });
+      }
     } catch {}
     
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
 
-    // Handle final submission on personalInfoFinal (Screen 10 - last question)
-    // Uses same protocol as quiz-b: combined name, email, phone with TCPA (implied consent)
-    if (currentQuestion.id === 'personalInfoFinal') {
-      console.log('📝 Final Submission (Screen 10 - Personal Info):', {
+    // Handle final submission on beneficiaryAndContact (Step 5 - last question)
+    // No OTP blocking - submit directly
+    if (currentQuestion.id === 'beneficiaryAndContact') {
+      console.log('📝 Final Submission (Step 5 - Beneficiary & Contact):', {
+        beneficiaryRelationship: answer.beneficiaryRelationship,
         firstName: answer.firstName,
         lastName: answer.lastName,
         email: answer.email,
         phone: answer.phone,
-        dateOfBirth: updatedAnswers.dateOfBirth,
-        decisionMaker: updatedAnswers.decisionMaker,
+        zipCode: updatedAnswers.zipCode,
         coverageAmount: updatedAnswers.coverageAmount,
         ageRange: updatedAnswers.ageRange,
         tobaccoUse: updatedAnswers.tobaccoUse,
-        healthQuestions: {
-          healthQuestion1: updatedAnswers.healthQuestion1,
-          healthQuestion2: updatedAnswers.healthQuestion2,
-          healthQuestion3: updatedAnswers.healthQuestion3,
-        },
         sessionId: getSessionId()
       });
       
       setShowProcessing(true);
       
       try {
+        // Track lead form submit
+        trackLeadFormSubmit({
+          firstName: answer.firstName,
+          lastName: answer.lastName,
+          email: answer.email,
+          phoneNumber: answer.phone,
+          sessionId: getSessionId(),
+          funnelType: 'final-expense-quote',
+          leadScore: 75,
+          age: updatedAnswers.ageRange,
+          zipCode: updatedAnswers.zipCode || '',
+          quizAnswers: updatedAnswers,
+          // state not collected (ZIP only)
+        });
+
+        // Fire Meta Lead event
+        try {
+          if (typeof window !== 'undefined' && window.fbq) {
+            window.fbq('track', 'Lead', {
+              content_name: 'Final Expense Quote',
+              content_category: 'lead_generation',
+              value: 75,
+              currency: 'USD',
+              age_range: updatedAnswers.ageRange,
+              coverage_amount: updatedAnswers.coverageAmount,
+              tobacco_use: updatedAnswers.tobaccoUse,
+              beneficiary_relationship: answer.beneficiaryRelationship,
+              zip_code: updatedAnswers.zipCode
+            });
+          }
+        } catch {}
+
         const response = await fetch('/api/leads/submit-without-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -262,17 +283,16 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
             phoneNumber: answer.phone,
             firstName: answer.firstName,
             lastName: answer.lastName,
-            quizAnswers: updatedAnswers,
+            quizAnswers: {
+              ...updatedAnswers,
+              beneficiaryRelationship: answer.beneficiaryRelationship
+            },
             calculatedResults: calculateResults(),
-            addressInfo: updatedAnswers.addressInfo,
-            dateOfBirth: updatedAnswers.dateOfBirth, // Format: { month, day, year, dateString, iso }
-            decisionMaker: updatedAnswers.decisionMaker,
+            zipCode: updatedAnswers.zipCode, // ZIP only, no address
             coverageAmount: updatedAnswers.coverageAmount,
             ageRange: updatedAnswers.ageRange,
             tobaccoUse: updatedAnswers.tobaccoUse,
-            healthQuestion1: updatedAnswers.healthQuestion1,
-            healthQuestion2: updatedAnswers.healthQuestion2,
-            healthQuestion3: updatedAnswers.healthQuestion3,
+            beneficiaryRelationship: answer.beneficiaryRelationship,
             utmParams: utmParams,
             sessionId: getSessionId(),
             funnelType: 'final-expense-quote'
@@ -292,37 +312,42 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
         
         console.log('📡 API Response:', result);
         
-        // Store answers and navigate to results page
+        // Track lead created event
+        try {
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'lead_created', {
+              session_id: getSessionId(),
+              funnel_type: 'final-expense-quote',
+              lead_score: 75
+            });
+          }
+        } catch {}
+        
+        // Store answers and navigate to thank you page
         const answersJson = JSON.stringify(updatedAnswers);
         sessionStorage.setItem('quiz_answers', answersJson);
         localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(false);
-        console.log('✅ Navigating to results page');
-        router.push('/final-expense-quote/results');
+        console.log('✅ Navigating to thank you page');
+        router.push('/final-expense-quote/thank-you');
       } catch (error) {
         console.error('💥 Form submission error:', error);
         
-        // Store answers even on error and navigate to results page
+        // Store answers even on error and navigate to thank you page
         const answersJson = JSON.stringify(updatedAnswers);
         sessionStorage.setItem('quiz_answers', answersJson);
         localStorage.setItem('quiz_answers', answersJson);
         
         setShowProcessing(false);
-        console.log('✅ Navigating to results page (error case)');
-        router.push('/final-expense-quote/results');
+        console.log('✅ Navigating to thank you page (error case)');
+        router.push('/final-expense-quote/thank-you');
       }
       return;
     }
 
-    if (currentStep === questions.length - 1) {
-      // Store answers and navigate to results page
-      const answersJson = JSON.stringify(updatedAnswers);
-      sessionStorage.setItem('quiz_answers', answersJson);
-      localStorage.setItem('quiz_answers', answersJson);
-      calculateResults();
-      router.push('/final-expense-quote/results');
-    } else {
+    // Advance to next step
+    if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -343,7 +368,6 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
     setAnswers({});
     setFunnelType('primary');
     setShowResults(false);
-    setShowOTP(false);
     setShowProcessing(false);
     setQuizSessionId(null);
   };
@@ -352,27 +376,8 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
     return <ProcessingState message="Processing your information..." />;
   }
 
-  if (showOTP) {
-    const phoneNumber = answers.phoneNumber || '';
-    if (!phoneNumber) {
-      setShowOTP(false);
-      return null;
-    }
-    return (
-      <OTPVerification
-        phoneNumber={phoneNumber}
-        onVerificationComplete={() => {
-          // Store answers and navigate to results page
-          const answersJson = JSON.stringify(answers);
-          sessionStorage.setItem('quiz_answers', answersJson);
-          localStorage.setItem('quiz_answers', answersJson);
-          setShowOTP(false);
-          router.push('/final-expense-quote/results');
-        }}
-        onBack={() => setShowOTP(false)}
-      />
-    );
-  }
+  // OTP is disabled - no blocking flow
+  // OTP can be sent post-submit if needed for high-risk leads only
 
   const currentQuestion = questions[currentStep];
   return (

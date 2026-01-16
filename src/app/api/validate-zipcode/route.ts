@@ -124,9 +124,18 @@ const LICENSING_REQUIREMENTS: Record<string, any> = {
   'WY': { requires_license: true, license_type: 'insurance', notes: 'Wyoming requires insurance licensing' }
 };
 
-function isValidZipFormat(zipCode: string): boolean {
+function isValidZipFormat(zipCode: string): { valid: boolean; isCanadian: boolean } {
   const cleanZip = zipCode.replace(/\D/g, '');
-  return cleanZip.length === 5 || cleanZip.length === 9;
+  const usZipValid = cleanZip.length === 5 || cleanZip.length === 9;
+  
+  // Canadian postal code: A1A 1A1 format (letter-number-letter space number-letter-number)
+  const canadianPostalRegex = /^[A-Za-z][0-9][A-Za-z]\s?[0-9][A-Za-z][0-9]$/;
+  const canadianValid = canadianPostalRegex.test(zipCode.trim());
+  
+  return {
+    valid: usZipValid || canadianValid,
+    isCanadian: canadianValid
+  };
 }
 
 function getStateFromZip(zipCode: string): { state: string; stateName: string } | null {
@@ -156,22 +165,47 @@ export async function POST(request: NextRequest) {
     
     if (!zipCode) {
       return createCorsResponse(
-        { error: 'Zip code is required' },
+        { error: 'Zip code or postal code is required' },
         400
       );
     }
     
-    // Validate zip code format
-    if (!isValidZipFormat(zipCode)) {
+    // Validate zip code or postal code format
+    const formatValidation = isValidZipFormat(zipCode);
+    if (!formatValidation.valid) {
       return createCorsResponse(
         { 
           valid: false,
-          error: 'Invalid zip code format. Please enter a 5-digit or ZIP+4 format.'
+          error: 'Invalid format. Please enter a 5-digit US ZIP code or Canadian postal code (e.g., K1A 0B1).'
         },
         400
       );
     }
     
+    // Handle Canadian postal codes
+    if (formatValidation.isCanadian) {
+      // Format Canadian postal code properly (A1A 1A1)
+      const formattedPostal = zipCode.trim().toUpperCase().replace(/([A-Z0-9]{3})([A-Z0-9]{3})/, '$1 $2');
+      
+      return createCorsResponse({
+        valid: true,
+        zipCode: formattedPostal,
+        postalCode: formattedPostal,
+        country: 'CA',
+        countryCode: 'CA',
+        state: null,
+        stateName: null,
+        licensing: {
+          requires_license: true,
+          license_type: 'insurance',
+          notes: 'Canadian insurance licensing requirements apply'
+        },
+        timestamp: new Date().toISOString(),
+        runtime: 'nextjs'
+      });
+    }
+    
+    // Handle US ZIP codes
     // Get state information
     const stateInfo = getStateFromZip(zipCode);
     
@@ -179,7 +213,7 @@ export async function POST(request: NextRequest) {
       return createCorsResponse(
         { 
           valid: false,
-          error: 'Zip code not found in our database'
+          error: 'ZIP code not found in our database'
         },
         404
       );
@@ -195,6 +229,8 @@ export async function POST(request: NextRequest) {
     return createCorsResponse({
       valid: true,
       zipCode: zipCode,
+      country: 'US',
+      countryCode: 'US',
       state: stateInfo.state,
       stateName: stateInfo.stateName,
       licensing: licensing,

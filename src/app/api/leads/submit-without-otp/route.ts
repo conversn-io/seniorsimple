@@ -360,12 +360,14 @@ export async function POST(request: NextRequest) {
                      null;
     
     // Extract address info from quizAnswers, addressInfo parameter, or locationInfo
+    // For CRO-optimized funnel: ZIP only (no full address)
     const addressData = quizAnswers?.addressInfo || quizAnswers?.locationInfo || {};
     const streetNumber = addressData.streetNumber || '';
     const address = addressData.street || addressData.fullAddress || '';
     const city = addressData.city || '';
     const addressState = addressData.stateAbbr || addressData.state || state || '';
-    const addressZip = addressData.zipCode || zipCode || '';
+    // For CRO-optimized: use zipCode directly if available (from zip-only field)
+    const addressZip = quizAnswers?.zipCode || addressData.zipCode || zipCode || '';
     
     // Extract coverage_amount - handle both annuity and final expense quizzes
     const retirementSavings = quizAnswers?.retirementSavings || 0;
@@ -418,7 +420,11 @@ export async function POST(request: NextRequest) {
       ? quizData.coveragePurpose.join(',') 
       : (quizData.coveragePurpose || '');
     
+    // Extract beneficiary relationship (new CRO-optimized field)
+    const beneficiaryRelationship = quizData.beneficiaryRelationship || '';
+    
     // Extract Date of Birth (format: { month, day, year, dateString, iso })
+    // Note: DOB not collected in CRO-optimized funnel, but keeping for backward compatibility
     const dateOfBirth = quizData.dateOfBirth;
     let dobFormatted = '';
     let dobMonth = '';
@@ -442,6 +448,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Extract country from addressInfo or default to 'US'
+    // For CRO-optimized funnel: ZIP only, no addressInfo
     const addressInfo = quizData.addressInfo || {};
     const country = addressInfo.country || addressInfo.countryCode || 'US';
     
@@ -455,10 +462,11 @@ export async function POST(request: NextRequest) {
       phoneLast4: phoneLast4,
       
       // Address Information
-      address: streetNumber ? `${streetNumber} ${address}`.trim() : address,
-      city: city,
-      state: addressState,
-      stateName: addressData.state || stateName || lead.state_name,
+      // For CRO-optimized: ZIP only, no full address
+      address: streetNumber ? `${streetNumber} ${address}`.trim() : (address || ''), // May be empty for ZIP-only
+      city: city || '', // May be empty for ZIP-only
+      state: addressState || '', // May be empty for ZIP-only
+      stateName: addressData.state || stateName || lead.state_name || '',
       zipCode: addressZip,
       country: country, // US or CA for Canada
       
@@ -486,8 +494,15 @@ export async function POST(request: NextRequest) {
     if (funnelType === 'final-expense-quote') {
       ghlPayload.coverageAmount = coverageAmount;
       ghlPayload.ageRange = ageRange;
-      ghlPayload.healthStatus = healthStatus;
       ghlPayload.tobaccoUse = tobaccoUse;
+      // Beneficiary relationship (new CRO-optimized field)
+      if (beneficiaryRelationship) {
+        ghlPayload.beneficiaryRelationship = beneficiaryRelationship;
+      }
+      // Health status and coverage purpose (optional, may not be present in CRO-optimized)
+      if (healthStatus) {
+        ghlPayload.healthStatus = healthStatus;
+      }
       if (coveragePurpose) {
         ghlPayload.coveragePurpose = coveragePurpose;
       }

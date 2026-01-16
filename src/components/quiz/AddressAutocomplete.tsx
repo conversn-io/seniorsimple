@@ -74,28 +74,60 @@ export const AddressAutocomplete = ({
       script.onload = () => {
         initializeAutocomplete()
       }
+      script.onerror = () => {
+        const errorMsg = 'Failed to load Google Places API. Please check your API key and network connection.'
+        console.error('❌ Google Places API Script Load Error:', {
+          error: errorMsg,
+          apiKey: process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY ? 'Present' : 'Missing',
+          timestamp: new Date().toISOString()
+        })
+        setError(errorMsg)
+        setIsValidating(false)
+        onValidationChange?.(false)
+      }
       document.head.appendChild(script)
     }
 
     const initializeAutocomplete = () => {
-      if (!inputRef.current || !window.google?.maps?.places) return
+      if (!inputRef.current || !window.google?.maps?.places) {
+        const errorMsg = 'Google Places API not available. Please refresh the page.'
+        console.error('❌ Google Places API Initialization Error:', {
+          error: errorMsg,
+          hasGoogle: !!window.google,
+          hasMaps: !!window.google?.maps,
+          hasPlaces: !!window.google?.maps?.places,
+          timestamp: new Date().toISOString()
+        })
+        setError(errorMsg)
+        setIsValidating(false)
+        onValidationChange?.(false)
+        return
+      }
 
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
-        componentRestrictions: { country: ['us', 'ca'] }, // Support both US and Canada
-        fields: ['address_components', 'formatted_address']
-      })
+      try {
+        const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+          types: ['address'],
+          componentRestrictions: { country: ['us', 'ca'] }, // Support both US and Canada
+          fields: ['address_components', 'formatted_address']
+        })
 
-      autocompleteRef.current = autocomplete
+        autocompleteRef.current = autocomplete
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (!place.address_components) {
-          setError('Please select a valid address from the suggestions')
-          setIsValid(false)
-          onValidationChange?.(false)
-          return
-        }
+        autocomplete.addListener('place_changed', () => {
+          try {
+            const place = autocomplete.getPlace()
+            if (!place.address_components) {
+              const errorMsg = 'Please select a valid address from the suggestions'
+              console.warn('⚠️ Google Places API - Invalid place selected:', {
+                place: place,
+                formatted_address: place.formatted_address,
+                timestamp: new Date().toISOString()
+              })
+              setError(errorMsg)
+              setIsValid(false)
+              onValidationChange?.(false)
+              return
+            }
 
         setIsValidating(true)
         setError('')
@@ -140,13 +172,36 @@ export const AddressAutocomplete = ({
           formatted: place.formatted_address || addressValue
         }
 
-        setAddressData(address)
-        setAddressValue(address.formatted)
-        setIsValid(true)
+            setAddressData(address)
+            setAddressValue(address.formatted)
+            setIsValid(true)
+            setIsValidating(false)
+            onValidationChange?.(true)
+            onChange(address)
+          } catch (error: any) {
+            const errorMsg = 'Error processing address. Please try again.'
+            console.error('❌ Google Places API - Address Processing Error:', {
+              error: error?.message || String(error),
+              stack: error?.stack,
+              timestamp: new Date().toISOString()
+            })
+            setError(errorMsg)
+            setIsValid(false)
+            setIsValidating(false)
+            onValidationChange?.(false)
+          }
+        })
+      } catch (error: any) {
+        const errorMsg = 'Failed to initialize address autocomplete. Please refresh the page.'
+        console.error('❌ Google Places API - Autocomplete Creation Error:', {
+          error: error?.message || String(error),
+          stack: error?.stack,
+          timestamp: new Date().toISOString()
+        })
+        setError(errorMsg)
         setIsValidating(false)
-        onValidationChange?.(true)
-        onChange(address)
-      })
+        onValidationChange?.(false)
+      }
     }
 
     loadGooglePlaces()

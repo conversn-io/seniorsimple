@@ -36,8 +36,8 @@ export interface LeadData {
   email: string;
   phoneNumber: string;
   zipCode: string;
-  state: string;
-  stateName: string;
+  state?: string; // Optional - ZIP-only funnels don't collect state
+  stateName?: string; // Optional - ZIP-only funnels don't collect state
   quizAnswers: Record<string, any>;
   sessionId: string;
   funnelType: string;
