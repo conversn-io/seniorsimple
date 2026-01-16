@@ -88,12 +88,13 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
     ],
   },
   
-  // Step 5: Beneficiary Relationship + Contact Info
+  // Step 5: Beneficiary Relationship Only
   {
-    id: 'beneficiaryAndContact',
-    title: 'Where should we send your options?',
-    type: 'beneficiary-contact' as const,
-    beneficiaryOptions: [
+    id: 'beneficiaryRelationship',
+    title: 'Who is the beneficiary?',
+    subtitle: 'This helps us personalize your options.',
+    type: 'multiple-choice' as const,
+    options: [
       'Spouse',
       'Child',
       'Grandchild',
@@ -103,12 +104,19 @@ const FINAL_EXPENSE_QUIZ_QUESTIONS = [
       'Charity',
       'Not sure yet'
     ],
+  },
+  
+  // Step 6: Contact Form (dedicated page)
+  {
+    id: 'personalInfo',
+    title: 'Where should we send your options?',
+    subtitle: 'A licensed agent will call you shortly.',
+    type: 'personal-info-with-benefits' as const,
     benefits: [
       'A quick call from a licensed final expense agent',
       'Personalized options based on your answers',
       'Help choosing coverage that fits your budget'
     ],
-    consentText: 'By submitting, you agree to be contacted by a licensed insurance agent by phone, text, or email. Consent is not a condition of purchase.',
   },
 ];
 
@@ -250,11 +258,18 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
 
-    // Handle final submission on beneficiaryAndContact (Step 5 - last question)
+    // Handle beneficiary relationship selection (Step 5) - just move to next step
+    if (currentQuestion.id === 'beneficiaryRelationship') {
+      // Move to contact form page (Step 6)
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // Handle final submission on personalInfo (Step 6 - contact form)
     // No OTP blocking - submit directly
-    if (currentQuestion.id === 'beneficiaryAndContact') {
-      console.log('📝 Final Submission (Step 5 - Beneficiary & Contact):', {
-        beneficiaryRelationship: answer.beneficiaryRelationship,
+    if (currentQuestion.id === 'personalInfo') {
+      console.log('📝 Final Submission (Step 6 - Contact Form):', {
+        beneficiaryRelationship: updatedAnswers.beneficiaryRelationship,
         firstName: answer.firstName,
         lastName: answer.lastName,
         email: answer.email,
@@ -295,7 +310,7 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
               age_range: updatedAnswers.ageRange,
               coverage_amount: updatedAnswers.coverageAmount,
               tobacco_use: updatedAnswers.tobaccoUse,
-              beneficiary_relationship: answer.beneficiaryRelationship,
+              beneficiary_relationship: updatedAnswers.beneficiaryRelationship,
               zip_code: updatedAnswers.zipCode
             });
           }
@@ -309,16 +324,13 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
             phoneNumber: answer.phone,
             firstName: answer.firstName,
             lastName: answer.lastName,
-            quizAnswers: {
-              ...updatedAnswers,
-              beneficiaryRelationship: answer.beneficiaryRelationship
-            },
+            quizAnswers: updatedAnswers,
             calculatedResults: calculateResults(),
             zipCode: updatedAnswers.zipCode, // ZIP only, no address
             coverageAmount: updatedAnswers.coverageAmount,
             ageRange: updatedAnswers.ageRange,
             tobaccoUse: updatedAnswers.tobaccoUse,
-            beneficiaryRelationship: answer.beneficiaryRelationship,
+            beneficiaryRelationship: updatedAnswers.beneficiaryRelationship,
             utmParams: utmParams,
             sessionId: getSessionId(),
             funnelType: 'final-expense-quote'
