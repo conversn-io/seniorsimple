@@ -219,6 +219,9 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
   const [showProcessing, setShowProcessing] = useState(false);
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
+  // Step tracking state for time-on-step analytics
+  const [previousStep, setPreviousStep] = useState<string | null>(null);
+  const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
 
   // Helper function to get session ID - prioritizes sessionStorage (sess_ format from trackPageView)
   // This ensures leads link correctly to analytics_events table
@@ -254,6 +257,40 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
       onStepChange(currentStep);
     }
   }, [currentStep, onStepChange]);
+
+  // Track quiz step views for analytics with time tracking
+  useEffect(() => {
+    if (currentStep >= 0 && currentStep < questions.length) {
+      const currentQuestion = questions[currentStep];
+      const sessionId = getSessionId();
+      const timeOnPrevious = previousStep 
+        ? Math.round((Date.now() - stepStartTime) / 1000) 
+        : null;
+      
+      if (sessionId) {
+        trackQuizStepViewed({
+          stepNumber: currentStep + 1,
+          stepName: currentQuestion.id,
+          funnelType: funnelType === 'primary' ? 'primary' : 'secondary',
+          previousStep: previousStep,
+          timeOnPreviousStep: timeOnPrevious,
+          sessionId: sessionId
+        });
+        
+        // Update tracking state for next step
+        setPreviousStep(currentQuestion.id);
+        setStepStartTime(Date.now());
+        
+        console.log('📊 Quiz Step Tracked:', {
+          step: currentStep + 1,
+          stepName: currentQuestion.id,
+          funnelType: funnelType,
+          timeOnPreviousStep: timeOnPrevious,
+          sessionId: sessionId
+        });
+      }
+    }
+  }, [currentStep, questions, funnelType, previousStep, stepStartTime]);
 
   useEffect(() => {
     // Generate unique session ID for tracking
