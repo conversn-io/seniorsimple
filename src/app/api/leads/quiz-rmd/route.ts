@@ -325,9 +325,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('❌ Error processing RMD quiz lead:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+    });
     return createCorsResponse({
       success: false,
-      error: error.message || 'Internal server error'
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, 500);
   }
 }
