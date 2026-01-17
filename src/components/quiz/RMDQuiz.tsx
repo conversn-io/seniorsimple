@@ -95,7 +95,7 @@ const RMD_QUIZ_QUESTIONS = [
   {
     id: 'total_savings',
     title: 'About how much do you have saved across all retirement accounts?',
-    subtitle: 'Some households use structured approaches like Retirement Rescue™ to manage RMD exposure and reduce unnecessary taxes.',
+    subtitle: 'Based on your savings level, RMD-related taxes could materially impact your retirement income if left unaddressed.',
     type: 'savings-slider' as const,
     min: 50000,
     max: 2000000,
@@ -118,12 +118,12 @@ const RMD_QUIZ_QUESTIONS = [
   {
     id: 'lead_form',
     title: 'Speak With a Licensed Professional About the Retirement Rescue™ Strategy',
-    subtitle: 'Based on your answers, a brief call can help determine whether the Retirement Rescue™ approach may reduce RMD-related taxes and protect your retirement income.',
+    subtitle: '',
     type: 'personal-info-with-benefits' as const,
     benefits: [],
     ctaText: 'Continue to Schedule My Retirement Rescue™ Call',
     reassuranceText: 'No obligation. Educational discussion only.',
-    phoneHelperText: 'Used to connect you with a licensed professional familiar with the Retirement Rescue™ approach',
+    phoneHelperText: 'Required to schedule your strategy call',
   },
 ];
 
@@ -649,8 +649,8 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
         </div>
       )}
 
-      {/* Progress Bar - Hidden for Variant A until quiz starts */}
-      {(hasStarted || entryVariant === 'immediate_q1') && (
+      {/* Progress Bar - Hidden for Variant A until quiz starts, hidden on step 8 (form page) */}
+      {(hasStarted || entryVariant === 'immediate_q1') && currentStep !== 7 && (
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">
