@@ -204,18 +204,22 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
     // Track page view
     trackPageView('SeniorSimple RMD Quiz', '/quiz-rmd');
     
-    // Track quiz view event
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'quiz_view', {
-        route: '/quiz-rmd',
-        variant: assignedVariant,
-        session_id: newSessionId,
-        referrer: document.referrer || '',
-        utm_source: utmParams?.utm_source || '',
-        utm_medium: utmParams?.utm_medium || '',
-        utm_campaign: utmParams?.utm_campaign || '',
-      });
-    }
+      // Get entry variant for tracking
+      const assignedEntryVariant = getAssignedEntryVariant();
+      
+      // Track quiz view event
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'quiz_view', {
+          route: '/quiz-rmd',
+          variant: assignedVariant,
+          entry_variant: assignedEntryVariant,
+          session_id: newSessionId,
+          referrer: document.referrer || '',
+          utm_source: utmParams?.utm_source || '',
+          utm_medium: utmParams?.utm_medium || '',
+          utm_campaign: utmParams?.utm_campaign || '',
+        });
+      }
 
       // Track quiz start (only if entry variant is immediate_q1, start_button tracks on button click)
       if (assignedEntryVariant === 'immediate_q1') {
@@ -561,6 +565,56 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
     return <ProcessingState message="Processing your information..." />;
   }
 
+  // VARIANT A: Start Button (Momentum-First) - Show landing before quiz starts
+  if (entryVariant === 'start_button' && !hasStarted) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        {/* Above-fold content - Variant A */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
+            Are Required Minimum Distributions About to Trigger a Tax Bomb in Your Retirement?
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto">
+            Answer a few quick questions to see if you qualify for a Retirement Rescue™ strategy
+            that may help reduce RMD taxes, protect your savings from market losses, and create reliable income.
+          </p>
+          
+          {/* Single Start Button - Dominant CTA */}
+          <button
+            onClick={() => {
+              setHasStarted(true);
+              // Track quiz start on button click
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'quiz_start', {
+                  step: 1,
+                  route: '/quiz-rmd',
+                  variant: variant,
+                  entry_variant: entryVariant,
+                  session_id: getSessionId(),
+                });
+              }
+              // Track quiz start
+              trackQuizStart('rmd-quiz', getSessionId());
+              // Smooth scroll to quiz content
+              setTimeout(() => {
+                const quizSection = document.getElementById('quiz-content');
+                if (quizSection) {
+                  quizSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 100);
+            }}
+            className="w-full max-w-[420px] mx-auto bg-[#36596A] text-white py-4 px-8 rounded-xl font-semibold text-lg hover:bg-[#2a4a5a] transition-all duration-200 transform active:scale-95 shadow-lg hover:shadow-xl"
+            style={{ minHeight: '64px' }}
+          >
+            Start My RMD Risk Check
+          </button>
+          
+          <p className="text-sm text-gray-500 italic mt-6">Educational screening — not financial advice.</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentQuestion = questions[currentStep];
   const stepLabel = currentQuestion.id === 'rmd_concern' ? 'RMD Risk Check' :
                     currentQuestion.id === 'age_range' ? 'Retirement Stage' :
@@ -572,9 +626,9 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
                     'Get Your Results';
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {/* Above-fold content (only on step 1) */}
-      {currentStep === 0 && (
+    <div id="quiz-content" className="max-w-2xl mx-auto p-6">
+      {/* Above-fold content (only on step 1, Variant B) */}
+      {currentStep === 0 && entryVariant === 'immediate_q1' && (
         <div className="mb-8 text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
             Are Required Minimum Distributions About to Trigger a Tax Bomb in Your Retirement?
@@ -592,18 +646,20 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
         </div>
       )}
 
-      {/* Progress Bar */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">
-            Step {currentStep + 1} of {totalSteps} — {stepLabel}
-          </span>
-          <span className="text-sm text-gray-500">
-            {Math.round(((currentStep + 1) / totalSteps) * 100)}% Complete
-          </span>
+      {/* Progress Bar - Hidden for Variant A until quiz starts */}
+      {(hasStarted || entryVariant === 'immediate_q1') && (
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              Step {currentStep + 1} of {totalSteps} — {stepLabel}
+            </span>
+            <span className="text-sm text-gray-500">
+              {Math.round(((currentStep + 1) / totalSteps) * 100)}% Complete
+            </span>
+          </div>
+          <QuizProgress currentStep={currentStep} totalSteps={totalSteps} />
         </div>
-        <QuizProgress currentStep={currentStep} totalSteps={totalSteps} />
-      </div>
+      )}
 
       {/* Variant-specific scarcity message (step 6, variant 2) */}
       {currentStep === 5 && variant === 'rmd_v1_scarcity_late' && answers.total_savings && (
@@ -644,6 +700,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             funnelType="rmd-quiz"
             stepNumber={currentStep + 1}
             sessionId={getSessionId()}
+            entryVariant={entryVariant} // Pass entry variant for tap target sizing
           />
         )}
       </div>
