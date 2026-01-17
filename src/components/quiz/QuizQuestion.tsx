@@ -343,10 +343,18 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
   };
 
   const handleMultiSelect = (answer: string) => {
-    const newAnswers = selectedAnswers.includes(answer)
-      ? selectedAnswers.filter(a => a !== answer)
-      : [...selectedAnswers, answer];
-    setSelectedAnswers(newAnswers);
+    // Handle "None of the above" exclusive logic
+    if (answer === 'None of the above') {
+      // If "None of the above" is selected, clear all other selections
+      setSelectedAnswers(['None of the above']);
+    } else {
+      // If any other option is selected, remove "None of the above" if present
+      const filteredAnswers = selectedAnswers.filter(a => a !== 'None of the above');
+      const newAnswers = filteredAnswers.includes(answer)
+        ? filteredAnswers.filter(a => a !== answer)
+        : [...filteredAnswers, answer];
+      setSelectedAnswers(newAnswers);
+    }
     // Don't call onAnswer immediately for multi-select - wait for Continue button
   };
 
