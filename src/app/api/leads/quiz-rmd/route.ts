@@ -238,6 +238,14 @@ export async function POST(request: NextRequest) {
     // Upsert contact
     const contact = await upsertContact(email, firstName, lastName, phoneNumber);
     
+    if (!contact || !contact.id) {
+      console.error('❌ Failed to create or retrieve contact:', { email, phoneNumber });
+      return createCorsResponse({ 
+        success: false,
+        error: 'Failed to create contact record' 
+      }, 500);
+    }
+    
     // Upsert lead
     const lead = await upsertLead(
       contact.id,
