@@ -26,6 +26,8 @@ interface QuizQuestionProps {
     headline?: string;
     subheadline?: string;
     reassuranceText?: string;
+    ctaText?: string;
+    phoneHelperText?: string;
     minYear?: number;
     maxYear?: number;
     maxlength?: number;
@@ -859,24 +861,30 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
           'Help planning your retirement for the future'
         ];
         const benefits = question.benefits || defaultBenefits;
+        const ctaText = question.ctaText || 'Get Your Free Quote';
+        const phoneHelper = question.phoneHelperText || "We'll send a verification code to this number";
         
         return (
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-8">
             {/* TrustedForm hidden input */}
             <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" value="" />
-            {/* Benefits Section */}
-            <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
-              <h3 className="text-xl font-bold text-[#36596A] mb-4">What You'll Get:</h3>
-              <ul className="space-y-3">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            
+            {/* Benefits Section - Only show if benefits array is not empty */}
+            {benefits && benefits.length > 0 && (
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
+                <h3 className="text-xl font-bold text-[#36596A] mb-4">What You'll Get:</h3>
+                <ul className="space-y-3">
+                  {benefits.map((benefit, index) => (
+                    <li key={index} className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
+            {/* Field order: first_name, last_name, phone_number, email */}
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
                 First Name *
@@ -904,46 +912,6 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
                 disabled={isLoading}
                 style={{ minHeight: '56px' }}
               />
-            </div>
-            <div>
-              <label className="block text-lg font-semibold text-gray-700 mb-3">
-                Email Address *
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    const newEmail = e.target.value;
-                    setEmail(newEmail);
-                    const state = getEmailValidationState(newEmail);
-                    setEmailValidationState(state);
-                    const validation = validateEmailFormat(newEmail);
-                    setEmailError(validation.error || '');
-                  }}
-                  className={`
-                    quiz-input w-full px-6 py-4 pr-12 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
-                    ${emailValidationState === 'empty' ? 'border-gray-300' : ''}
-                    ${emailValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
-                    ${emailValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
-                  `}
-                  required
-                  disabled={isLoading}
-                  style={{ minHeight: '56px' }}
-                />
-                {emailValidationState === 'invalid' && email && (
-                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
-                )}
-                {emailValidationState === 'valid' && email && (
-                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
-                )}
-              </div>
-              {emailValidationState === 'invalid' && emailError && (
-                <p className="text-red-600 text-sm mt-2">{emailError}</p>
-              )}
-              {emailValidationState === 'valid' && email && (
-                <p className="text-green-600 text-sm mt-2">✓ Email address is valid</p>
-              )}
             </div>
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-3">
@@ -994,15 +962,55 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
               {phoneValidationState === 'valid' && phone && !isValidatingPhone && phoneAPIValid && (
                 <p className="text-green-600 text-sm mt-2">✓ Phone number is valid</p>
               )}
-              {phoneValidationState === 'empty' && (
+              {phoneValidationState === 'empty' && phoneHelper && (
                 <p className="text-sm text-gray-500 mt-2">
-                  We'll send a verification code to this number
+                  {phoneHelper}
                 </p>
               )}
               {phoneError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
                   <p className="text-red-600 text-sm">{phoneError}</p>
                 </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-lg font-semibold text-gray-700 mb-3">
+                Email Address *
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    const newEmail = e.target.value;
+                    setEmail(newEmail);
+                    const state = getEmailValidationState(newEmail);
+                    setEmailValidationState(state);
+                    const validation = validateEmailFormat(newEmail);
+                    setEmailError(validation.error || '');
+                  }}
+                  className={`
+                    quiz-input w-full px-6 py-4 pr-12 text-lg border-2 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 transition-all
+                    ${emailValidationState === 'empty' ? 'border-gray-300' : ''}
+                    ${emailValidationState === 'invalid' ? 'border-red-500 bg-red-50 focus:border-red-500' : ''}
+                    ${emailValidationState === 'valid' ? 'border-green-500 bg-green-50 focus:border-green-500' : ''}
+                  `}
+                  required
+                  disabled={isLoading}
+                  style={{ minHeight: '56px' }}
+                />
+                {emailValidationState === 'invalid' && email && (
+                  <AlertTriangle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
+                )}
+                {emailValidationState === 'valid' && email && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {emailValidationState === 'invalid' && emailError && (
+                <p className="text-red-600 text-sm mt-2">{emailError}</p>
+              )}
+              {emailValidationState === 'valid' && email && (
+                <p className="text-green-600 text-sm mt-2">✓ Email address is valid</p>
               )}
             </div>
 

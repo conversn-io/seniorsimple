@@ -499,22 +499,59 @@ function BookingPageContent() {
       {/* Success notification bar for consistency with thank-you page */}
       <div className="w-full bg-green-100 border-b border-green-300 text-green-900 text-sm py-3 px-4 text-center">
         <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#2f6d46]">
-          {firstName ? `Congrats ${firstName} - You're Qualified` : "Book Your Free Retirement Rescue Strategy Call"}
+          Schedule Your Retirement Rescue™ Strategy Call
         </h1>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-[#36596A] mb-4">
-            STEP 2: Book Your Free Retirement Rescue Strategy Call
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            We help you ensure your retirement is tax optimized, income producing, 
-            and structured to give you peace of mind for you and your family to enjoy. 
-            No stress or surprises - just strong, sound structure.
-          </p>
-        </div>
+      <main className="min-h-screen bg-[#F5F5F0]">
+        <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+          {/* Calendar Page Headline */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
+              Schedule Your Retirement Rescue™ Strategy Call
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-700 mb-6 leading-relaxed max-w-3xl mx-auto">
+              This brief call is designed to review your RMD exposure and discuss
+              whether the Retirement Rescue™ approach may be appropriate for your situation.
+            </p>
+            
+            {/* Expectation Bullets */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6 max-w-2xl mx-auto">
+              <h3 className="text-xl font-semibold text-[#36596A] mb-4">What to Expect:</h3>
+              <ul className="space-y-3 text-left">
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-3 mt-0.5">•</span>
+                  <span className="text-gray-700">Review how RMDs may impact your retirement taxes</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-3 mt-0.5">•</span>
+                  <span className="text-gray-700">Discuss potential strategies to reduce unnecessary withdrawals</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-600 mr-3 mt-0.5">•</span>
+                  <span className="text-gray-700">Determine next steps — no pressure, no obligation</span>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Call Details */}
+            <div className="mb-6 text-gray-700">
+              <p className="text-base mb-2">
+                <span className="font-semibold">Duration:</span> 15 minutes
+              </p>
+              <p className="text-base mb-2">
+                <span className="font-semibold">Cost:</span> $0
+              </p>
+              <p className="text-base mb-4">
+                <span className="font-semibold">With:</span> Licensed retirement professional
+              </p>
+            </div>
+            
+            {/* Pre-calendar copy */}
+            <p className="text-base text-gray-600 mb-8 italic max-w-2xl mx-auto">
+              Please choose a time when you can take a brief, uninterrupted call.
+            </p>
+          </div>
 
         {/* Calendar Embed */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">

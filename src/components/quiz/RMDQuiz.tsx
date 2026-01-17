@@ -95,7 +95,7 @@ const RMD_QUIZ_QUESTIONS = [
   {
     id: 'total_savings',
     title: 'About how much do you have saved across all retirement accounts?',
-    subtitle: 'Based on your savings level, RMD-related taxes could materially impact your retirement income if left unaddressed.',
+    subtitle: 'Some households use structured approaches like Retirement Rescue™ to manage RMD exposure and reduce unnecessary taxes.',
     type: 'savings-slider' as const,
     min: 50000,
     max: 2000000,
@@ -117,14 +117,13 @@ const RMD_QUIZ_QUESTIONS = [
   },
   {
     id: 'lead_form',
-    title: 'See If You Qualify for a Retirement Rescue™ Strategy',
-    subtitle: 'Based on your answers, we\'ll send you personalized guidance showing whether a tax-efficient, RMD-aware strategy may be available to you.',
+    title: 'Speak With a Licensed Professional About the Retirement Rescue™ Strategy',
+    subtitle: 'Based on your answers, a brief call can help determine whether the Retirement Rescue™ approach may reduce RMD-related taxes and protect your retirement income.',
     type: 'personal-info-with-benefits' as const,
-    benefits: [
-      'Personalized RMD tax strategy assessment',
-      'Educational guidance on tax-efficient strategies',
-      'No obligation — see if this applies to you'
-    ],
+    benefits: [],
+    ctaText: 'Continue to Schedule My Retirement Rescue™ Call',
+    reassuranceText: 'No obligation. Educational discussion only.',
+    phoneHelperText: 'Used to connect you with a licensed professional familiar with the Retirement Rescue™ approach',
   },
 ];
 
@@ -572,8 +571,10 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             Are Required Minimum Distributions About to Trigger a Tax Bomb in Your Retirement?
           </h1>
           <p className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto">
-            Answer a few quick questions to see if you qualify for a Retirement Rescue™ strategy
-            that may help reduce RMD taxes, protect your savings from market losses, and create reliable income.
+            Answer a few quick questions to see if you may qualify for
+            Retirement Rescue™ — a retirement planning approach designed
+            to help reduce RMD-related taxes, protect savings, and create
+            reliable income.
           </p>
           
           {/* Single Start Button - Dominant CTA */}
@@ -606,7 +607,11 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             Start My RMD Risk Check
           </button>
           
-          <p className="text-sm text-gray-500 italic mt-6">Educational screening — not financial advice.</p>
+          <div className="space-y-2 mt-6">
+            <p className="text-gray-600">✓ Designed for retirees and pre-retirees with $250,000+ in savings</p>
+            <p className="text-gray-600">✓ Takes about 60 seconds</p>
+            <p className="text-gray-600">✓ Educational screening — no obligation</p>
+          </div>
         </div>
       </div>
     );
@@ -630,16 +635,17 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
             Are Required Minimum Distributions About to Trigger a Tax Bomb in Your Retirement?
           </h1>
-          <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 mb-6 leading-relaxed max-w-3xl mx-auto">
-            Answer a few quick questions to see if you qualify for a Retirement Rescue™ strategy
-            that may help reduce RMD taxes, protect your savings from market losses, and create reliable income.
+          <p className="text-lg sm:text-xl text-gray-700 mb-6 leading-relaxed max-w-3xl mx-auto">
+            Answer a few quick questions to see if you may qualify for
+            Retirement Rescue™ — a retirement planning approach designed
+            to help reduce RMD-related taxes, protect savings, and create
+            reliable income.
           </p>
           <div className="space-y-2 mb-4">
             <p className="text-gray-600">✓ Designed for retirees and pre-retirees with $250,000+ in savings</p>
             <p className="text-gray-600">✓ Takes about 60 seconds</p>
-            <p className="text-gray-600">✓ No obligation — see if this applies to you</p>
+            <p className="text-gray-600">✓ Educational screening — no obligation</p>
           </div>
-          <p className="text-sm text-gray-500 italic">Educational screening — not financial advice.</p>
         </div>
       )}
 

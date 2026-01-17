@@ -312,7 +312,7 @@ export async function POST(request: NextRequest) {
     return createCorsResponse({
       success: true,
       lead_id: lead.id,
-      next_url: '/quiz-submitted'
+      next_url: `/booking?email=${encodeURIComponent(email)}`
     }, 200);
 
   } catch (error: any) {
