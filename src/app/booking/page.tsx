@@ -503,8 +503,7 @@ function BookingPageContent() {
         </h1>
       </div>
 
-      <main className="min-h-screen bg-[#F5F5F0]">
-        <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
           {/* Calendar Page Headline */}
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#36596A] mb-4 sm:mb-6 leading-tight">
@@ -555,9 +554,6 @@ function BookingPageContent() {
 
         {/* Calendar Embed */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-xl font-semibold text-[#36596A] mb-4 text-center">
-            Select Your Preferred Time
-          </h3>
           <div className="w-full" style={{ minHeight: '600px' }}>
             <iframe
               id="conversn-calendar-iframe"
@@ -595,17 +591,7 @@ function BookingPageContent() {
             />
           </div>
         </div>
-
-        {/* Footer Note */}
-        <div className="text-center text-sm text-gray-500">
-          <p>
-            Questions? Contact us at{' '}
-            <a href="tel:+18585046544" className="text-[#36596A] hover:underline">
-              +1 (858) 504-6544
-            </a>
-          </p>
-        </div>
-      </div>
+      </section>
 
       {/* Load Conversn.io script */}
       <Script 
