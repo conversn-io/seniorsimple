@@ -9,7 +9,7 @@ import { AllocationSlider } from './AllocationSlider';
 import { ProcessingState } from './ProcessingState';
 import { extractUTMParameters, storeUTMParameters, getStoredUTMParameters, hasUTMParameters, UTMParameters } from '@/utils/utm-utils';
 import { trackUTMParameters } from '@/utils/utm-tracker';
-import { getAssignedVariant, QuizVariant } from '@/utils/variant-assignment';
+import { getAssignedVariant, QuizVariant, getAssignedEntryVariant, EntryVariant } from '@/utils/variant-assignment';
 import { 
   initializeTracking, 
   trackQuestionAnswer, 
@@ -137,6 +137,8 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer>({});
   const [variant, setVariant] = useState<QuizVariant>('rmd_v1');
+  const [entryVariant, setEntryVariant] = useState<EntryVariant>('immediate_q1');
+  const [hasStarted, setHasStarted] = useState(false); // For Variant A (start button)
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showProcessing, setShowProcessing] = useState(false);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
@@ -182,9 +184,19 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
     }
     setSessionId(newSessionId);
 
-    // Get assigned variant
+    // Get assigned variants
     const assignedVariant = getAssignedVariant();
     setVariant(assignedVariant);
+    
+    const assignedEntryVariant = getAssignedEntryVariant();
+    setEntryVariant(assignedEntryVariant);
+    
+    // For Variant A (start_button), quiz hasn't started yet
+    if (assignedEntryVariant === 'start_button') {
+      setHasStarted(false);
+    } else {
+      setHasStarted(true); // Variant B shows Q1 immediately
+    }
 
     // Initialize tracking
     initializeTracking();
@@ -205,8 +217,10 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
       });
     }
 
-    // Track quiz start
-    trackQuizStart('rmd-quiz', newSessionId);
+      // Track quiz start (only if entry variant is immediate_q1, start_button tracks on button click)
+      if (assignedEntryVariant === 'immediate_q1') {
+        trackQuizStart('rmd-quiz', newSessionId);
+      }
     
     // Send CAPI ViewContent event
     sendCAPIViewContentEventMultiSite({
@@ -262,6 +276,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
               last_step: currentStep + 1,
               route: '/quiz-rmd',
               variant: assignedVariant,
+              entry_variant: assignedEntryVariant,
               session_id: newSessionId,
             });
           }
@@ -332,6 +347,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           step_key: currentQuestion.id,
           route: '/quiz-rmd',
           variant: variant,
+          entry_variant: entryVariant,
           session_id: getSessionId(),
         });
       }
@@ -342,6 +358,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           window.gtag('event', 'lead_form_view', {
             route: '/quiz-rmd',
             variant: variant,
+            entry_variant: entryVariant,
             session_id: getSessionId(),
           });
         }
@@ -369,29 +386,31 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
       trackQuestionAnswer(currentQuestion.id, answer, currentStep + 1, questions.length, getSessionId(), 'rmd-quiz');
     } catch {}
 
-    // Track quiz_step_answer event (GA4)
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'quiz_step_answer', {
-        step: currentStep + 1,
-        step_key: currentQuestion.id,
-        answer: typeof answer === 'object' ? JSON.stringify(answer) : answer,
-        route: '/quiz-rmd',
-        variant: variant,
-        session_id: getSessionId(),
-      });
-    }
-
-    // Track quiz_start on first answer
-    if (currentStep === 0) {
+      // Track quiz_step_answer event (GA4)
       if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'quiz_start', {
-          step: 1,
+        window.gtag('event', 'quiz_step_answer', {
+          step: currentStep + 1,
+          step_key: currentQuestion.id,
+          answer: typeof answer === 'object' ? JSON.stringify(answer) : answer,
           route: '/quiz-rmd',
           variant: variant,
+          entry_variant: entryVariant,
           session_id: getSessionId(),
         });
       }
-    }
+
+      // Track quiz_start on first answer (for immediate_q1 variant only, start_button tracks on button click)
+      if (currentStep === 0 && entryVariant === 'immediate_q1') {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'quiz_start', {
+            step: 1,
+            route: '/quiz-rmd',
+            variant: variant,
+            entry_variant: entryVariant,
+            session_id: getSessionId(),
+          });
+        }
+      }
 
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
@@ -419,6 +438,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           window.gtag('event', 'lead_submit_attempt', {
             route: '/quiz-rmd',
             variant: variant,
+            entry_variant: entryVariant,
             session_id: getSessionId(),
           });
         }
@@ -448,6 +468,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             quizAnswers: updatedAnswers,
             sessionId: getSessionId(),
             variant: variant,
+            entryVariant: entryVariant,
             route: '/quiz-rmd',
             utmParams: utmParams,
             trustedFormCertUrl: trustedFormCertUrl || null,
@@ -463,6 +484,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
               lead_id: result.lead_id,
               route: '/quiz-rmd',
               variant: variant,
+              entry_variant: entryVariant,
               session_id: getSessionId(),
             });
           }
@@ -492,6 +514,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             error_code: error.status || 'unknown',
             route: '/quiz-rmd',
             variant: variant,
+            entry_variant: entryVariant,
             session_id: getSessionId(),
           });
         }
@@ -525,6 +548,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           to_step: toStep,
           route: '/quiz-rmd',
           variant: variant,
+          entry_variant: entryVariant,
           session_id: getSessionId(),
         });
       }

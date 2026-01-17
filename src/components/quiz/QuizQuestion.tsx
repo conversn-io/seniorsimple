@@ -40,6 +40,7 @@ interface QuizQuestionProps {
   funnelType?: string; // For address tracking (primary vs final-expense)
   stepNumber?: number; // For address tracking
   sessionId?: string; // For address tracking
+  entryVariant?: 'start_button' | 'immediate_q1'; // For A/B test tap target sizing
 }
 
 interface ZipValidationResult {
@@ -55,7 +56,7 @@ interface ZipValidationResult {
   error?: string;
 }
 
-export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, funnelType = 'primary', stepNumber = 0, sessionId }: QuizQuestionProps) => {
+export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, funnelType = 'primary', stepNumber = 0, sessionId, entryVariant }: QuizQuestionProps) => {
   const [selectedAnswer, setSelectedAnswer] = useState<any>(currentAnswer || question.defaultValue);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(currentAnswer || []);
   const [sliderValue, setSliderValue] = useState(question.defaultValue as number || question.min || 0);
@@ -554,27 +555,49 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
   const renderQuestion = () => {
     switch (question.type) {
       case 'multiple-choice':
+        // Variant B (immediate_q1) uses aggressive tap targets on step 1
+        const isVariantBStep1 = entryVariant === 'immediate_q1' && stepNumber === 1;
+        const buttonMinHeight = isVariantBStep1 ? '72px' : '64px';
+        const buttonSpacing = isVariantBStep1 ? '16px' : '12px';
+        const buttonFontSize = isVariantBStep1 ? '17px' : '16px';
+        const buttonBorderRadius = isVariantBStep1 ? '14px' : '12px';
+        const buttonPadding = isVariantBStep1 ? '18px 20px' : '16px 20px';
+        
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ gap: buttonSpacing }}>
             {(question.options as string[])?.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleMultipleChoice(option)}
-                className={`quiz-button w-full p-6 text-left border-3 rounded-xl transition-all duration-200 transform active:scale-95 ${
+                className={`quiz-button w-full text-left border-3 transition-all duration-200 transform active:scale-95 ${
                   selectedAnswer === option
                     ? 'border-[#36596A] bg-white text-[#36596A] shadow-lg'
                     : 'border-gray-200 bg-white hover:border-[#36596A] hover:shadow-lg text-gray-700'
                 }`}
                 disabled={isLoading}
-                style={{ minHeight: '64px' }}
+                style={{ 
+                  minHeight: buttonMinHeight,
+                  padding: buttonPadding,
+                  borderRadius: buttonBorderRadius,
+                  fontSize: buttonFontSize,
+                  fontWeight: 600,
+                  marginBottom: index < (question.options as string[]).length - 1 ? buttonSpacing : 0
+                }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-lg leading-relaxed">{option}</span>
-                  {selectedAnswer === option && (
-                    <div className="w-6 h-6 bg-[#36596A] rounded-full flex items-center justify-center flex-shrink-0">
-                      <div className="w-3 h-3 bg-white rounded-full"></div>
-                    </div>
-                  )}
+                  <span className="font-semibold leading-relaxed" style={{ fontSize: buttonFontSize }}>{option}</span>
+                  <div className="flex items-center gap-3">
+                    {isVariantBStep1 && (
+                      <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                    {selectedAnswer === option && (
+                      <div className="w-6 h-6 bg-[#36596A] rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </button>
             ))}

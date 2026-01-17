@@ -225,6 +225,7 @@ export async function POST(request: NextRequest) {
       quizAnswers, 
       sessionId, 
       variant,
+      entryVariant,
       route,
       utmParams,
       trustedFormCertUrl
@@ -266,6 +267,7 @@ export async function POST(request: NextRequest) {
       source: 'SeniorSimple RMD Quiz',
       funnelType: 'rmd-quiz',
       variant: variant || 'rmd_v1',
+      entryVariant: entryVariant || 'immediate_q1',
       route: route || '/quiz-rmd',
       sessionId: sessionId || lead.session_id || '',
       ipAddress: ipAddress,
