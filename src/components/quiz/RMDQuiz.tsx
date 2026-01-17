@@ -204,27 +204,24 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
     // Track page view
     trackPageView('SeniorSimple RMD Quiz', '/quiz-rmd');
     
-      // Get entry variant for tracking
-      const assignedEntryVariant = getAssignedEntryVariant();
-      
-      // Track quiz view event
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'quiz_view', {
-          route: '/quiz-rmd',
-          variant: assignedVariant,
-          entry_variant: assignedEntryVariant,
-          session_id: newSessionId,
-          referrer: document.referrer || '',
-          utm_source: utmParams?.utm_source || '',
-          utm_medium: utmParams?.utm_medium || '',
-          utm_campaign: utmParams?.utm_campaign || '',
-        });
-      }
+    // Track quiz view event
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'quiz_view', {
+        route: '/quiz-rmd',
+        variant: assignedVariant,
+        entry_variant: assignedEntryVariant,
+        session_id: newSessionId,
+        referrer: document.referrer || '',
+        utm_source: utmParams?.utm_source || '',
+        utm_medium: utmParams?.utm_medium || '',
+        utm_campaign: utmParams?.utm_campaign || '',
+      });
+    }
 
-      // Track quiz start (only if entry variant is immediate_q1, start_button tracks on button click)
-      if (assignedEntryVariant === 'immediate_q1') {
-        trackQuizStart('rmd-quiz', newSessionId);
-      }
+    // Track quiz start (only if entry variant is immediate_q1, start_button tracks on button click)
+    if (assignedEntryVariant === 'immediate_q1') {
+      trackQuizStart('rmd-quiz', newSessionId);
+    }
     
     // Send CAPI ViewContent event
     sendCAPIViewContentEventMultiSite({
