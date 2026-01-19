@@ -329,6 +329,16 @@ export async function POST(request: NextRequest) {
     // Find or create contact
     console.log('👤 Upserting contact...');
     const contact = await upsertContact(email, firstName, lastName, phoneNumber);
+    
+    if (!contact || !contact.id) {
+      console.error('❌ Failed to create or retrieve contact:', { email, phoneNumber });
+      return createCorsResponse({ 
+        success: false,
+        error: 'Failed to create contact record',
+        timestamp: new Date().toISOString()
+      }, 500);
+    }
+    
     console.log('✅ Contact upserted:', contact.id);
 
     // Find or create lead (marked as verified since no OTP required)
