@@ -708,12 +708,28 @@ export async function POST(request: NextRequest) {
     console.error('❌ Form Submission Error:', {
       error: error.message,
       stack: error.stack,
+      name: error.name,
+      code: error.code,
+      details: error.details || error.hint || error.message,
       timestamp: new Date().toISOString()
     });
+
+    // Log specific error types for debugging
+    if (error.code) {
+      console.error('❌ Database Error Code:', error.code);
+    }
+    if (error.details) {
+      console.error('❌ Error Details:', error.details);
+    }
+    if (error.hint) {
+      console.error('❌ Error Hint:', error.hint);
+    }
 
     return createCorsResponse({ 
       success: false,
       error: error.message || 'Internal server error',
+      code: error.code || undefined,
+      details: process.env.NODE_ENV === 'development' ? error.details : undefined,
       timestamp: new Date().toISOString()
     }, 500);
   }
