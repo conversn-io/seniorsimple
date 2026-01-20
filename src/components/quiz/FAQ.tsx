@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const faqData = [
+const annuityFaqData = [
   {
     question: "What is an annuity?",
     answer: "An annuity is a financial product that provides guaranteed income payments, typically for retirement. It's designed to help protect against outliving your savings by providing a steady stream of income for life."
@@ -30,12 +30,48 @@ const faqData = [
   }
 ];
 
-export const FAQ = () => {
+const finalExpenseFaqData = [
+  {
+    question: "What is final expense insurance?",
+    answer: "Final expense insurance is a type of whole life insurance designed to cover funeral costs, medical bills, and other end-of-life expenses. It's typically easier to qualify for than traditional life insurance and provides peace of mind for your loved ones."
+  },
+  {
+    question: "How much coverage do I need?",
+    answer: "Coverage amounts typically range from $5,000 to $50,000, depending on your needs. Our specialist will help you determine the right amount based on your funeral preferences, outstanding debts, and what you want to leave for your family."
+  },
+  {
+    question: "Do I need a medical exam?",
+    answer: "Most final expense policies don't require a medical exam. You'll typically answer a few health questions over the phone, making it easier and faster to get coverage compared to traditional life insurance."
+  },
+  {
+    question: "How much does final expense insurance cost?",
+    answer: "Premiums vary based on your age, health, and coverage amount. Most policies are affordable, with monthly premiums typically ranging from $30 to $150. Our specialist will provide quotes from multiple carriers to help you find the best rate."
+  },
+  {
+    question: "How long does the consultation take?",
+    answer: "The initial consultation typically takes 15-30 minutes. This allows us to understand your needs and provide personalized quotes from multiple carriers. Follow-up calls may be scheduled if needed."
+  },
+  {
+    question: "Is there any obligation to purchase?",
+    answer: "Absolutely not. The consultation is completely free with no obligation to purchase anything. We're here to provide information and help you understand your options so you can make the best decision for your situation."
+  }
+];
+
+interface FAQProps {
+  funnelType?: string;
+}
+
+export const FAQ = ({ funnelType }: FAQProps = {} as FAQProps) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  // Determine which FAQ data to use based on funnel type
+  const isFinalExpense = funnelType === 'final-expense-quote' || 
+    (typeof window !== 'undefined' && window.location.pathname.includes('final-expense'));
+  const faqData = isFinalExpense ? finalExpenseFaqData : annuityFaqData;
 
   return (
     <section className="bg-white py-16">

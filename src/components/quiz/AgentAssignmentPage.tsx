@@ -121,11 +121,21 @@ export const AgentAssignmentPage = ({ answers, onRestart, funnelType }: AgentAss
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-emerald-600 rounded-full text-white flex items-center justify-center font-bold flex-shrink-0 mt-0.5">1</div>
-                    <p className="text-slate-600"><strong>Within 24 hours:</strong> Your specialist will call you to discuss your retirement goals</p>
+                    <p className="text-slate-600">
+                      <strong>Within 24 hours:</strong> {isFinalExpense 
+                        ? "Your specialist will call you to discuss your final expense insurance needs"
+                        : "Your specialist will call you to discuss your retirement goals"
+                      }
+                    </p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-emerald-600 rounded-full text-white flex items-center justify-center font-bold flex-shrink-0 mt-0.5">2</div>
-                    <p className="text-slate-600"><strong>Custom Analysis:</strong> Receive personalized annuity recommendations based on your quiz</p>
+                    <p className="text-slate-600">
+                      <strong>Custom Analysis:</strong> {isFinalExpense
+                        ? "Receive personalized final expense insurance quotes from multiple carriers based on your needs"
+                        : "Receive personalized annuity recommendations based on your quiz"
+                      }
+                    </p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-emerald-600 rounded-full text-white flex items-center justify-center font-bold flex-shrink-0 mt-0.5">3</div>
@@ -263,7 +273,7 @@ export const AgentAssignmentPage = ({ answers, onRestart, funnelType }: AgentAss
       </section>
 
       {/* FAQ Section */}
-      <FAQ />
+      <FAQ funnelType={detectedFunnelType} />
     </div>
   );
 };
