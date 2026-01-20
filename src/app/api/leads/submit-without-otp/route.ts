@@ -59,7 +59,6 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
     if (lastName && !existing.last_name) updateData.last_name = lastName;
     if (normalizedPhone && !existing.phone) {
       updateData.phone = normalizedPhone;
-      updateData.phone_e164 = normalizedPhone;
       updateData.phone_hash = phoneHash(normalizedPhone);
     }
     
@@ -85,7 +84,6 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
       first_name: firstName,
       last_name: lastName,
       phone: normalizedPhone,
-      phone_e164: normalizedPhone,
       phone_hash: normalizedPhone ? phoneHash(normalizedPhone) : null,
     })
     .select('*')
@@ -123,7 +121,7 @@ async function upsertLead(
   fallbackPhone?: string | null,
   fallbackFirstName?: string | null,
   fallbackLastName?: string | null,
-  trustedFormCertUrl?: string | null // TrustedForm certificate URL (stored as origin)
+  trustedFormCertUrl?: string | null // TrustedForm certificate URL (stored as trustedform_cert_url)
 ) {
   const verifiedAt = isVerified ? new Date().toISOString() : null;
   
@@ -178,7 +176,7 @@ async function upsertLead(
   // Get contact data for contact JSONB field
   const { data: contact, error: contactFetchError } = await callreadyQuizDb
     .from('contacts')
-    .select('email, phone_e164, first_name, last_name, zip_code')
+    .select('email, phone, first_name, last_name, zip_code')
     .eq('id', contactId)
     .maybeSingle();
   
@@ -203,7 +201,7 @@ async function upsertLead(
   // This prevents NULL contact fields if the DB query fails
   const contactData = contact ? {
     email: contact.email,
-    phone: contact.phone_e164 || null,
+    phone: contact.phone || null,
     first_name: contact.first_name,
     last_name: contact.last_name,
     zip_code: contact.zip_code || zipCode || null
@@ -251,7 +249,7 @@ async function upsertLead(
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    origin: trustedFormCertUrl || null, // Store as origin field in leads table
+    trustedform_cert_url: trustedFormCertUrl || null, // Store TrustedForm certificate URL
   };
   
   if (existingLead?.id) {
@@ -359,7 +357,7 @@ export async function POST(request: NextRequest) {
       phoneNumber, // fallbackPhone
       firstName, // fallbackFirstName
       lastName, // fallbackLastName
-      trustedFormCertUrl || null // TrustedForm certificate URL (stored as origin)
+      trustedFormCertUrl || null // TrustedForm certificate URL (stored as trustedform_cert_url)
     );
     console.log('✅ Lead upserted:', lead.id);
 

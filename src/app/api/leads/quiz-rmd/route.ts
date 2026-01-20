@@ -47,7 +47,6 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
     if (lastName && !existing.last_name) updateData.last_name = lastName;
     if (normalizedPhone && !existing.phone) {
       updateData.phone = normalizedPhone;
-      updateData.phone_e164 = normalizedPhone;
       updateData.phone_hash = phoneHash(normalizedPhone);
     }
     
@@ -72,7 +71,6 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
       first_name: firstName,
       last_name: lastName,
       phone: normalizedPhone,
-      phone_e164: normalizedPhone,
       phone_hash: normalizedPhone ? phoneHash(normalizedPhone) : null,
     })
     .select('*')
@@ -148,13 +146,13 @@ async function upsertLead(
   
   const { data: contact } = await callreadyQuizDb
     .from('contacts')
-    .select('email, phone_e164, first_name, last_name')
+    .select('email, phone, first_name, last_name')
     .eq('id', contactId)
     .maybeSingle();
   
   const contactData = contact ? {
     email: contact.email,
-    phone: contact.phone_e164 || null,
+    phone: contact.phone || null,
     first_name: contact.first_name,
     last_name: contact.last_name,
   } : {
@@ -184,7 +182,7 @@ async function upsertLead(
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    origin: trustedFormCertUrl || null,
+    trustedform_cert_url: trustedFormCertUrl || null,
   };
   
   if (existingLead?.id) {

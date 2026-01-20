@@ -179,7 +179,7 @@ async function upsertLead(
   // Get contact data for contact JSONB field
   const { data: contact, error: contactFetchError } = await callreadyQuizDb
     .from('contacts')
-    .select('email, phone_e164, first_name, last_name, zip_code')
+    .select('email, phone, first_name, last_name, zip_code')
     .eq('id', contactId)
     .maybeSingle();
   
@@ -204,7 +204,7 @@ async function upsertLead(
   // This prevents NULL contact fields if the DB query fails
   const contactData = contact ? {
     email: contact.email,
-    phone: contact.phone_e164 || null,
+    phone: contact.phone || null,
     first_name: contact.first_name,
     last_name: contact.last_name,
     zip_code: contact.zip_code || zipCode || null
