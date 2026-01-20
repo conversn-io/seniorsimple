@@ -273,6 +273,17 @@ async function sendPageViewToSupabase(
     
     // Get UTM parameters
     const utmParams = getUTMParams();
+    
+    // Get landing page variant and entry variant from sessionStorage
+    const landingPageVariant = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('landing_page_variant') || 
+        (pagePath?.includes('quiz-book-b') ? 'control' : 
+         pagePath?.includes('quiz-rmd-v1') ? 'rmd_v1' :
+         pagePath?.includes('quiz-rmd-v2') ? 'rmd_v2' : null)
+      : null;
+    const entryVariant = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('entryVariant') || null
+      : null;
 
     // Send to Supabase via API route (more reliable than direct client insert)
     const response = await fetch('/api/analytics/track-pageview', {
@@ -292,7 +303,10 @@ async function sendPageViewToSupabase(
           site_key: 'seniorsimple.org',
           path: pagePath, // Always include path
           search: typeof window !== 'undefined' ? window.location.search : null, // Always include search params
-          funnel_type: pagePath?.includes('final-expense') ? 'final-expense-quote' : 'primary', // Determine from path
+          funnel_type: pagePath?.includes('final-expense') ? 'final-expense-quote' : 
+                      pagePath?.includes('quiz-rmd') ? 'rmd-quiz' : 'primary', // Determine from path
+          landing_page_variant: landingPageVariant, // 'control' | 'rmd_v1' | 'rmd_v2' | null
+          entry_variant: entryVariant, // 'start_button' | 'immediate_q1' | null
           utm_parameters: utmParams,
           contact: {
             ga_client_id: gaClientId,
@@ -374,6 +388,17 @@ export function trackPageView(pageName: string, pagePath: string): void {
     return;
   }
   
+  // Get landing page variant and entry variant for tracking
+  const landingPageVariant = typeof window !== 'undefined' 
+    ? sessionStorage.getItem('landing_page_variant') || 
+      (pagePath?.includes('quiz-book-b') ? 'control' : 
+       pagePath?.includes('quiz-rmd-v1') ? 'rmd_v1' :
+       pagePath?.includes('quiz-rmd-v2') ? 'rmd_v2' : null)
+    : null;
+  const entryVariant = typeof window !== 'undefined' 
+    ? sessionStorage.getItem('entryVariant') || null
+    : null;
+  
   // Generate session ID if not exists
   const sessionId = typeof window !== 'undefined' 
     ? (sessionStorage.getItem('session_id') || `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
@@ -388,7 +413,10 @@ export function trackPageView(pageName: string, pagePath: string): void {
     trackGA4Event('page_view', {
       page_title: pageName,
       page_location: pagePath,
-      event_category: 'navigation'
+      page_path: pagePath,
+      event_category: 'navigation',
+      landing_page_variant: landingPageVariant || undefined,
+      entry_variant: entryVariant || undefined
     });
   }
   
@@ -432,6 +460,14 @@ export async function trackQuizStepViewed(params: {
     const utmParams = typeof window !== 'undefined' 
       ? JSON.parse(sessionStorage.getItem('utm_params') || '{}')
       : {};
+    
+    // Get landing page variant if available
+    const landingPageVariant = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('landing_page_variant') || null
+      : null;
+    const entryVariant = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('entryVariant') || null
+      : null;
 
     // Track to Supabase analytics_events
     await fetch('/api/analytics/track-event', {
@@ -444,6 +480,8 @@ export async function trackQuizStepViewed(params: {
           step_name: stepName,
           funnel_type: funnelType,
           previous_step: previousStep || null,
+          landing_page_variant: landingPageVariant,
+          entry_variant: entryVariant,
           time_on_previous_step: timeOnPreviousStep || null
         },
         session_id: sessionId,

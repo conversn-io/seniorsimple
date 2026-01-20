@@ -33,6 +33,10 @@ export interface Category {
 
 export interface ArticleWithCategory extends Article {
   category_details?: Category
+  phone_number?: string | null
+  domain?: {
+    phone_number?: string | null
+  }
 }
 
 // Get all published articles
@@ -70,7 +74,8 @@ export async function getArticle(slug: string): Promise<{ article: ArticleWithCa
       .from('articles')
       .select(`
         *,
-        category_details:article_categories!articles_category_id_fkey(name, slug, description)
+        category_details:article_categories!articles_category_id_fkey(name, slug, description),
+        domain:domains!articles_domain_id_fkey(phone_number)
       `)
       .eq('slug', slug)
       .eq('status', 'published')

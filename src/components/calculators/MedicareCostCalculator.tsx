@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calculator, Heart, DollarSign, MapPin, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
+import MedicareLeadForm from './MedicareLeadForm';
 
 interface MedicareResults {
   partAPremium: number;
@@ -387,6 +388,13 @@ export default function MedicareCostCalculator() {
               </ul>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Lead Generation Form - Appears after results */}
+      {results && (
+        <div className="mb-8">
+          <MedicareLeadForm calculatorResults={results} />
         </div>
       )}
 

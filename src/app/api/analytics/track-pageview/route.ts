@@ -51,7 +51,14 @@ export async function POST(request: NextRequest) {
           path: page_path || (page_url ? new URL(page_url).pathname : null), // Always include path
           search: page_url ? new URL(page_url).search : null, // Always include search params
           site_key: 'seniorsimple.org',
-          funnel_type: properties?.funnel_type || (page_url?.includes('final-expense') ? 'final-expense-quote' : 'primary')
+          funnel_type: properties?.funnel_type || (page_url?.includes('final-expense') ? 'final-expense-quote' : 
+                      page_url?.includes('quiz-rmd') ? 'rmd-quiz' : 'primary'),
+          // Landing page split test variant tracking
+          landing_page_variant: properties?.landing_page_variant || 
+            (page_url?.includes('quiz-book-b') ? 'control' : 
+             page_url?.includes('quiz-rmd-v1') ? 'rmd_v1' :
+             page_url?.includes('quiz-rmd-v2') ? 'rmd_v2' : null),
+          entry_variant: properties?.entry_variant || null
         }
       })
       .select()

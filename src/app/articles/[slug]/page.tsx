@@ -2,6 +2,9 @@ import { getArticle, getRelatedArticles } from '../../../lib/articles'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
+import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
+import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -32,6 +35,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     article.category_id, 
     3
   )
+
+  // Resolve phone number (article -> domain -> default)
+  const phoneNumber = 
+    article.phone_number || 
+    article.domain?.phone_number || 
+    process.env.NEXT_PUBLIC_DEFAULT_PHONE_NUMBER || 
+    null
+
+  // Check if this is a Medicare-related article (for calculator integration)
+  const isMedicareArticle = 
+    article.title?.toLowerCase().includes('medicare') ||
+    article.category_details?.name?.toLowerCase().includes('medicare') ||
+    article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
+    article.slug?.includes('medicare')
 
   // Generate structured data for SEO/AEO
   const structuredData = {
@@ -151,29 +168,70 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="max-w-4xl mx-auto px-6 pb-16">
           {article.html_body ? (
             // html_body already includes <div class="prose"> wrapper, so render it directly
-            <div 
-              className="text-gray-800 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: article.html_body }}
-              style={{
-                fontSize: '18px',
-                lineHeight: '1.8',
-              }}
-            />
-          ) : (
-            // Fallback to markdown content with prose wrapper
-            <div className="prose prose-lg max-w-none">
+            <>
               <div 
                 className="text-gray-800 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                dangerouslySetInnerHTML={{ __html: article.html_body }}
                 style={{
                   fontSize: '18px',
                   lineHeight: '1.8',
                 }}
               />
+              {/* Interstitial CTA Banner - appears mid-content */}
+              {phoneNumber && (
+                <InterstitialCTABanner
+                  phoneNumber={phoneNumber}
+                  serviceName={article.category_details?.name || 'Medicare Services'}
+                  headline={`Need Help with ${article.category_details?.name || 'Medicare'}?`}
+                  subheadline="Speak with a licensed Medicare advisor today"
+                  variant="friendly"
+                  dismissible={true}
+                />
+              )}
+            </>
+          ) : (
+            // Fallback to markdown content with prose wrapper
+            <>
+              <div className="prose prose-lg max-w-none">
+                <div 
+                  className="text-gray-800 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: article.content }}
+                  style={{
+                    fontSize: '18px',
+                    lineHeight: '1.8',
+                  }}
+                />
+              </div>
+              {/* Interstitial CTA Banner - appears mid-content */}
+              {phoneNumber && (
+                <InterstitialCTABanner
+                  phoneNumber={phoneNumber}
+                  serviceName={article.category_details?.name || 'Medicare Services'}
+                  headline={`Need Help with ${article.category_details?.name || 'Medicare'}?`}
+                  subheadline="Speak with a licensed Medicare advisor today"
+                  variant="friendly"
+                  dismissible={true}
+                />
+              )}
+            </>
+          )}
+
+          {/* Medicare Calculator - Show for Medicare-related articles */}
+          {isMedicareArticle && (
+            <div className="mt-12 mb-8">
+              <MedicareCostCalculator />
             </div>
           )}
         </div>
       </section>
+
+      {/* Scroll-Revealed Call Button */}
+      {phoneNumber && (
+        <ScrollRevealedCallButton
+          phoneNumber={phoneNumber}
+          serviceName={article.category_details?.name || 'Medicare Services'}
+        />
+      )}
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
