@@ -4,8 +4,8 @@ import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
 import { formatPhoneForGHL, formatE164 } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
 
-// Medicare GHL Webhook URL
-const MEDICARE_GHL_WEBHOOK_URL = process.env.medicare_GHL_webhook || 
+// Medicare GHL Webhook URL - Use same webhook as other SeniorSimple funnels
+const MEDICARE_GHL_WEBHOOK_URL = process.env.NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE || 
   process.env.annuity_GHL_webhook || 
   "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
 
@@ -131,7 +131,7 @@ async function upsertLead(
   const leadData: any = {
     contact_id: contactId,
     session_id: finalSessionId,
-    funnel_type: 'medicare_calculator',
+    funnel_type: 'Medicare',
     status: 'new',
     is_verified: true, // No OTP required for calculator leads
     quiz_answers: {
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
       source: source || 'medicare_calculator',
       landingPage: landingPage || '',
       calculatorResults: calculatorResults || {},
-      funnelType: 'medicare_calculator',
+      funnelType: 'Medicare',
       leadId: lead.id,
       sessionId: lead.session_id,
       ...utmParams

@@ -28,8 +28,8 @@ Add to your `.env.local` file:
 # Default phone number (fallback if article/domain doesn't have one)
 NEXT_PUBLIC_DEFAULT_PHONE_NUMBER=+1XXXXXXXXXX
 
-# Medicare GHL Webhook URL (optional, falls back to annuity webhook)
-medicare_GHL_webhook=https://services.leadconnectorhq.com/hooks/...
+# GHL Webhook URL (shared across all SeniorSimple funnels)
+NEXT_PUBLIC_GHL_WEBHOOK_SENIORSIMPLE=https://services.leadconnectorhq.com/hooks/...
 ```
 
 ### 3. Verify Database Schema
