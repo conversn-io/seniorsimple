@@ -17,6 +17,15 @@ export const metadata: Metadata = {
 export default function MedicareCostCalculatorPage() {
   // Resolve phone number from environment variable
   const phoneNumber = process.env.NEXT_PUBLIC_DEFAULT_PHONE_NUMBER || null;
+  
+  // Debug: Log phone number resolution (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Medicare Calculator Page] Phone number resolved:', {
+      hasPhoneNumber: !!phoneNumber,
+      phoneNumber: phoneNumber ? `${phoneNumber.substring(0, 4)}...` : 'null',
+      envVar: process.env.NEXT_PUBLIC_DEFAULT_PHONE_NUMBER ? 'set' : 'not set'
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
