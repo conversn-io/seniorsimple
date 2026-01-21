@@ -8,7 +8,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createSplitTestMiddleware } from '../../../../shared-utils/ab-test-middleware';
+import { createSplitTestMiddleware } from './utils/ab-test-middleware';
+
+// Explicitly set Edge Runtime for Next.js 15
+export const runtime = 'edge';
 
 // Create middleware with SeniorSimple-specific configuration
 const sharedMiddleware = createSplitTestMiddleware({
@@ -33,10 +36,16 @@ const sharedMiddleware = createSplitTestMiddleware({
 
 // Export middleware with proper Next.js types
 export const middleware = async (request: NextRequest) => {
+  // Debug logging
+  console.log('[Middleware] Request pathname:', request.nextUrl.pathname);
+  console.log('[Middleware] Request URL:', request.url);
+  
   const result = await sharedMiddleware(request);
+  console.log('[Middleware] Result:', result);
   
   // If no result, pass through
   if (!result) {
+    console.log('[Middleware] No result, passing through');
     return NextResponse.next();
   }
   
@@ -71,8 +80,5 @@ export const middleware = async (request: NextRequest) => {
 
 // Configure which routes the middleware should run on
 export const config = {
-  matcher: [
-    '/quiz',
-    // Add other entry paths if needed
-  ]
+  matcher: '/quiz'
 };
