@@ -59,3 +59,14 @@ export function TrustedFormInput() {
   )
 }
 
+/**
+ * Get TrustedForm Certificate URL from the hidden input field
+ * Uses querySelector to find the input by name attribute (more reliable than getElementById)
+ * This matches the RateRoots implementation pattern.
+ */
+export function getTrustedFormCertUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const certUrlField = document.querySelector('input[name="xxTrustedFormCertUrl"]') as HTMLInputElement;
+  return certUrlField?.value || null;
+}
+

@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
-import { formatPhoneForGHL, formatE164 } from '@/utils/phone-utils';
+import { formatPhoneForGHL, formatE164, extractUSPhoneNumber } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
+import { sendLeadEvent, getMetaPixelIdForFunnel } from '@/lib/meta-capi-service';
 
 // Webhook URLs by funnel type
 const ANNUITY_GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
 const FINAL_EXPENSE_GHL_WEBHOOK_URL = process.env.final_expense_GHL_webhook || process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
+const REVERSE_MORTGAGE_GHL_WEBHOOK_URL = process.env.reverse_mortgage_GHL_webhook || "https://services.leadconnectorhq.com/hooks/rqTRxGq1yRvvDT6axp0M/webhook-trigger/Lt2rfsXak8KkqufbSHcE";
 
 // Helper function to get webhook URL based on funnel type
 function getGHLWebhookUrl(funnelType: string | null | undefined): string {
   if (funnelType === 'final-expense-quote') {
     return FINAL_EXPENSE_GHL_WEBHOOK_URL;
+  }
+  if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
+    return REVERSE_MORTGAGE_GHL_WEBHOOK_URL;
   }
   return ANNUITY_GHL_WEBHOOK_URL;
 }
@@ -121,7 +126,8 @@ async function upsertLead(
   fallbackPhone?: string | null,
   fallbackFirstName?: string | null,
   fallbackLastName?: string | null,
-  trustedFormCertUrl?: string | null // TrustedForm certificate URL (stored as trustedform_cert_url)
+  trustedFormCertUrl?: string | null, // TrustedForm certificate URL (stored as trustedform_cert_url)
+  jornayaId?: string | null // Journaya Lead ID (stored in quiz_answers)
 ) {
   const verifiedAt = isVerified ? new Date().toISOString() : null;
   
@@ -245,6 +251,7 @@ async function upsertLead(
       licensing_info: licensingInfo,
       utm_parameters: utmParams || {},
       trusted_form_cert_url: trustedFormCertUrl || null, // Store in quiz_answers
+      jornayaLeadId: jornayaId || null, // Store Journaya Lead ID in quiz_answers (not as leadId)
     },
     utm_source: utmSource,
     utm_medium: utmMedium,
@@ -308,8 +315,22 @@ export async function POST(request: NextRequest) {
       licensingInfo,
       calculatedResults,
       utmParams,
-      trustedFormCertUrl // TrustedForm certificate URL
+      trustedFormCertUrl, // TrustedForm certificate URL
+      jornayaLeadId, // Journaya Lead ID
+      jornayaLeadID // Alternative field name for Journaya
     } = body;
+    
+    // Extract Journaya ID from body or quizAnswers
+    const jornayaId = jornayaLeadId || jornayaLeadID || quizAnswers?.jornayaLeadId || quizAnswers?.jornaya_lead_id || quizAnswers?.jornaya_leadid || null;
+    
+    // Extract TrustedForm Cert URL from body or quizAnswers (with fallback)
+    const finalTrustedFormCertUrl = trustedFormCertUrl || quizAnswers?.trustedFormCertUrl || quizAnswers?.trusted_form_cert_url || quizAnswers?.xxTrustedFormCertUrl || '';
+    console.log('[DEBUG] 🔵 Backend received request body values', { 
+      trustedFormCertUrl: trustedFormCertUrl || 'NULL', 
+      jornayaLeadId: jornayaId || 'NULL', 
+      finalTrustedFormCertUrl: finalTrustedFormCertUrl || 'EMPTY', 
+      funnelType 
+    })
 
     console.log('📊 Extracted Data:', {
       phoneNumber,
@@ -324,12 +345,16 @@ export async function POST(request: NextRequest) {
       return createCorsResponse({ error: 'Email and phone number are required' }, 400);
     }
 
+    // Normalize phone number: strip leading 1 if present (handles autocomplete edge cases)
+    const normalizedPhoneNumber = extractUSPhoneNumber(phoneNumber);
+    console.log('📞 Phone normalization:', { original: phoneNumber, normalized: normalizedPhoneNumber });
+
     // Find or create contact
     console.log('👤 Upserting contact...');
-    const contact = await upsertContact(email, firstName, lastName, phoneNumber);
+    const contact = await upsertContact(email, firstName, lastName, normalizedPhoneNumber);
     
     if (!contact || !contact.id) {
-      console.error('❌ Failed to create or retrieve contact:', { email, phoneNumber });
+      console.error('❌ Failed to create or retrieve contact:', { email, phoneNumber: normalizedPhoneNumber });
       return createCorsResponse({ 
         success: false,
         error: 'Failed to create contact record',
@@ -354,33 +379,31 @@ export async function POST(request: NextRequest) {
       utmParams,
       true, // is_verified = true (no OTP required)
       email, // fallbackEmail
-      phoneNumber, // fallbackPhone
+      normalizedPhoneNumber, // fallbackPhone (normalized)
       firstName, // fallbackFirstName
       lastName, // fallbackLastName
-      trustedFormCertUrl || null // TrustedForm certificate URL (stored as trustedform_cert_url)
+      finalTrustedFormCertUrl || null, // TrustedForm certificate URL (stored as trustedform_cert_url)
+      jornayaId || null // Journaya Lead ID (stored in quiz_answers)
     );
     console.log('✅ Lead upserted:', lead.id);
 
-    // Prepare GHL webhook payload
-    const formattedPhone = formatPhoneForGHL(phoneNumber);
+    // Prepare GHL webhook payload - use normalized phone number
+    const formattedPhone = formatPhoneForGHL(normalizedPhoneNumber);
     
-    // Extract phone last 4 digits
-    const phoneLast4 = phoneNumber ? phoneNumber.slice(-4) : '';
-    
-    // Extract IP address from request headers
-    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0] || 
-                     request.headers.get('x-real-ip') || 
-                     null;
+    // Extract phone last 4 digits from normalized number
+    const phoneLast4 = normalizedPhoneNumber ? normalizedPhoneNumber.slice(-4) : '';
     
     // Extract address info from quizAnswers, addressInfo parameter, or locationInfo
     // For CRO-optimized funnel: ZIP only (no full address)
+    // For reverse mortgage: full address is available
     const addressData = quizAnswers?.addressInfo || quizAnswers?.locationInfo || {};
     const streetNumber = addressData.streetNumber || '';
     const address = addressData.street || addressData.fullAddress || '';
     const city = addressData.city || '';
     const addressState = addressData.stateAbbr || addressData.state || state || '';
     // For CRO-optimized: use zipCode directly if available (from zip-only field)
-    const addressZip = quizAnswers?.zipCode || addressData.zipCode || zipCode || '';
+    // For reverse mortgage: use zipCode from addressInfo
+    const addressZip = addressData.zipCode || quizAnswers?.zipCode || zipCode || '';
     
     // Extract coverage_amount - handle both annuity and final expense quizzes
     const retirementSavings = quizAnswers?.retirementSavings || 0;
@@ -436,6 +459,208 @@ export async function POST(request: NextRequest) {
     // Extract beneficiary relationship (new CRO-optimized field)
     const beneficiaryRelationship = quizData.beneficiaryRelationship || '';
     
+    // For reverse mortgage: Wait for trustedFormCertUrl and jornayaLeadId from Supabase
+    // These values may be populated asynchronously, so we need to poll until they're available
+    // Use null/undefined check instead of empty string to ensure proper falsy detection
+    let savedTrustedFormCertUrl = lead.trustedform_cert_url || 
+                                  lead.quiz_answers?.trusted_form_cert_url || 
+                                  lead.quiz_answers?.trustedFormCertUrl ||
+                                  finalTrustedFormCertUrl || 
+                                  null; // Use null instead of empty string
+    
+    let savedJornayaLeadId = jornayaId || 
+                             lead.quiz_answers?.jornayaLeadId || 
+                             lead.quiz_answers?.jornaya_lead_id || 
+                             lead.quiz_answers?.jornaya_leadid || 
+                             null;
+    
+    // Normalize empty strings to null for consistent checking
+    if (savedTrustedFormCertUrl === '') savedTrustedFormCertUrl = null;
+    if (savedJornayaLeadId === '') savedJornayaLeadId = null;
+    
+    // For reverse mortgage, wait and poll for required fields
+    console.log('[DEBUG] 🔵 Checking funnel type for polling', { 
+      funnelType, 
+      isReverseMortgage: funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator',
+      savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
+      savedJornayaLeadId: savedJornayaLeadId || 'NULL'
+    })
+    
+    if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
+      const MAX_RETRIES = 10; // Maximum number of retries
+      const RETRY_DELAY_MS = 500; // Wait 500ms between retries
+      let retryCount = 0;
+      const backendPollStartTime = Date.now();
+      
+      console.log('[DEBUG] 🔵 Backend polling check started - ENTERING POLLING BLOCK', { 
+        funnelType, 
+        isReverseMortgage: true, 
+        savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
+        savedJornayaLeadId: savedJornayaLeadId || 'NULL', 
+        leadId: lead.id,
+        willPoll: !savedTrustedFormCertUrl || !savedJornayaLeadId
+      })
+      
+      console.log('🔵 APLINE WEBHOOK - Checking for required fields:', {
+        trustedFormCertUrl: savedTrustedFormCertUrl || 'MISSING',
+        jornayaLeadId: savedJornayaLeadId || 'MISSING',
+        leadId: lead.id
+      });
+      
+      // Poll until both values are available or max retries reached
+      while ((!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES) {
+        retryCount++;
+        const iterationStartTime = Date.now();
+        
+        console.log('[DEBUG] 🔵 Backend polling iteration start', { 
+          retryCount, 
+          MAX_RETRIES, 
+          hasTrustedForm: !!savedTrustedFormCertUrl, 
+          hasJornaya: !!savedJornayaLeadId, 
+          conditionResult: (!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES,
+          trustedFormValue: savedTrustedFormCertUrl || 'EMPTY',
+          jornayaValue: savedJornayaLeadId || 'NULL'
+        })
+        
+        console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount}/${MAX_RETRIES} - Waiting for required fields...`);
+        
+        // Wait before retrying
+        const waitStartTime = Date.now();
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        const waitEndTime = Date.now();
+        console.log('[DEBUG] 🔵 Backend wait completed', { 
+          retryCount, 
+          waitDuration: waitEndTime - waitStartTime, 
+          expectedDelay: RETRY_DELAY_MS 
+        })
+        
+        // Fetch latest lead data from Supabase
+        try {
+          const dbFetchStartTime = Date.now();
+          const { data: updatedLead, error: fetchError } = await callreadyQuizDb
+            .from('leads')
+            .select('trustedform_cert_url, quiz_answers')
+            .eq('id', lead.id)
+            .single();
+          const dbFetchEndTime = Date.now();
+          
+          console.log('[DEBUG] 🔵 Database fetch result', { 
+            retryCount, 
+            hasError: !!fetchError, 
+            hasData: !!updatedLead, 
+            dbFetchDuration: dbFetchEndTime - dbFetchStartTime, 
+            trustedform_cert_url: updatedLead?.trustedform_cert_url || 'NULL', 
+            quiz_answers_trusted_form: updatedLead?.quiz_answers?.trusted_form_cert_url || 'NULL', 
+            quiz_answers_jornaya: updatedLead?.quiz_answers?.jornayaLeadId || 'NULL' 
+          })
+          
+          if (!fetchError && updatedLead) {
+            // Update values from fresh database fetch
+            const oldTrustedForm = savedTrustedFormCertUrl;
+            const oldJornaya = savedJornayaLeadId;
+            
+            savedTrustedFormCertUrl = updatedLead.trustedform_cert_url || 
+                                     updatedLead.quiz_answers?.trusted_form_cert_url || 
+                                     updatedLead.quiz_answers?.trustedFormCertUrl ||
+                                     savedTrustedFormCertUrl || 
+                                     null; // Use null instead of empty string
+            
+            savedJornayaLeadId = updatedLead.quiz_answers?.jornayaLeadId || 
+                                updatedLead.quiz_answers?.jornaya_lead_id || 
+                                updatedLead.quiz_answers?.jornaya_leadid || 
+                                savedJornayaLeadId || 
+                                null;
+            
+            // Normalize empty strings to null
+            if (savedTrustedFormCertUrl === '') savedTrustedFormCertUrl = null;
+            if (savedJornayaLeadId === '') savedJornayaLeadId = null;
+            
+            console.log('[DEBUG] 🔵 Values updated from DB', { 
+              retryCount, 
+              oldTrustedForm: oldTrustedForm || 'EMPTY', 
+              newTrustedForm: savedTrustedFormCertUrl || 'EMPTY', 
+              oldJornaya: oldJornaya || 'NULL', 
+              newJornaya: savedJornayaLeadId || 'NULL', 
+              changed: oldTrustedForm !== savedTrustedFormCertUrl || oldJornaya !== savedJornayaLeadId 
+            })
+            
+            console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount} result:`, {
+              trustedFormCertUrl: savedTrustedFormCertUrl || 'STILL MISSING',
+              jornayaLeadId: savedJornayaLeadId || 'STILL MISSING'
+            });
+          }
+        } catch (pollError) {
+          console.log('[DEBUG] 🔵 Database fetch error', { 
+            retryCount, 
+            error: String(pollError) 
+          })
+          console.warn(`🔵 APLINE WEBHOOK - Error polling lead data (retry ${retryCount}):`, pollError);
+        }
+        
+        const iterationEndTime = Date.now();
+        console.log('[DEBUG] 🔵 Backend polling iteration end', { 
+          retryCount, 
+          iterationDuration: iterationEndTime - iterationStartTime, 
+          hasTrustedForm: !!savedTrustedFormCertUrl, 
+          hasJornaya: !!savedJornayaLeadId, 
+          willContinue: (!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES 
+        })
+      }
+      
+      const backendPollEndTime = Date.now();
+      const totalBackendPollTime = backendPollEndTime - backendPollStartTime;
+      console.log('[DEBUG] 🔵 Backend polling completed', { 
+        retryCount, 
+        MAX_RETRIES, 
+        totalBackendPollTime, 
+        savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
+        savedJornayaLeadId: savedJornayaLeadId || 'NULL', 
+        bothPresent: !!savedTrustedFormCertUrl && !!savedJornayaLeadId 
+      })
+      
+      // Final check - if still missing, log error and don't send
+      // Check for both null/undefined AND empty string
+      const hasTrustedForm = savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '';
+      const hasJornaya = savedJornayaLeadId && savedJornayaLeadId !== '';
+      
+      if (!hasTrustedForm || !hasJornaya) {
+        console.error('🔵 APLINE WEBHOOK - CRITICAL: Required fields missing after retries:', {
+          trustedFormCertUrl: savedTrustedFormCertUrl || 'MISSING',
+          jornayaLeadId: savedJornayaLeadId || 'MISSING',
+          leadId: lead.id,
+          retries: retryCount,
+          hasTrustedForm,
+          hasJornaya
+        });
+        
+        // Return success but indicate webhook was not sent
+        return createCorsResponse({
+          success: true,
+          leadId: lead.id,
+          warning: 'Lead saved but APLINE webhook not sent - missing required fields (trustedFormCertUrl or jornayaLeadId)',
+          missingFields: {
+            trustedFormCertUrl: !hasTrustedForm,
+            jornayaLeadId: !hasJornaya
+          },
+          leadSaved: true
+        }, 200);
+      }
+      
+      console.log('🔵 APLINE WEBHOOK - Required fields confirmed:', {
+        trustedFormCertUrl: savedTrustedFormCertUrl ? 'PRESENT' : 'MISSING',
+        jornayaLeadId: savedJornayaLeadId ? 'PRESENT' : 'MISSING',
+        retries: retryCount
+      });
+    } else {
+      // For non-reverse-mortgage funnels, use original logic
+      console.log('🔍 TrustedForm Cert URL Check:', {
+        fromRequest: finalTrustedFormCertUrl || 'NOT IN REQUEST',
+        fromSavedLead: lead.trustedform_cert_url || 'NOT IN LEAD',
+        fromQuizAnswers: lead.quiz_answers?.trusted_form_cert_url || 'NOT IN QUIZ_ANSWERS',
+        finalValue: savedTrustedFormCertUrl || 'EMPTY'
+      });
+    }
+    
     // Extract Date of Birth (format: { month, day, year, dateString, iso })
     // Note: DOB not collected in CRO-optimized funnel, but keeping for backward compatibility
     const dateOfBirth = quizData.dateOfBirth;
@@ -465,6 +690,11 @@ export async function POST(request: NextRequest) {
     const addressInfo = quizData.addressInfo || {};
     const country = addressInfo.country || addressInfo.countryCode || 'US';
     
+    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      null;
+    const userAgent = request.headers.get('user-agent') || null;
+
     // Build flat payload structure (no nested objects)
     const ghlPayload: Record<string, any> = {
       // Contact Information
@@ -476,17 +706,22 @@ export async function POST(request: NextRequest) {
       
       // Address Information
       // For CRO-optimized: ZIP only, no full address
-      address: streetNumber ? `${streetNumber} ${address}`.trim() : (address || ''), // May be empty for ZIP-only
+      // For reverse mortgage: full address is available
+      address: streetNumber ? `${streetNumber} ${address}`.trim() : (address || addressData.fullAddress || ''), // Full address for reverse mortgage
       city: city || '', // May be empty for ZIP-only
       state: addressState || '', // May be empty for ZIP-only
       stateName: addressData.state || stateName || lead.state_name || '',
       zipCode: addressZip,
       country: country, // US or CA for Canada
+      // Full address string for reverse mortgage
+      fullAddress: addressData.fullAddress || (address && city && addressState && addressZip ? `${address}, ${city}, ${addressState} ${addressZip}` : ''),
       
       // System Fields
       ipAddress: ipAddress,
       source: funnelType === 'final-expense-quote' 
         ? 'SeniorSimple Final Expense Quiz' 
+        : funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator'
+        ? 'SeniorSimple Reverse Mortgage Calculator'
         : 'SeniorSimple Quiz',
       funnelType: funnelType || lead.funnel_type || 'insurance',
       originallyCreated: originallyCreated,
@@ -503,8 +738,56 @@ export async function POST(request: NextRequest) {
       if (dobYear) ghlPayload.dobYear = dobYear;
     }
     
+    // Add reverse mortgage specific fields
+    if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
+      // Buyer-specific field names (matching their expected format)
+      ghlPayload.first_name = firstName || contact.first_name || '';
+      ghlPayload.last_name = lastName || contact.last_name || '';
+      ghlPayload.full_name = `${ghlPayload.first_name} ${ghlPayload.last_name}`.trim();
+      ghlPayload.tags = 'reverse-mortgage';
+      ghlPayload.address1 = streetNumber ? `${streetNumber} ${address}`.trim() : (address || '');
+      ghlPayload.postal_code = addressZip || '';
+      ghlPayload.lead_id = lead.id || '';
+      
+      // Age 62+ status: "62" if true, empty string if false/unknown
+      const is62Plus = quizData.is62Plus;
+      ghlPayload.age_62 = is62Plus === true ? '62' : '';
+      ghlPayload.age62Plus = is62Plus === true ? 'Yes' : 'No';
+      
+      // Status: "DQ" if under 62, otherwise "qualified" or "active"
+      ghlPayload.status = is62Plus === false ? 'DQ' : 'qualified';
+      
+      // Homeowner status
+      ghlPayload.isHomeowner = quizData.isHomeowner ? 'Yes' : 'No';
+      
+      // Reason for reverse mortgage
+      if (quizData.reason) {
+        ghlPayload.reason = quizData.reason;
+      }
+      
+      // Age and age range
+      if (quizData.age) {
+        ghlPayload.age = quizData.age;
+      }
+      if (quizData.ageRange) {
+        ghlPayload.ageRange = quizData.ageRange;
+      }
+      
+      // Property data if available
+      if (quizData.propertyData) {
+        ghlPayload.propertyValue = quizData.propertyData.property_value || 0;
+        ghlPayload.mortgageBalance = quizData.propertyData.mortgage_balance || 0;
+        ghlPayload.equityAvailable = quizData.propertyData.equity_available || 0;
+      }
+      
+      // Calculation results if available
+      if (quizData.calculation) {
+        ghlPayload.estimatedNetProceeds = quizData.calculation.netProceeds || 0;
+        ghlPayload.estimatedGrossProceeds = quizData.calculation.grossProceeds || 0;
+      }
+    }
     // Add final expense specific fields if this is a final expense quote
-    if (funnelType === 'final-expense-quote') {
+    else if (funnelType === 'final-expense-quote') {
       ghlPayload.coverageAmount = coverageAmount;
       ghlPayload.ageRange = ageRange;
       ghlPayload.tobaccoUse = tobaccoUse;
@@ -556,18 +839,109 @@ export async function POST(request: NextRequest) {
     if (utmTerm) ghlPayload.utmTerm = utmTerm;
     if (utmContent) ghlPayload.utmContent = utmContent;
     
+    // Add TrustedForm and Journaya IDs (flat structure)
+    // Use saved value from database (after Supabase save) - always include for reverse mortgage
+    if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
+      // For reverse mortgage, we've already confirmed these values exist via polling
+      // Only include if they're not null/undefined/empty
+      if (savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '') {
+        ghlPayload.trustedFormCertUrl = savedTrustedFormCertUrl;
+        ghlPayload.trusted_form_cert_url = savedTrustedFormCertUrl;
+        ghlPayload.trusted_form = savedTrustedFormCertUrl;
+      }
+      
+      // Add jornayaLeadId (confirmed via polling)
+      if (savedJornayaLeadId && savedJornayaLeadId !== '') {
+        ghlPayload.jornayaLeadId = savedJornayaLeadId;
+        ghlPayload.jornaya_lead_id = savedJornayaLeadId;
+        ghlPayload.jornaya_leadid = savedJornayaLeadId;
+      }
+    } else {
+      // For other funnels, use original logic
+      if (savedTrustedFormCertUrl) {
+        ghlPayload.trustedFormCertUrl = savedTrustedFormCertUrl;
+        ghlPayload.trusted_form_cert_url = savedTrustedFormCertUrl;
+      }
+      if (jornayaId) {
+        ghlPayload.jornayaLeadId = jornayaId;
+        ghlPayload.jornaya_lead_id = jornayaId;
+        ghlPayload.jornaya_leadid = jornayaId;
+      }
+    }
+    
     // Add additional context if available
     if (landingPage) ghlPayload.landingPage = landingPage;
     if (referrer) ghlPayload.referrer = referrer;
 
-    console.log('📤 Sending to GHL Webhook:', {
+    // Log with APLINE WEBHOOK label for reverse mortgage
+    const webhookLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+      ? '🔵 APLINE WEBHOOK' 
+      : '📤 GHL Webhook';
+    
+    console.log(`${webhookLabel} - Sending to webhook:`, {
       url: ghlWebhookUrl,
       funnelType: funnelType,
+      trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED',
       payload: ghlPayload
     });
 
+    // Fire Meta CAPI Lead event (after Supabase save, before GHL webhook)
+    try {
+      // Get funnel-specific pixel ID
+      const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
+      
+      const capiResult = await sendLeadEvent({
+        leadId: lead.id,
+        email: email,
+        phone: phoneNumber,
+        firstName: firstName,
+        lastName: lastName,
+        fbp: body.metaCookies?.fbp,
+        fbc: body.metaCookies?.fbc,
+        fbLoginId: body.metaCookies?.fbLoginId,
+        ipAddress: ipAddress,
+        userAgent: userAgent,
+        value: coverageAmount || 0,
+        currency: 'USD',
+        customData: {
+          quiz_type: funnelType,
+          state: state || addressState || '',
+          zip_code: zipCode || addressZip || '',
+          coverage_amount: coverageAmount,
+          retirement_savings: retirementSavings,
+          allocation_percent: allocationPercent,
+        },
+        options: {
+          pixelId: funnelPixelId, // Use funnel-specific pixel ID
+        },
+      });
+      
+      if (!capiResult.success) {
+        console.error('[Meta CAPI] Lead event failed:', capiResult.error);
+        // Don't fail the request - just log
+      } else {
+        console.log('[Meta CAPI] Lead event sent:', capiResult.eventId);
+      }
+    } catch (capiError) {
+      console.error('[Meta CAPI] Error:', capiError);
+      // Don't fail the request - CAPI is non-critical
+    }
+
     // Send to GHL webhook with timeout
-    console.log('🚀 Making GHL webhook request...');
+    const webhookRequestLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+      ? '🔵 APLINE WEBHOOK - Making request...' 
+      : '🚀 Making GHL webhook request...';
+    
+    console.log('[DEBUG] 🔵 About to send webhook - FINAL VALUES CHECK', {
+      funnelType,
+      webhookRequestLabel,
+      trustedFormCertUrl: ghlPayload.trustedFormCertUrl || ghlPayload.trusted_form || 'MISSING',
+      jornayaLeadId: ghlPayload.jornayaLeadId || ghlPayload.jornaya_lead_id || 'MISSING',
+      savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY',
+      savedJornayaLeadId: savedJornayaLeadId || 'NULL'
+    })
+    
+    console.log(webhookRequestLabel);
     const WEBHOOK_TIMEOUT = 10000; // 10 seconds
     
     let ghlResponse: Response;
@@ -587,10 +961,14 @@ export async function POST(request: NextRequest) {
       clearTimeout(timeoutId);
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.error('❌ GHL Webhook Timeout:', {
+        const timeoutLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+          ? '🔵 APLINE WEBHOOK - Timeout' 
+          : '❌ GHL Webhook Timeout';
+        console.error(`${timeoutLabel}:`, {
           url: ghlWebhookUrl,
           funnelType: funnelType,
-          timeout: WEBHOOK_TIMEOUT
+          timeout: WEBHOOK_TIMEOUT,
+          trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED'
         });
         return createCorsResponse({ 
           success: true, 
@@ -602,8 +980,11 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    console.log('📡 GHL Response Status:', ghlResponse.status);
-    console.log('📡 GHL Response Headers:', Object.fromEntries(ghlResponse.headers.entries()));
+    const responseLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+      ? '🔵 APLINE WEBHOOK - Response' 
+      : '📡 GHL Response';
+    console.log(`${responseLabel} Status:`, ghlResponse.status);
+    console.log(`${responseLabel} Headers:`, Object.fromEntries(ghlResponse.headers.entries()));
 
     let ghlResponseData: any = {};
     try {
@@ -618,7 +999,7 @@ export async function POST(request: NextRequest) {
     } catch (parseError) {
       console.warn('⚠️ Could not parse GHL response:', parseError);
     }
-    console.log('📡 GHL Response Body:', ghlResponseData);
+    console.log(`${responseLabel} Body:`, ghlResponseData);
 
     // Log webhook attempt to analytics_events
     try {
@@ -644,7 +1025,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (ghlResponse.ok) {
-      console.log('✅ Lead Sent to GHL Successfully:', { leadId: lead.id, status: ghlResponse.status });
+      const successLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+        ? '🔵 APLINE WEBHOOK - Lead Sent Successfully' 
+        : '✅ Lead Sent to GHL Successfully';
+      console.log(`${successLabel}:`, { leadId: lead.id, status: ghlResponse.status, trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED' });
       
       // Update lead with GHL status
       await callreadyQuizDb
@@ -666,7 +1050,10 @@ export async function POST(request: NextRequest) {
         message: 'Lead submitted and sent to GHL successfully (no OTP required)'
       }, 200);
     } else {
-      console.error('❌ GHL Webhook Failed:', { 
+      const errorLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
+        ? '🔵 APLINE WEBHOOK - Failed' 
+        : '❌ GHL Webhook Failed';
+      console.error(`${errorLabel}:`, { 
         status: ghlResponse.status,
         statusText: ghlResponse.statusText,
         response: ghlResponseData,
