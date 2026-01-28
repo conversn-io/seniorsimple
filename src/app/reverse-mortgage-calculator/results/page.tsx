@@ -289,6 +289,9 @@ export default function ReverseMortgageResultsPage() {
   // Success - show equity estimate
   const estimatedLow = calculation ? Math.floor(calculation.netProceeds * 0.85) : 0
   const estimatedHigh = calculation?.netProceeds || 0
+  
+  // Check if mortgage exceeds available proceeds (underwater for RM purposes)
+  const isUnderwaterForRM = calculation && calculation.existingMortgage > calculation.grossProceeds
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
@@ -300,28 +303,58 @@ export default function ReverseMortgageResultsPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-serif font-semibold text-[#36596A]">
-                Great News, {results.contact?.firstName || 'Friend'}!
+                {isUnderwaterForRM 
+                  ? `Thank You, ${results.contact?.firstName || 'Friend'}!`
+                  : `Great News, ${results.contact?.firstName || 'Friend'}!`
+                }
               </h1>
               <p className="text-gray-600">
-                Based on your property, here's your estimated reverse mortgage potential.
+                {isUnderwaterForRM
+                  ? 'We found your property details. A specialist will review your options with you.'
+                  : 'Based on your property, here\'s your estimated reverse mortgage potential.'
+                }
               </p>
             </div>
 
-            <div className="mt-8 rounded-xl border border-[#36596A] bg-[#36596A] text-white p-6 text-center">
-              <p className="text-sm uppercase tracking-wide text-[#E4CDA1]">Estimated Tax-Free Equity</p>
-              <p className="mt-2 text-3xl font-bold">
-                ${estimatedLow.toLocaleString()} - ${estimatedHigh.toLocaleString()}
-              </p>
-              {calculation && (
-                <p className="mt-2 text-sm text-white/80">
-                  Based on property value of ${calculation.propertyValue.toLocaleString()}
-                  {calculation.existingMortgage > 0 && ` (existing mortgage: $${calculation.existingMortgage.toLocaleString()})`}
+            {isUnderwaterForRM ? (
+              // Show explanation when mortgage exceeds available proceeds
+              <div className="mt-8 rounded-xl border border-amber-500 bg-amber-50 p-6">
+                <h3 className="text-lg font-semibold text-amber-800 mb-3">
+                  Your Current Mortgage May Need to Be Reduced First
+                </h3>
+                <div className="text-sm text-amber-700 space-y-2">
+                  <p>
+                    <strong>Property Value:</strong> ${calculation?.propertyValue.toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Existing Mortgage:</strong> ${calculation?.existingMortgage.toLocaleString()}
+                  </p>
+                  <p className="mt-3">
+                    Based on your current mortgage balance, you may need to pay down your existing loan before accessing reverse mortgage proceeds. However, there may be other options available.
+                  </p>
+                  <p className="mt-2 font-medium">
+                    A licensed specialist will review your situation and discuss all available programs, including HECM for Purchase and refinancing options.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              // Show equity estimate when proceeds are available
+              <div className="mt-8 rounded-xl border border-[#36596A] bg-[#36596A] text-white p-6 text-center">
+                <p className="text-sm uppercase tracking-wide text-[#E4CDA1]">Estimated Tax-Free Equity</p>
+                <p className="mt-2 text-3xl font-bold">
+                  ${estimatedLow.toLocaleString()} - ${estimatedHigh.toLocaleString()}
                 </p>
-              )}
-              <p className="mt-2 text-sm text-white/80">
-                Final numbers will be confirmed by a licensed reverse mortgage specialist.
-              </p>
-            </div>
+                {calculation && (
+                  <p className="mt-2 text-sm text-white/80">
+                    Based on property value of ${calculation.propertyValue.toLocaleString()}
+                    {calculation.existingMortgage > 0 && ` (existing mortgage: $${calculation.existingMortgage.toLocaleString()})`}
+                  </p>
+                )}
+                <p className="mt-2 text-sm text-white/80">
+                  Final numbers will be confirmed by a licensed reverse mortgage specialist.
+                </p>
+              </div>
+            )}
 
             {/* Agent Image Section */}
             <div className="mt-8 bg-slate-50 rounded-2xl p-6">

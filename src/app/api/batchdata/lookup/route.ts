@@ -236,7 +236,8 @@ export async function POST(request: NextRequest) {
       mortgageCount: mortgages?.length || 0,
     })
 
-    log('❌ BatchData API: Invalid or missing property value', {
+    // Log valuation data for debugging (before validation)
+    log('📊 Property valuation data', {
       propertyValue,
       hasValuation: !!valuation,
       valuationData: valuation,
