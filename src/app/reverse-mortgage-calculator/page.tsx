@@ -4,7 +4,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
-import { initializeTracking, trackPageView } from '@/lib/temp-tracking'
+import { 
+  initializeTracking, 
+  trackPageView, 
+  trackQuizStart,
+  trackQuizStepViewed,
+  trackQuestionAnswer,
+  trackQuizComplete,
+  trackLeadFormSubmit,
+  trackGA4Event,
+  trackMetaPixelEvent
+} from '@/lib/temp-tracking'
 import { AddressAutocomplete, AddressComponents } from '@/components/property/AddressAutocomplete'
 import { PropertyLookupData } from '@/types/property'
 import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/utils/phone-utils'
@@ -88,10 +98,113 @@ export default function ReverseMortgageCalculatorPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
+  // Tracking state for funnel analytics
+  const [sessionId, setSessionId] = useState<string>('')
+  const [previousStepName, setPreviousStepName] = useState<string | null>(null)
+  const [stepStartTime, setStepStartTime] = useState<number>(Date.now())
+  const [quizStartTime, setQuizStartTime] = useState<number>(Date.now())
+
+  // Step names for tracking
+  const STEP_NAMES: Record<number, string> = {
+    1: 'reason_selection',
+    2: 'age_verification',
+    3: 'homeowner_check',
+    4: 'address_lookup',
+    5: 'equity_results',
+    6: 'lead_capture'
+  }
+
+  // Initialize tracking and session
   useEffect(() => {
     initializeTracking()
     trackPageView('Reverse Mortgage Calculator', '/reverse-mortgage-calculator')
+    
+    // Generate or get session ID
+    const existingSession = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('session_id') 
+      : null
+    const newSessionId = existingSession || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+    setSessionId(newSessionId)
+    
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('session_id', newSessionId)
+    }
+    
+    // Track quiz start
+    trackQuizStart('reverse-mortgage', newSessionId)
+    setQuizStartTime(Date.now())
+    
+    console.log('📊 Reverse Mortgage Funnel Started:', { sessionId: newSessionId })
   }, [])
+
+  // Track step changes for funnel analytics
+  useEffect(() => {
+    if (!sessionId) return
+    
+    const stepName = STEP_NAMES[step] || `step_${step}`
+    const timeOnPreviousStep = previousStepName 
+      ? Math.round((Date.now() - stepStartTime) / 1000)
+      : null
+    
+    // Track step view to Supabase + GA4
+    trackQuizStepViewed({
+      stepNumber: step,
+      stepName: stepName,
+      funnelType: 'reverse-mortgage',
+      previousStep: previousStepName,
+      timeOnPreviousStep: timeOnPreviousStep,
+      sessionId: sessionId
+    })
+    
+    // Track to GA4 with custom event
+    trackGA4Event('rm_funnel_step', {
+      step_number: step,
+      step_name: stepName,
+      funnel_type: 'reverse-mortgage',
+      previous_step: previousStepName || 'entry',
+      time_on_previous_step: timeOnPreviousStep || 0,
+      session_id: sessionId,
+      event_category: 'reverse_mortgage_funnel'
+    })
+    
+    // Track to Meta for retargeting audiences
+    if (step === 4) {
+      // Address step - high intent
+      trackMetaPixelEvent('ViewContent', {
+        content_name: 'Reverse Mortgage - Address Step',
+        content_category: 'reverse-mortgage',
+        value: 0
+      }, 'reverse-mortgage')
+    } else if (step === 5) {
+      // Results step - very high intent
+      trackMetaPixelEvent('AddToCart', {
+        content_name: 'Reverse Mortgage - Equity Results',
+        content_category: 'reverse-mortgage',
+        value: calculation?.equityAvailable || 0,
+        currency: 'USD'
+      }, 'reverse-mortgage')
+    } else if (step === 6) {
+      // Lead form - intent to convert
+      trackMetaPixelEvent('InitiateCheckout', {
+        content_name: 'Reverse Mortgage - Lead Form',
+        content_category: 'reverse-mortgage',
+        value: calculation?.equityAvailable || 0,
+        currency: 'USD'
+      }, 'reverse-mortgage')
+    }
+    
+    console.log('📊 Funnel Step Tracked:', {
+      step,
+      stepName,
+      previousStep: previousStepName,
+      timeOnPreviousStep,
+      funnelType: 'reverse-mortgage'
+    })
+    
+    // Update tracking state
+    setPreviousStepName(stepName)
+    setStepStartTime(Date.now())
+  }, [step, sessionId])
 
   // Load TrustedForm script ONLY when form is visible (step 6)
   // This ensures the form field exists BEFORE the script loads
@@ -103,18 +216,42 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleReasonSelect = (value: string) => {
     setReason(value)
+    
+    // Track answer
+    trackQuestionAnswer('reason_selection', value, 1, 6, sessionId, 'reverse-mortgage')
+    trackGA4Event('rm_answer', {
+      question: 'reason_selection',
+      answer: value,
+      step: 1,
+      session_id: sessionId
+    })
+    
     setStep(2)
   }
 
   const handleAge62Check = (is62: boolean) => {
     setIs62Plus(is62)
+    
+    // Track answer
+    trackQuestionAnswer('age_verification', is62 ? 'yes_62_plus' : 'no_under_62', 2, 6, sessionId, 'reverse-mortgage')
+    trackGA4Event('rm_answer', {
+      question: 'age_verification',
+      answer: is62 ? 'yes_62_plus' : 'no_under_62',
+      step: 2,
+      session_id: sessionId,
+      qualified: is62
+    })
+    
     if (!is62) {
-      // DQ - redirect or show message
+      // Track disqualification
+      trackGA4Event('rm_disqualified', {
+        reason: 'age',
+        step: 2,
+        session_id: sessionId
+      })
       router.push('/reverse-mortgage-calculator/not-qualified?reason=age')
       return
     }
-    // If 62+, we still need an age for calculation - use a default of 70 for now
-    // Or we could ask for exact age, but let's use a reasonable default
     setAge(70)
     setAgeRange('62+')
     setStep(3)
@@ -122,8 +259,24 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleHomeownerCheck = (isOwner: boolean) => {
     setIsHomeowner(isOwner)
+    
+    // Track answer
+    trackQuestionAnswer('homeowner_check', isOwner ? 'yes_homeowner' : 'no_not_homeowner', 3, 6, sessionId, 'reverse-mortgage')
+    trackGA4Event('rm_answer', {
+      question: 'homeowner_check',
+      answer: isOwner ? 'yes_homeowner' : 'no_not_homeowner',
+      step: 3,
+      session_id: sessionId,
+      qualified: isOwner
+    })
+    
     if (!isOwner) {
-      // DQ - redirect or show message
+      // Track disqualification
+      trackGA4Event('rm_disqualified', {
+        reason: 'not_homeowner',
+        step: 3,
+        session_id: sessionId
+      })
       router.push('/reverse-mortgage-calculator/not-qualified?reason=homeowner')
       return
     }
@@ -134,6 +287,16 @@ export default function ReverseMortgageCalculatorPage() {
     setLookupError('')
     setIsLookupLoading(true)
     setAddress(selected)
+
+    // Track address entry
+    trackQuestionAnswer('address_lookup', selected.state || 'unknown', 4, 6, sessionId, 'reverse-mortgage')
+    trackGA4Event('rm_address_entered', {
+      question: 'address_lookup',
+      state: selected.state,
+      city: selected.city,
+      step: 4,
+      session_id: sessionId
+    })
 
     try {
       if (!selected.street || !selected.city || !selected.state || !selected.zip) {
@@ -156,6 +319,13 @@ export default function ReverseMortgageCalculatorPage() {
 
       const result = await response.json()
       if (!response.ok || !result?.success || !result?.data) {
+        // Track lookup failure
+        trackGA4Event('rm_property_lookup_failed', {
+          error: result?.error || 'unknown',
+          state: selected.state,
+          step: 4,
+          session_id: sessionId
+        })
         setLookupError(result?.error || 'Unable to retrieve property data.')
         setIsLookupLoading(false)
         return
@@ -165,9 +335,26 @@ export default function ReverseMortgageCalculatorPage() {
       setPropertyData(data)
       const calc = calculateReverseMortgage(data, age)
       setCalculation(calc)
+      
+      // Track successful property lookup with equity data
+      trackGA4Event('rm_property_found', {
+        property_value: data.property_value,
+        mortgage_balance: data.mortgage_balance,
+        equity_available: calc.equityAvailable,
+        net_proceeds: calc.netProceeds,
+        state: selected.state,
+        step: 4,
+        session_id: sessionId
+      })
+      
       setStep(5)
     } catch (error) {
       console.error('Property lookup failed:', error)
+      trackGA4Event('rm_property_lookup_error', {
+        error: 'exception',
+        step: 4,
+        session_id: sessionId
+      })
       setLookupError('We could not verify that address. Please try again.')
     } finally {
       setIsLookupLoading(false)
@@ -355,9 +542,63 @@ export default function ReverseMortgageCalculatorPage() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
       }
 
+      // Track successful lead submission
+      const completionTime = Math.round((Date.now() - quizStartTime) / 1000)
+      
+      // Track quiz complete
+      trackQuizComplete('reverse-mortgage', sessionId, 'reverse-mortgage', completionTime)
+      
+      // Track lead form submit
+      trackLeadFormSubmit({
+        firstName,
+        lastName,
+        email,
+        phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
+        zipCode: address?.zip || '',
+        state: address?.state,
+        quizAnswers,
+        sessionId,
+        funnelType: 'reverse-mortgage'
+      })
+      
+      // Track to GA4
+      trackGA4Event('rm_lead_submitted', {
+        equity_available: calculation?.equityAvailable || 0,
+        property_value: calculation?.propertyValue || 0,
+        net_proceeds: calculation?.netProceeds || 0,
+        state: address?.state,
+        completion_time_seconds: completionTime,
+        has_trustedform: !!trustedFormCertUrl,
+        has_jornaya: !!jornayaLeadId,
+        session_id: sessionId,
+        event_category: 'reverse_mortgage_funnel'
+      })
+      
+      // Track to Meta - Lead event
+      trackMetaPixelEvent('Lead', {
+        content_name: 'Reverse Mortgage Lead',
+        content_category: 'reverse-mortgage',
+        value: calculation?.equityAvailable || 0,
+        currency: 'USD'
+      }, 'reverse-mortgage')
+      
+      console.log('📊 Lead Submitted Successfully:', {
+        sessionId,
+        completionTime,
+        equityAvailable: calculation?.equityAvailable
+      })
+
       router.push('/reverse-mortgage-calculator/results')
     } catch (error: any) {
       console.error('Lead submission failed:', error)
+      
+      // Track submission error
+      trackGA4Event('rm_lead_error', {
+        error: error?.message || 'unknown',
+        step: 6,
+        session_id: sessionId
+      })
+      
       setSubmitError(error?.message || 'Unable to submit your request. Please try again.')
     } finally {
       setIsSubmitting(false)
