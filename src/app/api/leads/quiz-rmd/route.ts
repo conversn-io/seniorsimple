@@ -3,6 +3,7 @@ import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
 import { formatPhoneForGHL, formatE164 } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
+import { sendLeadEvent } from '@/lib/meta-capi-service';
 
 // Webhook URL for RMD quiz leads
 const RMD_GHL_WEBHOOK_URL = process.env.rmd_GHL_webhook || process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
@@ -259,10 +260,47 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0] || 
                      request.headers.get('x-real-ip') || 
                      null;
+    const userAgent = request.headers.get('user-agent') || null;
     
     const totalSavings = quizAnswers?.total_savings || 0;
     const protectAllocation = quizAnswers?.protect_allocation || 0;
     const allocationAmount = Math.round((totalSavings * protectAllocation) / 100);
+
+    // Fire Meta CAPI Lead event (after Supabase save, before GHL webhook)
+    try {
+      const capiResult = await sendLeadEvent({
+        leadId: lead.id,
+        email: email,
+        phone: phoneNumber,
+        firstName: firstName,
+        lastName: lastName,
+        fbp: body.metaCookies?.fbp,
+        fbc: body.metaCookies?.fbc,
+        fbLoginId: body.metaCookies?.fbLoginId,
+        ipAddress: ipAddress,
+        userAgent: userAgent,
+        value: allocationAmount || 0,
+        currency: 'USD',
+        customData: {
+          quiz_type: 'rmd-quiz',
+          variant: variant || 'rmd_v1',
+          entry_variant: entryVariant || 'immediate_q1',
+          total_savings: totalSavings,
+          protect_allocation: protectAllocation,
+          allocation_amount: allocationAmount,
+        },
+      });
+      
+      if (!capiResult.success) {
+        console.error('[Meta CAPI] Lead event failed:', capiResult.error);
+        // Don't fail the request - just log
+      } else {
+        console.log('[Meta CAPI] Lead event sent:', capiResult.eventId);
+      }
+    } catch (capiError) {
+      console.error('[Meta CAPI] Error:', capiError);
+      // Don't fail the request - CAPI is non-critical
+    }
 
     const ghlPayload = {
       firstName,

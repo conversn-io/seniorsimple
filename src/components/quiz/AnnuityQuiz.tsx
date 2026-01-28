@@ -26,6 +26,7 @@ import {
   LeadData
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
+import { getMetaCookies } from '@/lib/meta-capi-cookies';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -494,6 +495,10 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
             ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
             : '';
 
+          // Capture Meta cookies for CAPI deduplication
+          const metaCookies = getMetaCookies();
+          const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null;
+
           // Use new route that handles database save + GHL webhook without OTP
           const response = await fetch('/api/leads/submit-without-otp', {
             method: 'POST',
@@ -512,7 +517,12 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
               utmParams: utmParams,
               sessionId: getSessionId(), // Use sessionStorage session_id to link with analytics_events
               funnelType: funnelType,
-              trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
+              trustedFormCertUrl: trustedFormCertUrl || null, // TrustedForm certificate URL
+              metaCookies: {
+                fbp: metaCookies.fbp,
+                fbc: metaCookies.fbc,
+                fbLoginId: fbLoginId, // Optional - only if user logged in with Facebook
+              },
             })
           });
 

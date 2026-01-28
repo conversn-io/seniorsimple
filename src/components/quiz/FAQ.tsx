@@ -57,6 +57,41 @@ const finalExpenseFaqData = [
   }
 ];
 
+const reverseMortgageFaqData = [
+  {
+    question: "What is a reverse mortgage (HECM)?",
+    answer: "A Home Equity Conversion Mortgage (HECM) is an FHA-insured reverse mortgage that allows homeowners 62 and older to convert part of their home equity into tax-free cash. You can receive funds as a lump sum, monthly payments, line of credit, or combination - all while staying in your home."
+  },
+  {
+    question: "Do I still own my home?",
+    answer: "Yes, you remain the owner of your home. You keep the title and can live in the home as long as you maintain it as your primary residence, pay property taxes and insurance, and keep the home in good condition."
+  },
+  {
+    question: "What are the requirements?",
+    answer: "To qualify, you must be 62 or older, own your home (or have significant equity), live in the home as your primary residence, and be able to pay property taxes and insurance. The home must meet FHA property standards."
+  },
+  {
+    question: "How much can I receive?",
+    answer: "The amount depends on your age, home value, current interest rates, and FHA lending limits. Generally, older borrowers with higher home values can access more equity. Our specialist will calculate your specific amount based on current HECM factors."
+  },
+  {
+    question: "What happens to my existing mortgage?",
+    answer: "If you have an existing mortgage, it must be paid off with the reverse mortgage proceeds. Any remaining funds after paying off the mortgage are available to you. Our specialist will explain how this works in your specific situation."
+  },
+  {
+    question: "When do I have to repay the loan?",
+    answer: "The loan becomes due when you sell the home, move out permanently, or pass away. At that time, you or your heirs can repay the loan and keep any remaining equity, or sell the home to repay the loan. The loan amount can never exceed the home's value."
+  },
+  {
+    question: "How long does the consultation take?",
+    answer: "The initial consultation typically takes 15-30 minutes. Your licensed specialist will review your property details, explain your options, and answer all your questions. Follow-up calls may be scheduled if needed."
+  },
+  {
+    question: "Is there any obligation?",
+    answer: "Absolutely not. The consultation is completely free with no obligation. We're here to provide information and help you understand your reverse mortgage options so you can make an informed decision."
+  }
+];
+
 interface FAQProps {
   funnelType?: string;
 }
@@ -71,7 +106,13 @@ export const FAQ = ({ funnelType }: FAQProps = {} as FAQProps) => {
   // Determine which FAQ data to use based on funnel type
   const isFinalExpense = funnelType === 'final-expense-quote' || 
     (typeof window !== 'undefined' && window.location.pathname.includes('final-expense'));
-  const faqData = isFinalExpense ? finalExpenseFaqData : annuityFaqData;
+  const isReverseMortgage = funnelType === 'reverse-mortgage-calculator' ||
+    (typeof window !== 'undefined' && window.location.pathname.includes('reverse-mortgage'));
+  const faqData = isReverseMortgage 
+    ? reverseMortgageFaqData 
+    : isFinalExpense 
+    ? finalExpenseFaqData 
+    : annuityFaqData;
 
   return (
     <section className="bg-white py-16">

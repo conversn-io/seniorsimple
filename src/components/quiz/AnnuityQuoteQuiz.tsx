@@ -17,6 +17,7 @@ import { OTPVerification } from './OTPVerification';
 import { ProcessingState } from './ProcessingState';
 import { extractUTMParameters, storeUTMParameters, getStoredUTMParameters, hasUTMParameters, UTMParameters } from '@/utils/utm-utils';
 import { trackUTMParameters } from '@/utils/utm-tracker';
+import { getMetaCookies } from '@/lib/meta-capi-cookies';
 import { 
   initializeTracking, 
   trackQuestionAnswer, 
@@ -277,6 +278,10 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
           ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
           : '';
 
+        // Capture Meta cookies for CAPI deduplication
+        const metaCookies = getMetaCookies();
+        const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null;
+
         const response = await fetch('/api/leads/submit-without-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -291,7 +296,12 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
             utmParams: utmParams,
             sessionId: getSessionId(),
             funnelType: 'annuity-quote',
-            trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
+            trustedFormCertUrl: trustedFormCertUrl || null, // TrustedForm certificate URL
+            metaCookies: {
+              fbp: metaCookies.fbp,
+              fbc: metaCookies.fbc,
+              fbLoginId: fbLoginId, // Optional - only if user logged in with Facebook
+            },
           })
         });
 

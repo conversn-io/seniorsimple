@@ -24,6 +24,7 @@ import {
   LeadData
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
+import { getMetaCookies } from '@/lib/meta-capi-cookies';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -321,6 +322,10 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
           ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
           : '';
 
+        // Capture Meta cookies for CAPI deduplication
+        const metaCookies = getMetaCookies();
+        const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null;
+
         const response = await fetch('/api/leads/submit-without-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -339,7 +344,12 @@ export const FinalExpenseQuiz = ({ skipOTP = false, onStepChange }: FinalExpense
             utmParams: utmParams,
             sessionId: getSessionId(),
             funnelType: 'final-expense-quote',
-            trustedFormCertUrl: trustedFormCertUrl || null // TrustedForm certificate URL
+            trustedFormCertUrl: trustedFormCertUrl || null, // TrustedForm certificate URL
+            metaCookies: {
+              fbp: metaCookies.fbp,
+              fbc: metaCookies.fbc,
+              fbLoginId: fbLoginId, // Optional - only if user logged in with Facebook
+            },
           })
         });
 

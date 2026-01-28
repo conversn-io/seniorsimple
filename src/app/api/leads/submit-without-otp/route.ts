@@ -496,9 +496,9 @@ export async function POST(request: NextRequest) {
         funnelType, 
         isReverseMortgage: true, 
         savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
-        savedJornayaLeadId: savedJornayaLeadId || 'NULL', 
+        savedJornayaLeadId: savedJornayaLeadId || 'NULL (optional)', 
         leadId: lead.id,
-        willPoll: !savedTrustedFormCertUrl || !savedJornayaLeadId
+        willPoll: !savedTrustedFormCertUrl // Only poll for TrustedForm
       })
       
       console.log('🔵 APLINE WEBHOOK - Checking for required fields:', {
@@ -507,8 +507,8 @@ export async function POST(request: NextRequest) {
         leadId: lead.id
       });
       
-      // Poll until both values are available or max retries reached
-      while ((!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES) {
+      // Poll until TrustedForm is available (Jornaya is optional - don't block on it)
+      while (!savedTrustedFormCertUrl && retryCount < MAX_RETRIES) {
         retryCount++;
         const iterationStartTime = Date.now();
         
@@ -517,12 +517,12 @@ export async function POST(request: NextRequest) {
           MAX_RETRIES, 
           hasTrustedForm: !!savedTrustedFormCertUrl, 
           hasJornaya: !!savedJornayaLeadId, 
-          conditionResult: (!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES,
+          conditionResult: !savedTrustedFormCertUrl && retryCount < MAX_RETRIES,
           trustedFormValue: savedTrustedFormCertUrl || 'EMPTY',
-          jornayaValue: savedJornayaLeadId || 'NULL'
+          jornayaValue: savedJornayaLeadId || 'NULL (optional)'
         })
         
-        console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount}/${MAX_RETRIES} - Waiting for required fields...`);
+        console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount}/${MAX_RETRIES} - Waiting for TrustedForm (Jornaya optional)...`);
         
         // Wait before retrying
         const waitStartTime = Date.now();
@@ -603,7 +603,7 @@ export async function POST(request: NextRequest) {
           iterationDuration: iterationEndTime - iterationStartTime, 
           hasTrustedForm: !!savedTrustedFormCertUrl, 
           hasJornaya: !!savedJornayaLeadId, 
-          willContinue: (!savedTrustedFormCertUrl || !savedJornayaLeadId) && retryCount < MAX_RETRIES 
+          willContinue: !savedTrustedFormCertUrl && retryCount < MAX_RETRIES 
         })
       }
       
@@ -614,19 +614,19 @@ export async function POST(request: NextRequest) {
         MAX_RETRIES, 
         totalBackendPollTime, 
         savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
-        savedJornayaLeadId: savedJornayaLeadId || 'NULL', 
-        bothPresent: !!savedTrustedFormCertUrl && !!savedJornayaLeadId 
+        savedJornayaLeadId: savedJornayaLeadId || 'NULL (optional)', 
+        hasTrustedForm: !!savedTrustedFormCertUrl,
+        hasJornaya: !!savedJornayaLeadId
       })
       
-      // Final check - if still missing, log error and don't send
-      // Check for both null/undefined AND empty string
+      // Final check - only TrustedForm is required (Jornaya is optional)
       const hasTrustedForm = savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '';
       const hasJornaya = savedJornayaLeadId && savedJornayaLeadId !== '';
       
-      if (!hasTrustedForm || !hasJornaya) {
-        console.error('🔵 APLINE WEBHOOK - CRITICAL: Required fields missing after retries:', {
+      if (!hasTrustedForm) {
+        console.error('🔵 APLINE WEBHOOK - CRITICAL: TrustedForm missing after retries (required):', {
           trustedFormCertUrl: savedTrustedFormCertUrl || 'MISSING',
-          jornayaLeadId: savedJornayaLeadId || 'MISSING',
+          jornayaLeadId: savedJornayaLeadId || 'NULL (optional)',
           leadId: lead.id,
           retries: retryCount,
           hasTrustedForm,
@@ -637,18 +637,18 @@ export async function POST(request: NextRequest) {
         return createCorsResponse({
           success: true,
           leadId: lead.id,
-          warning: 'Lead saved but APLINE webhook not sent - missing required fields (trustedFormCertUrl or jornayaLeadId)',
+          warning: 'Lead saved but APLINE webhook not sent - missing required field (trustedFormCertUrl)',
           missingFields: {
             trustedFormCertUrl: !hasTrustedForm,
-            jornayaLeadId: !hasJornaya
+            jornayaLeadId: !hasJornaya // Optional, but logged for visibility
           },
           leadSaved: true
         }, 200);
       }
       
-      console.log('🔵 APLINE WEBHOOK - Required fields confirmed:', {
+      console.log('🔵 APLINE WEBHOOK - Required fields confirmed (Jornaya optional):', {
         trustedFormCertUrl: savedTrustedFormCertUrl ? 'PRESENT' : 'MISSING',
-        jornayaLeadId: savedJornayaLeadId ? 'PRESENT' : 'MISSING',
+        jornayaLeadId: savedJornayaLeadId ? 'PRESENT' : 'NULL (optional)',
         retries: retryCount
       });
     } else {

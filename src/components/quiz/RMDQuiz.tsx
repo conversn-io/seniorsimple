@@ -22,6 +22,7 @@ import {
   LeadData
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
+import { getMetaCookies } from '@/lib/meta-capi-cookies';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -483,6 +484,10 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
           zipCode: '', // RMD quiz doesn't collect ZIP
         });
 
+        // Capture Meta cookies for CAPI deduplication
+        const metaCookies = getMetaCookies();
+        const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null;
+
         // Submit to API
         const response = await fetch('/api/leads/quiz-rmd', {
           method: 'POST',
@@ -499,6 +504,11 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             route: '/quiz-rmd',
             utmParams: utmParams,
             trustedFormCertUrl: trustedFormCertUrl || null,
+            metaCookies: {
+              fbp: metaCookies.fbp,
+              fbc: metaCookies.fbc,
+              fbLoginId: fbLoginId, // Optional - only if user logged in with Facebook
+            },
           })
         });
 

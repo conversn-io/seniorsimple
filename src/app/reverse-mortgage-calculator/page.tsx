@@ -218,7 +218,8 @@ export default function ReverseMortgageCalculatorPage() {
       funnelType: 'reverse-mortgage',
     }
 
-    // Wait for TrustedForm and Journaya IDs to be populated (required for reverse mortgage)
+    // Wait for TrustedForm ID to be populated (required for reverse mortgage)
+    // Jornaya is optional - include if available, but don't block submission
     // Poll up to 10 times with 500ms delay (5 seconds total)
     let trustedFormCertUrl = ''
     let jornayaLeadId: string | null = null
@@ -229,7 +230,8 @@ export default function ReverseMortgageCalculatorPage() {
 
     console.log('[DEBUG] 🔵 Frontend polling started', { maxAttempts, pollDelay, initialTrustedForm: trustedFormCertUrl, initialJornaya: jornayaLeadId })
 
-    while (attempts < maxAttempts && (!trustedFormCertUrl || !jornayaLeadId)) {
+    // Only poll for TrustedForm - Jornaya is optional
+    while (attempts < maxAttempts && !trustedFormCertUrl) {
       const iterationStart = Date.now()
       console.log('[DEBUG] 🔵 Polling iteration start', { 
         attempts, 
@@ -266,16 +268,16 @@ export default function ReverseMortgageCalculatorPage() {
         })
       }
 
-      if (!trustedFormCertUrl || !jornayaLeadId) {
+      if (!trustedFormCertUrl) {
         attempts++
-        console.log('[DEBUG] 🔵 Values missing, incrementing attempts', { 
+        console.log('[DEBUG] 🔵 TrustedForm missing, incrementing attempts', { 
           attempts, 
           maxAttempts, 
           trustedFormCertUrl: trustedFormCertUrl || 'EMPTY', 
-          jornayaLeadId: jornayaLeadId || 'NULL' 
+          jornayaLeadId: jornayaLeadId || 'NULL (optional)' 
         })
         if (attempts < maxAttempts) {
-          console.log(`⏳ Waiting for TrustedForm/Jornaya (attempt ${attempts}/${maxAttempts})...`)
+          console.log(`⏳ Waiting for TrustedForm (attempt ${attempts}/${maxAttempts})...`)
           const waitStartTime = Date.now()
           await new Promise(resolve => setTimeout(resolve, pollDelay))
           const waitEndTime = Date.now()
@@ -286,10 +288,10 @@ export default function ReverseMortgageCalculatorPage() {
           })
         }
       } else {
-        console.log('[DEBUG] 🔵 Both values found, exiting loop', { 
+        console.log('[DEBUG] 🔵 TrustedForm found, exiting loop', { 
           attempts, 
           trustedFormCertUrl: trustedFormCertUrl ? 'PRESENT' : 'EMPTY', 
-          jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'NULL' 
+          jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'NULL (optional)' 
         })
         break
       }
@@ -298,7 +300,7 @@ export default function ReverseMortgageCalculatorPage() {
       console.log('[DEBUG] 🔵 Polling iteration end', { 
         attempts, 
         iterationDuration: iterationEnd - iterationStart,
-        willContinue: attempts < maxAttempts && (!trustedFormCertUrl || !jornayaLeadId)
+        willContinue: attempts < maxAttempts && !trustedFormCertUrl
       })
     }
 
@@ -309,21 +311,22 @@ export default function ReverseMortgageCalculatorPage() {
       maxAttempts, 
       totalPollTime, 
       trustedFormCertUrl: trustedFormCertUrl || 'EMPTY', 
-      jornayaLeadId: jornayaLeadId || 'NULL', 
-      bothPresent: !!trustedFormCertUrl && !!jornayaLeadId 
+      jornayaLeadId: jornayaLeadId || 'NULL (optional)', 
+      hasTrustedForm: !!trustedFormCertUrl,
+      hasJornaya: !!jornayaLeadId
     })
 
-    // Log final status
-    if (!trustedFormCertUrl || !jornayaLeadId) {
-      console.warn('⚠️ TrustedForm or Journaya ID not available after polling:', {
+    // Log final status - only TrustedForm is required
+    if (!trustedFormCertUrl) {
+      console.warn('⚠️ TrustedForm not available after polling (will still submit):', {
         trustedFormCertUrl: trustedFormCertUrl || 'MISSING',
-        jornayaLeadId: jornayaLeadId || 'MISSING',
+        jornayaLeadId: jornayaLeadId || 'NULL (optional)',
         attempts
       })
     } else {
-      console.log('✅ TrustedForm and Journaya IDs captured:', {
+      console.log('✅ TrustedForm captured (Jornaya optional):', {
         trustedFormCertUrl: trustedFormCertUrl ? 'PRESENT' : 'MISSING',
-        jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'MISSING',
+        jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'NULL (optional)',
         attempts
       })
     }
