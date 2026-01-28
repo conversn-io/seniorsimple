@@ -22,9 +22,16 @@ import crypto from 'crypto';
 const META_PIXEL_ID_ANNUITY = process.env.META_PIXEL_ID_ANNUITY || process.env.NEXT_PUBLIC_META_PIXEL_ID_ANNUITY;
 const META_PIXEL_ID_FINAL_EXPENSE = process.env.META_PIXEL_ID_FINAL_EXPENSE || process.env.NEXT_PUBLIC_META_PIXEL_ID_FINAL_EXPENSE || process.env.META_PIXEL_ID_FEX || process.env.NEXT_PUBLIC_META_PIXEL_ID_FEX;
 const META_PIXEL_ID_REVERSE_MORTGAGE = process.env.META_PIXEL_ID_REVERSE_MORTGAGE || process.env.NEXT_PUBLIC_META_PIXEL_ID_REVERSE_MORTGAGE;
-const META_PIXEL_ID = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID; // Fallback
 
-const META_CAPI_TOKEN = process.env.META_CAPI_TOKEN || process.env.META_CAPI_ACCESS_TOKEN || process.env.META_CAPI_ACCESS_TOKEN_SENIORSIMPLE;
+// General fallback pixel ID (checked in order of preference)
+const META_PIXEL_ID = process.env.META_PIXEL_ID || 
+                      process.env.NEXT_PUBLIC_META_PIXEL_ID || 
+                      process.env.NEXT_PUBLIC_META_PIXEL_ID_SENIORSIMPLE;
+
+// CAPI Access Token (checked in order of preference)
+const META_CAPI_TOKEN = process.env.META_CAPI_ACCESS_TOKEN_SENIORSIMPLE || 
+                        process.env.META_CAPI_TOKEN || 
+                        process.env.META_CAPI_ACCESS_TOKEN;
 const META_CAPI_VERSION = process.env.META_CAPI_VERSION || 'v18.0';
 const META_TEST_EVENT_CODE = process.env.META_TEST_EVENT_CODE; // Optional, for testing
 
