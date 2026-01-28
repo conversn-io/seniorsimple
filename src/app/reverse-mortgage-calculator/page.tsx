@@ -93,6 +93,28 @@ export default function ReverseMortgageCalculatorPage() {
     trackPageView('Reverse Mortgage Calculator', '/reverse-mortgage-calculator')
   }, [])
 
+  // Load TrustedForm script when form becomes visible (step 6)
+  // TrustedForm requires the form to exist BEFORE the script loads
+  useEffect(() => {
+    if (step === 6 && typeof window !== 'undefined') {
+      // Check if TrustedForm script is already loaded
+      const existingScript = document.querySelector('script[src*="trustedform.com"]')
+      if (!existingScript) {
+        const tf = document.createElement('script')
+        tf.type = 'text/javascript'
+        tf.async = true
+        tf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+          '://api.trustedform.com/trustedform.js?field=xxTrustedFormCertUrl&use_tagged_consent=true&l=' +
+          new Date().getTime() + Math.random()
+        const s = document.getElementsByTagName('script')[0]
+        if (s && s.parentNode) {
+          s.parentNode.insertBefore(tf, s)
+          console.log('🔐 TrustedForm script loaded for reverse mortgage form')
+        }
+      }
+    }
+  }, [step])
+
   const emailValidationState = useMemo(() => getEmailValidationState(email), [email])
   const phoneValidationState = useMemo(() => getPhoneValidationState(phone), [phone])
 
@@ -608,8 +630,8 @@ export default function ReverseMortgageCalculatorPage() {
                   </p>
                 </div>
 
-                <form onSubmit={handleLeadSubmit} className="space-y-5">
-                  {/* TrustedForm hidden input */}
+                <form onSubmit={handleLeadSubmit} className="space-y-5" id="reverse-mortgage-lead-form">
+                  {/* TrustedForm hidden input - Must exist BEFORE script loads */}
                   <input
                     type="hidden"
                     name="xxTrustedFormCertUrl"
