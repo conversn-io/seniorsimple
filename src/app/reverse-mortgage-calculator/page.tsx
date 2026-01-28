@@ -594,24 +594,31 @@ export default function ReverseMortgageCalculatorPage() {
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Are you 62 or above?</h2>
+                  <p className="mt-2 text-gray-600">This quick check ensures you qualify for a HECM reverse mortgage.</p>
                 </div>
                 <div className="space-y-3">
                   <button
-                    className="quiz-button w-full border-2 border-[#36596A] text-[#36596A] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#36596A] hover:text-white transition-colors"
+                    className="quiz-button w-full border-2 border-[#228B22] text-[#228B22] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#228B22] hover:text-white transition-colors flex items-center justify-center gap-2"
                     onClick={() => handleAge62Check(true)}
                   >
+                    <CheckCircle className="h-5 w-5" />
                     Yes, I am 62+
                   </button>
                   <button
-                    className="quiz-button w-full border-2 border-[#36596A] text-[#36596A] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#36596A] hover:text-white transition-colors"
+                    className="quiz-button w-full border-2 border-gray-300 text-gray-600 rounded-xl py-4 px-6 text-lg font-semibold hover:bg-gray-100 transition-colors"
                     onClick={() => handleAge62Check(false)}
                   >
                     No, I'm under 62
                   </button>
                 </div>
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                  <p className="font-semibold mb-1">Why we ask:</p>
-                  <p>Reverse mortgages (HECMs) are federally insured loans only available to homeowners aged 62 and older.</p>
+                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+                  <div className="flex items-start gap-2">
+                    <svg className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                    <div>
+                      <p className="font-semibold mb-1">Why 62+?</p>
+                      <p>The HECM program (Home Equity Conversion Mortgage) is a federally insured loan designed specifically for seniors 62 and older to access their home equity.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -619,8 +626,8 @@ export default function ReverseMortgageCalculatorPage() {
             {step === 3 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Great, Why are you looking into reverse mortgage?!</h2>
-                  <p className="mt-2 text-gray-600">Are you a homeowner?</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Great! Do you own your home?</h2>
+                  <p className="mt-2 text-gray-600">Reverse mortgages require home ownership.</p>
                 </div>
                 <div className="space-y-3">
                   <button
@@ -657,7 +664,23 @@ export default function ReverseMortgageCalculatorPage() {
                     placeholder="Start typing your address..."
                     className="quiz-input w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
                   />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Start typing and select your address from the dropdown
+                  </p>
                 </div>
+
+                {/* Address confirmation when selected */}
+                {address && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">Address confirmed</p>
+                        <p className="text-sm text-green-700">{address.formatted_address}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {isLookupLoading && (
                   <div className="flex items-center justify-center gap-3 text-[#36596A]">
@@ -667,10 +690,24 @@ export default function ReverseMortgageCalculatorPage() {
                 )}
 
                 {lookupError && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                    {lookupError}
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                    <p className="font-semibold mb-1">Please select a complete address</p>
+                    <p>{lookupError}</p>
+                    <p className="mt-2 text-xs">Tip: Make sure to select your address from the dropdown suggestions.</p>
                   </div>
                 )}
+
+                {/* Trust signals */}
+                <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
+                  <span className="flex items-center gap-1">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                    Secure & Private
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    No Credit Check
+                  </span>
+                </div>
               </div>
             )}
 
@@ -683,6 +720,15 @@ export default function ReverseMortgageCalculatorPage() {
                   <p className="mt-2 text-gray-600">
                     A licensed reverse mortgage specialist will review your options and provide you with quotes from the best providers nationwide.
                   </p>
+                </div>
+
+                {/* Social Proof Banner */}
+                <div className="bg-[#36596A] text-white rounded-xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-[#E4CDA1]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                    <span className="font-semibold">Trusted by 10,000+ Seniors Nationwide</span>
+                  </div>
+                  <p className="text-sm text-white/80">Average homeowner accesses $127,000 in tax-free equity</p>
                 </div>
 
                 <form onSubmit={handleLeadSubmit} className="space-y-5" id="reverse-mortgage-lead-form">
@@ -804,7 +850,7 @@ export default function ReverseMortgageCalculatorPage() {
 
                   <button
                     type="submit"
-                    className="quiz-button w-full bg-[#36596A] text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-[#2a4a5a] transition-all shadow-lg disabled:opacity-60"
+                    className="quiz-button w-full bg-[#228B22] text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-[#1a6b1a] transition-all shadow-lg disabled:opacity-60 border-2 border-[#E4CDA1]"
                     disabled={
                       !firstName ||
                       !email ||
@@ -814,8 +860,25 @@ export default function ReverseMortgageCalculatorPage() {
                       isSubmitting
                     }
                   >
-                    {isSubmitting ? 'Submitting...' : 'Get My Free Analysis'}
+                    {isSubmitting ? 'Submitting...' : 'Get My Reverse Mortgage Quote →'}
                   </button>
+                  
+                  {/* Trust Badges */}
+                  <div className="flex items-center justify-center gap-6 pt-2">
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                      <span>256-bit Secure</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                      <span>No Credit Impact</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      <span>4.9/5 Rating</span>
+                    </div>
+                  </div>
+                  
                   <p className="text-xs text-gray-500 text-center">
                     By submitting, you agree to be contacted by phone, text, or email. Message and data rates
                     may apply.
