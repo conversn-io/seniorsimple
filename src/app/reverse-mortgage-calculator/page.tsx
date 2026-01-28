@@ -10,8 +10,7 @@ import { PropertyLookupData } from '@/types/property'
 import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/utils/phone-utils'
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation'
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation'
-import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
-import { useTrustedForm } from '@/hooks/useTrustedForm'
+import { useTrustedForm, getTrustedFormCertUrl, getLeadIdToken } from '@/hooks/useTrustedForm'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -224,128 +223,65 @@ export default function ReverseMortgageCalculatorPage() {
       funnelType: 'reverse-mortgage',
     }
 
-    // Wait for TrustedForm ID to be populated (required for reverse mortgage)
-    // Jornaya is optional - include if available, but don't block submission
-    // Poll up to 10 times with 500ms delay (5 seconds total)
-    let trustedFormCertUrl = ''
+    // CRITICAL: Capture TrustedForm and LeadID/Jornaya tokens
+    // These are required for buyer webhooks - no payment without them
+    // Poll up to 15 times with 500ms delay (7.5 seconds total) to allow scripts to populate
+    let trustedFormCertUrl: string | null = null
     let jornayaLeadId: string | null = null
     let attempts = 0
-    const maxAttempts = 10
+    const maxAttempts = 15
     const pollDelay = 500
     const pollStartTime = Date.now()
 
-    // Check if TrustedForm script is loaded
-    const trustedFormScript = document.querySelector('script[src*="trustedform.com"]')
-    const formField = document.querySelector('input[name="xxTrustedFormCertUrl"]')
-    console.log('[DEBUG] 🔵 Frontend polling started', { 
-      maxAttempts, 
-      pollDelay, 
-      initialTrustedForm: trustedFormCertUrl, 
-      initialJornaya: jornayaLeadId,
-      scriptLoaded: !!trustedFormScript,
-      formFieldExists: !!formField,
-      formFieldValue: (formField as HTMLInputElement)?.value || 'EMPTY'
-    })
+    console.log('🔵 LEAD CAPTURE: Starting TrustedForm/LeadID polling...')
 
-    // Only poll for TrustedForm - Jornaya is optional
-    while (attempts < maxAttempts && !trustedFormCertUrl) {
-      const iterationStart = Date.now()
-      console.log('[DEBUG] 🔵 Polling iteration start', { 
-        attempts, 
-        maxAttempts, 
-        hasTrustedForm: !!trustedFormCertUrl, 
-        hasJornaya: !!jornayaLeadId,
-        conditionResult: attempts < maxAttempts && (!trustedFormCertUrl || !jornayaLeadId),
-        trustedFormValue: trustedFormCertUrl || 'EMPTY',
-        jornayaValue: jornayaLeadId || 'NULL'
+    // Poll for both tokens
+    while (attempts < maxAttempts) {
+      attempts++
+      
+      // Get TrustedForm certificate URL
+      trustedFormCertUrl = getTrustedFormCertUrl()
+      
+      // Get LeadID/Jornaya token
+      jornayaLeadId = getLeadIdToken()
+      
+      console.log(`🔵 LEAD CAPTURE: Poll ${attempts}/${maxAttempts}`, {
+        trustedFormCertUrl: trustedFormCertUrl ? `✅ ${trustedFormCertUrl.substring(0, 50)}...` : '❌ MISSING',
+        jornayaLeadId: jornayaLeadId ? `✅ ${jornayaLeadId.substring(0, 20)}...` : '⚠️ not found (optional)'
       })
-
-      // Capture TrustedForm certificate URL from hidden input (using helper like RateRoots)
-      if (typeof document !== 'undefined') {
-        const certUrl = getTrustedFormCertUrl()
-        trustedFormCertUrl = certUrl || ''
-        console.log('[DEBUG] 🔵 TrustedForm input check', { 
-          certUrl: certUrl || 'EMPTY', 
-          trustedFormCertUrl: trustedFormCertUrl || 'EMPTY' 
-        })
-      }
-
-      // Capture Journaya Lead ID if available (check multiple possible locations)
-      if (typeof window !== 'undefined') {
-        const jornayaFromWindow = (window as any).jornayaLeadId || 
-          (window as any).jornaya_lead_id || 
-          (window as any).jornaya_leadid ||
-          (document.querySelector('[data-jornaya-id]') as HTMLElement)?.dataset?.jornayaId ||
-          null
-        jornayaLeadId = jornayaFromWindow
-        console.log('[DEBUG] 🔵 Journaya ID check', { 
-          jornayaFromWindow, 
-          jornayaLeadId: jornayaLeadId || 'NULL',
-          windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('jornaya'))
-        })
-      }
-
-      if (!trustedFormCertUrl) {
-        attempts++
-        console.log('[DEBUG] 🔵 TrustedForm missing, incrementing attempts', { 
-          attempts, 
-          maxAttempts, 
-          trustedFormCertUrl: trustedFormCertUrl || 'EMPTY', 
-          jornayaLeadId: jornayaLeadId || 'NULL (optional)' 
-        })
-        if (attempts < maxAttempts) {
-          console.log(`⏳ Waiting for TrustedForm (attempt ${attempts}/${maxAttempts})...`)
-          const waitStartTime = Date.now()
-          await new Promise(resolve => setTimeout(resolve, pollDelay))
-          const waitEndTime = Date.now()
-          console.log('[DEBUG] 🔵 Wait completed', { 
-            attempts, 
-            waitDuration: waitEndTime - waitStartTime, 
-            expectedDelay: pollDelay 
-          })
-        }
-      } else {
-        console.log('[DEBUG] 🔵 TrustedForm found, exiting loop', { 
-          attempts, 
-          trustedFormCertUrl: trustedFormCertUrl ? 'PRESENT' : 'EMPTY', 
-          jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'NULL (optional)' 
-        })
+      
+      // TrustedForm is required - if we have it, we can proceed
+      if (trustedFormCertUrl) {
+        console.log('✅ LEAD CAPTURE: TrustedForm certificate captured!')
         break
       }
       
-      const iterationEnd = Date.now()
-      console.log('[DEBUG] 🔵 Polling iteration end', { 
-        attempts, 
-        iterationDuration: iterationEnd - iterationStart,
-        willContinue: attempts < maxAttempts && !trustedFormCertUrl
-      })
+      // Wait before next attempt
+      if (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, pollDelay))
+      }
     }
 
-    const pollEndTime = Date.now()
-    const totalPollTime = pollEndTime - pollStartTime
-    console.log('[DEBUG] 🔵 Frontend polling completed', { 
-      attempts, 
-      maxAttempts, 
-      totalPollTime, 
-      trustedFormCertUrl: trustedFormCertUrl || 'EMPTY', 
-      jornayaLeadId: jornayaLeadId || 'NULL (optional)', 
-      hasTrustedForm: !!trustedFormCertUrl,
-      hasJornaya: !!jornayaLeadId
-    })
-
-    // Log final status - only TrustedForm is required
-    if (!trustedFormCertUrl) {
-      console.warn('⚠️ TrustedForm not available after polling (will still submit):', {
-        trustedFormCertUrl: trustedFormCertUrl || 'MISSING',
-        jornayaLeadId: jornayaLeadId || 'NULL (optional)',
+    const totalPollTime = Date.now() - pollStartTime
+    
+    // Final status
+    if (trustedFormCertUrl) {
+      console.log('✅ LEAD CAPTURE: Complete', {
+        trustedFormCertUrl: trustedFormCertUrl.substring(0, 60) + '...',
+        jornayaLeadId: jornayaLeadId || 'not captured (optional)',
+        pollTime: `${totalPollTime}ms`,
         attempts
       })
     } else {
-      console.log('✅ TrustedForm captured (Jornaya optional):', {
-        trustedFormCertUrl: trustedFormCertUrl ? 'PRESENT' : 'MISSING',
-        jornayaLeadId: jornayaLeadId ? 'PRESENT' : 'NULL (optional)',
-        attempts
+      console.error('❌ LEAD CAPTURE: TrustedForm NOT captured after polling!', {
+        attempts,
+        pollTime: `${totalPollTime}ms`,
+        formFieldExists: !!document.querySelector('input[name="xxTrustedFormCertUrl"]'),
+        formFieldValue: (document.querySelector('input[name="xxTrustedFormCertUrl"]') as HTMLInputElement)?.value || 'EMPTY',
+        scriptExists: !!document.querySelector('script[src*="trustedform.com"]')
       })
+      // Still submit but warn - backend will also try to capture
+      console.warn('⚠️ Proceeding with submission - backend will attempt to poll for TrustedForm')
     }
 
     // Include trustedFormCertUrl and jornayaLeadId in quizAnswers (like RateRoots does)
@@ -625,12 +561,24 @@ export default function ReverseMortgageCalculatorPage() {
                 </div>
 
                 <form onSubmit={handleLeadSubmit} className="space-y-5" id="reverse-mortgage-lead-form">
-                  {/* TrustedForm hidden input - Must exist BEFORE script loads */}
+                  {/* CRITICAL: TrustedForm hidden input - NO value attribute!
+                      Must be UNCONTROLLED for TrustedForm script to set value.
+                      Using value="" makes it controlled and blocks external JS. */}
                   <input
                     type="hidden"
                     name="xxTrustedFormCertUrl"
                     id="xxTrustedFormCertUrl"
-                    value=""
+                  />
+                  {/* LeadID/Jornaya token input */}
+                  <input
+                    type="hidden"
+                    name="leadid_token"
+                    id="leadid_token"
+                  />
+                  <input
+                    type="hidden"
+                    name="universal_leadid"
+                    id="universal_leadid"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>

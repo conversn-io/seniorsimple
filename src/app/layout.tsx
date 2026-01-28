@@ -6,7 +6,8 @@ import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
 import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
-import { TrustedForm } from "../components/tracking/TrustedForm";
+// TrustedForm removed from global layout - loaded per-page when forms exist
+// import { TrustedForm } from "../components/tracking/TrustedForm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -211,7 +212,8 @@ export default function RootLayout({
           />
         </noscript>
         
-        <TrustedForm />
+        {/* TrustedForm REMOVED from global layout - must load AFTER form exists
+            See useTrustedForm hook for proper implementation */}
         <LayoutProvider>
           <ConditionalHeader />
           <main>{children}</main>
