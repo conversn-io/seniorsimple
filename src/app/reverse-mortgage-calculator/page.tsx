@@ -105,14 +105,13 @@ export default function ReverseMortgageCalculatorPage() {
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now())
   const [quizStartTime, setQuizStartTime] = useState<number>(Date.now())
 
-  // Step names for tracking
+  // Step names for tracking (5 steps - property lookup moved to results page)
   const STEP_NAMES: Record<number, string> = {
     1: 'reason_selection',
     2: 'age_verification',
     3: 'homeowner_check',
-    4: 'address_lookup',
-    5: 'equity_results',
-    6: 'lead_capture'
+    4: 'address_entry',
+    5: 'lead_capture'
   }
 
   // Initialize tracking and session
@@ -168,28 +167,20 @@ export default function ReverseMortgageCalculatorPage() {
       event_category: 'reverse_mortgage_funnel'
     })
     
-    // Track to Meta for retargeting audiences
+    // Track to Meta for retargeting audiences (5-step funnel)
     if (step === 4) {
-      // Address step - high intent
+      // Address entry step - high intent
       trackMetaPixelEvent('ViewContent', {
-        content_name: 'Reverse Mortgage - Address Step',
+        content_name: 'Reverse Mortgage - Address Entry',
         content_category: 'reverse-mortgage',
         value: 0
       }, 'reverse-mortgage')
     } else if (step === 5) {
-      // Results step - very high intent
-      trackMetaPixelEvent('AddToCart', {
-        content_name: 'Reverse Mortgage - Equity Results',
-        content_category: 'reverse-mortgage',
-        value: calculation?.equityAvailable || 0,
-        currency: 'USD'
-      }, 'reverse-mortgage')
-    } else if (step === 6) {
       // Lead form - intent to convert
       trackMetaPixelEvent('InitiateCheckout', {
         content_name: 'Reverse Mortgage - Lead Form',
         content_category: 'reverse-mortgage',
-        value: calculation?.equityAvailable || 0,
+        value: 0,
         currency: 'USD'
       }, 'reverse-mortgage')
     }
@@ -207,10 +198,10 @@ export default function ReverseMortgageCalculatorPage() {
     setStepStartTime(Date.now())
   }, [step, sessionId])
 
-  // Load TrustedForm script ONLY when form is visible (step 6)
+  // Load TrustedForm script ONLY when form is visible (step 5)
   // This ensures the form field exists BEFORE the script loads
   // TrustedForm script must find the form field at initialization time
-  useTrustedForm({ enabled: step === 6 })
+  useTrustedForm({ enabled: step === 5 })
 
   const emailValidationState = useMemo(() => getEmailValidationState(email), [email])
   const phoneValidationState = useMemo(() => getPhoneValidationState(phone), [phone])
@@ -284,82 +275,29 @@ export default function ReverseMortgageCalculatorPage() {
     setStep(4)
   }
 
-  const handleAddressSelect = async (selected: AddressComponents) => {
+  // Handle address selection - NO API call here, just capture and move to lead form
+  const handleAddressSelect = (selected: AddressComponents) => {
     setLookupError('')
-    setIsLookupLoading(true)
     setAddress(selected)
 
     // Track address entry
-    trackQuestionAnswer('address_lookup', selected.state || 'unknown', 4, 6, sessionId, 'reverse-mortgage')
+    trackQuestionAnswer('address_entry', selected.state || 'unknown', 4, 5, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_address_entered', {
-      question: 'address_lookup',
+      question: 'address_entry',
       state: selected.state,
       city: selected.city,
       step: 4,
       session_id: sessionId
     })
 
-    try {
-      if (!selected.street || !selected.city || !selected.state || !selected.zip) {
-        setLookupError('Please select a full address with city, state, and ZIP.')
-        setIsLookupLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/batchdata/lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address: selected.street,
-          city: selected.city,
-          state: selected.state,
-          zip: selected.zip,
-          place_id: selected.place_id,
-        }),
-      })
-
-      const result = await response.json()
-      if (!response.ok || !result?.success || !result?.data) {
-        // Track lookup failure
-        trackGA4Event('rm_property_lookup_failed', {
-          error: result?.error || 'unknown',
-          state: selected.state,
-          step: 4,
-          session_id: sessionId
-        })
-        setLookupError(result?.error || 'Unable to retrieve property data.')
-        setIsLookupLoading(false)
-        return
-      }
-
-      const data = result.data as PropertyLookupData
-      setPropertyData(data)
-      const calc = calculateReverseMortgage(data, age)
-      setCalculation(calc)
-      
-      // Track successful property lookup with equity data
-      trackGA4Event('rm_property_found', {
-        property_value: data.property_value,
-        mortgage_balance: data.mortgage_balance,
-        equity_available: calc.equityAvailable,
-        net_proceeds: calc.netProceeds,
-        state: selected.state,
-        step: 4,
-        session_id: sessionId
-      })
-      
-      setStep(5)
-    } catch (error) {
-      console.error('Property lookup failed:', error)
-      trackGA4Event('rm_property_lookup_error', {
-        error: 'exception',
-        step: 4,
-        session_id: sessionId
-      })
-      setLookupError('We could not verify that address. Please try again.')
-    } finally {
-      setIsLookupLoading(false)
+    // Validate address has required fields
+    if (!selected.street || !selected.city || !selected.state || !selected.zip) {
+      setLookupError('Please select a full address with city, state, and ZIP.')
+      return
     }
+
+    // Move directly to lead capture - property lookup happens on results page
+    setStep(5)
   }
 
   const handleLeadSubmit = async (event: React.FormEvent) => {
@@ -381,9 +319,9 @@ export default function ReverseMortgageCalculatorPage() {
       return
     }
 
-    if (!calculation || !propertyData || !address) {
-      console.log('[DEBUG] 🔵 Missing calculation/propertyData/address, returning early')
-      setSubmitError('Missing property results. Please restart the calculator.')
+    if (!address) {
+      console.log('[DEBUG] 🔵 Missing address, returning early')
+      setSubmitError('Missing address. Please go back and enter your property address.')
       return
     }
     
@@ -406,8 +344,7 @@ export default function ReverseMortgageCalculatorPage() {
         state: address.state,
         zipCode: address.zip,
       },
-      propertyData,
-      calculation,
+      // Note: propertyData and calculation will be fetched on results page
       funnelType: 'reverse-mortgage',
     }
 
@@ -494,7 +431,7 @@ export default function ReverseMortgageCalculatorPage() {
       state: address.state,
       stateName: address.state,
       quizAnswers: quizAnswersWithIds,
-      calculatedResults: calculation,
+      // Note: calculatedResults will be fetched on results page after property lookup
       trustedFormCertUrl: trustedFormCertUrl || null,
       jornayaLeadId: jornayaLeadId || null,
       // Meta cookies for CAPI server-side event matching
@@ -525,14 +462,7 @@ export default function ReverseMortgageCalculatorPage() {
         throw new Error(data?.error || 'Failed to submit your request.')
       }
 
-      const baseEstimate = calculation
-        ? calculation.netProceeds > 0
-          ? calculation.netProceeds
-          : calculation.grossProceeds
-        : 0
-      const estimatedLow = baseEstimate ? Math.floor(baseEstimate * 0.85) : 0
-      const estimatedHigh = baseEstimate || 0
-
+      // Store data for results page - property lookup will happen there
       const stored = {
         ...quizAnswers,
         contact: {
@@ -541,12 +471,15 @@ export default function ReverseMortgageCalculatorPage() {
           email,
           phone: formatPhoneForGHL(extractUSPhoneNumber(phone)),
         },
-        equityRange: {
-          low: estimatedLow,
-          high: estimatedHigh,
-          propertyValue: calculation?.propertyValue,
-          age,
+        // Address info for property lookup on results page
+        addressForLookup: {
+          street: address.street,
+          city: address.city,
+          state: address.state,
+          zip: address.zip,
+          fullAddress: address.formatted_address,
         },
+        age, // Needed for calculation on results page
         submittedAt: new Date().toISOString(),
       }
 
@@ -576,9 +509,6 @@ export default function ReverseMortgageCalculatorPage() {
       
       // Track to GA4
       trackGA4Event('rm_lead_submitted', {
-        equity_available: calculation?.equityAvailable || 0,
-        property_value: calculation?.propertyValue || 0,
-        net_proceeds: calculation?.netProceeds || 0,
         state: address?.state,
         completion_time_seconds: completionTime,
         has_trustedform: !!trustedFormCertUrl,
@@ -591,14 +521,14 @@ export default function ReverseMortgageCalculatorPage() {
       trackMetaPixelEvent('Lead', {
         content_name: 'Reverse Mortgage Lead',
         content_category: 'reverse-mortgage',
-        value: calculation?.equityAvailable || 0,
+        value: 0, // Value will be calculated on results page
         currency: 'USD'
       }, 'reverse-mortgage')
       
       console.log('📊 Lead Submitted Successfully:', {
         sessionId,
         completionTime,
-        equityAvailable: calculation?.equityAvailable
+        address: address.formatted_address
       })
 
       router.push('/reverse-mortgage-calculator/results')
@@ -618,14 +548,6 @@ export default function ReverseMortgageCalculatorPage() {
     }
   }
 
-  const baseEstimate = calculation
-    ? calculation.netProceeds > 0
-      ? calculation.netProceeds
-      : calculation.grossProceeds
-    : 0
-  const estimatedLow = baseEstimate ? Math.floor(baseEstimate * 0.85) : 0
-  const estimatedHigh = baseEstimate || 0
-
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
       <section className="py-10 px-4 sm:px-6 lg:px-8">
@@ -644,7 +566,7 @@ export default function ReverseMortgageCalculatorPage() {
 
           <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
             <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-              <span className="font-semibold text-[#36596A]">Step {step} of 6</span>
+              <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
               <span>Fast, no-obligation estimate</span>
             </div>
 
@@ -752,58 +674,7 @@ export default function ReverseMortgageCalculatorPage() {
               </div>
             )}
 
-            {step === 5 && calculation && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Great news!</h2>
-                  <p className="mt-2 text-gray-600">
-                    Based on your home, you may qualify for up to:
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border-2 border-[#36596A] bg-[#36596A] text-white p-6 text-center">
-                  <p className="text-sm uppercase tracking-wide text-[#E4CDA1]">Estimated Tax-Free Equity</p>
-                  <p className="mt-2 text-3xl sm:text-4xl font-bold">
-                    ${estimatedLow.toLocaleString()} - ${estimatedHigh.toLocaleString()}
-                  </p>
-                  <p className="mt-2 text-sm text-white/80">
-                    Estimated using age {age} and your property value of ${calculation.propertyValue.toLocaleString()}.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3 text-sm text-gray-700">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                    <span>No monthly mortgage payments required</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                    <span>Stay in your home while accessing equity</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                    <span>FHA-insured HECM protection for eligible borrowers</span>
-                  </div>
-                  {calculation.existingMortgage > 0 && (
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                      <span>
-                        Existing mortgage payoff required (est. ${calculation.existingMortgage.toLocaleString()}).
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  className="quiz-button w-full bg-[#1F4D3A] text-white py-4 px-8 rounded-xl font-bold text-lg border-2 border-[#E4CDA1] hover:bg-[#173A2D] transition-all shadow-lg"
-                  onClick={() => setStep(6)}
-                >
-                  Get My Reverse Mortgage Quote
-                </button>
-              </div>
-            )}
-
-            {step === 6 && (
+            {step === 5 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
