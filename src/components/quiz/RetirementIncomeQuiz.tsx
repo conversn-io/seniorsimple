@@ -20,6 +20,7 @@ import { formatPhoneForGHL, extractUSPhoneNumber, formatPhoneForInput } from '@/
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation';
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 
 interface QuizAnswer {
   [key: string]: any;

@@ -23,6 +23,7 @@ import {
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
 import { getMetaCookies } from '@/lib/meta-capi-cookies';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 
 interface QuizAnswer {
   [key: string]: any;

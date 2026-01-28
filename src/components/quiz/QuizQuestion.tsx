@@ -8,6 +8,7 @@ import { getEmailValidationState, validateEmailFormat } from '@/utils/email-vali
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 import { AddressAutocomplete, AddressData } from './AddressAutocomplete';
 import { trackAddressEntered } from '@/lib/temp-tracking';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 
 interface QuizQuestionProps {
   question: {
