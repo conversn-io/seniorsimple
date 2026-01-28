@@ -10,7 +10,7 @@ import { PropertyLookupData } from '@/types/property'
 import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/utils/phone-utils'
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation'
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation'
-import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
+import { TrustedForm, getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -232,7 +232,18 @@ export default function ReverseMortgageCalculatorPage() {
     const pollDelay = 500
     const pollStartTime = Date.now()
 
-    console.log('[DEBUG] 🔵 Frontend polling started', { maxAttempts, pollDelay, initialTrustedForm: trustedFormCertUrl, initialJornaya: jornayaLeadId })
+    // Check if TrustedForm script is loaded
+    const trustedFormScript = document.querySelector('script[src*="trustedform.com"]')
+    const formField = document.querySelector('input[name="xxTrustedFormCertUrl"]')
+    console.log('[DEBUG] 🔵 Frontend polling started', { 
+      maxAttempts, 
+      pollDelay, 
+      initialTrustedForm: trustedFormCertUrl, 
+      initialJornaya: jornayaLeadId,
+      scriptLoaded: !!trustedFormScript,
+      formFieldExists: !!formField,
+      formFieldValue: (formField as HTMLInputElement)?.value || 'EMPTY'
+    })
 
     // Only poll for TrustedForm - Jornaya is optional
     while (attempts < maxAttempts && !trustedFormCertUrl) {
