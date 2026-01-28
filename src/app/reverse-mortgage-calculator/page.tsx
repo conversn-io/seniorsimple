@@ -21,6 +21,7 @@ import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation'
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation'
 import { useTrustedForm, getTrustedFormCertUrl, getLeadIdToken } from '@/hooks/useTrustedForm'
+import { getMetaCookies } from '@/lib/meta-capi-cookies'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -478,6 +479,10 @@ export default function ReverseMortgageCalculatorPage() {
       jornayaLeadId: jornayaLeadId || null,
     }
 
+    // Capture Meta cookies for CAPI deduplication (CRITICAL for match rate)
+    const metaCookies = getMetaCookies()
+    const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null
+    
     const payload = {
       email,
       phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
@@ -492,10 +497,18 @@ export default function ReverseMortgageCalculatorPage() {
       calculatedResults: calculation,
       trustedFormCertUrl: trustedFormCertUrl || null,
       jornayaLeadId: jornayaLeadId || null,
+      // Meta cookies for CAPI server-side event matching
+      metaCookies: {
+        fbp: metaCookies.fbp,
+        fbc: metaCookies.fbc,
+        fbLoginId: fbLoginId,
+      },
     }
     console.log('[DEBUG] 🔵 Payload prepared for submission', { 
       trustedFormCertUrl: payload.trustedFormCertUrl || 'NULL', 
-      jornayaLeadId: payload.jornayaLeadId || 'NULL' 
+      jornayaLeadId: payload.jornayaLeadId || 'NULL',
+      hasFbp: !!metaCookies.fbp,
+      hasFbc: !!metaCookies.fbc
     })
 
     setIsSubmitting(true)
