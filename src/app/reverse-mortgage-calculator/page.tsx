@@ -10,8 +10,7 @@ import { PropertyLookupData } from '@/types/property'
 import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/utils/phone-utils'
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation'
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation'
-import { TrustedForm, getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
-import { useTrustedForm } from '@/hooks/useTrustedForm'
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -94,9 +93,9 @@ export default function ReverseMortgageCalculatorPage() {
     trackPageView('Reverse Mortgage Calculator', '/reverse-mortgage-calculator')
   }, [])
 
-  // Load TrustedForm script when form becomes visible (step 6)
-  // TrustedForm requires the form to exist BEFORE the script loads
-  useTrustedForm({ enabled: step === 6 })
+  // TrustedForm is loaded globally in layout.tsx
+  // The script will automatically find forms when they're added to the DOM
+  // No need for conditional loading - TrustedForm script handles dynamic forms
 
   const emailValidationState = useMemo(() => getEmailValidationState(email), [email])
   const phoneValidationState = useMemo(() => getPhoneValidationState(phone), [phone])

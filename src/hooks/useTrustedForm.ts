@@ -24,35 +24,47 @@ export function useTrustedForm({ enabled = true }: { enabled?: boolean } = {}) {
       return
     }
 
-    // Check if form with TrustedForm field exists
-    const formField = document.querySelector('input[name="xxTrustedFormCertUrl"]')
-    if (!formField) {
-      console.warn('⚠️ TrustedForm field not found - script will not load properly')
-      return
-    }
+    // Wait for form field to exist (React might not have rendered it yet)
+    let attempts = 0
+    const maxAttempts = 10
+    const checkInterval = setInterval(() => {
+      attempts++
+      
+      // Check if form with TrustedForm field exists
+      const formField = document.querySelector('input[name="xxTrustedFormCertUrl"]')
+      
+      if (formField) {
+        clearInterval(checkInterval)
+        
+        // Load TrustedForm script
+        const tf = document.createElement('script')
+        tf.type = 'text/javascript'
+        tf.async = true
+        tf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+          '://api.trustedform.com/trustedform.js?field=xxTrustedFormCertUrl&use_tagged_consent=true&l=' +
+          new Date().getTime() + Math.random()
+        
+        tf.onload = () => {
+          scriptLoadedRef.current = true
+          console.log('✅ TrustedForm script loaded successfully')
+        }
+        
+        tf.onerror = () => {
+          console.error('❌ Failed to load TrustedForm script')
+        }
 
-    // Load TrustedForm script
-    const tf = document.createElement('script')
-    tf.type = 'text/javascript'
-    tf.async = true
-    tf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
-      '://api.trustedform.com/trustedform.js?field=xxTrustedFormCertUrl&use_tagged_consent=true&l=' +
-      new Date().getTime() + Math.random()
-    
-    tf.onload = () => {
-      scriptLoadedRef.current = true
-      console.log('✅ TrustedForm script loaded successfully')
-    }
-    
-    tf.onerror = () => {
-      console.error('❌ Failed to load TrustedForm script')
-    }
+        const s = document.getElementsByTagName('script')[0]
+        if (s && s.parentNode) {
+          s.parentNode.insertBefore(tf, s)
+          console.log('🔐 Loading TrustedForm script (form field found)')
+        }
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval)
+        console.warn('⚠️ TrustedForm field not found after polling - script will not load properly')
+      }
+    }, 100) // Check every 100ms
 
-    const s = document.getElementsByTagName('script')[0]
-    if (s && s.parentNode) {
-      s.parentNode.insertBefore(tf, s)
-      console.log('🔐 Loading TrustedForm script...')
-    }
+    return () => clearInterval(checkInterval)
   }, [enabled])
 
   return { isLoaded: scriptLoadedRef.current }
