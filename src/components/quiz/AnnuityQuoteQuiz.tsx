@@ -18,6 +18,7 @@ import { ProcessingState } from './ProcessingState';
 import { extractUTMParameters, storeUTMParameters, getStoredUTMParameters, hasUTMParameters, UTMParameters } from '@/utils/utm-utils';
 import { trackUTMParameters } from '@/utils/utm-tracker';
 import { getMetaCookies } from '@/lib/meta-capi-cookies';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 import { 
   initializeTracking, 
   trackQuestionAnswer, 
@@ -273,10 +274,8 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
       setShowProcessing(true);
       
       try {
-        // Capture TrustedForm certificate URL from hidden input
-        const trustedFormCertUrl = typeof document !== 'undefined' 
-          ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-          : '';
+        // Capture TrustedForm certificate URL using helper function (more reliable)
+        const trustedFormCertUrl = getTrustedFormCertUrl() || '';
 
         // Capture Meta cookies for CAPI deduplication
         const metaCookies = getMetaCookies();

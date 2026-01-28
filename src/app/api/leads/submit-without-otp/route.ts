@@ -4,6 +4,7 @@ import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
 import { formatPhoneForGHL, formatE164, extractUSPhoneNumber } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
 import { sendLeadEvent, getMetaPixelIdForFunnel } from '@/lib/meta-capi-service';
+import { validateAndRetainCertificate } from '@/lib/trustedform-api';
 
 // Webhook URLs by funnel type
 const ANNUITY_GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
@@ -1041,6 +1042,25 @@ export async function POST(request: NextRequest) {
           }
         })
         .eq('id', lead.id);
+
+      // Validate and retain TrustedForm certificate (non-blocking, fire-and-forget)
+      if (savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '') {
+        validateAndRetainCertificate(savedTrustedFormCertUrl, email, normalizedPhoneNumber)
+          .then(result => {
+            if (result.success) {
+              console.log('✅ TrustedForm Certificate Validated & Retained:', {
+                certId: savedTrustedFormCertUrl.substring(0, 30) + '...',
+                retained: result.retained,
+                matched: result.matched
+              });
+            } else {
+              console.warn('⚠️ TrustedForm Certificate Validation Failed:', result.errors);
+            }
+          })
+          .catch(error => {
+            console.error('❌ TrustedForm Validation Error (non-blocking):', error);
+          });
+      }
 
       return createCorsResponse({
         success: true,

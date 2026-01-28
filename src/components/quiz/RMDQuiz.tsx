@@ -455,10 +455,8 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
       setShowProcessing(true);
       
       try {
-        // Capture TrustedForm certificate URL
-        const trustedFormCertUrl = typeof document !== 'undefined' 
-          ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-          : '';
+        // Capture TrustedForm certificate URL using helper function (more reliable)
+        const trustedFormCertUrl = getTrustedFormCertUrl() || '';
 
         // Track lead submit attempt
         if (typeof window !== 'undefined' && window.gtag) {

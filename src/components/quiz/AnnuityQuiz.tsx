@@ -27,6 +27,7 @@ import {
 } from '@/lib/temp-tracking';
 import { formatPhoneForGHL } from '@/utils/phone-utils';
 import { getMetaCookies } from '@/lib/meta-capi-cookies';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 
 interface QuizAnswer {
   [key: string]: any;
@@ -490,10 +491,8 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
         setShowProcessing(true);
         
         try {
-          // Capture TrustedForm certificate URL from hidden input
-          const trustedFormCertUrl = typeof document !== 'undefined' 
-            ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-            : '';
+          // Capture TrustedForm certificate URL using helper function (more reliable)
+          const trustedFormCertUrl = getTrustedFormCertUrl() || '';
 
           // Capture Meta cookies for CAPI deduplication
           const metaCookies = getMetaCookies();

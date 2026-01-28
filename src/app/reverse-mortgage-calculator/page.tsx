@@ -11,6 +11,7 @@ import { formatPhoneForGHL, formatPhoneForInput, extractUSPhoneNumber } from '@/
 import { getEmailValidationState, validateEmailFormat } from '@/utils/email-validation'
 import { getPhoneValidationState, validatePhoneFormat } from '@/utils/phone-validation'
 import { TrustedForm, getTrustedFormCertUrl } from '@/components/tracking/TrustedForm'
+import { useTrustedForm } from '@/hooks/useTrustedForm'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -95,25 +96,7 @@ export default function ReverseMortgageCalculatorPage() {
 
   // Load TrustedForm script when form becomes visible (step 6)
   // TrustedForm requires the form to exist BEFORE the script loads
-  useEffect(() => {
-    if (step === 6 && typeof window !== 'undefined') {
-      // Check if TrustedForm script is already loaded
-      const existingScript = document.querySelector('script[src*="trustedform.com"]')
-      if (!existingScript) {
-        const tf = document.createElement('script')
-        tf.type = 'text/javascript'
-        tf.async = true
-        tf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
-          '://api.trustedform.com/trustedform.js?field=xxTrustedFormCertUrl&use_tagged_consent=true&l=' +
-          new Date().getTime() + Math.random()
-        const s = document.getElementsByTagName('script')[0]
-        if (s && s.parentNode) {
-          s.parentNode.insertBefore(tf, s)
-          console.log('🔐 TrustedForm script loaded for reverse mortgage form')
-        }
-      }
-    }
-  }, [step])
+  useTrustedForm({ enabled: step === 6 })
 
   const emailValidationState = useMemo(() => getEmailValidationState(email), [email])
   const phoneValidationState = useMemo(() => getPhoneValidationState(phone), [phone])

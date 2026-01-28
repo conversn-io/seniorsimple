@@ -40,6 +40,14 @@ GHL_WEBHOOK=https://services.leadconnectorhq.com/hooks/seniorsimple-webhook
 # Funnel-specific GHL Webhooks
 annuity_GHL_webhook=https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6
 final_expense_GHL_webhook=https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6
+reverse_mortgage_GHL_webhook=https://services.leadconnectorhq.com/hooks/rqTRxGq1yRvvDT6axp0M/webhook-trigger/Lt2rfsXak8KkqufbSHcE
+
+# =============================================================================
+# TRUSTEDFORM CERTIFICATE API
+# =============================================================================
+# ActiveProspect TrustedForm API Key for certificate validation/retention
+# Used for backend validation and retention of TrustedForm certificates
+TRUSTEDFORM_API_KEY=65ed94b988010fe6327e3121723d7053
 
 # =============================================================================
 # API CONFIGURATION

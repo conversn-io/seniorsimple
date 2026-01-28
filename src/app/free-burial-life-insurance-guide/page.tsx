@@ -7,6 +7,7 @@ import { initializeTracking, trackPageView } from '@/lib/temp-tracking';
 import { getEmailValidationState } from '@/utils/email-validation';
 import { formatPhoneForInput, extractUSPhoneNumber } from '@/utils/phone-utils';
 import { AlertCircle, CheckCircle, X } from 'lucide-react';
+import { getTrustedFormCertUrl } from '@/components/tracking/TrustedForm';
 
 export default function FreeBurialLifeInsuranceGuidePage() {
   const router = useRouter();
@@ -122,10 +123,8 @@ export default function FreeBurialLifeInsuranceGuidePage() {
       };
       sessionStorage.setItem('final_expense_funnel_data', JSON.stringify(funnelData));
 
-      // Capture TrustedForm certificate URL from hidden input
-      const trustedFormCertUrl = typeof document !== 'undefined' 
-        ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-        : '';
+      // Capture TrustedForm certificate URL using helper function (more reliable)
+      const trustedFormCertUrl = getTrustedFormCertUrl() || '';
 
       // Submit to API for lead capture
       const response = await fetch('/api/leads/capture-email', {

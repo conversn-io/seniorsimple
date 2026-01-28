@@ -266,10 +266,8 @@ export const RetirementIncomeQuiz = ({ onStepChange }: RetirementIncomeQuizProps
   const handleLeadCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Capture TrustedForm certificate URL from hidden input
-    const trustedFormCertUrl = typeof document !== 'undefined' 
-      ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-      : '';
+    // Capture TrustedForm certificate URL using helper function (more reliable)
+    const trustedFormCertUrl = getTrustedFormCertUrl() || '';
     
     if (!firstName || !lastName || !email || !phone) return;
     if (emailValidationState !== 'valid' || phoneValidationState !== 'valid') return;

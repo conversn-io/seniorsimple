@@ -373,10 +373,8 @@ export const QuizQuestion = ({ question, onAnswer, currentAnswer, isLoading, fun
   const handlePersonalInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Capture TrustedForm certificate URL from hidden input
-    const trustedFormCertUrl = typeof document !== 'undefined' 
-      ? (document.getElementById('xxTrustedFormCertUrl') as HTMLInputElement)?.value || ''
-      : '';
+    // Capture TrustedForm certificate URL using helper function (more reliable)
+    const trustedFormCertUrl = getTrustedFormCertUrl() || '';
     
     console.log('📝 Form submit handler called:', {
       questionType: question.type,
