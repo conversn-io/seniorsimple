@@ -184,6 +184,13 @@ export default function RootLayout({
           src="https://api.visitoredge.com/api/website/run-cookie-script"
         />
         
+        {/* ContentSquare Analytics - Lazy Load */}
+        <Script
+          id="contentsquare-loader"
+          strategy="lazyOnload"
+          src="https://t.contentsquare.net/uxa/d494cfb6027da.js"
+        />
+        
         {/* LeadID Tracking - Deferred */}
         <Script
           id="LeadiDscript"

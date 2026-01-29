@@ -78,8 +78,14 @@ export async function POST(request: NextRequest) {
           // Always include path if available
           path: properties.path || (fullPageUrl ? new URL(fullPageUrl).pathname : null),
           search: properties.search || (fullPageUrl ? new URL(fullPageUrl).search : null),
-          // Ensure funnel_type is set
-          funnel_type: properties.funnel_type || (fullPageUrl?.includes('final-expense') ? 'final-expense-quote' : 'primary')
+          // Ensure funnel_type is set (with comprehensive detection)
+          funnel_type: properties.funnel_type || 
+            (fullPageUrl?.includes('reverse-mortgage') ? 'reverse-mortgage-calculator' :
+             fullPageUrl?.includes('final-expense') ? 'final-expense-quote' :
+             fullPageUrl?.includes('quiz-rmd') ? 'rmd-quiz' :
+             'primary'),
+          // CRITICAL: Always include site_key for funnel dropoff dashboard
+          site_key: 'seniorsimple.org'
         }
       })
       .select()

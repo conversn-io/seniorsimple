@@ -22,6 +22,25 @@ function getGHLWebhookUrl(funnelType: string | null | undefined): string {
   return ANNUITY_GHL_WEBHOOK_URL;
 }
 
+/** Format a Date as ISO 8601 string in Eastern (America/New_York) with offset for webhook payloads. */
+function toESTISOString(d: Date = new Date()): string {
+  const tz = 'America/New_York';
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  const isDST = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).format(d).includes('EDT');
+  const offsetStr = isDST ? '-04:00' : '-05:00';
+  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}.000${offsetStr}`;
+}
+
 export async function OPTIONS() {
   return handleCorsOptions();
 }
@@ -418,8 +437,8 @@ export async function POST(request: NextRequest) {
           ? Math.round((retirementSavings * allocationPercent) / 100)
           : retirementSavings);
     
-    // Extract originally_created timestamp
-    const originallyCreated = new Date().toISOString();
+    // Extract originally_created timestamp (EST for webhook payload)
+    const originallyCreated = toESTISOString();
     
     // Get the appropriate webhook URL based on funnel type
     const ghlWebhookUrl = getGHLWebhookUrl(funnelType);
@@ -726,7 +745,7 @@ export async function POST(request: NextRequest) {
         : 'SeniorSimple Quiz',
       funnelType: funnelType || lead.funnel_type || 'insurance',
       originallyCreated: originallyCreated,
-      timestamp: new Date().toISOString(),
+      timestamp: toESTISOString(),
       sessionId: sessionId || lead.session_id || '',
       leadScore: 75, // Default lead score
     };
@@ -1010,7 +1029,8 @@ export async function POST(request: NextRequest) {
           event_name: 'ghl_webhook_sent',
           session_id: sessionId,
           user_id: email,
-          event_data: {
+          properties: {
+            site_key: 'seniorsimple.org',
             lead_id: lead.id,
             webhook_url: ghlWebhookUrl,
             funnel_type: funnelType,

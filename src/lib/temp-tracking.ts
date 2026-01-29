@@ -4,6 +4,15 @@
  * This is a temporary solution to get ads live immediately.
  * Will be replaced with full Supabase server-side tracking later.
  * Mirrors RateRoots approach for consistency.
+ * 
+ * Sitewide Tracking Scripts (installed in layout.tsx):
+ * - GA4: Google Analytics 4
+ * - Meta Pixel: Facebook/Meta pixel tracking
+ * - ContentSquare: UX analytics (https://t.contentsquare.net/uxa/d494cfb6027da.js)
+ * - PageTest.ai: Performance testing
+ * - Consolidata: Analytics platform
+ * - Visitoredge: Cookie script
+ * - LeadID: Lead tracking
  */
 
 // Declare global interfaces for tracking
