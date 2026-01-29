@@ -607,6 +607,30 @@ export default function ReverseMortgageCalculatorPage() {
                     </button>
                   ))}
                 </div>
+                
+                {/* Trust Seals */}
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -631,6 +655,31 @@ export default function ReverseMortgageCalculatorPage() {
                     No, I'm under 62
                   </button>
                 </div>
+                
+                {/* Trust Seals */}
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
+                  </div>
+                </div>
+                
                 <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
                   <div className="flex items-start gap-2">
                     <svg className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
@@ -663,6 +712,31 @@ export default function ReverseMortgageCalculatorPage() {
                     No, I don't own a home
                   </button>
                 </div>
+                
+                {/* Trust Seals */}
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
+                  </div>
+                </div>
+                
                 <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
                   <p className="font-semibold mb-1">Why we ask:</p>
                   <p>You must own your home and live in it as your primary residence to qualify for a reverse mortgage.</p>
