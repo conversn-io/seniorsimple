@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
-import { useFunnelLayout } from '@/hooks/useFunnelFooter'
+import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout'
 import { 
   initializeTracking, 
   trackPageView, 
@@ -76,7 +76,7 @@ const calculateReverseMortgage = (data: PropertyLookupData, age: number): Revers
 }
 
 export default function ReverseMortgageCalculatorPage() {
-  useFunnelLayout()
+  useMinimalFunnelLayout()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [reason, setReason] = useState('')

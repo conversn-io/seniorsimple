@@ -4,12 +4,12 @@ import { useEffect } from 'react';
 import type { Metadata } from 'next';
 import QuizErrorBoundary from '@/components/quiz/QuizErrorBoundary';
 import { RMDQuiz } from '@/components/quiz/RMDQuiz';
-import { useFunnelLayout } from '@/hooks/useFunnelFooter';
+import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout';
 import '@/styles/quiz-mobile.css';
 
 // Note: Metadata export doesn't work with 'use client' - handled via useEffect
 export default function QuizRMDPage() {
-  useFunnelLayout(); // Sets header and footer to 'funnel'
+  useMinimalFunnelLayout(); // Sets header to 'funnel' and footer to 'minimal' for lead gen
 
   const handleQuizReset = () => {
     window.location.reload();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import QuizErrorBoundary from "../quiz/QuizErrorBoundary";
 import { AnnuityQuoteQuiz } from "../quiz/AnnuityQuoteQuiz";
-import { useFunnelLayout } from "../../hooks/useFunnelFooter";
+import { useMinimalFunnelLayout } from "../../hooks/useMinimalFunnelLayout";
 import { trackGA4Event } from "../../lib/temp-tracking";
 import "../../styles/quiz-mobile.css";
 
@@ -14,7 +14,7 @@ interface AnnuityQuoteQuizProps {
 type HeadlineVariant = 'A' | 'B';
 
 const AnnuityQuoteQuizPage = ({ skipOTP = false }: AnnuityQuoteQuizProps) => {
-  useFunnelLayout(); // This sets both header and footer to 'funnel'
+  useMinimalFunnelLayout(); // This sets header to 'funnel' and footer to 'minimal' for lead gen
   const [currentStep, setCurrentStep] = useState(0);
   const [headlineVariant, setHeadlineVariant] = useState<HeadlineVariant>('A');
   const showHeadline = currentStep === 0;

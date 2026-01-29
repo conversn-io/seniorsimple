@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import QuizErrorBoundary from '@/components/quiz/QuizErrorBoundary';
 import { RMDQuiz } from '@/components/quiz/RMDQuiz';
-import { useFunnelLayout } from '@/hooks/useFunnelFooter';
+import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout';
 import { initializeTracking, trackPageView } from '@/lib/temp-tracking';
 import '@/styles/quiz-mobile.css';
 
 export default function QuizRMDV1Page() {
-  useFunnelLayout(); // Sets header and footer to 'funnel'
+  useMinimalFunnelLayout(); // Sets header to 'funnel' and footer to 'minimal' for lead gen
 
   useEffect(() => {
     // Set landing page for booking backend routing
