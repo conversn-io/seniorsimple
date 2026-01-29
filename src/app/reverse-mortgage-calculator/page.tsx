@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout'
 import { 
@@ -901,6 +902,24 @@ export default function ReverseMortgageCalculatorPage() {
                     By submitting, you agree to be contacted by phone, text, or email. Message and data rates
                     may apply.
                   </p>
+                  
+                  {/* Reverse Mortgage Disclaimer */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="space-y-4 text-xs text-gray-600">
+                      <p>
+                        <strong className="text-gray-800">Lead Generation Service:</strong> SeniorSimple is not an offer to lend, does not make credit decisions, or fund loans. We connect consumers with licensed mortgage professionals. Loan approval and terms are subject to credit approval and qualification criteria determined by the lender.
+                      </p>
+                      <p>
+                        <strong className="text-gray-800">NMLS Compliance:</strong> SeniorSimple is a lead generation service. All mortgage professionals in our network are licensed and registered with the Nationwide Multistate Licensing System (NMLS). Loan terms, rates, and conditions are determined by individual lenders.
+                      </p>
+                      <p>
+                        <strong className="text-gray-800">Third Party Disclaimer:</strong> SeniorSimple is not affiliated with, endorsed by, or sponsored by Facebook, Meta, Google, or any other social media platform or technology company. All trademarks are the property of their respective owners.
+                      </p>
+                      <p className="text-gray-700">
+                        By using this website, you consent to our <Link href="/terms-of-service" className="underline hover:text-[#36596A]">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-[#36596A]">Privacy Policy</Link>. Your information may be shared with licensed mortgage professionals to provide you with loan options.
+                      </p>
+                    </div>
+                  </div>
                 </form>
               </div>
             )}
