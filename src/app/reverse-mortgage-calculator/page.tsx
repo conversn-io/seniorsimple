@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { useFunnelLayout } from '@/hooks/useFunnelFooter'
@@ -98,6 +98,9 @@ export default function ReverseMortgageCalculatorPage() {
   const [phoneError, setPhoneError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  
+  // Ref to prevent double-click race conditions (belt-and-suspenders with isSubmitting state)
+  const isSubmittingRef = useRef(false)
 
   // Tracking state for funnel analytics
   const [sessionId, setSessionId] = useState<string>('')
@@ -302,6 +305,14 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleLeadSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+    
+    // CRITICAL: Prevent double-click duplicates using ref (synchronous check)
+    // This catches rapid clicks before React state updates
+    if (isSubmittingRef.current) {
+      console.log('[DEBUG] 🔵 handleLeadSubmit blocked - already submitting (ref check)')
+      return
+    }
+    
     console.log('[DEBUG] 🔵 handleLeadSubmit called - START')
     setSubmitError('')
 
@@ -325,7 +336,12 @@ export default function ReverseMortgageCalculatorPage() {
       return
     }
     
-    console.log('[DEBUG] 🔵 All validations passed, proceeding to polling')
+    // CRITICAL: Set submitting state IMMEDIATELY after validations pass
+    // This prevents double-click duplicates during the TrustedForm polling period
+    isSubmittingRef.current = true
+    setIsSubmitting(true)
+    
+    console.log('[DEBUG] 🔵 All validations passed, isSubmitting=true, proceeding to polling')
 
     const sessionId =
       (typeof window !== 'undefined' && sessionStorage.getItem('session_id')) ||
@@ -448,7 +464,8 @@ export default function ReverseMortgageCalculatorPage() {
       hasFbc: !!metaCookies.fbc
     })
 
-    setIsSubmitting(true)
+    // Note: setIsSubmitting(true) is now called immediately after validations (before polling)
+    // to prevent double-click duplicates during the 7.5s TrustedForm polling period
 
     try {
       const response = await fetch('/api/leads/submit-without-otp', {
@@ -544,6 +561,7 @@ export default function ReverseMortgageCalculatorPage() {
       
       setSubmitError(error?.message || 'Unable to submit your request. Please try again.')
     } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
