@@ -593,7 +593,7 @@ export default function ReverseMortgageCalculatorPage() {
             {step === 1 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Why are you looking into reverse mortgage?’</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Why are you interested in a reverse mortgage?</h2>
                   
                 </div>
                 <div className="space-y-3">
