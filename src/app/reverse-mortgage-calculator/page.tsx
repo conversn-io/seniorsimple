@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout'
 import { 
@@ -902,25 +903,128 @@ export default function ReverseMortgageCalculatorPage() {
                     By submitting, you agree to be contacted by phone, text, or email. Message and data rates
                     may apply.
                   </p>
-                  
-                  {/* Reverse Mortgage Disclaimer */}
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="space-y-4 text-xs text-gray-600">
-                      <p>
-                        <strong className="text-gray-800">Lead Generation Service:</strong> SeniorSimple is not an offer to lend, does not make credit decisions, or fund loans. We connect consumers with licensed mortgage professionals. Loan approval and terms are subject to credit approval and qualification criteria determined by the lender.
-                      </p>
-                      <p>
-                        <strong className="text-gray-800">NMLS Compliance:</strong> SeniorSimple is a lead generation service. All mortgage professionals in our network are licensed and registered with the Nationwide Multistate Licensing System (NMLS). Loan terms, rates, and conditions are determined by individual lenders.
-                      </p>
-                      <p>
-                        <strong className="text-gray-800">Third Party Disclaimer:</strong> SeniorSimple is not affiliated with, endorsed by, or sponsored by Facebook, Meta, Google, or any other social media platform or technology company. All trademarks are the property of their respective owners.
-                      </p>
-                      <p className="text-gray-700">
-                        By using this website, you consent to our <Link href="/terms-of-service" className="underline hover:text-[#36596A]">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-[#36596A]">Privacy Policy</Link>. Your information may be shared with licensed mortgage professionals to provide you with loan options.
-                      </p>
+                </form>
+                
+                {/* Trust & Social Proof Section */}
+                <div className="mt-8 space-y-8">
+                  {/* BBB Trust Badge */}
+                  <div className="flex justify-center">
+                    <a 
+                      href="https://www.bbb.org/us/ca/san-diego/profile/sales-lead-generation/callready-1126-1000162767/#sealclick" 
+                      target="_blank" 
+                      rel="nofollow"
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <img 
+                        src="https://seal-central-northern-western-arizona.bbb.org/seals/blue-seal-200-42-bbb-1000162767.png" 
+                        style={{ border: 0 }} 
+                        alt="CallReady BBB Business Review" 
+                        className="h-auto"
+                      />
+                    </a>
+                  </div>
+
+                  {/* Lender Logos */}
+                  <div className="text-center">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4">We work with these lenders</h3>
+                    <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        <Image 
+                          src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" 
+                          alt="Fairway Independent Mortgage" 
+                          width={120} 
+                          height={48}
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        <img 
+                          src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" 
+                          alt="Finance of America Reverse" 
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        <Image 
+                          src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" 
+                          alt="Liberty Reverse Mortgage" 
+                          width={120} 
+                          height={48}
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        <img 
+                          src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" 
+                          alt="Longbridge Financial" 
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                        <Image 
+                          src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" 
+                          alt="Mutual of Omaha" 
+                          width={120} 
+                          height={48}
+                          className="h-12 w-auto object-contain"
+                        />
+                      </div>
                     </div>
                   </div>
-                </form>
+
+                  {/* Testimonial */}
+                  <div className="bg-gradient-to-br from-[#F5F5F0] to-[#E8E8E0] rounded-xl p-6 md:p-8">
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                      <div className="flex-shrink-0">
+                        <Image 
+                          src="/images/reverse-mortgage/gary-social-proof.jpeg" 
+                          alt="Harold & Linda" 
+                          width={120} 
+                          height={120}
+                          className="rounded-full object-cover w-24 h-24 md:w-28 md:h-28"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1 mb-3">
+                          {[...Array(5)].map((_, i) => (
+                            <svg key={i} className="h-5 w-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                        <blockquote className="text-gray-800 text-lg md:text-xl font-medium mb-3 italic">
+                          "We eliminated our mortgage payment and now have extra money each month. Best decision for retirement."
+                        </blockquote>
+                        <p className="text-gray-600 font-semibold">— Harold & Linda, Arizona</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stat Line */}
+                  <div className="text-center">
+                    <p className="text-gray-700 text-base md:text-lg font-semibold">
+                      Over <span className="text-[#36596A]">25,000</span> seniors have unlocked their HECM reverse mortgage with us
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Reverse Mortgage Disclaimer */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="space-y-4 text-xs text-gray-600">
+                    <p>
+                      <strong className="text-gray-800">Lead Generation Service:</strong> SeniorSimple is not an offer to lend, does not make credit decisions, or fund loans. We connect consumers with licensed mortgage professionals. Loan approval and terms are subject to credit approval and qualification criteria determined by the lender.
+                    </p>
+                    <p>
+                      <strong className="text-gray-800">NMLS Compliance:</strong> SeniorSimple is a lead generation service. All mortgage professionals in our network are licensed and registered with the Nationwide Multistate Licensing System (NMLS). Loan terms, rates, and conditions are determined by individual lenders.
+                    </p>
+                    <p>
+                      <strong className="text-gray-800">Third Party Disclaimer:</strong> SeniorSimple is not affiliated with, endorsed by, or sponsored by Facebook, Meta, Google, or any other social media platform or technology company. All trademarks are the property of their respective owners.
+                    </p>
+                    <p className="text-gray-700">
+                      By using this website, you consent to our <Link href="/terms-of-service" className="underline hover:text-[#36596A]">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-[#36596A]">Privacy Policy</Link>. Your information may be shared with licensed mortgage professionals to provide you with loan options.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
