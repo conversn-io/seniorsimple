@@ -228,8 +228,8 @@ export default function ReverseMortgageCalculatorPage() {
     
     setStep(2)
     
-    // Smooth scroll to progress bar on mobile after first question
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+    // Smooth scroll to progress bar after first question
+    if (typeof window !== 'undefined') {
       setTimeout(() => {
         progressBarRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
