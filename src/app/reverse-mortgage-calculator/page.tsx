@@ -103,6 +103,9 @@ export default function ReverseMortgageCalculatorPage() {
   
   // Ref to prevent double-click race conditions (belt-and-suspenders with isSubmitting state)
   const isSubmittingRef = useRef(false)
+  
+  // Ref for smooth scroll to progress bar on mobile
+  const progressBarRef = useRef<HTMLDivElement>(null)
 
   // Tracking state for funnel analytics
   const [sessionId, setSessionId] = useState<string>('')
@@ -224,6 +227,16 @@ export default function ReverseMortgageCalculatorPage() {
     })
     
     setStep(2)
+    
+    // Smooth scroll to progress bar on mobile after first question
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setTimeout(() => {
+        progressBarRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        })
+      }, 100) // Small delay to allow state update
+    }
   }
 
   const handleAge62Check = (is62: boolean) => {
@@ -634,7 +647,7 @@ export default function ReverseMortgageCalculatorPage() {
           {/* Main Form Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
             {/* Progress Bar */}
-            <div className="mb-6">
+            <div ref={progressBarRef} className="mb-6 scroll-mt-4">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
                 <span className="text-gray-500">Fast, no-obligation estimate</span>
