@@ -979,110 +979,7 @@ export default function ReverseMortgageCalculatorPage() {
                   </p>
                 </form>
                 
-                {/* Trust & Social Proof Section */}
-                <div className="mt-8 space-y-8">
-                  {/* BBB Trust Badge */}
-                  <div className="flex justify-center">
-                    <a 
-                      href="https://www.bbb.org/us/ca/san-diego/profile/sales-lead-generation/callready-1126-1000162767/#sealclick" 
-                      target="_blank" 
-                      rel="nofollow"
-                      className="hover:opacity-80 transition-opacity"
-                    >
-                      <img 
-                        src="https://seal-central-northern-western-arizona.bbb.org/seals/blue-seal-200-42-bbb-1000162767.png" 
-                        style={{ border: 0 }} 
-                        alt="CallReady BBB Business Review" 
-                        className="h-auto"
-                      />
-                    </a>
-                  </div>
-
-                  {/* Lender Logos */}
-                  <div className="text-center">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">We work with these lenders</h3>
-                    <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
-                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                        <Image 
-                          src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" 
-                          alt="Fairway Independent Mortgage" 
-                          width={120} 
-                          height={48}
-                          className="h-12 w-auto object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                        <img 
-                          src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" 
-                          alt="Finance of America Reverse" 
-                          className="h-12 w-auto object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                        <Image 
-                          src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" 
-                          alt="Liberty Reverse Mortgage" 
-                          width={120} 
-                          height={48}
-                          className="h-12 w-auto object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                        <img 
-                          src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" 
-                          alt="Longbridge Financial" 
-                          className="h-12 w-auto object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                        <Image 
-                          src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" 
-                          alt="Mutual of Omaha" 
-                          width={120} 
-                          height={48}
-                          className="h-12 w-auto object-contain"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Testimonial */}
-                  <div className="bg-gradient-to-br from-[#F5F5F0] to-[#E8E8E0] rounded-xl p-6 md:p-8">
-                    <div className="flex flex-col md:flex-row gap-6 items-start">
-                      <div className="flex-shrink-0">
-                        <Image 
-                          src="/images/reverse-mortgage/gary-social-proof.jpeg" 
-                          alt="Harold & Linda" 
-                          width={120} 
-                          height={120}
-                          className="rounded-full object-cover w-24 h-24 md:w-28 md:h-28"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-1 mb-3">
-                          {[...Array(5)].map((_, i) => (
-                            <svg key={i} className="h-5 w-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
-                        <blockquote className="text-gray-800 text-lg md:text-xl font-medium mb-3 italic">
-                          "We eliminated our mortgage payment and now have extra money each month. Best decision for retirement."
-                        </blockquote>
-                        <p className="text-gray-600 font-semibold">— Harold & Linda, Arizona</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stat Line */}
-                  <div className="text-center">
-                    <p className="text-gray-700 text-base md:text-lg font-semibold">
-                      Over <span className="text-[#36596A]">25,000</span> seniors have unlocked their HECM reverse mortgage with us
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Reverse Mortgage Disclaimer */}
+{/* Reverse Mortgage Disclaimer */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="space-y-4 text-xs text-gray-600">
                     <p>
@@ -1113,6 +1010,109 @@ export default function ReverseMortgageCalculatorPage() {
               </button>
             </div>
           )}
+
+          {/* Trust & Social Proof Section - Shows on ALL steps */}
+          <div className="mt-8 space-y-6">
+            {/* BBB Trust Badge */}
+            <div className="flex justify-center">
+              <a 
+                href="https://www.bbb.org/us/ca/san-diego/profile/sales-lead-generation/callready-1126-1000162767/#sealclick" 
+                target="_blank" 
+                rel="nofollow"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="https://seal-central-northern-western-arizona.bbb.org/seals/blue-seal-200-42-bbb-1000162767.png" 
+                  style={{ border: 0 }} 
+                  alt="CallReady BBB Business Review" 
+                  className="h-auto"
+                />
+              </a>
+            </div>
+
+            {/* Lender Logos */}
+            <div className="text-center">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">We work with these lenders</h3>
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                  <Image 
+                    src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" 
+                    alt="Fairway Independent Mortgage" 
+                    width={100} 
+                    height={40}
+                    className="h-10 w-auto object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" 
+                    alt="Finance of America Reverse" 
+                    className="h-10 w-auto object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                  <Image 
+                    src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" 
+                    alt="Liberty Reverse Mortgage" 
+                    width={100} 
+                    height={40}
+                    className="h-10 w-auto object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" 
+                    alt="Longbridge Financial" 
+                    className="h-10 w-auto object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
+                  <Image 
+                    src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" 
+                    alt="Mutual of Omaha" 
+                    width={100} 
+                    height={40}
+                    className="h-10 w-auto object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial */}
+            <div className="bg-gradient-to-br from-[#F5F5F0] to-[#E8E8E0] rounded-xl p-5 md:p-6">
+              <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
+                <div className="flex-shrink-0">
+                  <Image 
+                    src="/images/reverse-mortgage/gary-social-proof.jpeg" 
+                    alt="Harold & Linda" 
+                    width={80} 
+                    height={80}
+                    className="rounded-full object-cover w-20 h-20"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex items-center justify-center md:justify-start gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <blockquote className="text-gray-800 text-base md:text-lg font-medium mb-2 italic">
+                    "We eliminated our mortgage payment and now have extra money each month. Best decision for retirement."
+                  </blockquote>
+                  <p className="text-gray-600 font-semibold text-sm">— Harold & Linda, Arizona</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Stat Line */}
+            <div className="text-center">
+              <p className="text-gray-700 text-sm md:text-base font-semibold">
+                Over <span className="text-[#36596A]">25,000</span> seniors have unlocked their HECM reverse mortgage with us
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
