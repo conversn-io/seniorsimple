@@ -979,22 +979,12 @@ export default function ReverseMortgageCalculatorPage() {
                   </p>
                 </form>
                 
-{/* Reverse Mortgage Disclaimer */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="space-y-4 text-xs text-gray-600">
-                    <p>
-                      <strong className="text-gray-800">Lead Generation Service:</strong> SeniorSimple is not an offer to lend, does not make credit decisions, or fund loans. We connect consumers with licensed mortgage professionals. Loan approval and terms are subject to credit approval and qualification criteria determined by the lender.
-                    </p>
-                    <p>
-                      <strong className="text-gray-800">NMLS Compliance:</strong> SeniorSimple is a lead generation service. All mortgage professionals in our network are licensed and registered with the Nationwide Multistate Licensing System (NMLS). Loan terms, rates, and conditions are determined by individual lenders.
-                    </p>
-                    <p>
-                      <strong className="text-gray-800">Third Party Disclaimer:</strong> SeniorSimple is not affiliated with, endorsed by, or sponsored by Facebook, Meta, Google, or any other social media platform or technology company. All trademarks are the property of their respective owners.
-                    </p>
-                    <p className="text-gray-700">
-                      By using this website, you consent to our <Link href="/terms-of-service" className="underline hover:text-[#36596A]">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-[#36596A]">Privacy Policy</Link>. Your information may be shared with licensed mortgage professionals to provide you with loan options.
-                    </p>
-                  </div>
+{/* Brief Disclaimer */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 text-center">
+                    SeniorSimple is not an offer to lend. We connect you with licensed mortgage professionals. 
+                    Loan approval subject to lender criteria.
+                  </p>
                 </div>
               </div>
             )}
@@ -1030,50 +1020,27 @@ export default function ReverseMortgageCalculatorPage() {
               </a>
             </div>
 
-            {/* Lender Logos */}
+            {/* Lender Logos - Scrolling Carousel */}
             <div className="text-center">
-              <h3 className="text-sm font-semibold text-gray-700 mb-4">We work with these lenders</h3>
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                  <Image 
-                    src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" 
-                    alt="Fairway Independent Mortgage" 
-                    width={100} 
-                    height={40}
-                    className="h-10 w-auto object-contain"
-                  />
-                </div>
-                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                  <img 
-                    src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" 
-                    alt="Finance of America Reverse" 
-                    className="h-10 w-auto object-contain"
-                  />
-                </div>
-                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                  <Image 
-                    src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" 
-                    alt="Liberty Reverse Mortgage" 
-                    width={100} 
-                    height={40}
-                    className="h-10 w-auto object-contain"
-                  />
-                </div>
-                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                  <img 
-                    src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" 
-                    alt="Longbridge Financial" 
-                    className="h-10 w-auto object-contain"
-                  />
-                </div>
-                <div className="flex items-center justify-center h-10 w-auto opacity-70 hover:opacity-100 transition-opacity">
-                  <Image 
-                    src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" 
-                    alt="Mutual of Omaha" 
-                    width={100} 
-                    height={40}
-                    className="h-10 w-auto object-contain"
-                  />
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">We work with these lenders</h3>
+              <div className="relative overflow-hidden">
+                <div className="flex animate-scroll-logos gap-8 whitespace-nowrap">
+                  {/* First set of logos */}
+                  <div className="flex items-center gap-8 shrink-0">
+                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                  </div>
+                  {/* Duplicate set for seamless loop */}
+                  <div className="flex items-center gap-8 shrink-0">
+                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                  </div>
                 </div>
               </div>
             </div>

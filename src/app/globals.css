@@ -485,3 +485,27 @@ input:focus-visible {
     font-size: 16px;
   }
 }
+
+/* Scrolling Logo Carousel */
+@keyframes scroll-logos {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-logos {
+  animation: scroll-logos 20s linear infinite;
+}
+
+.animate-scroll-logos:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-logos {
+    animation: none;
+  }
+}
