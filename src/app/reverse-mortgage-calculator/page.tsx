@@ -647,7 +647,7 @@ export default function ReverseMortgageCalculatorPage() {
           {/* Main Form Card - Sticky from Step 2 onwards */}
           <div 
             ref={progressBarRef}
-            className={`bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8 ${step > 1 ? 'sticky top-0 z-40' : ''}`}
+            className={`bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8 scroll-mt-20 ${step > 1 ? 'sticky top-0 z-40' : ''}`}
           >
             {/* Progress Bar */}
             <div className="mb-6">
