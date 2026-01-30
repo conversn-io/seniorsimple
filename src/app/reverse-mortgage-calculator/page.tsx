@@ -227,6 +227,16 @@ export default function ReverseMortgageCalculatorPage() {
     })
     
     setStep(2)
+    
+    // Scroll to progress bar after first question (anchor to quiz)
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        progressBarRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        })
+      }, 100)
+    }
   }
 
   const handleAge62Check = (is62: boolean) => {
@@ -634,26 +644,25 @@ export default function ReverseMortgageCalculatorPage() {
             </div>
           </div>
 
-          {/* Sticky Progress Bar */}
-          <div ref={progressBarRef} className="sticky top-0 z-40 bg-[#F5F5F0] pt-2 pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
-                  <span className="text-gray-500 text-xs sm:text-sm">Fast, no-obligation estimate</span>
-                </div>
-                <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-[#36596A] to-[#4a7a8a] rounded-full transition-all duration-300"
-                    style={{ width: `${(step / 5) * 100}%` }}
-                  />
-                </div>
+          {/* Main Form Card - Sticky from Step 2 onwards */}
+          <div 
+            ref={progressBarRef}
+            className={`bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8 ${step > 1 ? 'sticky top-0 z-40' : ''}`}
+          >
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
+                <span className="text-gray-500">Fast, no-obligation estimate</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#36596A] to-[#4a7a8a] rounded-full transition-all duration-300"
+                  style={{ width: `${(step / 5) * 100}%` }}
+                />
               </div>
             </div>
-          </div>
 
-          {/* Main Form Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
             {/* Form Intro - Only on Step 1 */}
             {step === 1 && (
               <p className="text-center text-gray-600 mb-4 text-sm">
