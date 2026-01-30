@@ -6,10 +6,10 @@ import MinimalFunnelFooter from './MinimalFunnelFooter';
 import { useFooter } from '../contexts/FooterContext';
 
 const ConditionalFooter = () => {
-  const { footerType } = useFooter();
+  const { footerType, footerVariant } = useFooter();
   
   if (footerType === 'minimal') {
-    return <MinimalFunnelFooter />;
+    return <MinimalFunnelFooter variant={footerVariant} />;
   }
   
   return footerType === 'funnel' ? <FunnelFooter /> : <Footer />;

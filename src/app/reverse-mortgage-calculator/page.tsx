@@ -78,7 +78,7 @@ const calculateReverseMortgage = (data: PropertyLookupData, age: number): Revers
 }
 
 export default function ReverseMortgageCalculatorPage() {
-  useMinimalFunnelLayout()
+  useMinimalFunnelLayout({ variant: 'mortgage' })
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [reason, setReason] = useState('')

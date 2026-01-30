@@ -1,5 +1,9 @@
 import Link from 'next/link';
 
+interface MinimalFunnelFooterProps {
+  variant?: 'insurance' | 'mortgage';
+}
+
 /**
  * MinimalFunnelFooter - Limited footer for lead generation funnels
  * 
@@ -9,8 +13,10 @@ import Link from 'next/link';
  * - Basic disclaimers (required for insurance/financial products)
  * 
  * Used on conversion-focused funnel pages to minimize distraction.
+ * 
+ * @param variant - 'insurance' (default) or 'mortgage' for appropriate disclaimers
  */
-const MinimalFunnelFooter = () => {
+const MinimalFunnelFooter = ({ variant = 'insurance' }: MinimalFunnelFooterProps) => {
   return (
     <footer className="py-8 px-6 bg-gray-50 border-t border-gray-200">
       <div className="max-w-4xl mx-auto">
@@ -46,25 +52,44 @@ const MinimalFunnelFooter = () => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <h3 className="text-sm font-semibold text-yellow-800 mb-3">Important Disclaimers</h3>
             <div className="text-xs text-yellow-800 space-y-2">
-              <p>
-                <strong>Insurance Products:</strong> Insurance products are offered through licensed insurance professionals. 
-                Not all products are available in all states. Product availability and terms may vary by state.
-              </p>
-              <p>
-                <strong>Financial Advice:</strong> The information provided is for educational purposes only and does not 
-                constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions.
-              </p>
-              <p>
-                <strong>Licensing:</strong> Our licensed professionals are authorized to sell insurance products in the states 
-                where they are licensed. Licensing information is available upon request.
-              </p>
+              {variant === 'mortgage' ? (
+                <>
+                  <p>
+                    <strong>Not an Offer to Lend:</strong> SeniorSimple is not a lender, does not make credit decisions, 
+                    and does not fund loans. We connect consumers with licensed mortgage professionals who may contact you.
+                  </p>
+                  <p>
+                    <strong>Loan Approval:</strong> Loan approval and terms are subject to credit approval and qualification 
+                    criteria determined by the lender. Not all applicants will qualify.
+                  </p>
+                  <p>
+                    <strong>HECM Information:</strong> A Home Equity Conversion Mortgage (HECM) is a federally insured reverse 
+                    mortgage. Borrowers must meet FHA requirements including age, equity, and property type.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <strong>Insurance Products:</strong> Insurance products are offered through licensed insurance professionals. 
+                    Not all products are available in all states. Product availability and terms may vary by state.
+                  </p>
+                  <p>
+                    <strong>Financial Advice:</strong> The information provided is for educational purposes only and does not 
+                    constitute financial, tax, or legal advice. Consult with qualified professionals before making financial decisions.
+                  </p>
+                  <p>
+                    <strong>Licensing:</strong> Our licensed professionals are authorized to sell insurance products in the states 
+                    where they are licensed. Licensing information is available upon request.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
           {/* Copyright */}
           <div className="text-center pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              © {new Date().getFullYear()} SeniorSimple. All rights reserved. | Licensed Insurance Agency
+              © {new Date().getFullYear()} SeniorSimple. All rights reserved.{variant === 'mortgage' ? '' : ' | Licensed Insurance Agency'}
             </p>
           </div>
         </div>
