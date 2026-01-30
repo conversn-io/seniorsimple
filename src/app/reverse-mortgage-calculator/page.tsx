@@ -570,122 +570,156 @@ export default function ReverseMortgageCalculatorPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
-      <section className="py-10 px-4 sm:px-6 lg:px-8">
+      {/* Urgency Banner */}
+      <div className="bg-yellow-100 border-b border-yellow-200 py-2.5 px-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-center gap-2 text-center">
+          <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+          </svg>
+          <p className="text-sm font-semibold text-yellow-800">
+            2026 Reverse Mortgage Savings Just Released — See What You Qualify For Today
+          </p>
+        </div>
+      </div>
+
+      <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
+          {/* Hero Section - Above the Fold */}
           <div className="text-center mb-6">
-            <span className="inline-flex items-center rounded-full bg-[#E4CDA1] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#36596A]">
-              Reverse Mortgage Calculator
-            </span>
-            <h1 className="mt-4 text-3xl sm:text-4xl font-serif font-semibold text-[#36596A]">
-              See how much tax-free equity you could access
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#36596A] leading-tight">
+              Find Out How to Stop Paying Your Mortgage After 62
             </h1>
-            <p className="mt-3 text-base sm:text-lg text-gray-600">
-              Answer a few quick questions to check your eligibility and estimate potential proceeds.
+            <p className="mt-4 text-lg sm:text-xl text-gray-600">
+              Use your home's value to retire with less stress — check your eligibility in under 60 seconds.
             </p>
           </div>
 
+          {/* Benefits List - Above the Fold */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
+            {[
+              'Eliminate monthly mortgage payments',
+              'Access tax-free home equity',
+              'Keep ownership of your home',
+              'No impact to your credit score'
+            ].map((benefit, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm text-gray-700">{benefit}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust Badges - Above the Fold */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+              </svg>
+              <span className="text-xs font-medium text-gray-700">FHA Insured Lenders</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="text-xs font-medium text-gray-700">TrustedForm Certified</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+              <span className="text-xs font-bold text-blue-700">BBB</span>
+              <span className="text-xs font-medium text-gray-700">A+ Accredited</span>
+            </div>
+          </div>
+
+          {/* Main Form Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
-            <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-              <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
-              <span>Fast, no-obligation estimate</span>
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
+                <span className="text-gray-500">Fast, no-obligation estimate</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#36596A] to-[#4a7a8a] rounded-full transition-all duration-300"
+                  style={{ width: `${(step / 5) * 100}%` }}
+                />
+              </div>
             </div>
 
+            {/* Form Intro - Only on Step 1 */}
             {step === 1 && (
-              <div className="space-y-6">
+              <p className="text-center text-gray-600 mb-4 text-sm">
+                Answer a few short questions to see how much home equity you could unlock.
+              </p>
+            )}
+
+            {step === 1 && (
+              <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Why are you interested in a reverse mortgage?</h2>
-                  
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">What's your main goal with a reverse mortgage?</h2>
                 </div>
-                <div className="space-y-3">
+                <div className="grid gap-3">
                   {REASON_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      className="quiz-button w-full border-2 border-[#36596A] text-[#36596A] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#36596A] hover:text-white transition-colors text-left"
+                      className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
                       onClick={() => handleReasonSelect(option.value)}
                     >
-                      {option.label}
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-semibold text-gray-800 group-hover:text-[#36596A] capitalize">
+                          {option.label}
+                        </span>
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </button>
                   ))}
-                </div>
-                
-                {/* Trust Seals */}
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
-                  </div>
                 </div>
               </div>
             )}
 
             {step === 2 && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Are you 62 or above?</h2>
-                  <p className="mt-2 text-gray-600">This quick check ensures you qualify for a HECM reverse mortgage.</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Are you 62 or older?</h2>
+                  <p className="mt-2 text-gray-600 text-sm">This ensures you qualify for the HECM program.</p>
                 </div>
-                <div className="space-y-3">
+                <div className="grid gap-3">
                   <button
-                    className="quiz-button w-full border-2 border-[#228B22] text-[#228B22] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#228B22] hover:text-white transition-colors flex items-center justify-center gap-2"
+                    className="group w-full bg-green-50 border-2 border-green-200 rounded-xl py-4 px-5 text-left hover:border-green-500 hover:bg-green-100 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                     onClick={() => handleAge62Check(true)}
                   >
-                    <CheckCircle className="h-5 w-5" />
-                    Yes, I am 62+
-                  </button>
-                  <button
-                    className="quiz-button w-full border-2 border-gray-300 text-gray-600 rounded-xl py-4 px-6 text-lg font-semibold hover:bg-gray-100 transition-colors"
-                    onClick={() => handleAge62Check(false)}
-                  >
-                    No, I'm under 62
-                  </button>
-                </div>
-                
-                {/* Trust Seals */}
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        <span className="text-base font-semibold text-gray-800">Yes, I am 62+</span>
+                      </div>
+                      <svg className="w-5 h-5 text-green-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
-                  </div>
+                  </button>
+                  <button
+                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                    onClick={() => handleAge62Check(false)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-semibold text-gray-600">No, I'm under 62</span>
+                      <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
                 
-                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+                <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-sm">
                   <div className="flex items-start gap-2">
                     <svg className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
-                    <div>
-                      <p className="font-semibold mb-1">Why 62+?</p>
-                      <p>The HECM program (Home Equity Conversion Mortgage) is a federally insured loan designed specifically for seniors 62 and older to access their home equity.</p>
+                    <div className="text-blue-700">
+                      <p className="font-semibold mb-0.5">Why 62+?</p>
+                      <p className="text-blue-600">HECM reverse mortgages are federally insured loans designed for seniors 62 and older.</p>
                     </div>
                   </div>
                 </div>
@@ -693,53 +727,39 @@ export default function ReverseMortgageCalculatorPage() {
             )}
 
             {step === 3 && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Great! Do you own your home?</h2>
-                  <p className="mt-2 text-gray-600">Reverse mortgages require home ownership.</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Great! Do you own your home?</h2>
+                  <p className="mt-2 text-gray-600 text-sm">Reverse mortgages require home ownership.</p>
                 </div>
-                <div className="space-y-3">
+                <div className="grid gap-3">
                   <button
-                    className="quiz-button w-full border-2 border-[#36596A] text-[#36596A] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#36596A] hover:text-white transition-colors"
+                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
                     onClick={() => handleHomeownerCheck(true)}
                   >
-                    Yes, I own a home
-                  </button>
-                  <button
-                    className="quiz-button w-full border-2 border-[#36596A] text-[#36596A] rounded-xl py-4 px-6 text-lg font-semibold hover:bg-[#36596A] hover:text-white transition-colors"
-                    onClick={() => handleHomeownerCheck(false)}
-                  >
-                    No, I don't own a home
-                  </button>
-                </div>
-                
-                {/* Trust Seals */}
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <svg className="w-6 h-6 text-[#36596A]" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                        <span className="text-base font-semibold text-gray-800">Yes, I own a home</span>
+                      </div>
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                    <span className="text-sm text-gray-600">Doesn't affect credit score</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">FHA Insured Lenders</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-6 h-6 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    <span className="text-sm text-gray-600">TrustedForm Certified</span>
-                  </div>
-                </div>
-                
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                  <p className="font-semibold mb-1">Why we ask:</p>
-                  <p>You must own your home and live in it as your primary residence to qualify for a reverse mortgage.</p>
+                  </button>
+                  <button
+                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                    onClick={() => handleHomeownerCheck(false)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-semibold text-gray-600">No, I don't own a home</span>
+                      <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
@@ -1001,83 +1021,63 @@ export default function ReverseMortgageCalculatorPage() {
             </div>
           )}
 
-          {/* Trust & Social Proof Section - Shows on ALL steps */}
-          <div className="mt-8 space-y-6">
-            {/* BBB Trust Badge */}
-            <div className="flex justify-center">
-              <a 
-                href="https://www.bbb.org/us/ca/san-diego/profile/sales-lead-generation/callready-1126-1000162767/#sealclick" 
-                target="_blank" 
-                rel="nofollow"
-                className="hover:opacity-80 transition-opacity"
-              >
-                <img 
-                  src="https://seal-central-northern-western-arizona.bbb.org/seals/blue-seal-200-42-bbb-1000162767.png" 
-                  style={{ border: 0 }} 
-                  alt="CallReady BBB Business Review" 
-                  className="h-auto"
+          {/* Testimonial - Immediately below question box */}
+          <div className="mt-6 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex-shrink-0">
+                <Image 
+                  src="/images/reverse-mortgage/gary-social-proof.jpeg" 
+                  alt="Harold & Linda" 
+                  width={72} 
+                  height={72}
+                  className="rounded-full object-cover w-[72px] h-[72px] border-2 border-yellow-200"
                 />
-              </a>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-0.5 mb-1.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <blockquote className="text-gray-700 text-sm md:text-base font-medium mb-1 italic">
+                  "We eliminated our mortgage payment and now have extra money each month. Best decision for retirement."
+                </blockquote>
+                <p className="text-gray-500 font-semibold text-xs">— Harold & Linda, Arizona</p>
+              </div>
             </div>
+          </div>
 
+          {/* Social Proof Stats & Lender Logos */}
+          <div className="mt-6 space-y-4">
+            <div className="text-center">
+              <p className="text-gray-600 text-sm font-medium">
+                Over <span className="text-[#36596A] font-bold">25,000</span> seniors have unlocked their HECM reverse mortgage
+              </p>
+            </div>
+            
             {/* Lender Logos - Scrolling Carousel */}
             <div className="text-center">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">We work with these lenders</h3>
+              <p className="text-xs text-gray-500 mb-2">We work with FHA-approved lenders</p>
               <div className="relative overflow-hidden">
                 <div className="flex animate-scroll-logos gap-8 whitespace-nowrap">
-                  {/* First set of logos */}
                   <div className="flex items-center gap-8 shrink-0">
-                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
-                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-9 w-auto object-contain opacity-70" />
-                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
-                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-9 w-auto object-contain opacity-70" />
-                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
+                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-8 w-auto object-contain opacity-60" />
+                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
+                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-8 w-auto object-contain opacity-60" />
+                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
                   </div>
-                  {/* Duplicate set for seamless loop */}
                   <div className="flex items-center gap-8 shrink-0">
-                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
-                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-9 w-auto object-contain opacity-70" />
-                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
-                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-9 w-auto object-contain opacity-70" />
-                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={100} height={36} className="h-9 w-auto object-contain opacity-70" />
+                    <Image src="/images/reverse-mortgage/hecm-fairway-v2-C44Kfmpg.png" alt="Fairway" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
+                    <img src="/images/reverse-mortgage/hecm-foa-v2-BhkOzSiY.svg" alt="Finance of America" className="h-8 w-auto object-contain opacity-60" />
+                    <Image src="/images/reverse-mortgage/hecm-liberty-v2-CI0zV1UA.png" alt="Liberty" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
+                    <img src="/images/reverse-mortgage/hecm-longbridge-v2-BiwnW6hZ.svg" alt="Longbridge" className="h-8 w-auto object-contain opacity-60" />
+                    <Image src="/images/reverse-mortgage/hecm-mutual-of-omaha-v2-DOh_uUFS.webp" alt="Mutual of Omaha" width={90} height={32} className="h-8 w-auto object-contain opacity-60" />
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Testimonial */}
-            <div className="bg-gradient-to-br from-[#F5F5F0] to-[#E8E8E0] rounded-xl p-5 md:p-6">
-              <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
-                <div className="flex-shrink-0">
-                  <Image 
-                    src="/images/reverse-mortgage/gary-social-proof.jpeg" 
-                    alt="Harold & Linda" 
-                    width={80} 
-                    height={80}
-                    className="rounded-full object-cover w-20 h-20"
-                  />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <blockquote className="text-gray-800 text-base md:text-lg font-medium mb-2 italic">
-                    "We eliminated our mortgage payment and now have extra money each month. Best decision for retirement."
-                  </blockquote>
-                  <p className="text-gray-600 font-semibold text-sm">— Harold & Linda, Arizona</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Stat Line */}
-            <div className="text-center">
-              <p className="text-gray-700 text-sm md:text-base font-semibold">
-                Over <span className="text-[#36596A]">25,000</span> seniors have unlocked their HECM reverse mortgage with us
-              </p>
             </div>
           </div>
         </div>
