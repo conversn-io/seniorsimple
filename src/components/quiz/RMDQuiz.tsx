@@ -189,27 +189,63 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
     }
     setSessionId(newSessionId);
 
-    // Check if coming from booking backend landing pages
+    // Check current URL path to determine variant (highest priority)
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : null;
     const landingPage = typeof window !== 'undefined' ? sessionStorage.getItem('landing_page') : null;
     const storedLandingPageVariant = typeof window !== 'undefined' ? sessionStorage.getItem('landing_page_variant') : null;
     const storedEntryVariant = typeof window !== 'undefined' ? sessionStorage.getItem('entryVariant') : null;
     
-    // Set booking backend flag if landing_page indicates booking funnel
-    if (landingPage === '/quiz-rmd-v1' || landingPage === '/quiz-rmd-v2') {
+    // Check for query parameter override (for testing)
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const queryEntryVariant = urlParams?.get('entry');
+    const queryVariant = urlParams?.get('variant');
+    
+    // Determine entry variant based on URL path (highest priority)
+    let assignedEntryVariant: EntryVariant;
+    let assignedLandingPageVariant: string | null = null;
+    
+    // Priority 1: Query parameter override (for testing)
+    if (queryEntryVariant === 'start_button' || queryEntryVariant === 'immediate_q1') {
+      assignedEntryVariant = queryEntryVariant;
+      if (queryVariant === 'rmd_v1' || queryVariant === 'rmd_v2') {
+        assignedLandingPageVariant = queryVariant;
+        setLandingPageVariant(queryVariant);
+      }
       setIsBookingBackend(true);
-      setLandingPageVariant(storedLandingPageVariant);
-      console.log('✅ Booking backend detected:', { landingPage, variant: storedLandingPageVariant });
+      console.log('✅ Query parameter override detected:', { entry: queryEntryVariant, variant: queryVariant });
+    } else if (currentPath === '/quiz-rmd-v1') {
+      // Priority 2: URL path detection
+      assignedEntryVariant = 'start_button';
+      assignedLandingPageVariant = 'rmd_v1';
+      setIsBookingBackend(true);
+      setLandingPageVariant('rmd_v1');
+      console.log('✅ Detected /quiz-rmd-v1 - Using start_button variant');
+    } else if (currentPath === '/quiz-rmd-v2') {
+      assignedEntryVariant = 'immediate_q1';
+      assignedLandingPageVariant = 'rmd_v2';
+      setIsBookingBackend(true);
+      setLandingPageVariant('rmd_v2');
+      console.log('✅ Detected /quiz-rmd-v2 - Using immediate_q1 variant');
+    } else if (storedEntryVariant === 'start_button' || storedEntryVariant === 'immediate_q1') {
+      // Priority 3: Use stored entry variant from sessionStorage (for booking backend flow)
+      assignedEntryVariant = storedEntryVariant;
+      assignedLandingPageVariant = storedLandingPageVariant;
+      if (landingPage === '/quiz-rmd-v1' || landingPage === '/quiz-rmd-v2') {
+        setIsBookingBackend(true);
+        setLandingPageVariant(storedLandingPageVariant);
+        console.log('✅ Booking backend detected from sessionStorage:', { landingPage, variant: storedLandingPageVariant });
+      }
+    } else {
+      // Priority 4: Use random assignment for base /quiz-rmd page
+      assignedEntryVariant = getAssignedEntryVariant();
+      console.log('✅ Using random assignment for entry variant:', assignedEntryVariant);
     }
+    
+    setEntryVariant(assignedEntryVariant);
 
-    // Get assigned variants
+    // Get assigned variant
     const assignedVariant = getAssignedVariant();
     setVariant(assignedVariant);
-    
-    // Use stored entry variant from landing page, or assign via split test
-    const assignedEntryVariant = storedEntryVariant === 'start_button' || storedEntryVariant === 'immediate_q1'
-      ? storedEntryVariant
-      : getAssignedEntryVariant();
-    setEntryVariant(assignedEntryVariant);
     
     // For Variant A (start_button), quiz hasn't started yet
     if (assignedEntryVariant === 'start_button') {
@@ -230,7 +266,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
         route: '/quiz-rmd',
         variant: assignedVariant,
         entry_variant: assignedEntryVariant,
-        landing_page_variant: storedLandingPageVariant || null,
+        landing_page_variant: assignedLandingPageVariant || storedLandingPageVariant || null,
         session_id: newSessionId,
         referrer: document.referrer || '',
         utm_source: utmParams?.utm_source || '',
@@ -299,7 +335,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
               route: '/quiz-rmd',
               variant: assignedVariant,
               entry_variant: assignedEntryVariant,
-              landing_page_variant: storedLandingPageVariant || null,
+              landing_page_variant: assignedLandingPageVariant || storedLandingPageVariant || null,
               session_id: newSessionId,
             });
           }
@@ -315,7 +351,7 @@ export const RMDQuiz = ({ onStepChange }: RMDQuizProps) => {
             last_step: currentStep + 1,
             route: '/quiz-rmd',
             variant: assignedVariant,
-            landing_page_variant: storedLandingPageVariant || null,
+            landing_page_variant: assignedLandingPageVariant || storedLandingPageVariant || null,
             session_id: newSessionId,
           });
         }
