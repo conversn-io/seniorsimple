@@ -115,9 +115,9 @@ export default function ReverseMortgageCalculatorPage() {
 
   // Step names for tracking (5 steps - property lookup moved to results page)
   const STEP_NAMES: Record<number, string> = {
-    1: 'reason_selection',
+    1: 'homeowner_check',
     2: 'age_verification',
-    3: 'homeowner_check',
+    3: 'reason_selection',
     4: 'address_entry',
     5: 'lead_capture'
   }
@@ -218,25 +218,15 @@ export default function ReverseMortgageCalculatorPage() {
     setReason(value)
     
     // Track answer
-    trackQuestionAnswer('reason_selection', value, 1, 6, sessionId, 'reverse-mortgage')
+    trackQuestionAnswer('reason_selection', value, 3, 6, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_answer', {
       question: 'reason_selection',
       answer: value,
-      step: 1,
+      step: 3,
       session_id: sessionId
     })
     
-    setStep(2)
-    
-    // Scroll to progress bar after first question (anchor to quiz)
-    if (typeof window !== 'undefined') {
-      setTimeout(() => {
-        progressBarRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start'
-        })
-      }, 100)
-    }
+    setStep(4)
   }
 
   const handleAge62Check = (is62: boolean) => {
@@ -271,11 +261,11 @@ export default function ReverseMortgageCalculatorPage() {
     setIsHomeowner(isOwner)
     
     // Track answer
-    trackQuestionAnswer('homeowner_check', isOwner ? 'yes_homeowner' : 'no_not_homeowner', 3, 6, sessionId, 'reverse-mortgage')
+    trackQuestionAnswer('homeowner_check', isOwner ? 'yes_homeowner' : 'no_not_homeowner', 1, 6, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_answer', {
       question: 'homeowner_check',
       answer: isOwner ? 'yes_homeowner' : 'no_not_homeowner',
-      step: 3,
+      step: 1,
       session_id: sessionId,
       qualified: isOwner
     })
@@ -284,13 +274,23 @@ export default function ReverseMortgageCalculatorPage() {
       // Track disqualification
       trackGA4Event('rm_disqualified', {
         reason: 'not_homeowner',
-        step: 3,
+        step: 1,
         session_id: sessionId
       })
       router.push('/reverse-mortgage-calculator/not-qualified?reason=homeowner')
       return
     }
-    setStep(4)
+    setStep(2)
+
+    // Scroll to progress bar after first question (anchor to quiz)
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        progressBarRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }, 100)
+    }
   }
 
   // Handle address selection - NO API call here, just capture and move to lead form
@@ -669,35 +669,40 @@ export default function ReverseMortgageCalculatorPage() {
               </div>
             </div>
 
-            {/* Form Intro - Only on Step 1 */}
-            {step === 1 && (
-              <p className="text-center text-gray-600 mb-4 text-sm">
-                Answer a few short questions to see how much home equity you could unlock.
-              </p>
-            )}
-
             {step === 1 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">What's your main goal with a reverse mortgage?</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Do you own your home?</h2>
+                  <p className="mt-2 text-gray-600 text-sm">Reverse mortgages require home ownership.</p>
                 </div>
                 <div className="grid gap-3">
-                  {REASON_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
-                      onClick={() => handleReasonSelect(option.value)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-base font-semibold text-gray-800 group-hover:text-[#36596A] capitalize">
-                          {option.label}
-                        </span>
-                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <button
+                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
+                    onClick={() => handleHomeownerCheck(true)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <svg className="w-6 h-6 text-[#36596A]" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                         </svg>
+                        <span className="text-base font-semibold text-gray-800">Yes, I own a home</span>
                       </div>
-                    </button>
-                  ))}
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
+                  <button
+                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                    onClick={() => handleHomeownerCheck(false)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-semibold text-gray-600">No, I don't own a home</span>
+                      <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
@@ -751,37 +756,25 @@ export default function ReverseMortgageCalculatorPage() {
             {step === 3 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Great! Do you own your home?</h2>
-                  <p className="mt-2 text-gray-600 text-sm">Reverse mortgages require home ownership.</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">What's your main goal with a reverse mortgage?</h2>
                 </div>
                 <div className="grid gap-3">
-                  <button
-                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
-                    onClick={() => handleHomeownerCheck(true)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <svg className="w-6 h-6 text-[#36596A]" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                  {REASON_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-[#36596A] hover:bg-[#f8fafb] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
+                      onClick={() => handleReasonSelect(option.value)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-semibold text-gray-800 group-hover:text-[#36596A] capitalize">
+                          {option.label}
+                        </span>
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        <span className="text-base font-semibold text-gray-800">Yes, I own a home</span>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#36596A] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
-                  <button
-                    className="group w-full bg-white border-2 border-gray-200 rounded-xl py-4 px-5 text-left hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                    onClick={() => handleHomeownerCheck(false)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-base font-semibold text-gray-600">No, I don't own a home</span>
-                      <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
