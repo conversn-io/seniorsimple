@@ -581,6 +581,27 @@ export default function ReverseMortgageCalculatorPage() {
     }
   }
 
+  const trustPills = (
+    <>
+      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+        <span className="text-xs font-medium text-gray-700">FHA Insured Lenders</span>
+      </div>
+      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span className="text-xs font-medium text-gray-700">TrustedForm Certified</span>
+      </div>
+      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+        <span className="text-xs font-bold text-blue-700">BBB</span>
+        <span className="text-xs font-medium text-gray-700">A+ Accredited</span>
+      </div>
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
       {/* Urgency Banner */}
@@ -608,7 +629,7 @@ export default function ReverseMortgageCalculatorPage() {
           </div>
 
           {/* Benefits List - Above the Fold */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
+          <div className="hidden md:flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
             {[
               'Eliminate monthly mortgage payments',
               'Access tax-free home equity',
@@ -625,23 +646,8 @@ export default function ReverseMortgageCalculatorPage() {
           </div>
 
           {/* Trust Badges - Above the Fold */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-              </svg>
-              <span className="text-xs font-medium text-gray-700">FHA Insured Lenders</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span className="text-xs font-medium text-gray-700">TrustedForm Certified</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-              <span className="text-xs font-bold text-blue-700">BBB</span>
-              <span className="text-xs font-medium text-gray-700">A+ Accredited</span>
-            </div>
+          <div className="hidden md:flex flex-wrap items-center justify-center gap-4 mb-6">
+            {trustPills}
           </div>
 
           {/* Main Form Card - Sticky from Step 2 onwards */}
@@ -1024,6 +1030,11 @@ export default function ReverseMortgageCalculatorPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Trust Pills - Mobile below question card */}
+          <div className="md:hidden flex flex-wrap items-center justify-center gap-3 mt-4">
+            {trustPills}
           </div>
 
           {step > 1 && (
