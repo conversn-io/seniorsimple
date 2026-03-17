@@ -581,40 +581,9 @@ export default function ReverseMortgageCalculatorPage() {
     }
   }
 
-  const trustPills = (
-    <>
-      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-        <span className="text-xs font-medium text-gray-700">FHA Insured Lenders</span>
-      </div>
-      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        <span className="text-xs font-medium text-gray-700">TrustedForm Certified</span>
-      </div>
-      <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-        <span className="text-xs font-bold text-blue-700">BBB</span>
-        <span className="text-xs font-medium text-gray-700">A+ Accredited</span>
-      </div>
-    </>
-  )
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
-      {/* Urgency Banner */}
-      <div className="bg-yellow-100 border-b border-yellow-200 py-2.5 px-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-center gap-2 text-center">
-          <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-          </svg>
-          <p className="text-sm font-semibold text-yellow-800">
-            2026 Reverse Mortgage Savings Just Released — See What You Qualify For Today
-          </p>
-        </div>
-      </div>
 
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -628,27 +597,7 @@ export default function ReverseMortgageCalculatorPage() {
             </p>
           </div>
 
-          {/* Benefits List - Above the Fold */}
-          <div className="hidden md:flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
-            {[
-              'Eliminate monthly mortgage payments',
-              'Access tax-free home equity',
-              'Keep ownership of your home',
-              'No impact to your credit score'
-            ].map((benefit, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <span className="text-sm text-gray-700">{benefit}</span>
-              </div>
-            ))}
-          </div>
 
-          {/* Trust Badges - Above the Fold */}
-          <div className="hidden md:flex flex-wrap items-center justify-center gap-4 mb-6">
-            {trustPills}
-          </div>
 
           {/* Main Form Card - Sticky from Step 2 onwards */}
           <div 
