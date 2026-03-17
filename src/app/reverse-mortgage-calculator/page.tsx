@@ -974,10 +974,6 @@ export default function ReverseMortgageCalculatorPage() {
             )}
           </div>
 
-          {/* Trust Pills - Mobile below question card */}
-          <div className="md:hidden flex flex-wrap items-center justify-center gap-3 mt-4">
-            {trustPills}
-          </div>
 
           {step > 1 && (
             <div className="mt-6 text-center">
