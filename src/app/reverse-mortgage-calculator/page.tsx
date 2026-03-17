@@ -590,7 +590,7 @@ export default function ReverseMortgageCalculatorPage() {
           {/* Hero Section - Above the Fold */}
           <div className="text-center mb-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#36596A] leading-tight">
-              Find Out How to Stop Paying Your Mortgage After 62
+              Minnesota Homeowners: See How Much Tax-Free Cash You Can Unlock After 62
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-600">
               Use your home's value to retire with less stress — check your eligibility in under 60 seconds.
