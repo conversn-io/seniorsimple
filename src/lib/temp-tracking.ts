@@ -202,14 +202,49 @@ export function trackQuestionAnswer(
 ): void {
   console.log('📊 Tracking question answer:', questionId, answer);
   
-  trackGA4Event('question_answer', {
-    question_id: questionId,
-    answer,
-    step,
-    total_steps: totalSteps,
-    session_id: sessionId,
-    progress_percentage: Math.round((step / totalSteps) * 100),
-    event_category: 'quiz_interaction'
+  // Track to GA4
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('event', 'question_answer', {
+      question_id: questionId,
+      answer,
+      step,
+      total_steps: totalSteps,
+      session_id: sessionId,
+      progress_percentage: Math.round((step / totalSteps) * 100),
+      event_category: 'quiz_interaction'
+    });
+  }
+
+  // Track to Supabase (async, non-blocking)
+  const utmParams = typeof window !== 'undefined' 
+    ? getUTMParams()
+    : {};
+
+  fetch('/api/analytics/track-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_name: 'question_answer',
+      properties: {
+        question_key: questionId,
+        answer: String(answer),
+        step_number: step,
+        total_steps: totalSteps,
+        funnel_type: funnelType
+      },
+      session_id: sessionId,
+      user_id: sessionId,
+      page_url: typeof window !== 'undefined' ? window.location.href : '',
+      referrer: typeof document !== 'undefined' ? document.referrer : '',
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      event_category: 'quiz',
+      event_label: 'answer',
+      utm_source: utmParams.utm_source || null,
+      utm_medium: utmParams.utm_medium || null,
+      utm_campaign: utmParams.utm_campaign || null
+    })
+  }).catch(err => {
+    console.warn('⚠️ Failed to track question answer (non-blocking):', err);
   });
 }
 
@@ -252,9 +287,38 @@ export function trackLeadFormSubmit(leadData: LeadData): void {
     value: leadData.leadScore || 0,
     currency: 'USD'
   });
-  
-  // ❌ REMOVED: sendToGHL() to prevent duplicate GHL submissions
-  // API route handles GHL webhook sending
+
+  // Track to Supabase (async, non-blocking)
+  const utmParams = typeof window !== 'undefined' 
+    ? getUTMParams()
+    : {};
+
+  fetch('/api/analytics/track-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_name: 'lead_form_submit',
+      properties: {
+        session_id: leadData.sessionId,
+        zip_code: leadData.zipCode,
+        state: leadData.state,
+        age: leadData.age,
+        funnel_type: leadData.funnelType
+      },
+      session_id: leadData.sessionId,
+      user_id: leadData.sessionId,
+      page_url: typeof window !== 'undefined' ? window.location.href : '',
+      referrer: typeof document !== 'undefined' ? document.referrer : '',
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      event_category: 'lead_generation',
+      event_label: 'submit',
+      utm_source: utmParams.utm_source || null,
+      utm_medium: utmParams.utm_medium || null,
+      utm_campaign: utmParams.utm_campaign || null
+    })
+  }).catch(err => {
+    console.warn('⚠️ Failed to track lead submission (non-blocking):', err);
+  });
 }
 
 // Send event to Supabase analytics_events

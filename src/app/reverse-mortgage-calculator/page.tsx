@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Loader2, ShieldCheck, Lock } from 'lucide-react'
 import { useMinimalFunnelLayout } from '@/hooks/useMinimalFunnelLayout'
 import { 
   initializeTracking, 
@@ -590,7 +590,7 @@ export default function ReverseMortgageCalculatorPage() {
           {/* Hero Section - Above the Fold */}
           <div className="text-center mb-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#36596A] leading-tight">
-              Minnesota Homeowners: See How Much Tax-Free Cash You Can Unlock After 62
+              Find Out How to Stop Paying Your Mortgage After 62
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-600">
               Use your home's value to retire with less stress — check your eligibility in under 60 seconds.
@@ -652,6 +652,38 @@ export default function ReverseMortgageCalculatorPage() {
                       </svg>
                     </div>
                   </button>
+                </div>
+
+                {/* Re-introducing Trust Signals for Credibility to reduce Step 1 Drop-off */}
+                <div className="mt-8 pt-8 border-t border-gray-100">
+                  <div className="flex flex-wrap justify-center sm:justify-between items-center gap-3 mb-6">
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                      <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                      <span>FHA Insured Program</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                      <Lock className="w-3.5 h-3.5 text-[#36596A]" />
+                      <span>Safe & Secure Encryption</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                      <CheckCircle className="w-3.5 h-3.5 text-blue-600" />
+                      <span>TrustedForm Certified</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+                    {[
+                      'Eliminate monthly mortgage payments',
+                      'Access tax-free cash from equity',
+                      'Maintain title and home ownership',
+                      'Cover medical bills or high-interest debt'
+                    ].map((benefit, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>{benefit}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

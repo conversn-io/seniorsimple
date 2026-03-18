@@ -1,0 +1,342 @@
+version: 1
+name: seniorsimple-final-expense-migration
+description: >-
+  Migration agent spec for moving SeniorSimple Final Expense funnel logic from
+  frontend-heavy Next.js implementation to backend-driven APIs with a native
+  React + Vite frontend generated/maintained via Lovable and hosted on Vercel.
+
+objectives:
+  - Build a native React + Vite app for /final-expense-quote and /final-expense-quote/thank-you
+  - Keep frontend stateless where possible and move tracking/business logic to backend
+  - Send analytics events to CallReady Supabase infrastructure
+  - Preserve current final expense required fields and click-to-call flow behavior
+  - Implement exact question copy/order and high-converting colored tap targets
+
+constraints:
+  - Do not host on Lovable cloud
+  - Target deployment platform: Vercel
+  - Frontend must call backend via environment-based API base URL
+  - No service-role keys in frontend code
+  - Keep existing funnelType value: final-expense-quote
+  - Optimize for fast load and fluid question-to-question transitions
+
+assumptions:
+  api_base_url: https://api.seniorsimple.org
+  frontend_origin: https://www.seniorsimple.org
+  fallback_next_api_base_url: https://www.seniorsimple.org
+
+required_env:
+  frontend:
+    - VITE_API_BASE_URL
+    - VITE_SITE_KEY
+    - VITE_GA4_ID
+    - VITE_META_PIXEL_ID
+    - VITE_CALL_PHONE_E164
+  backend:
+    - SUPABASE_QUIZ_URL
+    - SUPABASE_QUIZ_SERVICE_ROLE_KEY
+
+api_contracts:
+  - name: track_pageview
+    method: POST
+    path: /api/analytics/track-pageview
+    request_json:
+      event_name: page_view
+      page_title: string
+      page_path: /final-expense-quote
+      page_url: https://www.seniorsimple.org/final-expense-quote
+      session_id: sess_xxx
+      referrer: string|null
+      user_agent: string|null
+      properties:
+        site_key: seniorsimple.org
+        funnel_type: final-expense-quote
+        path: /final-expense-quote
+        search: ?utm_source=...
+      utm_source: string|null
+      utm_medium: string|null
+      utm_campaign: string|null
+    success_response:
+      success: true
+      event_id: uuid_or_null
+
+  - name: track_event
+    method: POST
+    path: /api/analytics/track-event
+    request_json:
+      event_name: quiz_step_viewed|question_answer|quiz_complete|call_cta_click|call_attempt|thank_you_view
+      session_id: sess_xxx
+      user_id: string|null
+      page_url: https://www.seniorsimple.org/final-expense-quote
+      properties:
+        site_key: seniorsimple.org
+        funnel_type: final-expense-quote
+        step_number: number
+        step_name: string
+        answer: any
+    success_response:
+      success: true
+      event_id: uuid_or_null
+
+frontend_build_plan:
+  - id: fe-1
+    title: Create Vite app shell
+    deliverables:
+      - routes: /final-expense-quote and /final-expense-quote/thank-you
+      - typed env loader in src/config/env.ts
+      - api client in src/lib/api.ts
+    done_when:
+      - npm run build succeeds
+      - route rendering works on local preview
+
+  - id: fe-2
+    title: Implement Final Expense quiz UI (6 steps)
+    steps:
+      - coveragePurpose
+      - smoker
+      - preExistingConditions
+      - insuranceStage
+      - dateOfBirth
+      - zipCode
+    done_when:
+      - form validation passes for required fields
+      - step progress and navigation mirror current funnel
+      - transitions are instant-feeling and never block on network
+      - exact copy/options from question_spec are implemented
+
+question_spec:
+  q1:
+    key: coveragePurpose
+    title: What would you like coverage for?
+    type: single-select-buttons
+    options:
+      - My family
+      - My mortgage
+      - End of life
+  q2:
+    key: smoker
+    title: Do you smoke?
+    type: single-select-buttons
+    options:
+      - "Yes"
+      - "No"
+  q3:
+    key: preExistingConditions
+    title: Do you have any pre-existing medical conditions?
+    type: single-select-buttons
+    options:
+      - "Yes"
+      - "No"
+  q4:
+    key: insuranceStage
+    title: What stage are you at with life insurance?
+    type: single-select-buttons
+    options:
+      - I already have coverage
+      - I don't yet have any coverage
+  q5:
+    key: dateOfBirth
+    title: What is your date of birth?
+    type: dob-input
+    placeholder: DOB
+  q6:
+    key: zipCode
+    title: What's your zip code
+    type: zip-input
+    validation:
+      - must_be_5_digits
+  submit:
+    label: Submit
+
+  - id: fe-3
+    title: Integrate event pipeline
+    deliverables:
+      - session id bootstrap (sessionStorage)
+      - page view event on load
+      - step viewed and answer events
+      - quiz complete, call_cta_click, call_attempt, and thank_you_view events
+    done_when:
+      - all events hit backend with funnel_type=final-expense-quote
+      - event failures do not interrupt quiz progression
+
+  - id: fe-4
+    title: Integrate click-to-call pipeline
+    deliverables:
+      - capture call intent and send event_name=call_cta_click before dialing
+      - open tel: link using VITE_CALL_PHONE_E164
+      - send event_name=call_attempt when dial action is triggered
+      - store quiz answers locally for thank-you rendering
+      - redirect to /final-expense-quote/thank-you after click-to-call interaction
+    done_when:
+      - call click/attempt events appear in analytics_events
+      - no lead webhook dependency in frontend flow
+
+  - id: fe-5
+    title: Harden and deploy
+    deliverables:
+      - CORS/origin checks for frontend domain
+      - Vercel environment variable setup
+      - smoke test script for pageview + click-to-call
+    done_when:
+      - production deployment passes smoke checks
+      - performance and UX acceptance checks pass
+
+ux_performance_requirements:
+  intent:
+    - SeniorSimple conversion depends on fast load and fluid step transitions
+    - UX should feel immediate on mid-tier mobile devices
+  implementation_rules:
+    - Keep one mounted quiz shell and swap only question content
+    - Use optimistic step transitions and async fire-and-forget tracking
+    - Avoid full-page rerenders between steps
+    - Debounce expensive validations and avoid layout thrash
+    - Prefer lightweight CSS transitions instead of heavy animation libs
+    - Keep tracking initialization non-blocking for first interaction
+    - Prevent double-tap CTA events with local lock state
+    - Use large color-filled tap targets for answer buttons with obvious selected state
+  transition_spec:
+    - transition_duration_ms: 120-180
+    - style: subtle fade+slide
+    - no_spinner_between_steps: true
+  loading_spec:
+    - first_question_interactive_without_waiting_on_tracking: true
+    - lazy_load_non_critical_assets: true
+  anti_patterns:
+    - no_await_before_next_step_render
+    - no_api_dependency_for_step_advancement
+    - no_heavy_runtime_animation_dependency
+  mobile_ux:
+    - thumb_friendly_hit_targets: true
+    - stable_cta_position: true
+    - minimize_keyboard_layout_shift: true
+    - minimum_tap_target: 48px
+
+visual_design_requirements:
+  answer_buttons:
+    - large, rounded, high-contrast solid color buttons
+    - selected state must visibly change color and show a clear active indicator
+    - generous vertical spacing for thumb accuracy
+  submit_button:
+    - high-contrast primary color
+    - full width on mobile
+    - label must be exactly: Submit
+
+thank_you_page_spec:
+  confetti:
+    enabled: true
+    duration_seconds: 90
+  countdown:
+    enabled: true
+    duration_seconds: 90
+    behavior: auto_redirect_when_expired
+  messaging:
+    qualification_line: "[Name], you are qualified for burial insurance of up to $50,000 and your policy is being built right now and your rate will be locked until this countdown expires."
+    agent_line: "We've found an available agent in {city_from_zip} ready to walk you through your next steps"
+  dynamic_city:
+    zip_source_field: zipCode
+    preferred_endpoint: /api/validate-zipcode
+    fallback_text: your area
+  call_button:
+    type: call_now
+    size: extra_large
+    dynamic_phone_env: VITE_CALL_PHONE_E164
+    tracked_event: call_cta_click
+  redirect_on_expiry:
+    path: /free-burial-life-insurance-guide
+
+snippets:
+  session_id:
+    language: ts
+    code: |
+      export function getOrCreateSessionId(): string {
+        const key = 'session_id';
+        const existing = sessionStorage.getItem(key);
+        if (existing) return existing;
+        const id = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem(key, id);
+        return id;
+      }
+
+  api_client:
+    language: ts
+    code: |
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+      async function postJson<T>(path: string, payload: unknown): Promise<T> {
+        const res = await fetch(`${API_BASE}${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          credentials: 'omit',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        return data as T;
+      }
+
+      export const api = {
+        trackPageView: (payload: unknown) => postJson('/api/analytics/track-pageview', payload),
+        trackEvent: (payload: unknown) => postJson('/api/analytics/track-event', payload),
+      };
+
+  call_cta:
+    language: ts
+    code: |
+      const phone = (import.meta.env.VITE_CALL_PHONE_E164 || '+18585046544').replace(/\\s+/g, '');
+      void api.trackEvent({
+        event_name: 'call_cta_click',
+        session_id: sessionId,
+        page_url: window.location.href,
+        properties: {
+          site_key: 'seniorsimple.org',
+          funnel_type: 'final-expense-quote',
+          cta_type: 'tel',
+          dial_number: phone,
+        },
+      });
+      window.location.href = `tel:${phone}`;
+      setTimeout(() => {
+        void api.trackEvent({
+          event_name: 'call_attempt',
+          session_id: sessionId,
+          page_url: window.location.href,
+          properties: {
+            site_key: 'seniorsimple.org',
+            funnel_type: 'final-expense-quote',
+            dial_number: phone,
+          },
+        });
+      }, 0);
+
+acceptance_tests:
+  - name: pageview_event
+    check: POST /api/analytics/track-pageview returns success=true
+  - name: quiz_event
+    check: POST /api/analytics/track-event with event_name=question_answer returns success=true
+  - name: call_cta_event
+    check: POST /api/analytics/track-event with event_name=call_cta_click returns success=true
+  - name: call_attempt_event
+    check: POST /api/analytics/track-event with event_name=call_attempt returns success=true
+  - name: thank_you_flow
+    check: app redirects to /final-expense-quote/thank-you and renders confirmation
+  - name: transition_latency
+    check: median answer-click to next-question paint <= 200ms on throttled mobile profile
+  - name: no_step_block_on_tracking_failure
+    check: simulate analytics failure and verify step progression remains normal
+  - name: initial_interaction_speed
+    check: first question renders interactive without waiting for event calls
+  - name: question_copy_parity
+    check: question titles/options and submit label match question_spec exactly
+  - name: tap_target_visual_parity
+    check: answer buttons are color-filled, high-contrast, and visually tappable on mobile
+  - name: thank_you_countdown_redirect
+    check: 90-second timer auto-redirects to /free-burial-life-insurance-guide
+  - name: thank_you_dynamic_city
+    check: city from zip lookup is displayed or fallback text is used
+
+migration_notes:
+  - Existing event ingestion routes should be preserved and reused
+  - Existing Final Expense quiz fields are in src/components/quiz/FinalExpenseQuiz.tsx
+  - Existing event ingestion routes are in src/app/api/analytics/track-event/route.ts and track-pageview/route.ts
+  - Replace src/lib/temp-tracking.ts usage in new frontend with thin API calls only
+  - Click-to-call is the conversion action; no lead webhook call in this frontend migration

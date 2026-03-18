@@ -1,0 +1,275 @@
+version: 3
+name: seniorsimple-final-expense-callonly-ux-capi
+description: >-
+  Final Expense funnel migration spec for Lovable: React + Vite frontend,
+  Vercel hosting, backend event tracking to Supabase, and Meta CAPI conversion
+  events for pageview, inbound call intent, quiz data submit, and final inbound
+  call CTA.
+
+objectives:
+  - Build a native React + Vite app for /final-expense-quote and /final-expense-quote/thank-you
+  - Preserve fast, fluid, high-converting UX with large colored tap targets
+  - Track all funnel analytics through backend APIs (non-blocking)
+  - Implement Meta CAPI conversion mapping for four core funnel actions
+
+constraints:
+  - Do not host on Lovable cloud
+  - Target deployment platform: Vercel
+  - No service-role keys in frontend code
+  - Keep funnelType value: final-expense-quote
+  - Keep step transitions instant-feeling and independent from API latency
+
+required_env:
+  frontend:
+    - VITE_API_BASE_URL
+    - VITE_SITE_KEY
+    - VITE_META_PIXEL_ID
+    - VITE_RAW_INBOUND_PHONE_E164
+    - VITE_FINAL_INBOUND_PHONE_E164
+    - VITE_CAPI_CONTACT_VALUE
+    - VITE_CAPI_LEAD_VALUE
+    - VITE_CAPI_SUBMIT_APPLICATION_VALUE
+  backend:
+    - SUPABASE_QUIZ_URL
+    - SUPABASE_QUIZ_SERVICE_ROLE_KEY
+    - META_ACCESS_TOKEN
+    - META_PIXEL_ID_SENIORSIMPLE
+
+api_contracts:
+  - name: track_pageview
+    method: POST
+    path: /api/analytics/track-pageview
+
+  - name: track_event
+    method: POST
+    path: /api/analytics/track-event
+
+  - name: capi_event
+    method: POST
+    path: /api/capi/event
+    request_json:
+      standard_event_name: ViewContent|Contact|Lead|SubmitApplication
+      event_id: string
+      event_time: unix_seconds
+      event_source_url: string
+      action_source: website
+      funnel_type: final-expense-quote
+      value: number
+      currency: USD
+      user_data:
+        fbp: string|null
+        fbc: string|null
+        client_user_agent: string|null
+        external_id: string|null
+        fn: string|null
+        ln: string|null
+        zp: string|null
+      custom_data:
+        site_key: seniorsimple.org
+        stage: landing|header_nav|quiz_submit|thank_you
+        dial_number: string|null
+        zip_code: string|null
+    success_response:
+      success: true
+      event_id: string
+
+capi_event_mapping:
+  - trigger: pageview on funnel pages
+    event_name: ViewContent
+    value_source: 0
+    notes:
+      - Fire on page load for landing/quiz/thank-you views
+
+  - trigger: click raw inbound button on landing page or header nav
+    event_name: Contact
+    value_source: VITE_CAPI_CONTACT_VALUE
+    phone_source: VITE_RAW_INBOUND_PHONE_E164
+    notes:
+      - This is raw inbound intent traffic
+      - Track button_click + capi Contact
+
+  - trigger: quiz data form submit (name + zip + quiz answers, no email/phone)
+    event_name: Lead
+    value_source: VITE_CAPI_LEAD_VALUE
+    notes:
+      - Allowed without email/phone
+      - Include fn, ln, zp when available
+      - Include quiz context in custom_data
+
+  - trigger: final CTA on success page (main inbound call button)
+    event_name: SubmitApplication
+    value_source: VITE_CAPI_SUBMIT_APPLICATION_VALUE
+    phone_source: VITE_FINAL_INBOUND_PHONE_E164
+    notes:
+      - Highest-value conversion event
+      - Fire before tel: navigation
+
+frontend_build_plan:
+  - id: fe-1
+    title: App shell
+    deliverables:
+      - routes: /final-expense-quote and /final-expense-quote/thank-you
+      - src/lib/api.ts and src/lib/capi.ts
+
+  - id: fe-2
+    title: Quiz UX implementation
+    steps:
+      - coveragePurpose
+      - smoker
+      - preExistingConditions
+      - insuranceStage
+      - dateOfBirth
+      - zipCode
+    done_when:
+      - exact copy/options implemented
+      - large color-filled tap targets with clear selected state
+      - no spinner between normal step transitions
+
+  - id: fe-3
+    title: Tracking + CAPI integration
+    deliverables:
+      - ViewContent on pageview
+      - Contact on landing/header raw inbound call button clicks
+      - Lead on quiz data submit (without requiring email/phone)
+      - SubmitApplication on final success-page call button click
+    done_when:
+      - all four CAPI events are fired with unique event_id values
+      - failures do not block quiz progression or CTA actions
+
+question_spec:
+  q1:
+    key: coveragePurpose
+    title: What would you like coverage for?
+    options: [My family, My mortgage, End of life]
+  q2:
+    key: smoker
+    title: Do you smoke?
+    options: ["Yes", "No"]
+  q3:
+    key: preExistingConditions
+    title: Do you have any pre-existing medical conditions?
+    options: ["Yes", "No"]
+  q4:
+    key: insuranceStage
+    title: What stage are you at with life insurance?
+    options: [I already have coverage, I don't yet have any coverage]
+  q5:
+    key: dateOfBirth
+    title: What is your date of birth?
+    placeholder: DOB
+  q6:
+    key: zipCode
+    title: What's your zip code
+    validation: [must_be_5_digits]
+  submit:
+    label: Submit
+
+thank_you_page_spec:
+  confetti:
+    enabled: true
+    duration_seconds: 90
+  countdown:
+    enabled: true
+    duration_seconds: 90
+    auto_redirect_path: /free-burial-life-insurance-guide
+  messaging:
+    qualification_line: "[Name], you are qualified for burial insurance of up to $50,000 and your policy is being built right now and your rate will be locked until this countdown expires."
+    agent_line: "We've found an available agent in {city_from_zip} ready to walk you through your next steps"
+  call_button:
+    size: extra_large
+    phone_env: VITE_FINAL_INBOUND_PHONE_E164
+    capi_event_name: SubmitApplication
+
+ux_performance_requirements:
+  - Keep one mounted quiz shell and swap question content only
+  - Advance to next step optimistically (no await on tracking)
+  - Transition duration target: 120ms to 180ms
+  - Median answer-click to next-question paint <= 200ms on throttled mobile
+  - Minimum tap target: 48px
+
+snippets:
+  capi_client:
+    language: ts
+    code: |
+      export async function sendCapiEvent(payload: {
+        standard_event_name: 'ViewContent' | 'Contact' | 'Lead' | 'SubmitApplication';
+        event_id: string;
+        event_time: number;
+        event_source_url: string;
+        value: number;
+        currency?: 'USD';
+        user_data?: Record<string, string | null>;
+        custom_data?: Record<string, unknown>;
+      }) {
+        return fetch(`${import.meta.env.VITE_API_BASE_URL}/api/capi/event`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action_source: 'website', funnel_type: 'final-expense-quote', currency: 'USD', ...payload }),
+        });
+      }
+
+  contact_click:
+    language: ts
+    code: |
+      const phone = import.meta.env.VITE_RAW_INBOUND_PHONE_E164;
+      const eventId = `contact_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      void sendCapiEvent({
+        standard_event_name: 'Contact',
+        event_id: eventId,
+        event_time: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        value: Number(import.meta.env.VITE_CAPI_CONTACT_VALUE || 0),
+        user_data: { fbp, fbc, client_user_agent: navigator.userAgent, external_id: sessionId },
+        custom_data: { site_key: 'seniorsimple.org', stage: 'landing', dial_number: phone },
+      });
+      window.location.href = `tel:${phone}`;
+
+  lead_submit:
+    language: ts
+    code: |
+      const eventId = `lead_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      void sendCapiEvent({
+        standard_event_name: 'Lead',
+        event_id: eventId,
+        event_time: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        value: Number(import.meta.env.VITE_CAPI_LEAD_VALUE || 0),
+        user_data: {
+          fbp,
+          fbc,
+          client_user_agent: navigator.userAgent,
+          external_id: sessionId,
+          fn: (firstName || '').toLowerCase() || null,
+          ln: (lastName || '').toLowerCase() || null,
+          zp: zipCode || null,
+        },
+        custom_data: { site_key: 'seniorsimple.org', stage: 'quiz_submit', zip_code: zipCode, quiz_answers: answers },
+      });
+
+  submit_application_click:
+    language: ts
+    code: |
+      const phone = import.meta.env.VITE_FINAL_INBOUND_PHONE_E164;
+      const eventId = `submit_app_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      void sendCapiEvent({
+        standard_event_name: 'SubmitApplication',
+        event_id: eventId,
+        event_time: Math.floor(Date.now() / 1000),
+        event_source_url: window.location.href,
+        value: Number(import.meta.env.VITE_CAPI_SUBMIT_APPLICATION_VALUE || 0),
+        user_data: { fbp, fbc, client_user_agent: navigator.userAgent, external_id: sessionId, zp: zipCode || null },
+        custom_data: { site_key: 'seniorsimple.org', stage: 'thank_you', dial_number: phone },
+      });
+      window.location.href = `tel:${phone}`;
+
+acceptance_tests:
+  - name: capi_viewcontent
+    check: pageview triggers ViewContent with success=true
+  - name: capi_contact
+    check: landing/header call click triggers Contact with raw inbound phone and configured value
+  - name: capi_lead
+    check: quiz submit triggers Lead without requiring email/phone
+  - name: capi_submit_application
+    check: success-page final call button triggers SubmitApplication with highest configured value
+  - name: ux_latency
+    check: median answer-click to next-question paint <= 200ms

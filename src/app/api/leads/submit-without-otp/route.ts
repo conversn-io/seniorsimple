@@ -162,6 +162,21 @@ async function upsertLead(
       .maybeSingle();
     existingLead = existing;
   }
+
+  // Preserve previously saved TrustedForm/Jornaya values when request does not include them.
+  const resolvedTrustedFormCertUrl =
+    trustedFormCertUrl ||
+    existingLead?.trustedform_cert_url ||
+    existingLead?.quiz_answers?.trusted_form_cert_url ||
+    existingLead?.quiz_answers?.trustedFormCertUrl ||
+    null;
+
+  const resolvedJornayaId =
+    jornayaId ||
+    existingLead?.quiz_answers?.jornayaLeadId ||
+    existingLead?.quiz_answers?.jornaya_lead_id ||
+    existingLead?.quiz_answers?.jornaya_leadid ||
+    null;
   
   // Extract UTM parameters
   const utmSource = utmParams?.utm_source || null;
@@ -270,13 +285,16 @@ async function upsertLead(
       calculated_results: calculatedResults,
       licensing_info: licensingInfo,
       utm_parameters: utmParams || {},
-      trusted_form_cert_url: trustedFormCertUrl || null, // Store in quiz_answers
-      jornayaLeadId: jornayaId || null, // Store Journaya Lead ID in quiz_answers (not as leadId)
+      trusted_form_cert_url: resolvedTrustedFormCertUrl, // Store in quiz_answers
+      trustedFormCertUrl: resolvedTrustedFormCertUrl, // Keep camelCase variant for compatibility
+      jornayaLeadId: resolvedJornayaId, // Store Journaya Lead ID in quiz_answers
+      jornaya_lead_id: resolvedJornayaId, // snake_case variant for compatibility
+      jornaya_leadid: resolvedJornayaId, // alternate variant for compatibility
     },
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    trustedform_cert_url: trustedFormCertUrl || null, // Store TrustedForm certificate URL
+    trustedform_cert_url: resolvedTrustedFormCertUrl, // Store TrustedForm certificate URL
   };
   
   if (existingLead?.id) {
@@ -479,9 +497,10 @@ export async function POST(request: NextRequest) {
     // Extract beneficiary relationship (new CRO-optimized field)
     const beneficiaryRelationship = quizData.beneficiaryRelationship || '';
     
-    // For reverse mortgage: Wait for trustedFormCertUrl and jornayaLeadId from Supabase
-    // These values may be populated asynchronously, so we need to poll until they're available
-    // Use null/undefined check instead of empty string to ensure proper falsy detection
+    const isReverseMortgage = funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator';
+
+    // Pull saved TrustedForm/Jornaya IDs from lead + request payload.
+    // These are optional for webhook send (same behavior as annuity flow).
     let savedTrustedFormCertUrl = lead.trustedform_cert_url || 
                                   lead.quiz_answers?.trusted_form_cert_url || 
                                   lead.quiz_answers?.trustedFormCertUrl ||
@@ -497,188 +516,16 @@ export async function POST(request: NextRequest) {
     // Normalize empty strings to null for consistent checking
     if (savedTrustedFormCertUrl === '') savedTrustedFormCertUrl = null;
     if (savedJornayaLeadId === '') savedJornayaLeadId = null;
-    
-    // For reverse mortgage, wait and poll for required fields
-    console.log('[DEBUG] 🔵 Checking funnel type for polling', { 
-      funnelType, 
-      isReverseMortgage: funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator',
-      savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
-      savedJornayaLeadId: savedJornayaLeadId || 'NULL'
-    })
-    
-    if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
-      const MAX_RETRIES = 10; // Maximum number of retries
-      const RETRY_DELAY_MS = 500; // Wait 500ms between retries
-      let retryCount = 0;
-      const backendPollStartTime = Date.now();
-      
-      console.log('[DEBUG] 🔵 Backend polling check started - ENTERING POLLING BLOCK', { 
-        funnelType, 
-        isReverseMortgage: true, 
-        savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
-        savedJornayaLeadId: savedJornayaLeadId || 'NULL (optional)', 
-        leadId: lead.id,
-        willPoll: !savedTrustedFormCertUrl // Only poll for TrustedForm
-      })
-      
-      console.log('🔵 APLINE WEBHOOK - Checking for required fields:', {
-        trustedFormCertUrl: savedTrustedFormCertUrl || 'MISSING',
-        jornayaLeadId: savedJornayaLeadId || 'MISSING',
-        leadId: lead.id
-      });
-      
-      // Poll until TrustedForm is available (Jornaya is optional - don't block on it)
-      while (!savedTrustedFormCertUrl && retryCount < MAX_RETRIES) {
-        retryCount++;
-        const iterationStartTime = Date.now();
-        
-        console.log('[DEBUG] 🔵 Backend polling iteration start', { 
-          retryCount, 
-          MAX_RETRIES, 
-          hasTrustedForm: !!savedTrustedFormCertUrl, 
-          hasJornaya: !!savedJornayaLeadId, 
-          conditionResult: !savedTrustedFormCertUrl && retryCount < MAX_RETRIES,
-          trustedFormValue: savedTrustedFormCertUrl || 'EMPTY',
-          jornayaValue: savedJornayaLeadId || 'NULL (optional)'
-        })
-        
-        console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount}/${MAX_RETRIES} - Waiting for TrustedForm (Jornaya optional)...`);
-        
-        // Wait before retrying
-        const waitStartTime = Date.now();
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-        const waitEndTime = Date.now();
-        console.log('[DEBUG] 🔵 Backend wait completed', { 
-          retryCount, 
-          waitDuration: waitEndTime - waitStartTime, 
-          expectedDelay: RETRY_DELAY_MS 
-        })
-        
-        // Fetch latest lead data from Supabase
-        try {
-          const dbFetchStartTime = Date.now();
-          const { data: updatedLead, error: fetchError } = await callreadyQuizDb
-            .from('leads')
-            .select('trustedform_cert_url, quiz_answers')
-            .eq('id', lead.id)
-            .single();
-          const dbFetchEndTime = Date.now();
-          
-          console.log('[DEBUG] 🔵 Database fetch result', { 
-            retryCount, 
-            hasError: !!fetchError, 
-            hasData: !!updatedLead, 
-            dbFetchDuration: dbFetchEndTime - dbFetchStartTime, 
-            trustedform_cert_url: updatedLead?.trustedform_cert_url || 'NULL', 
-            quiz_answers_trusted_form: updatedLead?.quiz_answers?.trusted_form_cert_url || 'NULL', 
-            quiz_answers_jornaya: updatedLead?.quiz_answers?.jornayaLeadId || 'NULL' 
-          })
-          
-          if (!fetchError && updatedLead) {
-            // Update values from fresh database fetch
-            const oldTrustedForm = savedTrustedFormCertUrl;
-            const oldJornaya = savedJornayaLeadId;
-            
-            savedTrustedFormCertUrl = updatedLead.trustedform_cert_url || 
-                                     updatedLead.quiz_answers?.trusted_form_cert_url || 
-                                     updatedLead.quiz_answers?.trustedFormCertUrl ||
-                                     savedTrustedFormCertUrl || 
-                                     null; // Use null instead of empty string
-            
-            savedJornayaLeadId = updatedLead.quiz_answers?.jornayaLeadId || 
-                                updatedLead.quiz_answers?.jornaya_lead_id || 
-                                updatedLead.quiz_answers?.jornaya_leadid || 
-                                savedJornayaLeadId || 
-                                null;
-            
-            // Normalize empty strings to null
-            if (savedTrustedFormCertUrl === '') savedTrustedFormCertUrl = null;
-            if (savedJornayaLeadId === '') savedJornayaLeadId = null;
-            
-            console.log('[DEBUG] 🔵 Values updated from DB', { 
-              retryCount, 
-              oldTrustedForm: oldTrustedForm || 'EMPTY', 
-              newTrustedForm: savedTrustedFormCertUrl || 'EMPTY', 
-              oldJornaya: oldJornaya || 'NULL', 
-              newJornaya: savedJornayaLeadId || 'NULL', 
-              changed: oldTrustedForm !== savedTrustedFormCertUrl || oldJornaya !== savedJornayaLeadId 
-            })
-            
-            console.log(`🔵 APLINE WEBHOOK - Retry ${retryCount} result:`, {
-              trustedFormCertUrl: savedTrustedFormCertUrl || 'STILL MISSING',
-              jornayaLeadId: savedJornayaLeadId || 'STILL MISSING'
-            });
-          }
-        } catch (pollError) {
-          console.log('[DEBUG] 🔵 Database fetch error', { 
-            retryCount, 
-            error: String(pollError) 
-          })
-          console.warn(`🔵 APLINE WEBHOOK - Error polling lead data (retry ${retryCount}):`, pollError);
-        }
-        
-        const iterationEndTime = Date.now();
-        console.log('[DEBUG] 🔵 Backend polling iteration end', { 
-          retryCount, 
-          iterationDuration: iterationEndTime - iterationStartTime, 
-          hasTrustedForm: !!savedTrustedFormCertUrl, 
-          hasJornaya: !!savedJornayaLeadId, 
-          willContinue: !savedTrustedFormCertUrl && retryCount < MAX_RETRIES 
-        })
-      }
-      
-      const backendPollEndTime = Date.now();
-      const totalBackendPollTime = backendPollEndTime - backendPollStartTime;
-      console.log('[DEBUG] 🔵 Backend polling completed', { 
-        retryCount, 
-        MAX_RETRIES, 
-        totalBackendPollTime, 
-        savedTrustedFormCertUrl: savedTrustedFormCertUrl || 'EMPTY', 
-        savedJornayaLeadId: savedJornayaLeadId || 'NULL (optional)', 
-        hasTrustedForm: !!savedTrustedFormCertUrl,
-        hasJornaya: !!savedJornayaLeadId
-      })
-      
-      // Final check - only TrustedForm is required (Jornaya is optional)
-      const hasTrustedForm = savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '';
-      const hasJornaya = savedJornayaLeadId && savedJornayaLeadId !== '';
-      
-      if (!hasTrustedForm) {
-        console.error('🔵 APLINE WEBHOOK - CRITICAL: TrustedForm missing after retries (required):', {
-          trustedFormCertUrl: savedTrustedFormCertUrl || 'MISSING',
-          jornayaLeadId: savedJornayaLeadId || 'NULL (optional)',
-          leadId: lead.id,
-          retries: retryCount,
-          hasTrustedForm,
-          hasJornaya
-        });
-        
-        // Return success but indicate webhook was not sent
-        return createCorsResponse({
-          success: true,
-          leadId: lead.id,
-          warning: 'Lead saved but APLINE webhook not sent - missing required field (trustedFormCertUrl)',
-          missingFields: {
-            trustedFormCertUrl: !hasTrustedForm,
-            jornayaLeadId: !hasJornaya // Optional, but logged for visibility
-          },
-          leadSaved: true
-        }, 200);
-      }
-      
-      console.log('🔵 APLINE WEBHOOK - Required fields confirmed (Jornaya optional):', {
-        trustedFormCertUrl: savedTrustedFormCertUrl ? 'PRESENT' : 'MISSING',
-        jornayaLeadId: savedJornayaLeadId ? 'PRESENT' : 'NULL (optional)',
-        retries: retryCount
-      });
-    } else {
-      // For non-reverse-mortgage funnels, use original logic
-      console.log('🔍 TrustedForm Cert URL Check:', {
-        fromRequest: finalTrustedFormCertUrl || 'NOT IN REQUEST',
-        fromSavedLead: lead.trustedform_cert_url || 'NOT IN LEAD',
-        fromQuizAnswers: lead.quiz_answers?.trusted_form_cert_url || 'NOT IN QUIZ_ANSWERS',
-        finalValue: savedTrustedFormCertUrl || 'EMPTY'
-      });
+
+    console.log('🔍 TrustedForm/Jornaya values for webhook payload:', {
+      funnelType,
+      isReverseMortgage,
+      trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED',
+      jornayaLeadId: savedJornayaLeadId || 'NOT PROVIDED',
+    });
+
+    if (isReverseMortgage && !savedTrustedFormCertUrl) {
+      console.warn('⚠️ Reverse-mortgage lead missing TrustedForm cert; continuing webhook send to match annuity flow.');
     }
     
     // Extract Date of Birth (format: { month, day, year, dateString, iso })
@@ -748,6 +595,16 @@ export async function POST(request: NextRequest) {
       timestamp: toESTISOString(),
       sessionId: sessionId || lead.session_id || '',
       leadScore: 75, // Default lead score
+      quizAnswers: quizData,
+      calculatedResults: calculatedResults || quizData.calculated_results || quizData.calculatedResults || null,
+      licensingInfo: licensingInfo || quizData.locationInfo?.licensing || null,
+      utmParams: {
+        utm_source: utmSource || undefined,
+        utm_medium: utmMedium || undefined,
+        utm_campaign: utmCampaign || undefined,
+        utm_term: utmTerm || undefined,
+        utm_content: utmContent || undefined,
+      },
     };
     
     // Add Date of Birth if available
@@ -859,46 +716,25 @@ export async function POST(request: NextRequest) {
     if (utmTerm) ghlPayload.utmTerm = utmTerm;
     if (utmContent) ghlPayload.utmContent = utmContent;
     
-    // Add TrustedForm and Journaya IDs (flat structure)
-    // Use saved value from database (after Supabase save) - always include for reverse mortgage
-    if (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') {
-      // For reverse mortgage, we've already confirmed these values exist via polling
-      // Only include if they're not null/undefined/empty
-      if (savedTrustedFormCertUrl && savedTrustedFormCertUrl !== '') {
-        ghlPayload.trustedFormCertUrl = savedTrustedFormCertUrl;
-        ghlPayload.trusted_form_cert_url = savedTrustedFormCertUrl;
+    // Add TrustedForm and Jornaya IDs (optional for all funnels).
+    if (savedTrustedFormCertUrl) {
+      ghlPayload.trustedFormCertUrl = savedTrustedFormCertUrl;
+      ghlPayload.trusted_form_cert_url = savedTrustedFormCertUrl;
+      if (isReverseMortgage) {
         ghlPayload.trusted_form = savedTrustedFormCertUrl;
       }
-      
-      // Add jornayaLeadId (confirmed via polling)
-      if (savedJornayaLeadId && savedJornayaLeadId !== '') {
-        ghlPayload.jornayaLeadId = savedJornayaLeadId;
-        ghlPayload.jornaya_lead_id = savedJornayaLeadId;
-        ghlPayload.jornaya_leadid = savedJornayaLeadId;
-      }
-    } else {
-      // For other funnels, use original logic
-      if (savedTrustedFormCertUrl) {
-        ghlPayload.trustedFormCertUrl = savedTrustedFormCertUrl;
-        ghlPayload.trusted_form_cert_url = savedTrustedFormCertUrl;
-      }
-      if (jornayaId) {
-        ghlPayload.jornayaLeadId = jornayaId;
-        ghlPayload.jornaya_lead_id = jornayaId;
-        ghlPayload.jornaya_leadid = jornayaId;
-      }
+    }
+    if (savedJornayaLeadId) {
+      ghlPayload.jornayaLeadId = savedJornayaLeadId;
+      ghlPayload.jornaya_lead_id = savedJornayaLeadId;
+      ghlPayload.jornaya_leadid = savedJornayaLeadId;
     }
     
     // Add additional context if available
     if (landingPage) ghlPayload.landingPage = landingPage;
     if (referrer) ghlPayload.referrer = referrer;
 
-    // Log with APLINE WEBHOOK label for reverse mortgage
-    const webhookLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-      ? '🔵 APLINE WEBHOOK' 
-      : '📤 GHL Webhook';
-    
-    console.log(`${webhookLabel} - Sending to webhook:`, {
+    console.log('📤 GHL Webhook - Sending:', {
       url: ghlWebhookUrl,
       funnelType: funnelType,
       trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED',
@@ -948,11 +784,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Send to GHL webhook with timeout
-    const webhookRequestLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-      ? '🔵 APLINE WEBHOOK - Making request...' 
-      : '🚀 Making GHL webhook request...';
-    
-    console.log('[DEBUG] 🔵 About to send webhook - FINAL VALUES CHECK', {
+    const webhookRequestLabel = '🚀 Making GHL webhook request...';
+
+    console.log('[DEBUG] About to send webhook - final values check', {
       funnelType,
       webhookRequestLabel,
       trustedFormCertUrl: ghlPayload.trustedFormCertUrl || ghlPayload.trusted_form || 'MISSING',
@@ -981,10 +815,7 @@ export async function POST(request: NextRequest) {
       clearTimeout(timeoutId);
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        const timeoutLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-          ? '🔵 APLINE WEBHOOK - Timeout' 
-          : '❌ GHL Webhook Timeout';
-        console.error(`${timeoutLabel}:`, {
+        console.error('❌ GHL Webhook Timeout:', {
           url: ghlWebhookUrl,
           funnelType: funnelType,
           timeout: WEBHOOK_TIMEOUT,
@@ -1000,9 +831,7 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    const responseLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-      ? '🔵 APLINE WEBHOOK - Response' 
-      : '📡 GHL Response';
+    const responseLabel = '📡 GHL Response';
     console.log(`${responseLabel} Status:`, ghlResponse.status);
     console.log(`${responseLabel} Headers:`, Object.fromEntries(ghlResponse.headers.entries()));
 
@@ -1046,10 +875,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (ghlResponse.ok) {
-      const successLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-        ? '🔵 APLINE WEBHOOK - Lead Sent Successfully' 
-        : '✅ Lead Sent to GHL Successfully';
-      console.log(`${successLabel}:`, { leadId: lead.id, status: ghlResponse.status, trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED' });
+      console.log('✅ Lead Sent to GHL Successfully:', { leadId: lead.id, status: ghlResponse.status, trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED' });
       
       // Update lead with GHL status
       await callreadyQuizDb
@@ -1090,10 +916,7 @@ export async function POST(request: NextRequest) {
         message: 'Lead submitted and sent to GHL successfully (no OTP required)'
       }, 200);
     } else {
-      const errorLabel = (funnelType === 'reverse-mortgage' || funnelType === 'reverse-mortgage-calculator') 
-        ? '🔵 APLINE WEBHOOK - Failed' 
-        : '❌ GHL Webhook Failed';
-      console.error(`${errorLabel}:`, { 
+      console.error('❌ GHL Webhook Failed:', {
         status: ghlResponse.status,
         statusText: ghlResponse.statusText,
         response: ghlResponseData,
@@ -1159,4 +982,3 @@ export async function POST(request: NextRequest) {
     }, 500);
   }
 }
-
