@@ -31,6 +31,14 @@ const nextConfig: NextConfig = {
         source: `/${indexNowKey}.txt`,
         destination: '/api/indexnow/key',
       },
+      {
+        source: '/newsletters',
+        destination: 'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/serve-newsletter-archive?site_id=seniorsimple',
+      },
+      {
+        source: '/newsletters/:slug',
+        destination: 'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/serve-newsletter-page?slug=:slug&site_id=seniorsimple',
+      },
     ];
   },
   // Exclude Supabase Edge Functions from Next.js build
