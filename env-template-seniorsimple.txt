@@ -31,6 +31,7 @@ META_PIXEL_ID_REVERSE_MORTGAGE=your_reverse_mortgage_pixel_id
 # Site Configuration
 NEXT_PUBLIC_SITE_URL_SENIORSIMPLE=https://seniorsimple.com
 NEXT_PUBLIC_SITE_URL=https://seniorsimple.com
+NEXT_PUBLIC_BOOKING_WIDGET_ID=8ATad4yjNpsCln3IEYom
 
 # Google Tag Manager
 NEXT_PUBLIC_GTM_CONTAINER_ID_SENIORSIMPLE=GTM-XXXXXXX
@@ -593,6 +594,15 @@ TECHNOLOGY_ROADMAP=true
 INNOVATION_PIPELINE=true
 RESEARCH_DEVELOPMENT=true
 STRATEGIC_PLANNING=true
+
+# =============================================================================
+# NEWSLETTER V2 (Subscribe / Unsubscribe / Poll)
+# =============================================================================
+# Site identifier — used by newsletter routes to tag subscribers
+NEXT_PUBLIC_SITE_ID=seniorsimple
+
+# Salt for hashing poll voter IPs (random 32+ char string)
+POLL_IP_HASH_SALT=your_random_32_char_salt_here
 
 # =============================================================================
 # END OF CONFIGURATION
