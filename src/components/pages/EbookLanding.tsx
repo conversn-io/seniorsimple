@@ -33,7 +33,25 @@ const EbookLanding = () => {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log("Form submitted:", formData);
-      
+
+      // Subscribe to Publishare newsletter
+      try {
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            site_id: 'seniorsimple',
+            first_name: nameParts[0] ?? null,
+            last_name: nameParts.slice(1).join(' ') || null,
+            source: 'landing',
+            source_detail: 'ebook-annuity-secrets',
+            tags: ['quiz_completed'],
+          }),
+        });
+      } catch (_) {}
+
       // Redirect to thank you page
       window.location.href = '/thank-you';
     } catch (error) {

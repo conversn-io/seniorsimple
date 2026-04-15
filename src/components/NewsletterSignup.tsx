@@ -19,8 +19,21 @@ export default function NewsletterSignup() {
     try {
       const result = await signUpForNewsletter(email, 'seniorsimple-homepage')
       setNewsletterStatus(result)
-      
+
       if (result.success) {
+        // Also subscribe to Publishare central newsletter
+        try {
+          await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              site_id: 'seniorsimple',
+              source: 'form',
+              source_detail: 'footer-signup',
+            }),
+          });
+        } catch (_) {}
         setEmail('')
       }
     } catch (error) {

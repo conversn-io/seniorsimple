@@ -6,8 +6,8 @@ import { useState, Suspense } from 'react'
 function UnsubscribeForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const sid = searchParams.get('sid')
-  const siteName = searchParams.get('site_name') || 'our newsletter'
+  const sid = searchParams?.get('sid') ?? null
+  const siteName = searchParams?.get('site_name') || 'our newsletter'
   const [loading, setLoading] = useState(false)
 
   async function handleUnsubscribe() {

@@ -81,6 +81,24 @@ export default function AppointmentFollowUpPage() {
             utmParams: JSON.parse(sessionStorage.getItem('utm_params') || '{}')
           })
         });
+
+        // Subscribe to Publishare newsletter
+        try {
+          await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: funnelDataComplete.email,
+              site_id: 'seniorsimple',
+              first_name: funnelDataComplete.firstName ?? null,
+              last_name: funnelDataComplete.lastName ?? null,
+              source: 'quiz',
+              source_detail: 'final-expense-funnel',
+              quiz_context: funnelDataComplete,
+              tags: ['quiz_completed'],
+            }),
+          });
+        } catch (_) {}
       }
 
       // Navigate to guide or results

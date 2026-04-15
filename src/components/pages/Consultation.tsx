@@ -34,7 +34,23 @@ const Consultation = () => {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log("Consultation form submitted:", formData);
-      
+
+      // Subscribe to Publishare newsletter
+      try {
+        await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            site_id: 'seniorsimple',
+            first_name: formData.name.trim().split(/\s+/)[0] ?? null,
+            last_name: formData.name.trim().split(/\s+/).slice(1).join(' ') || null,
+            source: 'form',
+            source_detail: 'consultation-booking',
+          }),
+        });
+      } catch (_) {}
+
       setSubmitStatus('success');
       // Redirect to consultation booked page
       setTimeout(() => {

@@ -155,6 +155,23 @@ export default function FreeBurialLifeInsuranceGuidePage() {
         });
       }
 
+      // Subscribe to Publishare newsletter
+      try {
+        await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            site_id: 'seniorsimple',
+            first_name: firstName,
+            last_name: lastName,
+            source: 'landing',
+            source_detail: 'free-burial-life-insurance-guide',
+            tags: ['quiz_completed'],
+          }),
+        });
+      } catch (_) {}
+
       // Navigate to guide confirmation survey
       router.push('/insurance-guide-confirmation');
     } catch (err: any) {

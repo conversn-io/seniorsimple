@@ -31,6 +31,24 @@ const FinancialContactForm = ({ answers, onSubmissionComplete, onBack }: Financi
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
 
+    // Subscribe to Publishare newsletter
+    try {
+      await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          site_id: 'seniorsimple',
+          first_name: formData.name.trim().split(/\s+/)[0] ?? null,
+          last_name: formData.name.trim().split(/\s+/).slice(1).join(' ') || null,
+          source: 'quiz',
+          source_detail: 'financial-health-assessment',
+          quiz_context: answers,
+          tags: ['quiz_completed'],
+        }),
+      });
+    } catch (_) {}
+
     setIsSubmitting(false);
     setIsSubmitted(true);
 

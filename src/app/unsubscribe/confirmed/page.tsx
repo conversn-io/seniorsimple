@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 function ConfirmedContent() {
   const searchParams = useSearchParams()
-  const status = searchParams.get('status')
+  const status = searchParams?.get('status') ?? null
 
   const messages: Record<string, { title: string; body: string }> = {
     already: {

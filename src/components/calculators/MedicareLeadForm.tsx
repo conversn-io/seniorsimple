@@ -103,6 +103,25 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
         })
       }
 
+      // Subscribe to Publishare newsletter
+      try {
+        await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            site_id: 'seniorsimple',
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            zip_code: formData.zipCode,
+            source: 'quiz',
+            source_detail: 'medicare-calculator',
+            quiz_context: calculatorResults ?? null,
+            tags: ['quiz_completed'],
+          }),
+        });
+      } catch (_) {}
+
       // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess()
