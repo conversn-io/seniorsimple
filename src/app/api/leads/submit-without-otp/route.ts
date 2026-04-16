@@ -1025,9 +1025,9 @@ export async function POST(request: NextRequest) {
             .eq('id', lead.id);
 
           if (!lynqResponse.ok || lynqJson.status !== 'success') {
-            console.error('[LynqFlux] ❌ Lead rejected:', { leadId: lead.id, response: lynqJson });
+            console.error(`🔴 LYNQFLUX REJECTED — lead=${lead.id} status=${lynqResponse.status} reason="${lynqJson.message || lynqJson.errors?.join(', ') || 'unknown'}"`);
           } else {
-            console.log('[LynqFlux] ✅ Lead accepted:', { leadId: lead.id, message: lynqJson.message });
+            console.log(`🟢 LYNQFLUX ACCEPTED — lead=${lead.id} email=${email}`);
           }
         } catch (lynqError: any) {
           if (lynqError.name === 'AbortError') {
