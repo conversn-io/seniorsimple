@@ -11,6 +11,11 @@ const ANNUITY_GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://serv
 const FINAL_EXPENSE_GHL_WEBHOOK_URL = process.env.final_expense_GHL_webhook || process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
 const REVERSE_MORTGAGE_GHL_WEBHOOK_URL = process.env.reverse_mortgage_GHL_webhook || "https://services.leadconnectorhq.com/hooks/rqTRxGq1yRvvDT6axp0M/webhook-trigger/Lt2rfsXak8KkqufbSHcE";
 
+// LynqFlux API — replaces Alpine/Zapier for reverse mortgage lead delivery
+const LYNQFLUX_URL = 'https://lynqflux.com/data/244/incoming.php';
+const LYNQFLUX_PSWD = 'bXC9qjy4DEnMd4c7';
+const LYNQFLUX_LID = '244';
+
 // Helper function to get webhook URL based on funnel type
 function getGHLWebhookUrl(funnelType: string | null | undefined): string {
   if (funnelType === 'final-expense-quote') {
@@ -294,39 +299,55 @@ async function upsertLead(
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    trustedform_cert_url: resolvedTrustedFormCertUrl, // Store TrustedForm certificate URL
+    jornaya_lead_id: resolvedJornayaId,
+    trustedform_cert_url: resolvedTrustedFormCertUrl, 
   };
   
-  if (existingLead?.id) {
-    // Update existing lead
-    const { data: updated, error } = await callreadyQuizDb
-      .from('leads')
-      .update({
-        ...leadData,
-        id: existingLead.id,
-      })
-      .eq('id', existingLead.id)
-      .select('*')
-      .single();
-    
-    if (error) {
-      console.error('❌ Error updating lead:', error);
-      throw error;
+  try {
+    if (existingLead?.id) {
+      console.log('🔄 Updating existing lead:', existingLead.id);
+      const { data: updated, error } = await callreadyQuizDb
+        .from('leads')
+        .update({
+          ...leadData,
+          id: existingLead.id,
+        })
+        .eq('id', existingLead.id)
+        .select('*')
+        .single();
+      
+      if (error) {
+        console.error('❌ Database error updating lead:', {
+          code: error.code,
+          message: error.message,
+          funnel: leadData.funnel_type
+        });
+        throw error;
+      }
+      return updated || existingLead;
+    } else {
+      console.log('🆕 Creating new lead for session:', sessionId);
+      const { data: newLead, error } = await callreadyQuizDb
+        .from('leads')
+        .insert(leadData)
+        .select('*')
+        .single();
+      
+      if (error) {
+        console.error('❌ Database error creating lead:', {
+          code: error.code,
+          message: error.message,
+          funnel: leadData.funnel_type
+        });
+        throw error;
+      }
+      return newLead;
     }
-    return updated || existingLead;
-  } else {
-    // Create new lead
-    const { data: newLead, error } = await callreadyQuizDb
-      .from('leads')
-      .insert(leadData)
-      .select('*')
-      .single();
-    
-    if (error) {
-      console.error('❌ Error creating lead:', error);
-      throw error;
-    }
-    return newLead;
+  } catch (dbError: any) {
+    console.error('💥 Database generic error in upsertLead:', dbError);
+    // FALLBACK: If lead table fails, we really want to know why.
+    // We already thrown above, but caught here for logging.
+    throw dbError;
   }
 }
 
@@ -906,6 +927,116 @@ export async function POST(request: NextRequest) {
           .catch(error => {
             console.error('❌ TrustedForm Validation Error (non-blocking):', error);
           });
+      }
+
+      // ── LynqFlux delivery for reverse mortgage leads ──
+      // Replaces Alpine/Zapier — POST as key-value pairs
+      if (isReverseMortgage) {
+        try {
+          const lynqTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 19); // YYYY-MM-DD hh:mm:ss
+          const lynqParams = new URLSearchParams({
+            pswd: LYNQFLUX_PSWD,
+            lid: LYNQFLUX_LID,
+            email: email,
+            fname: firstName || contact.first_name || '',
+            lname: lastName || contact.last_name || '',
+            address: ghlPayload.address || '',
+            city: city || '',
+            state: addressState || '',
+            zip: addressZip || '',
+            country: country || 'US',
+            phone: normalizedPhoneNumber || '',
+            leadid: savedJornayaLeadId || '',
+            trustedformurl: savedTrustedFormCertUrl || '',
+            listcode: 'callready',
+            ip: ipAddress || '',
+            url: landingPage || 'seniorsimple.org',
+            timestamp: lynqTimestamp,
+          });
+          // Required LynqFlux fields (no underscores in field names)
+          // creditrating must be one of: Excellent, Good, Fair, Poor
+          const rawCredit = quizAnswers?.creditScore || quizAnswers?.credit_score || quizAnswers?.creditRating || '';
+          const creditMap: Record<string, string> = {
+            '700+': 'Excellent', '720+': 'Excellent', 'excellent': 'Excellent',
+            '680-719': 'Good', '650-699': 'Good', 'good': 'Good',
+            '620-679': 'Fair', '600-649': 'Fair', 'fair': 'Fair',
+            'below 620': 'Poor', 'below 600': 'Poor', 'poor': 'Poor',
+          };
+          const creditRating = creditMap[rawCredit.toLowerCase()] || creditMap[rawCredit] || 'Good';
+          lynqParams.set('creditrating', creditRating);
+
+          const loanAmount = quizAnswers?.mortgageBalance || quizAnswers?.mortgage_balance || quizAnswers?.loanAmount || '0';
+          lynqParams.set('loanamount', loanAmount);
+
+          // loantype must be one of: Fixed, ARM, Balloon, FHA, VA, Fannie, Freddie, USDA
+          lynqParams.set('loantype', 'FHA');
+
+          // Optional fields
+          if (dobFormatted) lynqParams.set('dob', dobFormatted);
+          const quizPropertyValue = quizAnswers?.propertyValue || quizAnswers?.property_value || '';
+          if (quizPropertyValue) lynqParams.set('propertyvalue', quizPropertyValue);
+
+          console.log('[LynqFlux] 📤 Sending reverse mortgage lead:', {
+            leadId: lead.id,
+            email,
+            fname: firstName || contact.first_name,
+            zip: addressZip,
+            jornayaLeadId: savedJornayaLeadId || 'NOT PROVIDED',
+            trustedFormUrl: savedTrustedFormCertUrl ? savedTrustedFormCertUrl.substring(0, 40) + '...' : 'NOT PROVIDED',
+            ip: ipAddress,
+            listcode: 'callready',
+          });
+
+          const lynqController = new AbortController();
+          const lynqTimeout = setTimeout(() => lynqController.abort(), 10000);
+
+          const lynqResponse = await fetch(LYNQFLUX_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: lynqParams.toString(),
+            signal: lynqController.signal,
+          });
+          clearTimeout(lynqTimeout);
+
+          const lynqBody = await lynqResponse.text();
+          let lynqJson: any = {};
+          try { lynqJson = JSON.parse(lynqBody); } catch { lynqJson = { raw: lynqBody }; }
+
+          console.log('[LynqFlux] 📡 Response:', {
+            status: lynqResponse.status,
+            body: lynqJson,
+            leadId: lead.id,
+          });
+
+          // Persist LynqFlux result alongside GHL status
+          await callreadyQuizDb
+            .from('leads')
+            .update({
+              ghl_status: {
+                ...((await callreadyQuizDb.from('leads').select('ghl_status').eq('id', lead.id).single()).data?.ghl_status || {}),
+                lynqflux: {
+                  status: lynqResponse.status,
+                  response: lynqJson,
+                  timestamp: new Date().toISOString(),
+                  success: lynqResponse.ok && lynqJson.status === 'success',
+                },
+              },
+            })
+            .eq('id', lead.id);
+
+          if (!lynqResponse.ok || lynqJson.status !== 'success') {
+            console.error('[LynqFlux] ❌ Lead rejected:', { leadId: lead.id, response: lynqJson });
+          } else {
+            console.log('[LynqFlux] ✅ Lead accepted:', { leadId: lead.id, message: lynqJson.message });
+          }
+        } catch (lynqError: any) {
+          if (lynqError.name === 'AbortError') {
+            console.error('[LynqFlux] ⏱️ Timeout after 10s:', { leadId: lead.id });
+          } else {
+            console.error('[LynqFlux] ❌ Error:', { leadId: lead.id, error: lynqError.message });
+          }
+          // Non-blocking — don't fail the lead submission
+        }
       }
 
       return createCorsResponse({
