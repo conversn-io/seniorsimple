@@ -971,10 +971,15 @@ export async function POST(request: NextRequest) {
           // loantype must be one of: Fixed, ARM, Balloon, FHA, VA, Fannie, Freddie, USDA
           lynqParams.set('loantype', 'FHA');
 
+          // Property data from BatchData lookup
+          const propData = quizAnswers?.propertyData;
+          const propValue = propData?.property_value || quizAnswers?.propertyValue || quizAnswers?.property_value || '';
+          if (propValue) lynqParams.set('propertyvalue', String(propValue));
+          const ltvRatio = propData?.ltv_ratio || '';
+          if (ltvRatio) lynqParams.set('ltv', String(ltvRatio));
+
           // Optional fields
           if (dobFormatted) lynqParams.set('dob', dobFormatted);
-          const quizPropertyValue = quizAnswers?.propertyValue || quizAnswers?.property_value || '';
-          if (quizPropertyValue) lynqParams.set('propertyvalue', quizPropertyValue);
 
           console.log('[LynqFlux] 📤 Sending reverse mortgage lead:', {
             leadId: lead.id,
