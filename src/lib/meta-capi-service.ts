@@ -329,6 +329,18 @@ export async function sendMetaCAPIEvent(
     data: [event],
   };
 
+  // Diagnostic log for CAPI debugging
+  console.log(`[Meta CAPI] 📊 Sending ${event.event_name}:`, {
+    pixelId: pixelId?.substring(0, 6) + '...',
+    tokenExists: !!accessToken,
+    tokenPrefix: accessToken?.substring(0, 8) + '...',
+    eventId: event.event_id,
+    hasUserData: Object.keys(event.user_data || {}).join(','),
+    hasCustomData: Object.keys(event.custom_data || {}).join(','),
+    testEventCode: testEventCode || 'none',
+    apiVersion: META_CAPI_VERSION,
+  });
+
   // Add test event code if provided (for testing in Events Manager)
   if (testEventCode) {
     payload.test_event_code = testEventCode;
@@ -378,6 +390,8 @@ export async function sendMetaCAPIEvent(
         // Don't retry on certain errors (authentication, invalid data)
         if (response.status === 401 || response.status === 400) {
           console.error(`[Meta CAPI] Non-retryable error:`, lastError.message);
+          console.error(`[Meta CAPI] Full error response:`, JSON.stringify(responseData));
+          console.error(`[Meta CAPI] Payload sent:`, JSON.stringify({ event_name: event.event_name, user_data_keys: Object.keys(event.user_data || {}), custom_data_keys: Object.keys(event.custom_data || {}) }));
           return {
             success: false,
             eventId: event.event_id,
