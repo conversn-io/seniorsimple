@@ -10,6 +10,7 @@ import { FAQ } from '@/components/quiz/FAQ'
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
 interface StoredResults {
+  sessionId?: string
   contact?: {
     firstName?: string
     lastName?: string
@@ -197,6 +198,23 @@ export default function ReverseMortgageResultsPage() {
               },
             }),
           }).catch(() => {}) // fire-and-forget
+
+          // Deliver lead to LynqFlux now that we have property data
+          if (parsedResults.sessionId) {
+            fetch('/api/leads/deliver-lynqflux', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId: parsedResults.sessionId,
+                propertyValue: propertyData.property_value,
+                mortgageBalance: propertyData.mortgage_balance,
+                ltvRatio: (result.data as any)?.ltv_ratio || (propertyData.mortgage_balance / propertyData.property_value).toFixed(2),
+              }),
+            }).then(r => r.json()).then(r => {
+              if (r.success) console.log('🟢 LynqFlux delivered:', r.leadId)
+              else console.warn('🔴 LynqFlux failed:', r)
+            }).catch(() => {})
+          }
 
           console.log('✅ Property data fetched successfully:', calc)
         } else {

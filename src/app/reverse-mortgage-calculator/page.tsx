@@ -497,6 +497,7 @@ export default function ReverseMortgageCalculatorPage() {
       // Store data for results page - property lookup will happen there
       const stored = {
         ...quizAnswers,
+        sessionId, // Needed for LynqFlux delivery after BatchData
         contact: {
           firstName,
           lastName,
@@ -652,38 +653,6 @@ export default function ReverseMortgageCalculatorPage() {
                       </svg>
                     </div>
                   </button>
-                </div>
-
-                {/* Re-introducing Trust Signals for Credibility to reduce Step 1 Drop-off */}
-                <div className="mt-8 pt-8 border-t border-gray-100">
-                  <div className="flex flex-wrap justify-center sm:justify-between items-center gap-3 mb-6">
-                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                      <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-                      <span>FHA Insured Program</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                      <Lock className="w-3.5 h-3.5 text-[#36596A]" />
-                      <span>Safe & Secure Encryption</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                      <CheckCircle className="w-3.5 h-3.5 text-blue-600" />
-                      <span>TrustedForm Certified</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
-                    {[
-                      'Eliminate monthly mortgage payments',
-                      'Access tax-free cash from equity',
-                      'Maintain title and home ownership',
-                      'Cover medical bills or high-interest debt'
-                    ].map((benefit, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>{benefit}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             )}
