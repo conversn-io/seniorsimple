@@ -122,6 +122,23 @@ export default function ReverseMortgageCalculatorPage() {
     5: 'lead_capture'
   }
 
+  // Log quiz progress to Vercel runtime logs (fire-and-forget)
+  const logQuizProgress = (stepNum: number, stepName: string, answer: string, meta?: Record<string, any>) => {
+    fetch('/api/quiz-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        funnelType: 'reverse-mortgage',
+        step: stepNum,
+        stepName,
+        answer,
+        totalSteps: 5,
+        meta,
+      }),
+    }).catch(() => {})
+  }
+
   // Initialize tracking and session
   useEffect(() => {
     initializeTracking()
@@ -216,7 +233,8 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleReasonSelect = (value: string) => {
     setReason(value)
-    
+    logQuizProgress(3, 'reason_selection', value)
+
     // Track answer
     trackQuestionAnswer('reason_selection', value, 3, 6, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_answer', {
@@ -231,7 +249,8 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleAge62Check = (is62: boolean) => {
     setIs62Plus(is62)
-    
+    logQuizProgress(2, 'age_verification', is62 ? 'yes_62_plus' : 'no_under_62', { qualified: is62 })
+
     // Track answer
     trackQuestionAnswer('age_verification', is62 ? 'yes_62_plus' : 'no_under_62', 2, 6, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_answer', {
@@ -259,7 +278,8 @@ export default function ReverseMortgageCalculatorPage() {
 
   const handleHomeownerCheck = (isOwner: boolean) => {
     setIsHomeowner(isOwner)
-    
+    logQuizProgress(1, 'homeowner_check', isOwner ? 'yes' : 'no', { qualified: isOwner })
+
     // Track answer
     trackQuestionAnswer('homeowner_check', isOwner ? 'yes_homeowner' : 'no_not_homeowner', 1, 6, sessionId, 'reverse-mortgage')
     trackGA4Event('rm_answer', {
@@ -297,6 +317,7 @@ export default function ReverseMortgageCalculatorPage() {
   const handleAddressSelect = (selected: AddressComponents) => {
     setLookupError('')
     setAddress(selected)
+    logQuizProgress(4, 'address_entry', selected.state || 'unknown', { city: selected.city, zip: selected.zip })
 
     // Track address entry
     trackQuestionAnswer('address_entry', selected.state || 'unknown', 4, 5, sessionId, 'reverse-mortgage')
@@ -355,7 +376,8 @@ export default function ReverseMortgageCalculatorPage() {
     // This prevents double-click duplicates during the TrustedForm polling period
     isSubmittingRef.current = true
     setIsSubmitting(true)
-    
+    logQuizProgress(5, 'lead_submit', email, { hasPhone: !!phone, state: address.state, zip: address.zip })
+
     console.log('[DEBUG] 🔵 All validations passed, isSubmitting=true, proceeding to polling')
 
     const sessionId =
