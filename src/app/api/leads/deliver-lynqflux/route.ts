@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Look up the lead by session_id
     const { data: lead, error: leadError } = await callreadyQuizDb
       .from('leads')
-      .select('id, email, first_name, last_name, phone, quiz_answers, ip_address, trustedform_cert_url, jornaya_lead_id, ghl_status, landing_page')
+      .select('id, contact, quiz_answers, ip_address, trustedform_cert_url, jornaya_lead_id, ghl_status, landing_page, zip_code, state')
       .eq('session_id', sessionId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -52,10 +52,13 @@ export async function POST(request: NextRequest) {
       return createCorsResponse({ success: true, message: 'Already delivered', leadId: lead.id });
     }
 
+    // Contact data is JSONB
+    const contact = lead.contact || {};
+
     // Extract address from quiz_answers
     const qa = lead.quiz_answers || {};
     const addrInfo = qa.addressInfo || {};
-    const rawZip = addrInfo.zipCode || qa.zipCode || '';
+    const rawZip = addrInfo.zipCode || qa.zipCode || lead.zip_code || '';
     const zip5 = rawZip.replace(/-.*$/, '').substring(0, 5); // Strip ZIP+4
 
     // Build LynqFlux payload
@@ -63,15 +66,15 @@ export async function POST(request: NextRequest) {
     const lynqParams = new URLSearchParams({
       pswd: LYNQFLUX_PSWD,
       lid: LYNQFLUX_LID,
-      email: lead.email || '',
-      fname: lead.first_name || '',
-      lname: lead.last_name || '',
+      email: contact.email || '',
+      fname: contact.first_name || contact.firstName || '',
+      lname: contact.last_name || contact.lastName || '',
       address: addrInfo.street || addrInfo.fullAddress || '',
       city: addrInfo.city || '',
       state: addrInfo.state || qa.state || '',
       zip: zip5,
       country: 'US',
-      phone: lead.phone || '',
+      phone: contact.phone || contact.phoneNumber || '',
       leadid: lead.jornaya_lead_id || qa.jornayaLeadId || qa.jornaya_lead_id || '',
       trustedformurl: lead.trustedform_cert_url || qa.trustedFormCertUrl || '',
       listcode: 'callready',
@@ -105,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[LynqFlux] 📤 Sending reverse mortgage lead (deferred):', {
       leadId: lead.id,
-      email: lead.email,
+      email: contact.email,
       zip: zip5,
       propertyValue,
       mortgageBalance: loanAmt,
@@ -161,7 +164,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`🟢 LYNQFLUX ACCEPTED — lead=${lead.id} email=${lead.email}`);
+    console.log(`🟢 LYNQFLUX ACCEPTED — lead=${lead.id} email=${contact.email}`);
     return createCorsResponse({
       success: true,
       leadId: lead.id,
