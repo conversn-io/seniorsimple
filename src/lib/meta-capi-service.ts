@@ -265,24 +265,29 @@ export function buildUserData(input: {
     }
   }
 
-  // Demographic data (optional)
+  // Demographic & geo data (all must be SHA256 hashed per Meta CAPI spec)
   if (input.gender) {
-    userData.ge = input.gender.toLowerCase().substring(0, 1); // 'm' or 'f'
+    const g = input.gender.toLowerCase().substring(0, 1); // 'm' or 'f'
+    userData.ge = hashForMeta(g) || undefined;
   }
   if (input.date_of_birth) {
-    userData.db = input.date_of_birth; // YYYYMMDD format
+    userData.db = hashForMeta(input.date_of_birth) || undefined; // YYYYMMDD format, then hashed
   }
   if (input.city) {
-    userData.ct = input.city;
+    // Meta: lowercase, no spaces, then hash
+    userData.ct = hashForMeta(input.city.replace(/\s+/g, '')) || undefined;
   }
   if (input.state) {
-    userData.st = input.state.substring(0, 2).toUpperCase();
+    // Meta: 2-letter lowercase state code, then hash
+    userData.st = hashForMeta(input.state.substring(0, 2).toLowerCase()) || undefined;
   }
   if (input.zip_code) {
-    userData.zp = input.zip_code.substring(0, 10); // Max 10 chars
+    // Meta: first 5 chars for US zips, then hash
+    userData.zp = hashForMeta(input.zip_code.substring(0, 5)) || undefined;
   }
   if (input.country) {
-    userData.country = input.country.substring(0, 2).toUpperCase();
+    // Meta: 2-letter lowercase country code, then hash
+    userData.country = hashForMeta(input.country.substring(0, 2).toLowerCase()) || undefined;
   }
 
   return userData;
