@@ -153,7 +153,51 @@ export default function ReverseMortgageResultsPage() {
             net_proceeds: calc.netProceeds,
             state: state
           })
-          
+
+          // Fire Meta CAPI ViewContent with property value for value-based optimization
+          const viewContentEventId = `vc-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+          // Also fire client-side pixel for dedup
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'ViewContent', {
+              value: calc.propertyValue,
+              currency: 'USD',
+              content_name: 'Reverse Mortgage Property Results',
+              content_category: 'reverse-mortgage',
+            }, { eventID: viewContentEventId })
+          }
+          // Server-side CAPI (non-blocking)
+          const getCookie = (name: string) => {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+            return match ? match[2] : undefined
+          }
+          fetch('/api/capi/view-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId: viewContentEventId,
+              email: parsedResults.contact?.email,
+              phone: parsedResults.contact?.phone,
+              firstName: parsedResults.contact?.firstName,
+              lastName: parsedResults.contact?.lastName,
+              city: city,
+              state: state,
+              zipCode: zipCode,
+              value: calc.propertyValue,
+              contentName: 'Reverse Mortgage Property Results',
+              contentCategory: 'reverse-mortgage',
+              funnelType: 'reverse-mortgage',
+              fbp: getCookie('_fbp'),
+              fbc: getCookie('_fbc'),
+              eventSourceUrl: window.location.href,
+              customData: {
+                property_value: calc.propertyValue,
+                equity_available: calc.equityAvailable,
+                net_proceeds: calc.netProceeds,
+                mortgage_balance: calc.existingMortgage,
+              },
+            }),
+          }).catch(() => {}) // fire-and-forget
+
           console.log('✅ Property data fetched successfully:', calc)
         } else {
           console.log('❌ Property lookup failed:', result?.error || 'Unknown error')

@@ -613,9 +613,17 @@ export async function sendLeadEvent(params: {
   lastName?: string | null;
   fbp?: string | null;
   fbc?: string | null;
-  fbLoginId?: string | null; // Facebook Login ID (do NOT hash)
+  fbLoginId?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
+  // Geo/demo fields for EMQ 8+
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  dateOfBirth?: string | null; // YYYYMMDD
+  gender?: string | null;
+  externalId?: string | null;
   value?: number;
   currency?: string;
   customData?: MetaCustomData;
@@ -632,6 +640,13 @@ export async function sendLeadEvent(params: {
     fb_login_id: params.fbLoginId,
     ip_address: params.ipAddress,
     user_agent: params.userAgent,
+    city: params.city,
+    state: params.state,
+    zip_code: params.zipCode,
+    country: params.country || 'US',
+    date_of_birth: params.dateOfBirth,
+    gender: params.gender,
+    external_id: params.externalId,
   });
 
   const customData: MetaCustomData = {
@@ -646,6 +661,74 @@ export async function sendLeadEvent(params: {
     customData,
     eventSourceUrl: params.eventSourceUrl,
   });
+
+  return sendMetaCAPIEvent(event, params.options);
+}
+
+/**
+ * Send a ViewContent event with automatic user data building
+ * Used for high-value page views (e.g., property results with value)
+ */
+export async function sendViewContentEvent(params: {
+  eventId: string;
+  email?: string | null;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  fbp?: string | null;
+  fbc?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  dateOfBirth?: string | null;
+  externalId?: string | null;
+  value?: number;
+  currency?: string;
+  contentName?: string;
+  contentCategory?: string;
+  customData?: MetaCustomData;
+  eventSourceUrl?: string;
+  options?: SendCAPIOptions;
+}): Promise<SendCAPIResult> {
+  const userData = buildUserData({
+    email: params.email,
+    phone: params.phone,
+    first_name: params.firstName,
+    last_name: params.lastName,
+    fbp: params.fbp,
+    fbc: params.fbc,
+    ip_address: params.ipAddress,
+    user_agent: params.userAgent,
+    city: params.city,
+    state: params.state,
+    zip_code: params.zipCode,
+    country: params.country || 'US',
+    date_of_birth: params.dateOfBirth,
+    external_id: params.externalId,
+  });
+
+  const customData: MetaCustomData = {
+    value: params.value,
+    currency: params.currency || 'USD',
+    content_name: params.contentName,
+    content_category: params.contentCategory,
+    ...params.customData,
+  };
+
+  const eventTime = Math.floor(Date.now() / 1000);
+
+  const event: MetaCAPIEvent = {
+    event_name: 'ViewContent',
+    event_time: eventTime,
+    event_id: params.eventId,
+    action_source: 'website',
+    user_data: userData,
+    custom_data: customData,
+    event_source_url: params.eventSourceUrl,
+  };
 
   return sendMetaCAPIEvent(event, params.options);
 }

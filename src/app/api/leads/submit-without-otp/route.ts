@@ -767,6 +767,13 @@ export async function POST(request: NextRequest) {
       // Get funnel-specific pixel ID
       const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
       
+      // Convert dob YYYY-MM-DD → YYYYMMDD for Meta
+      const dobForCapi = dobFormatted ? dobFormatted.replace(/-/g, '') : null;
+      // For reverse mortgage, use propertyValue as the lead value signal
+      const capiValue = isReverseMortgage
+        ? (quizAnswers?.propertyData?.property_value || quizAnswers?.propertyValue || coverageAmount || 0)
+        : (coverageAmount || 0);
+
       const capiResult = await sendLeadEvent({
         leadId: lead.id,
         email: email,
@@ -778,18 +785,27 @@ export async function POST(request: NextRequest) {
         fbLoginId: body.metaCookies?.fbLoginId,
         ipAddress: ipAddress,
         userAgent: userAgent,
-        value: coverageAmount || 0,
+        // Geo/demo for EMQ 8+
+        city: city || quizAnswers?.city || '',
+        state: state || addressState || '',
+        zipCode: zipCode || addressZip || '',
+        country: 'US',
+        dateOfBirth: dobForCapi,
+        externalId: lead.id,
+        value: capiValue,
         currency: 'USD',
         customData: {
           quiz_type: funnelType,
-          state: state || addressState || '',
-          zip_code: zipCode || addressZip || '',
+          content_name: isReverseMortgage ? 'Reverse Mortgage Lead' : `${funnelType} Lead`,
+          content_category: funnelType,
           coverage_amount: coverageAmount,
           retirement_savings: retirementSavings,
           allocation_percent: allocationPercent,
+          property_value: quizAnswers?.propertyData?.property_value || undefined,
+          equity_available: quizAnswers?.propertyData?.equity_available || undefined,
         },
         options: {
-          pixelId: funnelPixelId, // Use funnel-specific pixel ID
+          pixelId: funnelPixelId,
         },
       });
       
