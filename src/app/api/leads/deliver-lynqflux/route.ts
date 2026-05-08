@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       trustedformurl: lead.trustedform_cert_url || qa.trustedFormCertUrl || '',
       listcode: 'callready',
       ip: lead.ip_address || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '',
-      url: lead.landing_page || 'seniorsimple.org',
+      url: (lead.landing_page || 'https://www.seniorsimple.org/reverse-mortgage-calculator').split('?')[0],
       timestamp: lynqTimestamp,
     });
 
