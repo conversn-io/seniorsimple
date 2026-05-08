@@ -472,7 +472,10 @@ export default function ReverseMortgageCalculatorPage() {
     // Capture Meta cookies for CAPI deduplication (CRITICAL for match rate)
     const metaCookies = getMetaCookies()
     const fbLoginId = typeof window !== 'undefined' && (window as any).FB?.getAuthResponse?.()?.userID || null
-    
+
+    // Generate shared eventID for browser pixel + server CAPI deduplication
+    const capiEventId = `lead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
     const payload = {
       email,
       phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
@@ -493,6 +496,8 @@ export default function ReverseMortgageCalculatorPage() {
         fbc: metaCookies.fbc,
         fbLoginId: fbLoginId,
       },
+      // Shared eventID for browser+server CAPI dedup
+      capiEventId,
     }
     console.log('[DEBUG] 🔵 Payload prepared for submission', { 
       trustedFormCertUrl: payload.trustedFormCertUrl || 'NULL', 
@@ -572,13 +577,13 @@ export default function ReverseMortgageCalculatorPage() {
         event_category: 'reverse_mortgage_funnel'
       })
       
-      // Track to Meta - Lead event
+      // Track to Meta - Lead event (browser pixel with shared eventID for CAPI dedup)
       trackMetaPixelEvent('Lead', {
         content_name: 'Reverse Mortgage Lead',
         content_category: 'reverse-mortgage',
         value: 0, // Value will be calculated on results page
         currency: 'USD'
-      }, 'reverse-mortgage')
+      }, 'reverse-mortgage', capiEventId)
       
       console.log('📊 Lead Submitted Successfully:', {
         sessionId,

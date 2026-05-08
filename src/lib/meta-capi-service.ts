@@ -547,13 +547,15 @@ export async function sendMetaCAPIBatch(
  */
 export function createLeadEvent(params: {
   leadId: string;
+  eventId?: string; // Client-generated eventID for browser+server dedup
   userData: MetaUserData;
   customData?: MetaCustomData;
   eventTime?: number;
   eventSourceUrl?: string;
 }): MetaCAPIEvent {
   const eventTime = params.eventTime || Math.floor(Date.now() / 1000);
-  const eventId = generateEventId(params.leadId, 'Lead', eventTime);
+  // Use client-provided eventId for dedup, or generate server-side fallback
+  const eventId = params.eventId || generateEventId(params.leadId, 'Lead', eventTime);
 
   return {
     event_name: 'Lead',
@@ -626,6 +628,7 @@ export function createCustomEvent(params: {
  */
 export async function sendLeadEvent(params: {
   leadId: string;
+  eventId?: string; // Client-generated eventID for browser+server dedup
   email?: string | null;
   phone?: string | null;
   firstName?: string | null;
@@ -676,6 +679,7 @@ export async function sendLeadEvent(params: {
 
   const event = createLeadEvent({
     leadId: params.leadId,
+    eventId: params.eventId,
     userData,
     customData,
     eventSourceUrl: params.eventSourceUrl,

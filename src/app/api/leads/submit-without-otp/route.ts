@@ -776,6 +776,7 @@ export async function POST(request: NextRequest) {
 
       const capiResult = await sendLeadEvent({
         leadId: lead.id,
+        eventId: body.capiEventId, // Client-generated eventID for browser+server dedup
         email: email,
         phone: phoneNumber,
         firstName: firstName,

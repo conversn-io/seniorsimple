@@ -127,11 +127,12 @@ function trackMetaEvent(eventName: string, parameters: Record<string, any>): voi
   }
 }
 
-// Track Meta Pixel event with funnel context
+// Track Meta Pixel event with funnel context and optional eventID for CAPI dedup
 export function trackMetaPixelEvent(
-  eventName: string, 
+  eventName: string,
   parameters: Record<string, any> = {},
-  funnelType?: string
+  funnelType?: string,
+  eventID?: string
 ): void {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     // Add funnel context to parameters
@@ -140,9 +141,13 @@ export function trackMetaPixelEvent(
       funnel_type: funnelType || 'unknown',
       site_key: 'SENIORSIMPLE',
     };
-    
-    window.fbq('track', eventName, enrichedParams);
-    console.log('📊 Meta Pixel Event:', eventName, enrichedParams);
+
+    if (eventID) {
+      window.fbq('track', eventName, enrichedParams, { eventID });
+    } else {
+      window.fbq('track', eventName, enrichedParams);
+    }
+    console.log('📊 Meta Pixel Event:', eventName, enrichedParams, eventID ? `eventID=${eventID}` : '');
   }
 }
 
