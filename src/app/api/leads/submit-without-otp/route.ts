@@ -763,10 +763,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Fire Meta CAPI Lead event (after Supabase save, before GHL webhook)
-    try {
+    // DEDUP: Only send CAPI Lead once per lead — skip if already sent
+    const existingGhlStatus = lead.ghl_status || {};
+    const capiAlreadySent = existingGhlStatus?.capi_lead_sent;
+    if (capiAlreadySent) {
+      console.log(`[Meta CAPI] ⏭️ Skipping Lead event — already sent at ${capiAlreadySent} for lead=${lead.id}`);
+    }
+
+    if (!capiAlreadySent) try {
       // Get funnel-specific pixel ID
       const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
-      
+
       // Convert dob YYYY-MM-DD → YYYYMMDD for Meta
       const dobForCapi = dobFormatted ? dobFormatted.replace(/-/g, '') : null;
       // For reverse mortgage, use propertyValue as the lead value signal
@@ -815,6 +822,17 @@ export async function POST(request: NextRequest) {
         // Don't fail the request - just log
       } else {
         console.log('[Meta CAPI] Lead event sent:', capiResult.eventId);
+        // Stamp capi_lead_sent so we never double-send for this lead
+        await callreadyQuizDb
+          .from('leads')
+          .update({
+            ghl_status: {
+              ...existingGhlStatus,
+              capi_lead_sent: new Date().toISOString(),
+              capi_lead_event_id: capiResult.eventId,
+            },
+          })
+          .eq('id', lead.id);
       }
     } catch (capiError) {
       console.error('[Meta CAPI] Error:', capiError);
@@ -915,11 +933,13 @@ export async function POST(request: NextRequest) {
     if (ghlResponse.ok) {
       console.log('✅ Lead Sent to GHL Successfully:', { leadId: lead.id, status: ghlResponse.status, trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED' });
       
-      // Update lead with GHL status
+      // Update lead with GHL status (merge with existing to preserve capi_lead_sent, lynqflux, etc.)
+      const currentGhlStatus = lead.ghl_status || {};
       await callreadyQuizDb
         .from('leads')
-        .update({ 
+        .update({
           ghl_status: {
+            ...currentGhlStatus,
             status: ghlResponse.status,
             timestamp: new Date().toISOString(),
             success: true
@@ -967,11 +987,13 @@ export async function POST(request: NextRequest) {
         funnelType: funnelType,
       });
 
-      // Update lead with failed GHL status
+      // Update lead with failed GHL status (merge with existing to preserve capi_lead_sent, lynqflux, etc.)
+      const currentGhlStatusFail = lead.ghl_status || {};
       await callreadyQuizDb
         .from('leads')
-        .update({ 
+        .update({
           ghl_status: {
+            ...currentGhlStatusFail,
             status: ghlResponse.status,
             statusText: ghlResponse.statusText,
             response: ghlResponseData,
