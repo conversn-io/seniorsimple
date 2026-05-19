@@ -16,6 +16,9 @@ const LYNQFLUX_URL = 'https://lynqflux.com/data/244/incoming.php';
 const LYNQFLUX_PSWD = 'bXC9qjy4DEnMd4c7';
 const LYNQFLUX_LID = '244';
 
+// Buyer requires existing-mortgage LTV ≤ 35% to avoid "short to close" DNQs.
+const MAX_QUALIFYING_LTV = 0.35;
+
 export async function OPTIONS() {
   return handleCorsOptions();
 }
@@ -23,7 +26,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId, propertyValue, mortgageBalance, ltvRatio, creditRating } = body;
+    const { sessionId, propertyValue, mortgageBalance, ltvRatio, creditRating, userVerified } = body;
 
     if (!sessionId) {
       return createCorsResponse({ error: 'sessionId is required' }, 400);
@@ -31,6 +34,12 @@ export async function POST(request: NextRequest) {
     if (!propertyValue) {
       return createCorsResponse({ error: 'propertyValue is required' }, 400);
     }
+
+    // Compute LTV defensively — client-supplied ratio may be a string or stale.
+    const pvNum = Number(propertyValue) || 0;
+    const mbNum = Number(mortgageBalance) || 0;
+    const ratioFromValues = pvNum > 0 ? mbNum / pvNum : 0;
+    const effectiveLtv = Math.max(Number(ltvRatio) || 0, ratioFromValues);
 
     // Look up the lead by session_id
     const { data: lead, error: leadError } = await callreadyQuizDb
@@ -50,6 +59,38 @@ export async function POST(request: NextRequest) {
     if (lead.ghl_status?.lynqflux?.success) {
       console.log(`[LynqFlux] Already delivered for lead=${lead.id}, skipping`);
       return createCorsResponse({ success: true, message: 'Already delivered', leadId: lead.id });
+    }
+
+    // Hard gate: LTV must be ≤ 35% to avoid buyer "short to close" DNQs.
+    if (effectiveLtv > MAX_QUALIFYING_LTV) {
+      console.log(
+        `🛑 LYNQFLUX SKIPPED — lead=${lead.id} ltv=${(effectiveLtv * 100).toFixed(1)}% exceeds ${MAX_QUALIFYING_LTV * 100}% cap`,
+      );
+      const existingGhlStatus = lead.ghl_status || {};
+      await callreadyQuizDb
+        .from('leads')
+        .update({
+          property_value: pvNum || null,
+          current_mortgage: mbNum || null,
+          ghl_status: {
+            ...existingGhlStatus,
+            lynqflux: {
+              skipped: true,
+              reason: 'ltv_above_35',
+              ltv: Number(effectiveLtv.toFixed(4)),
+              user_verified: !!userVerified,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        })
+        .eq('id', lead.id);
+      return createCorsResponse({
+        success: false,
+        skipped: true,
+        reason: 'ltv_above_35',
+        ltv: Number(effectiveLtv.toFixed(4)),
+        leadId: lead.id,
+      });
     }
 
     // Contact data is JSONB
@@ -102,17 +143,18 @@ export async function POST(request: NextRequest) {
     // loantype: Fixed, ARM, Balloon, FHA, VA, Fannie, Freddie, USDA
     lynqParams.set('loantype', 'FHA');
 
-    // Property data from BatchData
-    lynqParams.set('propertyvalue', String(Math.round(Number(propertyValue))));
-    lynqParams.set('ltv', String(Number(ltvRatio || 0).toFixed(2)));
+    // Property data (BatchData or user-verified)
+    lynqParams.set('propertyvalue', String(Math.round(pvNum)));
+    lynqParams.set('ltv', effectiveLtv.toFixed(2));
 
     console.log('[LynqFlux] 📤 Sending reverse mortgage lead (deferred):', {
       leadId: lead.id,
       email: contact.email,
       zip: zip5,
-      propertyValue,
+      propertyValue: pvNum,
       mortgageBalance: loanAmt,
-      ltv: ltvRatio,
+      ltv: effectiveLtv.toFixed(4),
+      userVerified: !!userVerified,
       creditRating: mappedCredit,
     });
 
@@ -138,11 +180,13 @@ export async function POST(request: NextRequest) {
       leadId: lead.id,
     });
 
-    // Persist result in ghl_status.lynqflux
+    // Persist result in ghl_status.lynqflux + property/mortgage on the lead row
     const existingGhlStatus = lead.ghl_status || {};
     await callreadyQuizDb
       .from('leads')
       .update({
+        property_value: pvNum || null,
+        current_mortgage: mbNum || null,
         ghl_status: {
           ...existingGhlStatus,
           lynqflux: {
@@ -150,6 +194,8 @@ export async function POST(request: NextRequest) {
             response: lynqJson,
             timestamp: new Date().toISOString(),
             success: lynqResponse.ok && lynqJson.status === 'success',
+            ltv: Number(effectiveLtv.toFixed(4)),
+            user_verified: !!userVerified,
           },
         },
       })

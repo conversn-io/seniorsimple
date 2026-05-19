@@ -31,6 +31,12 @@ function NotQualifiedContent() {
         message: "To qualify for a reverse mortgage, you must own your home and live in it as your primary residence. If you're planning to purchase a home, you may want to explore other financing options.",
       }
     }
+    if (reason === 'ltv') {
+      return {
+        title: "We're sorry, but you don't currently qualify",
+        message: "Based on the numbers you confirmed, your existing mortgage balance is too high relative to your home's value for a reverse mortgage. HECM proceeds need to be sufficient to pay off your current loan in full at closing. If you're able to pay down your mortgage, or if your home value has increased recently, you may qualify in the future.",
+      }
+    }
     return {
       title: "We're sorry, but you don't currently qualify",
       message: "Based on your responses, you don't currently meet the eligibility requirements for a reverse mortgage.",
