@@ -281,18 +281,28 @@ export default function ReverseMortgageResultsPage() {
 
         if (response.ok && result?.success && result?.data) {
           const propertyData = result.data as PropertyData
-          const ltvRatio =
-            (result.data as any)?.ltv_ratio ??
-            (propertyData.property_value > 0
-              ? propertyData.mortgage_balance / propertyData.property_value
-              : 0)
+          // BatchData ltv_ratio is now nullable (null = truly unknown). Fall back to
+          // computed ratio when mortgage data exists; otherwise treat as null.
+          const rawLtv = (result.data as any)?.ltv_ratio
+          const ltvRatio: number | null =
+            typeof rawLtv === 'number'
+              ? rawLtv
+              : propertyData.mortgage_balance > 0 && propertyData.property_value > 0
+                ? propertyData.mortgage_balance / propertyData.property_value
+                : null
 
-          // Gate: if BatchData LTV > 35%, send to verify screen so user can correct.
-          if (ltvRatio > MAX_QUALIFYING_LTV) {
-            console.log(`⚠️ BatchData LTV ${(ltvRatio * 100).toFixed(1)}% > 35% — routing to verify`)
+          // Gate: if BatchData LTV > 35% OR LTV is unknown, send to verify screen
+          // so the user can confirm/correct. null → can't trust the gate decision.
+          if (ltvRatio === null || ltvRatio > MAX_QUALIFYING_LTV) {
+            const reason = ltvRatio === null ? 'ltv_unknown' : 'ltv_above_threshold'
+            console.log(
+              ltvRatio === null
+                ? '⚠️ BatchData LTV unknown — routing to verify'
+                : `⚠️ BatchData LTV ${(ltvRatio * 100).toFixed(1)}% > 35% — routing to verify`,
+            )
             trackGA4Event('rm_verify_shown', {
-              reason: 'ltv_above_threshold',
-              batchdata_ltv: Number(ltvRatio.toFixed(4)),
+              reason,
+              batchdata_ltv: ltvRatio !== null ? Number(ltvRatio.toFixed(4)) : undefined,
               state,
             })
             setBatchData({ property: propertyData, state, lookupFailed: false })

@@ -8,7 +8,8 @@ interface PropertyData {
   property_value: number
   mortgage_balance: number
   equity_available: number
-  ltv_ratio?: number
+  /** Decimal 0–1, or null when BatchData couldn't determine it. */
+  ltv_ratio?: number | null
 }
 
 interface AddressInput {
