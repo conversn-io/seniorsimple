@@ -24,6 +24,10 @@ interface PropertyVerificationStepProps {
     propertyValue: number
     mortgageBalance: number
     ltv: number
+    /** Original BatchData LTV before any user adjustment — used for defensive
+     * max(batchData, userVerified) in downstream gating (Meta CAPI, etc.).
+     * undefined when BatchData lookup failed. */
+    batchDataLtv?: number
     batchDataUsed: boolean
   }) => void
   isSubmitting?: boolean
@@ -42,6 +46,9 @@ export function PropertyVerificationStep({
   const [phase, setPhase] = useState<'thinking' | 'verify'>('thinking')
   const [property, setProperty] = useState<PropertyData | undefined>(undefined)
   const [lookupFailed, setLookupFailed] = useState(false)
+  // The original BatchData LTV (before any user adjustment) — captured here so
+  // we can pass it to onConfirm for downstream defensive gating decisions.
+  const [batchDataLtv, setBatchDataLtv] = useState<number | undefined>(undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -86,6 +93,7 @@ export function PropertyVerificationStep({
       timeoutId = setTimeout(() => {
         if (cancelled) return
         setProperty(next.property)
+        setBatchDataLtv(next.ltv)
         setLookupFailed(next.lookupFailed)
         setPhase('verify')
         onLookupComplete?.({
@@ -130,7 +138,7 @@ export function PropertyVerificationStep({
       initialMortgageBalance={property?.mortgage_balance}
       lookupFailed={lookupFailed}
       onConfirm={(values) =>
-        onConfirm({ ...values, batchDataUsed: !lookupFailed })
+        onConfirm({ ...values, batchDataUsed: !lookupFailed, batchDataLtv })
       }
       isSubmitting={isSubmitting}
     />

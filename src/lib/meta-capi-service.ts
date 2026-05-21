@@ -629,6 +629,12 @@ export function createCustomEvent(params: {
 export async function sendLeadEvent(params: {
   leadId: string;
   eventId?: string; // Client-generated eventID for browser+server dedup
+  /**
+   * Optional event name override. Defaults to "Lead" (standard event).
+   * Pass a custom event name (e.g. "QualifiedLead") to fire a custom CAPI event
+   * using the same user-data + custom-data pipeline.
+   */
+  eventName?: string;
   email?: string | null;
   phone?: string | null;
   firstName?: string | null;
@@ -677,13 +683,29 @@ export async function sendLeadEvent(params: {
     ...params.customData,
   };
 
-  const event = createLeadEvent({
-    leadId: params.leadId,
-    eventId: params.eventId,
-    userData,
-    customData,
-    eventSourceUrl: params.eventSourceUrl,
-  });
+  // If a custom event name is provided, build a custom CAPI event instead of Lead.
+  const event = params.eventName && params.eventName !== 'Lead'
+    ? createCustomEvent({
+        leadId: params.leadId,
+        eventName: params.eventName,
+        userData,
+        customData,
+        eventSourceUrl: params.eventSourceUrl,
+        // createCustomEvent generates its own eventId; override with caller's if present
+        ...(params.eventId ? { eventTime: Math.floor(Date.now() / 1000) } : {}),
+      })
+    : createLeadEvent({
+        leadId: params.leadId,
+        eventId: params.eventId,
+        userData,
+        customData,
+        eventSourceUrl: params.eventSourceUrl,
+      });
+
+  // For custom events, force the eventId override (so it matches the browser pixel)
+  if (params.eventName && params.eventName !== 'Lead' && params.eventId) {
+    event.event_id = params.eventId;
+  }
 
   return sendMetaCAPIEvent(event, params.options);
 }

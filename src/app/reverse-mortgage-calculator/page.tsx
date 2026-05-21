@@ -94,11 +94,13 @@ export default function ReverseMortgageCalculatorPage() {
   const [lookupError, setLookupError] = useState('')
   const [isLookupLoading, setIsLookupLoading] = useState(false)
   // User-verified (or BatchData-trusted) property values captured at step 5.
-  // Required to reach step 6 (lead capture); leads with LTV>35% never reach this state.
+  // `batchDataLtv` is the original BatchData LTV before user adjustment — used for
+  // defensive max(batchData, userVerified) gating downstream (e.g. Meta CAPI).
   const [verifiedProperty, setVerifiedProperty] = useState<{
     propertyValue: number
     mortgageBalance: number
     ltv: number
+    batchDataLtv?: number
     batchDataUsed: boolean
   } | null>(null)
 
@@ -378,6 +380,7 @@ export default function ReverseMortgageCalculatorPage() {
     propertyValue: number
     mortgageBalance: number
     ltv: number
+    batchDataLtv?: number
     batchDataUsed: boolean
   }) => {
     setVerifiedProperty(values)
@@ -477,6 +480,7 @@ export default function ReverseMortgageCalculatorPage() {
             propertyValue: verifiedProperty.propertyValue,
             mortgageBalance: verifiedProperty.mortgageBalance,
             ltv: verifiedProperty.ltv,
+            batchDataLtv: verifiedProperty.batchDataLtv,
             batchDataUsed: verifiedProperty.batchDataUsed,
           }
         : null,
@@ -558,6 +562,18 @@ export default function ReverseMortgageCalculatorPage() {
     // Generate shared eventID for browser pixel + server CAPI deduplication
     const capiEventId = `lead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
+    // Decide whether to also fire the QualifiedLead custom event (≥50% LTV).
+    // Generated upfront so browser pixel and server CAPI can use the same eventID for dedup.
+    const QUALIFIED_LEAD_LTV_FLOOR = 0.50
+    const gatingLtv = Math.max(
+      verifiedProperty?.ltv ?? 0,
+      verifiedProperty?.batchDataLtv ?? 0,
+    )
+    const fireQualifiedLead = gatingLtv >= QUALIFIED_LEAD_LTV_FLOOR
+    const qualifiedLeadEventId = fireQualifiedLead
+      ? `qlead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      : undefined
+
     const payload = {
       email,
       phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
@@ -578,8 +594,20 @@ export default function ReverseMortgageCalculatorPage() {
         fbc: metaCookies.fbc,
         fbLoginId: fbLoginId,
       },
-      // Shared eventID for browser+server CAPI dedup
+      // Shared eventID for browser+server CAPI dedup (Lead event — fires for everyone)
       capiEventId,
+      // QualifiedLead custom event — only when LTV >= 0.50 (≥50% LTV). When this
+      // eventId is set, the server fires a matching CAPI QualifiedLead event with
+      // it for browser/server dedup. When undefined, the server skips the event.
+      // This is the dual-event setup: Lead optimizes the current campaign, while
+      // QualifiedLead builds the optimization signal for a future duplicate campaign.
+      qualifiedLeadEventId,
+      qualifiedLeadGate: {
+        gatingLtv: Number(gatingLtv.toFixed(4)),
+        floor: QUALIFIED_LEAD_LTV_FLOOR,
+        shouldFire: fireQualifiedLead,
+        ltvSource: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+      },
     }
     console.log('[DEBUG] 🔵 Payload prepared for submission', { 
       trustedFormCertUrl: payload.trustedFormCertUrl || 'NULL', 
@@ -669,13 +697,46 @@ export default function ReverseMortgageCalculatorPage() {
         event_category: 'reverse_mortgage_funnel'
       })
       
-      // Track to Meta - Lead event (browser pixel with shared eventID for CAPI dedup)
+      // ────────────────────────────────────────────────────────────────────────
+      // Meta dual-event strategy
+      // ────────────────────────────────────────────────────────────────────────
+      // 1) `Lead` — fires for EVERY submitted lead (unchanged behavior). Current
+      //    campaign keeps optimizing on full volume; do not break it.
+      // 2) `QualifiedLead` — custom event, fires only when LTV >= 50%. Builds
+      //    the optimization signal for a duplicated Meta campaign that will
+      //    optimize on higher-intent leads once it accumulates ~50 events/week.
+      // Both events use the same pixel + CAPI. The gate decision and event IDs
+      // were generated upfront (before fetch) so server CAPI can dedup against
+      // these browser pixel events.
+      console.log('[Meta CAPI] Dual-event firing', {
+        leadEventId: capiEventId,
+        qualifiedLeadEventId,
+        gatingLtv,
+        fireQualifiedLead,
+      })
+
+      // Lead event (fires for everyone — current campaign signal)
       trackMetaPixelEvent('Lead', {
         content_name: 'Reverse Mortgage Lead',
         content_category: 'reverse-mortgage',
-        value: 0, // Value will be calculated on results page
-        currency: 'USD'
+        value: 0,
+        currency: 'USD',
+        ltv: gatingLtv > 0 ? Number(gatingLtv.toFixed(4)) : undefined,
+        ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
       }, 'reverse-mortgage', capiEventId)
+
+      // QualifiedLead custom event (only ≥50% LTV — future campaign signal)
+      if (fireQualifiedLead && qualifiedLeadEventId && typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('trackCustom', 'QualifiedLead', {
+          content_name: 'Reverse Mortgage Qualified Lead (LTV≥50%)',
+          content_category: 'reverse-mortgage',
+          value: 0,
+          currency: 'USD',
+          ltv: Number(gatingLtv.toFixed(4)),
+          ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+          funnel_type: 'reverse-mortgage',
+        }, { eventID: qualifiedLeadEventId })
+      }
       
       console.log('📊 Lead Submitted Successfully:', {
         sessionId,

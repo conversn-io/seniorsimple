@@ -770,6 +770,10 @@ export async function POST(request: NextRequest) {
       console.log(`[Meta CAPI] ⏭️ Skipping Lead event — already sent at ${capiAlreadySent} for lead=${lead.id}`);
     }
 
+    // Lead event fires for EVERY submitted lead (current campaign keeps full
+    // optimization volume). The QualifiedLead custom event is a separate fire
+    // gated on LTV >= 0.50 — see below, after the Lead event block.
+
     if (!capiAlreadySent) try {
       // Get funnel-specific pixel ID
       const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
@@ -809,8 +813,21 @@ export async function POST(request: NextRequest) {
           coverage_amount: coverageAmount,
           retirement_savings: retirementSavings,
           allocation_percent: allocationPercent,
-          property_value: quizAnswers?.propertyData?.property_value || undefined,
+          property_value: quizAnswers?.verifiedProperty?.propertyValue
+            || quizAnswers?.propertyData?.property_value
+            || undefined,
           equity_available: quizAnswers?.propertyData?.equity_available || undefined,
+          // LTV signal for Meta optimization (only sent when the LTV gate passed,
+          // i.e. >= 0.50). Helps Meta build a value-based optimization model.
+          ltv: isReverseMortgage
+            ? Math.max(
+                Number(quizAnswers?.verifiedProperty?.ltv) || 0,
+                Number(quizAnswers?.verifiedProperty?.batchDataLtv) || 0,
+              ) || undefined
+            : undefined,
+          ltv_source: isReverseMortgage
+            ? (quizAnswers?.verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified')
+            : undefined,
         },
         options: {
           pixelId: funnelPixelId,
@@ -837,6 +854,85 @@ export async function POST(request: NextRequest) {
     } catch (capiError) {
       console.error('[Meta CAPI] Error:', capiError);
       // Don't fail the request - CAPI is non-critical
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // QualifiedLead custom event (separate from Lead) — fires only for ≥50% LTV.
+    // Builds the optimization signal for a duplicated Meta campaign that will
+    // optimize on higher-intent leads once it has stable volume (~50 events/wk).
+    // ────────────────────────────────────────────────────────────────────────
+    if (isReverseMortgage && body.qualifiedLeadEventId) {
+      const vp = quizAnswers?.verifiedProperty || {};
+      const gatingLtv = Math.max(Number(vp.ltv) || 0, Number(vp.batchDataLtv) || 0);
+      const QUALIFIED_FLOOR = 0.50;
+
+      // Defensive: re-check the gate server-side. Browser only sets eventId when
+      // gate passes, but server validates the actual stored LTV.
+      const serverShouldFire = gatingLtv >= QUALIFIED_FLOOR;
+      const alreadySent = existingGhlStatus?.capi_qualified_lead_sent;
+
+      console.log('[Meta CAPI] QualifiedLead gate (server)', {
+        leadId: lead.id,
+        gatingLtv,
+        floor: QUALIFIED_FLOOR,
+        clientSentEventId: !!body.qualifiedLeadEventId,
+        serverShouldFire,
+        alreadySent: !!alreadySent,
+      });
+
+      if (serverShouldFire && !alreadySent) try {
+        const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
+        const qResult = await sendLeadEvent({
+          leadId: lead.id,
+          eventId: body.qualifiedLeadEventId, // shared with browser pixel for dedup
+          eventName: 'QualifiedLead', // custom event
+          email,
+          phone: phoneNumber,
+          firstName,
+          lastName,
+          fbp: body.metaCookies?.fbp,
+          fbc: body.metaCookies?.fbc,
+          fbLoginId: body.metaCookies?.fbLoginId,
+          ipAddress,
+          userAgent,
+          city: city || quizAnswers?.city || '',
+          state: state || addressState || '',
+          zipCode: zipCode || addressZip || '',
+          country: 'US',
+          externalId: lead.id,
+          value: 0,
+          currency: 'USD',
+          customData: {
+            quiz_type: funnelType,
+            content_name: 'Reverse Mortgage Qualified Lead (LTV≥50%)',
+            content_category: funnelType,
+            property_value: vp.propertyValue || undefined,
+            mortgage_balance: vp.mortgageBalance || undefined,
+            ltv: gatingLtv,
+            ltv_source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
+            ltv_floor: QUALIFIED_FLOOR,
+          },
+          options: { pixelId: funnelPixelId },
+        });
+        if (qResult.success) {
+          console.log('[Meta CAPI] QualifiedLead event sent:', qResult.eventId);
+          await callreadyQuizDb
+            .from('leads')
+            .update({
+              ghl_status: {
+                ...existingGhlStatus,
+                capi_qualified_lead_sent: new Date().toISOString(),
+                capi_qualified_lead_event_id: qResult.eventId,
+                capi_qualified_lead_ltv: gatingLtv,
+              },
+            })
+            .eq('id', lead.id);
+        } else {
+          console.error('[Meta CAPI] QualifiedLead event failed:', qResult.error);
+        }
+      } catch (qErr) {
+        console.error('[Meta CAPI] QualifiedLead error:', qErr);
+      }
     }
 
     // Send to GHL webhook with timeout
