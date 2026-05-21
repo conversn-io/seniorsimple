@@ -11,6 +11,12 @@ interface VerifyPropertyDetailsProps {
   lookupFailed?: boolean
   onConfirm: (values: { propertyValue: number; mortgageBalance: number; ltv: number }) => void
   isSubmitting?: boolean
+  /**
+   * 'page' (default): renders as a full standalone page (min-h-screen + bg + card).
+   * 'embedded': renders just the inner content, with no page background or card wrapper —
+   * for use inside an existing card (e.g. the quiz step container).
+   */
+  chrome?: 'page' | 'embedded'
 }
 
 const PROPERTY_MIN = 100_000
@@ -34,6 +40,7 @@ export function VerifyPropertyDetails({
   lookupFailed = false,
   onConfirm,
   isSubmitting = false,
+  chrome = 'page',
 }: VerifyPropertyDetailsProps) {
   const [propertyValue, setPropertyValue] = useState<number>(
     Math.min(Math.max(initialPropertyValue || 400_000, PROPERTY_MIN), PROPERTY_MAX)
@@ -62,11 +69,8 @@ export function VerifyPropertyDetails({
   const propertyTrackPct = ((propertyValue - PROPERTY_MIN) / (PROPERTY_MAX - PROPERTY_MIN)) * 100
   const mortgageTrackPct = propertyValue > 0 ? (mortgageBalance / propertyValue) * 100 : 0
 
-  return (
-    <div className="min-h-screen bg-[#F5F5F0]">
-      <section className="py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
+  const inner = (
+    <>
             <div className="text-center space-y-3">
               <div className="mx-auto h-14 w-14 rounded-full bg-[#36596A]/10 flex items-center justify-center">
                 <Home className="h-7 w-7 text-[#36596A]" />
@@ -170,7 +174,7 @@ export function VerifyPropertyDetails({
                     <p className={`text-sm mt-0.5 ${qualifies ? 'text-green-700' : 'text-amber-700'}`}>
                       {qualifies
                         ? 'Looks like a fit — a specialist can confirm your exact proceeds.'
-                        : 'Your existing mortgage is too high relative to your home value for this program.'}
+                        : 'Your equity is lower than typical for this program — a specialist will explore the right options for your situation.'}
                     </p>
                   </div>
                 </div>
@@ -188,6 +192,19 @@ export function VerifyPropertyDetails({
             <p className="mt-4 text-xs text-gray-500 text-center">
               Final numbers will be confirmed by a licensed reverse mortgage specialist.
             </p>
+    </>
+  )
+
+  if (chrome === 'embedded') {
+    return <div className="space-y-3">{inner}</div>
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F5F5F0]">
+      <section className="py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg border border-[#E5E7EB] p-6 sm:p-8">
+            {inner}
           </div>
         </div>
       </section>

@@ -36,6 +36,13 @@ interface StoredResults {
   age?: number
   submittedAt?: string
   reason?: string
+  /** Set by the quiz at step 5 when the new pre-contact verify flow is in use. */
+  verifiedProperty?: {
+    propertyValue: number
+    mortgageBalance: number
+    ltv: number
+    batchDataUsed: boolean
+  } | null
 }
 
 interface PropertyData {
@@ -222,6 +229,39 @@ export default function ReverseMortgageResultsPage() {
       const city = addressForLookup?.city || addressInfo?.city
       const state = addressForLookup?.state || addressInfo?.state
       const zipCode = addressForLookup?.zip || addressInfo?.zipCode || addressInfo?.zip
+
+      // Fast path: quiz already verified property at step 5 (new flow). Deliver immediately
+      // and render results — skip BatchData entirely. Any lead reaching here has LTV ≤ 35%
+      // (the quiz routes >35% to /not-qualified before the lead is captured).
+      const vp = parsedResults.verifiedProperty
+      if (vp) {
+        console.log('⚡ Using verifiedProperty from quiz step 5, skipping BatchData lookup')
+        const age = parsedResults.age || 70
+        const calc = calculateReverseMortgage(
+          {
+            property_value: vp.propertyValue,
+            mortgage_balance: vp.mortgageBalance,
+            equity_available: Math.max(0, vp.propertyValue - vp.mortgageBalance),
+          },
+          age,
+        )
+        setCalculation(calc)
+        setPhase('results')
+        deliverAndTrack({
+          sessionId: parsedResults.sessionId,
+          contact: parsedResults.contact,
+          propertyValue: vp.propertyValue,
+          mortgageBalance: vp.mortgageBalance,
+          ltvRatio: vp.ltv,
+          city,
+          state,
+          zipCode,
+          netProceeds: calc.netProceeds,
+          equityAvailable: calc.equityAvailable,
+          source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
+        })
+        return
+      }
 
       if (!street || !city || !state) {
         console.log('No address data for property lookup → verify screen')

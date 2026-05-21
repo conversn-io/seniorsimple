@@ -35,6 +35,42 @@ export function AddressAutocomplete({
   const [address, setAddress] = useState('')
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  // Manual entry fallback for when Google autocomplete fails (extensions, network,
+  // unrecognized addresses, or component binding issues).
+  const [manualMode, setManualMode] = useState(false)
+  const [manualStreet, setManualStreet] = useState('')
+  const [manualCity, setManualCity] = useState('')
+  const [manualState, setManualState] = useState('')
+  const [manualZip, setManualZip] = useState('')
+  const [manualError, setManualError] = useState('')
+
+  const submitManual = () => {
+    const street = manualStreet.trim()
+    const city = manualCity.trim()
+    const stateInput = manualState.trim().toUpperCase()
+    const zip = manualZip.trim()
+    if (!street || !city || !stateInput || !zip) {
+      setManualError('Please fill in street, city, state, and ZIP.')
+      return
+    }
+    if (!/^\d{5}(-\d{4})?$/.test(zip)) {
+      setManualError('Please enter a valid 5-digit ZIP code.')
+      return
+    }
+    if (stateInput.length !== 2) {
+      setManualError('Please use a 2-letter state code (e.g. CA, TX).')
+      return
+    }
+    setManualError('')
+    const formatted = `${street}, ${city}, ${stateInput} ${zip}`
+    onAddressSelect({
+      formatted_address: formatted,
+      street,
+      city,
+      state: stateInput,
+      zip,
+    })
+  }
 
   // Load Google Maps API
   useEffect(() => {
@@ -131,14 +167,96 @@ export function AddressAutocomplete({
     }
   }, [isGoogleLoaded, onAddressSelect])
 
+  if (manualMode) {
+    return (
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Street address</label>
+          <input
+            type="text"
+            value={manualStreet}
+            onChange={(e) => setManualStreet(e.target.value)}
+            placeholder="123 Main St"
+            autoComplete="street-address"
+            className="quiz-input w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">City</label>
+            <input
+              type="text"
+              value={manualCity}
+              onChange={(e) => setManualCity(e.target.value)}
+              autoComplete="address-level2"
+              className="quiz-input w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">State</label>
+            <input
+              type="text"
+              value={manualState}
+              onChange={(e) => setManualState(e.target.value.toUpperCase().slice(0, 2))}
+              placeholder="CA"
+              maxLength={2}
+              autoComplete="address-level1"
+              className="quiz-input w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all uppercase"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">ZIP</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={manualZip}
+              onChange={(e) => setManualZip(e.target.value.replace(/[^\d-]/g, '').slice(0, 10))}
+              placeholder="92102"
+              autoComplete="postal-code"
+              className="quiz-input w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-[#36596A]/20 focus:border-[#36596A] transition-all"
+            />
+          </div>
+        </div>
+        {manualError && <p className="text-red-500 text-sm">{manualError}</p>}
+        <button
+          type="button"
+          onClick={submitManual}
+          className="w-full bg-[#36596A] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#2a4a5a] transition-colors"
+        >
+          Use this address
+        </button>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => { setManualMode(false); setManualError('') }}
+            className="text-sm font-medium text-gray-500 hover:underline"
+          >
+            ← Back to address search
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={address}
-      onChange={(e) => setAddress(e.target.value)}
-      placeholder={placeholder}
-      className={className}
-    />
+    <div className="space-y-2">
+      <input
+        ref={inputRef}
+        type="text"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        placeholder={placeholder}
+        className={className}
+      />
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => setManualMode(true)}
+          className="text-sm font-medium text-[#36596A] hover:underline"
+        >
+          Don't see your address? Enter manually
+        </button>
+      </div>
+    </div>
   )
 }

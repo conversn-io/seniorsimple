@@ -144,6 +144,18 @@ export async function POST(request: NextRequest) {
     lynqParams.set('loantype', 'FHA');
 
     // Property data (BatchData or user-verified)
+    // ─── LynqFlux schema mapping ──────────────────────────────────────────────
+    // propertyvalue: integer USD (no commas, no currency symbol). e.g. "684899"
+    // loanamount:    integer USD (set above; min 10000 per LynqFlux validation)
+    // ltv:           DECIMAL ratio 0–1, two decimals. e.g. "0.67" (NOT "67")
+    //                This is the format LynqFlux has accepted historically; do not
+    //                change to percentage without confirming with them first
+    //                (their `incoming.php` endpoint is undocumented in our repo;
+    //                acceptance ≠ correct interpretation but they may also compute
+    //                LTV themselves from propertyvalue + loanamount downstream).
+    // loantype:      enum "Fixed|ARM|Balloon|FHA|VA|Fannie|Freddie|USDA"
+    // creditrating:  enum "Excellent|Good|Fair|Poor" (set above)
+    // ──────────────────────────────────────────────────────────────────────────
     lynqParams.set('propertyvalue', String(Math.round(pvNum)));
     lynqParams.set('ltv', effectiveLtv.toFixed(2));
 
@@ -157,6 +169,37 @@ export async function POST(request: NextRequest) {
       userVerified: !!userVerified,
       creditRating: mappedCredit,
     });
+
+    // Local dev escape hatch: skip the actual POST when DISABLE_LYNQFLUX is set.
+    if (process.env.DISABLE_LYNQFLUX === 'true') {
+      console.log('🧪 [LynqFlux] DISABLE_LYNQFLUX=true — skipping real POST, returning mock success');
+      const existingGhlStatus = lead.ghl_status || {};
+      await callreadyQuizDb
+        .from('leads')
+        .update({
+          property_value: pvNum || null,
+          current_mortgage: mbNum || null,
+          ghl_status: {
+            ...existingGhlStatus,
+            lynqflux: {
+              status: 200,
+              response: { status: 'mocked', message: 'DISABLE_LYNQFLUX=true' },
+              timestamp: new Date().toISOString(),
+              success: true,
+              mocked: true,
+              ltv: Number(effectiveLtv.toFixed(4)),
+              user_verified: !!userVerified,
+            },
+          },
+        })
+        .eq('id', lead.id);
+      return createCorsResponse({
+        success: true,
+        mocked: true,
+        leadId: lead.id,
+        wouldHaveSent: Object.fromEntries(lynqParams.entries()),
+      });
+    }
 
     // POST to LynqFlux
     const lynqController = new AbortController();
