@@ -857,24 +857,25 @@ export async function POST(request: NextRequest) {
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // QualifiedLead custom event (separate from Lead) — fires only for ≥50% LTV.
-    // Builds the optimization signal for a duplicated Meta campaign that will
-    // optimize on higher-intent leads once it has stable volume (~50 events/wk).
+    // QualifiedLead custom event (separate from Lead) — fires only when LTV ≤ 50%
+    // (≥50% equity — the leads buyer-1 actually wants). Builds the optimization
+    // signal for a duplicated Meta campaign that will optimize on higher-intent
+    // leads once it has stable volume (~50 events/week).
     // ────────────────────────────────────────────────────────────────────────
     if (isReverseMortgage && body.qualifiedLeadEventId) {
       const vp = quizAnswers?.verifiedProperty || {};
       const gatingLtv = Math.max(Number(vp.ltv) || 0, Number(vp.batchDataLtv) || 0);
-      const QUALIFIED_FLOOR = 0.50;
+      const QUALIFIED_CEILING = 0.50;
 
       // Defensive: re-check the gate server-side. Browser only sets eventId when
       // gate passes, but server validates the actual stored LTV.
-      const serverShouldFire = gatingLtv >= QUALIFIED_FLOOR;
+      const serverShouldFire = gatingLtv > 0 && gatingLtv <= QUALIFIED_CEILING;
       const alreadySent = existingGhlStatus?.capi_qualified_lead_sent;
 
       console.log('[Meta CAPI] QualifiedLead gate (server)', {
         leadId: lead.id,
         gatingLtv,
-        floor: QUALIFIED_FLOOR,
+        ceiling: QUALIFIED_CEILING,
         clientSentEventId: !!body.qualifiedLeadEventId,
         serverShouldFire,
         alreadySent: !!alreadySent,
@@ -904,13 +905,13 @@ export async function POST(request: NextRequest) {
           currency: 'USD',
           customData: {
             quiz_type: funnelType,
-            content_name: 'Reverse Mortgage Qualified Lead (LTV≥50%)',
+            content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
             content_category: funnelType,
             property_value: vp.propertyValue || undefined,
             mortgage_balance: vp.mortgageBalance || undefined,
             ltv: gatingLtv,
             ltv_source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
-            ltv_floor: QUALIFIED_FLOOR,
+            ltv_ceiling: QUALIFIED_CEILING,
           },
           options: { pixelId: funnelPixelId },
         });

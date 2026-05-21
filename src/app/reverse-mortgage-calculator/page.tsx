@@ -562,14 +562,18 @@ export default function ReverseMortgageCalculatorPage() {
     // Generate shared eventID for browser pixel + server CAPI deduplication
     const capiEventId = `lead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
-    // Decide whether to also fire the QualifiedLead custom event (≥50% LTV).
-    // Generated upfront so browser pixel and server CAPI can use the same eventID for dedup.
-    const QUALIFIED_LEAD_LTV_FLOOR = 0.50
+    // Decide whether to also fire the QualifiedLead custom event.
+    // Low LTV = high equity = lead the buyer actually wants. Gate fires when LTV
+    // is at or below the ceiling (≤ 0.50 = ≥50% equity).
+    // Defensive: take max(BatchData, user-verified) so users adjusting numbers
+    // downward at step 5 can't game their way into the qualified bucket.
+    // Generated upfront so browser pixel and server CAPI use the same eventID for dedup.
+    const QUALIFIED_LEAD_LTV_CEILING = 0.50
     const gatingLtv = Math.max(
       verifiedProperty?.ltv ?? 0,
       verifiedProperty?.batchDataLtv ?? 0,
     )
-    const fireQualifiedLead = gatingLtv >= QUALIFIED_LEAD_LTV_FLOOR
+    const fireQualifiedLead = gatingLtv > 0 && gatingLtv <= QUALIFIED_LEAD_LTV_CEILING
     const qualifiedLeadEventId = fireQualifiedLead
       ? `qlead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       : undefined
@@ -604,7 +608,7 @@ export default function ReverseMortgageCalculatorPage() {
       qualifiedLeadEventId,
       qualifiedLeadGate: {
         gatingLtv: Number(gatingLtv.toFixed(4)),
-        floor: QUALIFIED_LEAD_LTV_FLOOR,
+        ceiling: QUALIFIED_LEAD_LTV_CEILING,
         shouldFire: fireQualifiedLead,
         ltvSource: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
       },
@@ -702,8 +706,9 @@ export default function ReverseMortgageCalculatorPage() {
       // ────────────────────────────────────────────────────────────────────────
       // 1) `Lead` — fires for EVERY submitted lead (unchanged behavior). Current
       //    campaign keeps optimizing on full volume; do not break it.
-      // 2) `QualifiedLead` — custom event, fires only when LTV >= 50%. Builds
-      //    the optimization signal for a duplicated Meta campaign that will
+      // 2) `QualifiedLead` — custom event, fires only when LTV ≤ 50% (i.e.
+      //    ≥50% equity, the leads the buyer actually wants). Builds the
+      //    optimization signal for a duplicated Meta campaign that will
       //    optimize on higher-intent leads once it accumulates ~50 events/week.
       // Both events use the same pixel + CAPI. The gate decision and event IDs
       // were generated upfront (before fetch) so server CAPI can dedup against
@@ -725,10 +730,10 @@ export default function ReverseMortgageCalculatorPage() {
         ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
       }, 'reverse-mortgage', capiEventId)
 
-      // QualifiedLead custom event (only ≥50% LTV — future campaign signal)
+      // QualifiedLead custom event (only LTV ≤ 50% — high-equity, future campaign signal)
       if (fireQualifiedLead && qualifiedLeadEventId && typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('trackCustom', 'QualifiedLead', {
-          content_name: 'Reverse Mortgage Qualified Lead (LTV≥50%)',
+          content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
           content_category: 'reverse-mortgage',
           value: 0,
           currency: 'USD',
