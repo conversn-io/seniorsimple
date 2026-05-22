@@ -678,18 +678,24 @@ export default function ReverseMortgageCalculatorPage() {
       // Track quiz complete
       trackQuizComplete('reverse-mortgage', sessionId, 'reverse-mortgage', completionTime)
       
-      // Track lead form submit
-      trackLeadFormSubmit({
-        firstName,
-        lastName,
-        email,
-        phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
-        zipCode: address?.zip || '',
-        state: address?.state,
-        quizAnswers,
-        sessionId,
-        funnelType: 'reverse-mortgage'
-      })
+      // Track lead form submit — but suppress the embedded Meta Lead pixel fire.
+      // We fire Lead explicitly below with capiEventId so it dedupes against the
+      // server CAPI Lead event. If we let trackLeadFormSubmit also fire Lead (no
+      // eventID), Meta would count two separate Lead events per submit.
+      trackLeadFormSubmit(
+        {
+          firstName,
+          lastName,
+          email,
+          phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
+          zipCode: address?.zip || '',
+          state: address?.state,
+          quizAnswers,
+          sessionId,
+          funnelType: 'reverse-mortgage',
+        },
+        { skipMetaEvent: true },
+      )
       
       // Track to GA4
       trackGA4Event('rm_lead_submitted', {

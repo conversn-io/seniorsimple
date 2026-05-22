@@ -272,9 +272,20 @@ export function trackQuizComplete(
   // Only track GA4 events, Meta events handled by Lead event only
 }
 
-export function trackLeadFormSubmit(leadData: LeadData): void {
+export function trackLeadFormSubmit(
+  leadData: LeadData,
+  options: {
+    /**
+     * Set to true to suppress the (undedupable) Meta Lead pixel fire inside this
+     * helper. Use when the caller is firing its own Lead pixel event with a
+     * shared eventID for browser+server CAPI dedup — otherwise both fire and
+     * Meta double-counts (one with eventID, one without).
+     */
+    skipMetaEvent?: boolean
+  } = {}
+): void {
   console.log('📊 Tracking lead form submit:', leadData);
-  
+
   trackGA4Event('lead_form_submit', {
     session_id: leadData.sessionId,
     value: leadData.leadScore || 0,
@@ -285,13 +296,17 @@ export function trackLeadFormSubmit(leadData: LeadData): void {
     state: leadData.state,
     zip_code: leadData.zipCode
   });
-  
-  trackMetaEvent('Lead', {
-    content_name: 'SeniorSimple Retirement Lead',
-    content_category: 'lead_generation',
-    value: leadData.leadScore || 0,
-    currency: 'USD'
-  });
+
+  if (options.skipMetaEvent) {
+    console.log('📊 [trackLeadFormSubmit] Skipping Meta Lead pixel — caller fires it with eventID for CAPI dedup');
+  } else {
+    trackMetaEvent('Lead', {
+      content_name: 'SeniorSimple Retirement Lead',
+      content_category: 'lead_generation',
+      value: leadData.leadScore || 0,
+      currency: 'USD'
+    });
+  }
 
   // Track to Supabase (async, non-blocking)
   const utmParams = typeof window !== 'undefined' 
