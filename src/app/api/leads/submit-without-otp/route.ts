@@ -766,17 +766,38 @@ export async function POST(request: NextRequest) {
     // DEDUP: Only send CAPI Lead once per lead — skip if already sent
     const existingGhlStatus = lead.ghl_status || {};
     const capiAlreadySent = existingGhlStatus?.capi_lead_sent;
+    // Verbose entry logging: production currently shows 0 Lead CAPI fires for
+    // dozens of submits with no skip/sent/error logs. These breadcrumbs help
+    // identify where the silent skip is happening.
+    console.log('[Meta CAPI] 🔵 Lead block ENTRY', {
+      leadId: lead.id,
+      funnelType,
+      capiAlreadySent: !!capiAlreadySent,
+      capiEventIdReceived: !!body.capiEventId,
+      hasMetaCookies: !!body.metaCookies,
+      ghlStatusKeys: Object.keys(existingGhlStatus),
+    });
     if (capiAlreadySent) {
       console.log(`[Meta CAPI] ⏭️ Skipping Lead event — already sent at ${capiAlreadySent} for lead=${lead.id}`);
     }
 
     // Lead event fires for EVERY submitted lead (current campaign keeps full
     // optimization volume). The QualifiedLead custom event is a separate fire
-    // gated on LTV >= 0.50 — see below, after the Lead event block.
+    // gated on LTV ≤ 0.50 — see below, after the Lead event block.
 
     if (!capiAlreadySent) try {
+      console.log('[Meta CAPI] 🔵 Lead block — entering sendLeadEvent prep', { leadId: lead.id });
       // Get funnel-specific pixel ID
       const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
+      // Diagnostic: confirm pixel ID + access token presence per funnel before fire.
+      // Lets us see in logs whether a missing env var is silently failing the send.
+      console.log('[Meta CAPI] 🔵 Lead block — pixel/token config', {
+        leadId: lead.id,
+        funnelType,
+        funnelPixelId,
+        hasAccessTokenSeniorSimple: !!process.env.META_CAPI_ACCESS_TOKEN_SENIORSIMPLE,
+        hasAccessTokenDefault: !!process.env.META_CAPI_ACCESS_TOKEN,
+      });
 
       // Convert dob YYYY-MM-DD → YYYYMMDD for Meta
       const dobForCapi = dobFormatted ? dobFormatted.replace(/-/g, '') : null;

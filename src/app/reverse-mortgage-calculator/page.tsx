@@ -713,25 +713,47 @@ export default function ReverseMortgageCalculatorPage() {
       // Both events use the same pixel + CAPI. The gate decision and event IDs
       // were generated upfront (before fetch) so server CAPI can dedup against
       // these browser pixel events.
+      // sessionStorage dedup: each Meta event fires at most once per browser tab.
+      // Eliminates the 2.5× over-reporting observed when users refresh / back-button
+      // / resubmit and the browser pixel fires again with a fresh eventID (server
+      // CAPI dedup can't help when each fire uses a different eventID).
+      const LEAD_FIRED_KEY = 'rm_meta_lead_fired'
+      const QUAL_FIRED_KEY = 'rm_meta_qualified_lead_fired'
+      const leadAlreadyFired = typeof window !== 'undefined'
+        && sessionStorage.getItem(LEAD_FIRED_KEY) === '1'
+      const qualAlreadyFired = typeof window !== 'undefined'
+        && sessionStorage.getItem(QUAL_FIRED_KEY) === '1'
+
       console.log('[Meta CAPI] Dual-event firing', {
         leadEventId: capiEventId,
         qualifiedLeadEventId,
         gatingLtv,
         fireQualifiedLead,
+        leadAlreadyFired,
+        qualAlreadyFired,
       })
 
-      // Lead event (fires for everyone — current campaign signal)
-      trackMetaPixelEvent('Lead', {
-        content_name: 'Reverse Mortgage Lead',
-        content_category: 'reverse-mortgage',
-        value: 0,
-        currency: 'USD',
-        ltv: gatingLtv > 0 ? Number(gatingLtv.toFixed(4)) : undefined,
-        ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
-      }, 'reverse-mortgage', capiEventId)
+      // Lead event (fires for everyone — current campaign signal). sessionStorage
+      // guard prevents refires within the same browser tab.
+      if (!leadAlreadyFired) {
+        trackMetaPixelEvent('Lead', {
+          content_name: 'Reverse Mortgage Lead',
+          content_category: 'reverse-mortgage',
+          value: 0,
+          currency: 'USD',
+          ltv: gatingLtv > 0 ? Number(gatingLtv.toFixed(4)) : undefined,
+          ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+        }, 'reverse-mortgage', capiEventId)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(LEAD_FIRED_KEY, '1')
+        }
+      } else {
+        console.log('[Meta CAPI] ⏭️ Skipping browser Lead pixel — already fired this session')
+      }
 
       // QualifiedLead custom event (only LTV ≤ 50% — high-equity, future campaign signal)
-      if (fireQualifiedLead && qualifiedLeadEventId && typeof window !== 'undefined' && (window as any).fbq) {
+      if (fireQualifiedLead && qualifiedLeadEventId && !qualAlreadyFired
+          && typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('trackCustom', 'QualifiedLead', {
           content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
           content_category: 'reverse-mortgage',
@@ -741,6 +763,9 @@ export default function ReverseMortgageCalculatorPage() {
           ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
           funnel_type: 'reverse-mortgage',
         }, { eventID: qualifiedLeadEventId })
+        sessionStorage.setItem(QUAL_FIRED_KEY, '1')
+      } else if (fireQualifiedLead && qualAlreadyFired) {
+        console.log('[Meta CAPI] ⏭️ Skipping browser QualifiedLead pixel — already fired this session')
       }
       
       console.log('📊 Lead Submitted Successfully:', {
