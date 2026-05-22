@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy-init: see /api/poll/route.ts for full rationale. Module-load createClient
+// throws "supabaseKey is required" during `next build` when env var is missing.
+// Typed `any` to avoid createClient's generic database type collapsing to never.
+let _supabase: any = null
+function getSupabase() {
+  if (_supabase) return _supabase
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    throw new Error('Supabase not configured: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing')
+  }
+  _supabase = createClient(url, key)
+  return _supabase
+}
 
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'seniorsimple'
 
@@ -51,6 +61,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const supabase = getSupabase()
 
     // Check if subscriber already exists
     const { data: existing } = await supabase

@@ -2,10 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createHash } from 'crypto'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy-init: calling createClient at module load with undefined env vars throws
+// "supabaseKey is required" during `next build` page-data collection, which
+// crashes every preview deploy where the env var isn't set. Defer construction
+// to first handler invocation — same runtime semantics, build no longer crashes.
+// Cache typed `any` because createClient's generic return type otherwise collapses
+// to a `never` database type and breaks downstream .from(...).single() calls.
+let _supabase: any = null
+function getSupabase() {
+  if (_supabase) return _supabase
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    throw new Error('Supabase not configured: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing')
+  }
+  _supabase = createClient(url, key)
+  return _supabase
+}
 
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'seniorsimple'
 const IP_HASH_SALT = process.env.POLL_IP_HASH_SALT || 'default-poll-salt-change-me'
@@ -35,6 +48,8 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     )
   }
+
+  const supabase = getSupabase()
 
   // Resolve issue_id from slug
   const { data: issue, error: issueError } = await supabase
