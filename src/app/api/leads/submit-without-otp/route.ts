@@ -786,91 +786,123 @@ export async function POST(request: NextRequest) {
     // gated on LTV ≤ 0.50 — see below, after the Lead event block.
 
     if (!capiAlreadySent) try {
-      console.log('[Meta CAPI] 🔵 Lead block — entering sendLeadEvent prep', { leadId: lead.id });
-      // Get funnel-specific pixel ID
-      const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
-      // Diagnostic: confirm pixel ID + access token presence per funnel before fire.
-      // Lets us see in logs whether a missing env var is silently failing the send.
-      console.log('[Meta CAPI] 🔵 Lead block — pixel/token config', {
-        leadId: lead.id,
-        funnelType,
-        funnelPixelId,
-        hasAccessTokenSeniorSimple: !!process.env.META_CAPI_ACCESS_TOKEN_SENIORSIMPLE,
-        hasAccessTokenDefault: !!process.env.META_CAPI_ACCESS_TOKEN,
-      });
-
-      // Convert dob YYYY-MM-DD → YYYYMMDD for Meta
+      // ──────────────────────────────────────────────────────────────────────
+      // For reverse-mortgage, fire CAPI via a dedicated route (/api/capi/send-lead)
+      // so the CAPI logs land in their own Vercel invocation. That makes
+      // `vercel logs -q "Meta CAPI"` find Lead fires at the top level instead
+      // of nested in this request's logs[] array.
+      // Other funnels (annuity, RMD, etc.) keep the inline path to avoid scope.
+      // ──────────────────────────────────────────────────────────────────────
       const dobForCapi = dobFormatted ? dobFormatted.replace(/-/g, '') : null;
-      // For reverse mortgage, use propertyValue as the lead value signal
       const capiValue = isReverseMortgage
         ? (quizAnswers?.propertyData?.property_value || quizAnswers?.propertyValue || coverageAmount || 0)
         : (coverageAmount || 0);
 
-      const capiResult = await sendLeadEvent({
-        leadId: lead.id,
-        eventId: body.capiEventId, // Client-generated eventID for browser+server dedup
-        email: email,
-        phone: phoneNumber,
-        firstName: firstName,
-        lastName: lastName,
-        fbp: body.metaCookies?.fbp,
-        fbc: body.metaCookies?.fbc,
-        fbLoginId: body.metaCookies?.fbLoginId,
-        ipAddress: ipAddress,
-        userAgent: userAgent,
-        // Geo/demo for EMQ 8+
-        city: city || quizAnswers?.city || '',
-        state: state || addressState || '',
-        zipCode: zipCode || addressZip || '',
-        country: 'US',
-        dateOfBirth: dobForCapi,
-        externalId: lead.id,
-        value: capiValue,
-        currency: 'USD',
-        customData: {
-          quiz_type: funnelType,
-          content_name: isReverseMortgage ? 'Reverse Mortgage Lead' : `${funnelType} Lead`,
-          content_category: funnelType,
-          coverage_amount: coverageAmount,
-          retirement_savings: retirementSavings,
-          allocation_percent: allocationPercent,
-          property_value: quizAnswers?.verifiedProperty?.propertyValue
-            || quizAnswers?.propertyData?.property_value
-            || undefined,
-          equity_available: quizAnswers?.propertyData?.equity_available || undefined,
-          // LTV signal for Meta optimization (only sent when the LTV gate passed,
-          // i.e. >= 0.50). Helps Meta build a value-based optimization model.
-          ltv: isReverseMortgage
-            ? Math.max(
-                Number(quizAnswers?.verifiedProperty?.ltv) || 0,
-                Number(quizAnswers?.verifiedProperty?.batchDataLtv) || 0,
-              ) || undefined
-            : undefined,
-          ltv_source: isReverseMortgage
-            ? (quizAnswers?.verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified')
-            : undefined,
-        },
-        options: {
-          pixelId: funnelPixelId,
-        },
-      });
-      
-      if (!capiResult.success) {
-        console.error('[Meta CAPI] Lead event failed:', capiResult.error);
-        // Don't fail the request - just log
+      const sharedCustomData = {
+        content_name: isReverseMortgage ? 'Reverse Mortgage Lead' : `${funnelType} Lead`,
+        coverage_amount: coverageAmount,
+        retirement_savings: retirementSavings,
+        allocation_percent: allocationPercent,
+        property_value: quizAnswers?.verifiedProperty?.propertyValue
+          || quizAnswers?.propertyData?.property_value
+          || undefined,
+        equity_available: quizAnswers?.propertyData?.equity_available || undefined,
+        ltv: isReverseMortgage
+          ? Math.max(
+              Number(quizAnswers?.verifiedProperty?.ltv) || 0,
+              Number(quizAnswers?.verifiedProperty?.batchDataLtv) || 0,
+            ) || undefined
+          : undefined,
+        ltv_source: isReverseMortgage
+          ? (quizAnswers?.verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified')
+          : undefined,
+      };
+
+      if (isReverseMortgage) {
+        // Fire-and-await a separate Vercel invocation. The CAPI logs become
+        // top-level in that invocation, surfacing to vercel logs -q searches.
+        const origin = new URL(request.url).origin;
+        console.log('[Meta CAPI] 🔵 Dispatching Lead fire to /api/capi/send-lead', {
+          leadId: lead.id,
+          eventId: body.capiEventId,
+          origin,
+        });
+        try {
+          const fireResp = await fetch(`${origin}/api/capi/send-lead`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              leadId: lead.id,
+              eventId: body.capiEventId,
+              eventName: 'Lead',
+              value: capiValue,
+              customData: sharedCustomData,
+              userOverrides: {
+                email,
+                phone: phoneNumber,
+                firstName,
+                lastName,
+                fbp: body.metaCookies?.fbp,
+                fbc: body.metaCookies?.fbc,
+                fbLoginId: body.metaCookies?.fbLoginId,
+                city: city || quizAnswers?.city || '',
+                state: state || addressState || '',
+                zipCode: zipCode || addressZip || '',
+                dateOfBirth: dobForCapi,
+              },
+            }),
+          });
+          const fireJson = await fireResp.json().catch(() => ({}));
+          console.log('[Meta CAPI] 🔵 Lead fire dispatch result', {
+            leadId: lead.id,
+            status: fireResp.status,
+            success: fireJson?.success,
+            skipped: fireJson?.skipped,
+          });
+        } catch (dispatchErr) {
+          console.error('[Meta CAPI] Lead dispatch error:', dispatchErr);
+        }
       } else {
-        console.log('[Meta CAPI] Lead event sent:', capiResult.eventId);
-        // Stamp capi_lead_sent so we never double-send for this lead
-        await callreadyQuizDb
-          .from('leads')
-          .update({
-            ghl_status: {
-              ...existingGhlStatus,
-              capi_lead_sent: new Date().toISOString(),
-              capi_lead_event_id: capiResult.eventId,
-            },
-          })
-          .eq('id', lead.id);
+        // Non-reverse-mortgage funnels: keep the inline path (unchanged behavior).
+        const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
+        const capiResult = await sendLeadEvent({
+          leadId: lead.id,
+          eventId: body.capiEventId,
+          email,
+          phone: phoneNumber,
+          firstName,
+          lastName,
+          fbp: body.metaCookies?.fbp,
+          fbc: body.metaCookies?.fbc,
+          fbLoginId: body.metaCookies?.fbLoginId,
+          ipAddress,
+          userAgent,
+          city: city || quizAnswers?.city || '',
+          state: state || addressState || '',
+          zipCode: zipCode || addressZip || '',
+          country: 'US',
+          dateOfBirth: dobForCapi,
+          externalId: lead.id,
+          value: capiValue,
+          currency: 'USD',
+          customData: { quiz_type: funnelType, content_category: funnelType, ...sharedCustomData },
+          options: { pixelId: funnelPixelId },
+        });
+        if (!capiResult.success) {
+          console.error('[Meta CAPI] Lead event failed:', capiResult.error);
+        } else {
+          console.log('[Meta CAPI] Lead event sent:', capiResult.eventId);
+          await callreadyQuizDb
+            .from('leads')
+            .update({
+              ghl_status: {
+                ...existingGhlStatus,
+                capi_lead_sent: new Date().toISOString(),
+                capi_lead_event_id: capiResult.eventId,
+              },
+            })
+            .eq('id', lead.id);
+        }
       }
     } catch (capiError) {
       console.error('[Meta CAPI] Error:', capiError);
@@ -902,58 +934,56 @@ export async function POST(request: NextRequest) {
         alreadySent: !!alreadySent,
       });
 
-      if (serverShouldFire && !alreadySent) try {
-        const funnelPixelId = getMetaPixelIdForFunnel(funnelType);
-        const qResult = await sendLeadEvent({
+      if (serverShouldFire && !alreadySent) {
+        // Dispatch QualifiedLead to /api/capi/send-lead so the CAPI logs land
+        // in a dedicated Vercel invocation (top-level visible to vercel logs -q).
+        const origin = new URL(request.url).origin;
+        console.log('[Meta CAPI] 🔵 Dispatching QualifiedLead fire to /api/capi/send-lead', {
           leadId: lead.id,
-          eventId: body.qualifiedLeadEventId, // shared with browser pixel for dedup
-          eventName: 'QualifiedLead', // custom event
-          email,
-          phone: phoneNumber,
-          firstName,
-          lastName,
-          fbp: body.metaCookies?.fbp,
-          fbc: body.metaCookies?.fbc,
-          fbLoginId: body.metaCookies?.fbLoginId,
-          ipAddress,
-          userAgent,
-          city: city || quizAnswers?.city || '',
-          state: state || addressState || '',
-          zipCode: zipCode || addressZip || '',
-          country: 'US',
-          externalId: lead.id,
-          value: 0,
-          currency: 'USD',
-          customData: {
-            quiz_type: funnelType,
-            content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
-            content_category: funnelType,
-            property_value: vp.propertyValue || undefined,
-            mortgage_balance: vp.mortgageBalance || undefined,
-            ltv: gatingLtv,
-            ltv_source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
-            ltv_ceiling: QUALIFIED_CEILING,
-          },
-          options: { pixelId: funnelPixelId },
+          eventId: body.qualifiedLeadEventId,
+          gatingLtv,
         });
-        if (qResult.success) {
-          console.log('[Meta CAPI] QualifiedLead event sent:', qResult.eventId);
-          await callreadyQuizDb
-            .from('leads')
-            .update({
-              ghl_status: {
-                ...existingGhlStatus,
-                capi_qualified_lead_sent: new Date().toISOString(),
-                capi_qualified_lead_event_id: qResult.eventId,
-                capi_qualified_lead_ltv: gatingLtv,
+        try {
+          const qResp = await fetch(`${origin}/api/capi/send-lead`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              leadId: lead.id,
+              eventId: body.qualifiedLeadEventId,
+              eventName: 'QualifiedLead',
+              value: 0,
+              customData: {
+                content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
+                property_value: vp.propertyValue || undefined,
+                mortgage_balance: vp.mortgageBalance || undefined,
+                ltv: gatingLtv,
+                ltv_source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
+                ltv_ceiling: QUALIFIED_CEILING,
               },
-            })
-            .eq('id', lead.id);
-        } else {
-          console.error('[Meta CAPI] QualifiedLead event failed:', qResult.error);
+              userOverrides: {
+                email,
+                phone: phoneNumber,
+                firstName,
+                lastName,
+                fbp: body.metaCookies?.fbp,
+                fbc: body.metaCookies?.fbc,
+                fbLoginId: body.metaCookies?.fbLoginId,
+                city: city || quizAnswers?.city || '',
+                state: state || addressState || '',
+                zipCode: zipCode || addressZip || '',
+              },
+            }),
+          });
+          const qJson = await qResp.json().catch(() => ({}));
+          console.log('[Meta CAPI] 🔵 QualifiedLead fire dispatch result', {
+            leadId: lead.id,
+            status: qResp.status,
+            success: qJson?.success,
+            skipped: qJson?.skipped,
+          });
+        } catch (qDispatchErr) {
+          console.error('[Meta CAPI] QualifiedLead dispatch error:', qDispatchErr);
         }
-      } catch (qErr) {
-        console.error('[Meta CAPI] QualifiedLead error:', qErr);
       }
     }
 
