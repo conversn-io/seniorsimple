@@ -19,7 +19,16 @@ const log = (message: string, data?: unknown) => {
 interface PropertyLookupData {
   property_value: number
   mortgage_balance: number
-  ltv_ratio: number
+  /**
+   * Loan-to-value ratio as a decimal (0–1).
+   * - null  when LTV is genuinely unknown (no lien data AND BatchData didn't return its own valuation.ltv).
+   *   Downstream code should treat null as "unknown" rather than guess a default.
+   * - 0     when the home is paid off (we have lien data and the balance is 0).
+   * - >0    computed from BatchData's valuation.ltv (preferred) or mortgageBalance / propertyValue (fallback).
+   */
+  ltv_ratio: number | null
+  /** How ltv_ratio was determined — useful for diagnostics. */
+  ltv_source?: 'batchdata_valuation' | 'computed_from_lien' | 'paid_off' | 'unknown'
   address: string
   city: string
   state: string
@@ -259,10 +268,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determine ltv_ratio with proper precedence:
+    //   1. BatchData's own valuation.ltv (returned as percentage 0-100; we store as decimal 0-1)
+    //   2. Computed from lien data when present (including 0 = paid off)
+    //   3. null when truly unknown (no lien data and no valuation.ltv from BatchData)
+    // The legacy code defaulted to 0.7 here which mis-classified paid-off homes
+    // as 70% LTV — silently excluding the cleanest leads from downstream gates.
+    const batchDataValuationLtv = toNumber(valuation?.ltv)
+    const hasLienData = !!openLien || (mortgages && mortgages.length > 0)
+    let ltvRatio: number | null = null
+    let ltvSource: PropertyLookupData['ltv_source'] = 'unknown'
+    if (batchDataValuationLtv > 0) {
+      ltvRatio = batchDataValuationLtv / 100
+      ltvSource = 'batchdata_valuation'
+    } else if (hasLienData) {
+      if (mortgageBalance > 0 && propertyValue > 0) {
+        ltvRatio = mortgageBalance / propertyValue
+        ltvSource = 'computed_from_lien'
+      } else {
+        // Lien data exists, no balance → paid off
+        ltvRatio = 0
+        ltvSource = 'paid_off'
+      }
+    } else {
+      // No lien data, no BatchData valuation.ltv → truly unknown
+      ltvRatio = null
+      ltvSource = 'unknown'
+    }
+
+    log('📐 LTV resolution', {
+      batchDataValuationLtv,
+      hasLienData,
+      mortgageBalance,
+      propertyValue,
+      finalLtvRatio: ltvRatio,
+      ltvSource,
+    })
+
     const responseData: PropertyLookupData = {
       property_value: propertyValue,
       mortgage_balance: mortgageBalance || 0,
-      ltv_ratio: mortgageBalance > 0 && propertyValue > 0 ? mortgageBalance / propertyValue : 0.7,
+      ltv_ratio: ltvRatio,
+      ltv_source: ltvSource,
       address: `${property.address?.street}, ${property.address?.city}, ${property.address?.state} ${property.address?.zip}`,
       city: property.address?.city || city,
       state: property.address?.state || state,

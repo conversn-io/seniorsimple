@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { PropertyVerificationStep } from '@/components/reverse-mortgage/PropertyVerificationStep'
+import { MAX_QUALIFYING_LTV } from '@/components/reverse-mortgage/VerifyPropertyDetails'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -91,6 +93,16 @@ export default function ReverseMortgageCalculatorPage() {
   const [calculation, setCalculation] = useState<ReverseMortgageCalculation | null>(null)
   const [lookupError, setLookupError] = useState('')
   const [isLookupLoading, setIsLookupLoading] = useState(false)
+  // User-verified (or BatchData-trusted) property values captured at step 5.
+  // `batchDataLtv` is the original BatchData LTV before user adjustment — used for
+  // defensive max(batchData, userVerified) gating downstream (e.g. Meta CAPI).
+  const [verifiedProperty, setVerifiedProperty] = useState<{
+    propertyValue: number
+    mortgageBalance: number
+    ltv: number
+    batchDataLtv?: number
+    batchDataUsed: boolean
+  } | null>(null)
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -113,14 +125,17 @@ export default function ReverseMortgageCalculatorPage() {
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now())
   const [quizStartTime, setQuizStartTime] = useState<number>(Date.now())
 
-  // Step names for tracking (5 steps - property lookup moved to results page)
+  // Step names for tracking (6 steps — property verification moved BEFORE lead capture
+  // so leads that fail the 35% LTV gate never become captured leads).
   const STEP_NAMES: Record<number, string> = {
     1: 'homeowner_check',
     2: 'age_verification',
     3: 'reason_selection',
     4: 'address_entry',
-    5: 'lead_capture'
+    5: 'property_verification',
+    6: 'lead_capture',
   }
+  const TOTAL_STEPS = 6
 
   // Log quiz progress to Vercel runtime logs (fire-and-forget)
   const logQuizProgress = (stepNum: number, stepName: string, answer: string, meta?: Record<string, any>) => {
@@ -133,7 +148,7 @@ export default function ReverseMortgageCalculatorPage() {
         step: stepNum,
         stepName,
         answer,
-        totalSteps: 5,
+        totalSteps: TOTAL_STEPS,
         meta,
       }),
     }).catch(() => {})
@@ -192,7 +207,7 @@ export default function ReverseMortgageCalculatorPage() {
       event_category: 'reverse_mortgage_funnel'
     })
     
-    // Track to Meta for retargeting audiences (5-step funnel)
+    // Track to Meta for retargeting audiences (6-step funnel)
     if (step === 4) {
       // Address entry step - high intent
       trackMetaPixelEvent('ViewContent', {
@@ -201,7 +216,14 @@ export default function ReverseMortgageCalculatorPage() {
         value: 0
       }, 'reverse-mortgage')
     } else if (step === 5) {
-      // Lead form - intent to convert
+      // Property verification step — user is engaging with their numbers
+      trackMetaPixelEvent('ViewContent', {
+        content_name: 'Reverse Mortgage - Property Verification',
+        content_category: 'reverse-mortgage',
+        value: 0,
+      }, 'reverse-mortgage')
+    } else if (step === 6) {
+      // Lead form - intent to convert (only reached by user-verified ≤35% LTV)
       trackMetaPixelEvent('InitiateCheckout', {
         content_name: 'Reverse Mortgage - Lead Form',
         content_category: 'reverse-mortgage',
@@ -223,10 +245,10 @@ export default function ReverseMortgageCalculatorPage() {
     setStepStartTime(Date.now())
   }, [step, sessionId])
 
-  // Load TrustedForm script ONLY when form is visible (step 5)
+  // Load TrustedForm script ONLY when form is visible (step 6 in the new flow)
   // This ensures the form field exists BEFORE the script loads
   // TrustedForm script must find the form field at initialization time
-  useTrustedForm({ enabled: step === 5 })
+  useTrustedForm({ enabled: step === 6 })
 
   const emailValidationState = useMemo(() => getEmailValidationState(email), [email])
   const phoneValidationState = useMemo(() => getPhoneValidationState(phone), [phone])
@@ -335,8 +357,63 @@ export default function ReverseMortgageCalculatorPage() {
       return
     }
 
-    // Move directly to lead capture - property lookup happens on results page
+    // Move to the property verification step. BatchData lookup fires there.
     setStep(5)
+  }
+
+  // Stable callback for PropertyVerificationStep — keeps its useEffect from re-firing.
+  const handleLookupComplete = useCallback(
+    (info: { success: boolean; ms: number; ltv?: number }) => {
+      logQuizProgress(5, 'batchdata_lookup', info.success ? 'success' : 'failed', info)
+      trackGA4Event('rm_property_lookup', {
+        success: info.success,
+        latency_ms: info.ms,
+        batchdata_ltv: info.ltv,
+      })
+    },
+    // sessionId comes from closure; logQuizProgress is stable enough for our purposes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionId],
+  )
+
+  const handlePropertyVerified = (values: {
+    propertyValue: number
+    mortgageBalance: number
+    ltv: number
+    batchDataLtv?: number
+    batchDataUsed: boolean
+  }) => {
+    setVerifiedProperty(values)
+    const ltvPct = Math.round(values.ltv * 100)
+    const qualifiesBuyer1 = values.ltv <= MAX_QUALIFYING_LTV
+
+    logQuizProgress(
+      5,
+      'property_verification',
+      `ltv=${ltvPct}% ${qualifiesBuyer1 ? 'buyer1_fit' : 'buyer1_dq'}`,
+      {
+        propertyValue: values.propertyValue,
+        mortgageBalance: values.mortgageBalance,
+        ltv: values.ltv,
+        batchDataUsed: values.batchDataUsed,
+        qualifiesBuyer1,
+      },
+    )
+
+    trackGA4Event('rm_property_verified', {
+      ltv: Number(values.ltv.toFixed(4)),
+      qualifies_buyer1: qualifiesBuyer1,
+      batch_data_used: values.batchDataUsed,
+      property_value: values.propertyValue,
+      mortgage_balance: values.mortgageBalance,
+      session_id: sessionId,
+    })
+
+    // No hard DQ here — every verified lead advances to lead capture. Buyer-1 fit is
+    // recorded on the lead in state; post-submit routing branches on it to send
+    // qualifying leads to /results (LynqFlux) and DQ leads to /results-alt (alt buyer
+    // / offer-wall placeholder).
+    setStep(6)
   }
 
   const handleLeadSubmit = async (event: React.FormEvent) => {
@@ -397,7 +474,16 @@ export default function ReverseMortgageCalculatorPage() {
         state: address.state,
         zipCode: address.zip,
       },
-      // Note: propertyData and calculation will be fetched on results page
+      // User-verified at step 5 (always present when we reach lead submit; LTV is ≤35%).
+      verifiedProperty: verifiedProperty
+        ? {
+            propertyValue: verifiedProperty.propertyValue,
+            mortgageBalance: verifiedProperty.mortgageBalance,
+            ltv: verifiedProperty.ltv,
+            batchDataLtv: verifiedProperty.batchDataLtv,
+            batchDataUsed: verifiedProperty.batchDataUsed,
+          }
+        : null,
       funnelType: 'reverse-mortgage',
     }
 
@@ -476,6 +562,22 @@ export default function ReverseMortgageCalculatorPage() {
     // Generate shared eventID for browser pixel + server CAPI deduplication
     const capiEventId = `lead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
+    // Decide whether to also fire the QualifiedLead custom event.
+    // Low LTV = high equity = lead the buyer actually wants. Gate fires when LTV
+    // is at or below the ceiling (≤ 0.50 = ≥50% equity).
+    // Defensive: take max(BatchData, user-verified) so users adjusting numbers
+    // downward at step 5 can't game their way into the qualified bucket.
+    // Generated upfront so browser pixel and server CAPI use the same eventID for dedup.
+    const QUALIFIED_LEAD_LTV_CEILING = 0.50
+    const gatingLtv = Math.max(
+      verifiedProperty?.ltv ?? 0,
+      verifiedProperty?.batchDataLtv ?? 0,
+    )
+    const fireQualifiedLead = gatingLtv > 0 && gatingLtv <= QUALIFIED_LEAD_LTV_CEILING
+    const qualifiedLeadEventId = fireQualifiedLead
+      ? `qlead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      : undefined
+
     const payload = {
       email,
       phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
@@ -496,8 +598,20 @@ export default function ReverseMortgageCalculatorPage() {
         fbc: metaCookies.fbc,
         fbLoginId: fbLoginId,
       },
-      // Shared eventID for browser+server CAPI dedup
+      // Shared eventID for browser+server CAPI dedup (Lead event — fires for everyone)
       capiEventId,
+      // QualifiedLead custom event — only when LTV >= 0.50 (≥50% LTV). When this
+      // eventId is set, the server fires a matching CAPI QualifiedLead event with
+      // it for browser/server dedup. When undefined, the server skips the event.
+      // This is the dual-event setup: Lead optimizes the current campaign, while
+      // QualifiedLead builds the optimization signal for a future duplicate campaign.
+      qualifiedLeadEventId,
+      qualifiedLeadGate: {
+        gatingLtv: Number(gatingLtv.toFixed(4)),
+        ceiling: QUALIFIED_LEAD_LTV_CEILING,
+        shouldFire: fireQualifiedLead,
+        ltvSource: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+      },
     }
     console.log('[DEBUG] 🔵 Payload prepared for submission', { 
       trustedFormCertUrl: payload.trustedFormCertUrl || 'NULL', 
@@ -521,17 +635,17 @@ export default function ReverseMortgageCalculatorPage() {
         throw new Error(data?.error || 'Failed to submit your request.')
       }
 
-      // Store data for results page - property lookup will happen there
+      // Store data for results page — property already verified at step 5, so the
+      // results page can skip BatchData and go straight to delivery + results.
       const stored = {
         ...quizAnswers,
-        sessionId, // Needed for LynqFlux delivery after BatchData
+        sessionId, // Needed for LynqFlux delivery
         contact: {
           firstName,
           lastName,
           email,
           phone: formatPhoneForGHL(extractUSPhoneNumber(phone)),
         },
-        // Address info for property lookup on results page
         addressForLookup: {
           street: address.street,
           city: address.city,
@@ -539,7 +653,17 @@ export default function ReverseMortgageCalculatorPage() {
           zip: address.zip,
           fullAddress: address.formatted_address,
         },
-        age, // Needed for calculation on results page
+        age,
+        // Verified property carried across the page boundary so /results can render
+        // and deliver immediately, without a second BatchData round-trip.
+        verifiedProperty: verifiedProperty
+          ? {
+              propertyValue: verifiedProperty.propertyValue,
+              mortgageBalance: verifiedProperty.mortgageBalance,
+              ltv: verifiedProperty.ltv,
+              batchDataUsed: verifiedProperty.batchDataUsed,
+            }
+          : null,
         submittedAt: new Date().toISOString(),
       }
 
@@ -554,18 +678,24 @@ export default function ReverseMortgageCalculatorPage() {
       // Track quiz complete
       trackQuizComplete('reverse-mortgage', sessionId, 'reverse-mortgage', completionTime)
       
-      // Track lead form submit
-      trackLeadFormSubmit({
-        firstName,
-        lastName,
-        email,
-        phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
-        zipCode: address?.zip || '',
-        state: address?.state,
-        quizAnswers,
-        sessionId,
-        funnelType: 'reverse-mortgage'
-      })
+      // Track lead form submit — but suppress the embedded Meta Lead pixel fire.
+      // We fire Lead explicitly below with capiEventId so it dedupes against the
+      // server CAPI Lead event. If we let trackLeadFormSubmit also fire Lead (no
+      // eventID), Meta would count two separate Lead events per submit.
+      trackLeadFormSubmit(
+        {
+          firstName,
+          lastName,
+          email,
+          phoneNumber: formatPhoneForGHL(extractUSPhoneNumber(phone)),
+          zipCode: address?.zip || '',
+          state: address?.state,
+          quizAnswers,
+          sessionId,
+          funnelType: 'reverse-mortgage',
+        },
+        { skipMetaEvent: true },
+      )
       
       // Track to GA4
       trackGA4Event('rm_lead_submitted', {
@@ -577,13 +707,72 @@ export default function ReverseMortgageCalculatorPage() {
         event_category: 'reverse_mortgage_funnel'
       })
       
-      // Track to Meta - Lead event (browser pixel with shared eventID for CAPI dedup)
-      trackMetaPixelEvent('Lead', {
-        content_name: 'Reverse Mortgage Lead',
-        content_category: 'reverse-mortgage',
-        value: 0, // Value will be calculated on results page
-        currency: 'USD'
-      }, 'reverse-mortgage', capiEventId)
+      // ────────────────────────────────────────────────────────────────────────
+      // Meta dual-event strategy
+      // ────────────────────────────────────────────────────────────────────────
+      // 1) `Lead` — fires for EVERY submitted lead (unchanged behavior). Current
+      //    campaign keeps optimizing on full volume; do not break it.
+      // 2) `QualifiedLead` — custom event, fires only when LTV ≤ 50% (i.e.
+      //    ≥50% equity, the leads the buyer actually wants). Builds the
+      //    optimization signal for a duplicated Meta campaign that will
+      //    optimize on higher-intent leads once it accumulates ~50 events/week.
+      // Both events use the same pixel + CAPI. The gate decision and event IDs
+      // were generated upfront (before fetch) so server CAPI can dedup against
+      // these browser pixel events.
+      // sessionStorage dedup: each Meta event fires at most once per browser tab.
+      // Eliminates the 2.5× over-reporting observed when users refresh / back-button
+      // / resubmit and the browser pixel fires again with a fresh eventID (server
+      // CAPI dedup can't help when each fire uses a different eventID).
+      const LEAD_FIRED_KEY = 'rm_meta_lead_fired'
+      const QUAL_FIRED_KEY = 'rm_meta_qualified_lead_fired'
+      const leadAlreadyFired = typeof window !== 'undefined'
+        && sessionStorage.getItem(LEAD_FIRED_KEY) === '1'
+      const qualAlreadyFired = typeof window !== 'undefined'
+        && sessionStorage.getItem(QUAL_FIRED_KEY) === '1'
+
+      console.log('[Meta CAPI] Dual-event firing', {
+        leadEventId: capiEventId,
+        qualifiedLeadEventId,
+        gatingLtv,
+        fireQualifiedLead,
+        leadAlreadyFired,
+        qualAlreadyFired,
+      })
+
+      // Lead event (fires for everyone — current campaign signal). sessionStorage
+      // guard prevents refires within the same browser tab.
+      if (!leadAlreadyFired) {
+        trackMetaPixelEvent('Lead', {
+          content_name: 'Reverse Mortgage Lead',
+          content_category: 'reverse-mortgage',
+          value: 0,
+          currency: 'USD',
+          ltv: gatingLtv > 0 ? Number(gatingLtv.toFixed(4)) : undefined,
+          ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+        }, 'reverse-mortgage', capiEventId)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(LEAD_FIRED_KEY, '1')
+        }
+      } else {
+        console.log('[Meta CAPI] ⏭️ Skipping browser Lead pixel — already fired this session')
+      }
+
+      // QualifiedLead custom event (only LTV ≤ 50% — high-equity, future campaign signal)
+      if (fireQualifiedLead && qualifiedLeadEventId && !qualAlreadyFired
+          && typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('trackCustom', 'QualifiedLead', {
+          content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
+          content_category: 'reverse-mortgage',
+          value: 0,
+          currency: 'USD',
+          ltv: Number(gatingLtv.toFixed(4)),
+          ltv_source: verifiedProperty?.batchDataUsed ? 'batchdata' : 'user_verified',
+          funnel_type: 'reverse-mortgage',
+        }, { eventID: qualifiedLeadEventId })
+        sessionStorage.setItem(QUAL_FIRED_KEY, '1')
+      } else if (fireQualifiedLead && qualAlreadyFired) {
+        console.log('[Meta CAPI] ⏭️ Skipping browser QualifiedLead pixel — already fired this session')
+      }
       
       console.log('📊 Lead Submitted Successfully:', {
         sessionId,
@@ -591,7 +780,18 @@ export default function ReverseMortgageCalculatorPage() {
         address: address.formatted_address
       })
 
-      router.push('/reverse-mortgage-calculator/results')
+      // Route based on buyer-1 fit. >35% LTV leads land on /results-alt so we can
+      // segment them downstream for offer-wall / alt-buyer routing.
+      // Gated behind NEXT_PUBLIC_RM_LTV_GATE — when off (default), every lead
+      // routes to /results regardless of LTV (preserves current LynqFlux volume).
+      const LTV_GATE_ENABLED = process.env.NEXT_PUBLIC_RM_LTV_GATE === 'on'
+      const isBuyer1Fit = !LTV_GATE_ENABLED
+        || (!!verifiedProperty && verifiedProperty.ltv <= MAX_QUALIFYING_LTV)
+      router.push(
+        isBuyer1Fit
+          ? '/reverse-mortgage-calculator/results'
+          : '/reverse-mortgage-calculator/results-alt',
+      )
     } catch (error: any) {
       console.error('Lead submission failed:', error)
       
@@ -635,13 +835,13 @@ export default function ReverseMortgageCalculatorPage() {
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="font-semibold text-[#36596A]">Step {step} of 5</span>
+                <span className="font-semibold text-[#36596A]">Step {step} of {TOTAL_STEPS}</span>
                 <span className="text-gray-500">Fast, no-obligation estimate</span>
               </div>
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-[#36596A] to-[#4a7a8a] rounded-full transition-all duration-300"
-                  style={{ width: `${(step / 5) * 100}%` }}
+                  style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                 />
               </div>
             </div>
@@ -817,7 +1017,20 @@ export default function ReverseMortgageCalculatorPage() {
               </div>
             )}
 
-            {step === 5 && (
+            {step === 5 && address && (
+              <PropertyVerificationStep
+                address={{
+                  street: address.street,
+                  city: address.city,
+                  state: address.state,
+                  zip: address.zip,
+                }}
+                onConfirm={handlePropertyVerified}
+                onLookupComplete={handleLookupComplete}
+              />
+            )}
+
+            {step === 6 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">

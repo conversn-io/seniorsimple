@@ -14,7 +14,15 @@ export interface AddressComponents {
 export interface PropertyLookupData {
   property_value: number
   mortgage_balance: number
-  ltv_ratio: number
+  /**
+   * Loan-to-value ratio as a decimal (0–1).
+   * - null when LTV is genuinely unknown (no lien data and no BatchData valuation.ltv)
+   * - 0 when the home is paid off
+   * - >0 otherwise (preferred source: BatchData's valuation.ltv; fallback: mortgage_balance / property_value)
+   */
+  ltv_ratio: number | null
+  /** Diagnostic: where ltv_ratio came from */
+  ltv_source?: 'batchdata_valuation' | 'computed_from_lien' | 'paid_off' | 'unknown'
   address: string
   city: string
   state: string
