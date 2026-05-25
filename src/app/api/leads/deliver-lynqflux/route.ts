@@ -19,6 +19,13 @@ const LYNQFLUX_LID = '244';
 // Buyer requires existing-mortgage LTV ≤ 35% to avoid "short to close" DNQs.
 const MAX_QUALIFYING_LTV = 0.35;
 
+// Feature flag: when off, the LTV gate is bypassed and every lead delivers to
+// LynqFlux regardless of LTV. Default off so we can ship the BatchData fixes
+// (paid-off home recovery, verify-step failsafe) without changing the volume
+// LynqFlux currently receives. Flip to "on" via Vercel env when the per-lead
+// repricing conversation is settled.
+const LTV_GATE_ENABLED = process.env.NEXT_PUBLIC_RM_LTV_GATE === 'on';
+
 export async function OPTIONS() {
   return handleCorsOptions();
 }
@@ -62,7 +69,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Hard gate: LTV must be ≤ 35% to avoid buyer "short to close" DNQs.
-    if (effectiveLtv > MAX_QUALIFYING_LTV) {
+    // Gated behind LTV_GATE_ENABLED env flag — when off (default), every lead
+    // delivers regardless of LTV. Flip NEXT_PUBLIC_RM_LTV_GATE=on to activate.
+    if (LTV_GATE_ENABLED && effectiveLtv > MAX_QUALIFYING_LTV) {
       console.log(
         `🛑 LYNQFLUX SKIPPED — lead=${lead.id} ltv=${(effectiveLtv * 100).toFixed(1)}% exceeds ${MAX_QUALIFYING_LTV * 100}% cap`,
       );
