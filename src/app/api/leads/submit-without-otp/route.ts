@@ -766,6 +766,18 @@ export async function POST(request: NextRequest) {
     // DEDUP: Only send CAPI Lead once per lead — skip if already sent
     const existingGhlStatus = lead.ghl_status || {};
     const capiAlreadySent = existingGhlStatus?.capi_lead_sent;
+
+    // LTV gate for reverse-mortgage: the client only sets body.capiEventId when
+    // the lead is buyer-1 quality (LTV ≤ 0.50 / equity ≥ 50%). If the eventId
+    // is missing for a reverse-mortgage submission, the client gated the fire
+    // and we must not send CAPI for this lead either.
+    //
+    // Why this matters: we'd rather under-report in Meta and have the campaign
+    // optimize on high-intent leads than over-report and dilute the signal
+    // while waiting for a second buyer order. Server-side LTV is also
+    // re-validated below as a defensive check.
+    const reverseMortgageLeadGated = isReverseMortgage && !body.capiEventId;
+
     // Verbose entry logging: production currently shows 0 Lead CAPI fires for
     // dozens of submits with no skip/sent/error logs. These breadcrumbs help
     // identify where the silent skip is happening.
@@ -774,18 +786,50 @@ export async function POST(request: NextRequest) {
       funnelType,
       capiAlreadySent: !!capiAlreadySent,
       capiEventIdReceived: !!body.capiEventId,
+      reverseMortgageLeadGated,
+      leadGate: body.leadGate || null,
       hasMetaCookies: !!body.metaCookies,
       ghlStatusKeys: Object.keys(existingGhlStatus),
     });
     if (capiAlreadySent) {
       console.log(`[Meta CAPI] ⏭️ Skipping Lead event — already sent at ${capiAlreadySent} for lead=${lead.id}`);
     }
+    if (reverseMortgageLeadGated) {
+      console.log(`[Meta CAPI] ⏭️ Skipping Lead event — reverse-mortgage LTV gate (>0.50, equity <50%) for lead=${lead.id}`, {
+        leadGate: body.leadGate || null,
+      });
+    }
 
-    // Lead event fires for EVERY submitted lead (current campaign keeps full
-    // optimization volume). The QualifiedLead custom event is a separate fire
-    // gated on LTV ≤ 0.50 — see below, after the Lead event block.
+    // Defensive server-side LTV gate (reverse-mortgage only). The client only
+    // sends capiEventId when its gate passes, but we re-check using the stored
+    // verifiedProperty in case the client payload was tampered with or stale.
+    let reverseMortgageServerGated = false;
+    if (isReverseMortgage && body.capiEventId) {
+      const vp = quizAnswers?.verifiedProperty || {};
+      const gatingLtv = Math.max(Number(vp.ltv) || 0, Number(vp.batchDataLtv) || 0);
+      const LEAD_CEILING = 0.50;
+      const serverShouldFire = gatingLtv > 0 && gatingLtv <= LEAD_CEILING;
+      if (!serverShouldFire) {
+        reverseMortgageServerGated = true;
+        console.log('[Meta CAPI] ⏭️ Skipping Lead event — server LTV re-check failed', {
+          leadId: lead.id,
+          gatingLtv,
+          ceiling: LEAD_CEILING,
+        });
+      }
+    }
 
-    if (!capiAlreadySent) try {
+    // Lead event fires for:
+    //   - Non-reverse-mortgage funnels: every submitted lead (unchanged)
+    //   - Reverse-mortgage: ONLY when LTV ≤ 0.50 (equity ≥ 50%) — i.e. buyer-1
+    //     quality. Higher-LTV leads still deliver to LynqFlux but do NOT
+    //     report a Lead conversion to Meta. This is the Option-A pivot: we
+    //     fold the QualifiedLead signal into the main Lead event so Meta's
+    //     existing campaign starts optimizing on high-intent leads
+    //     immediately, instead of waiting for a separate event to accumulate
+    //     ~50 conversions/week of stable signal.
+
+    if (!capiAlreadySent && !reverseMortgageLeadGated && !reverseMortgageServerGated) try {
       // ──────────────────────────────────────────────────────────────────────
       // For reverse-mortgage, fire CAPI via a dedicated route (/api/capi/send-lead)
       // so the CAPI logs land in their own Vercel invocation. That makes
@@ -799,7 +843,9 @@ export async function POST(request: NextRequest) {
         : (coverageAmount || 0);
 
       const sharedCustomData = {
-        content_name: isReverseMortgage ? 'Reverse Mortgage Lead' : `${funnelType} Lead`,
+        content_name: isReverseMortgage
+          ? 'Reverse Mortgage Lead (LTV≤50% / equity≥50%)'
+          : `${funnelType} Lead`,
         coverage_amount: coverageAmount,
         retirement_savings: retirementSavings,
         allocation_percent: allocationPercent,
@@ -909,83 +955,11 @@ export async function POST(request: NextRequest) {
       // Don't fail the request - CAPI is non-critical
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // QualifiedLead custom event (separate from Lead) — fires only when LTV ≤ 50%
-    // (≥50% equity — the leads buyer-1 actually wants). Builds the optimization
-    // signal for a duplicated Meta campaign that will optimize on higher-intent
-    // leads once it has stable volume (~50 events/week).
-    // ────────────────────────────────────────────────────────────────────────
-    if (isReverseMortgage && body.qualifiedLeadEventId) {
-      const vp = quizAnswers?.verifiedProperty || {};
-      const gatingLtv = Math.max(Number(vp.ltv) || 0, Number(vp.batchDataLtv) || 0);
-      const QUALIFIED_CEILING = 0.50;
-
-      // Defensive: re-check the gate server-side. Browser only sets eventId when
-      // gate passes, but server validates the actual stored LTV.
-      const serverShouldFire = gatingLtv > 0 && gatingLtv <= QUALIFIED_CEILING;
-      const alreadySent = existingGhlStatus?.capi_qualified_lead_sent;
-
-      console.log('[Meta CAPI] QualifiedLead gate (server)', {
-        leadId: lead.id,
-        gatingLtv,
-        ceiling: QUALIFIED_CEILING,
-        clientSentEventId: !!body.qualifiedLeadEventId,
-        serverShouldFire,
-        alreadySent: !!alreadySent,
-      });
-
-      if (serverShouldFire && !alreadySent) {
-        // Dispatch QualifiedLead to /api/capi/send-lead so the CAPI logs land
-        // in a dedicated Vercel invocation (top-level visible to vercel logs -q).
-        const origin = new URL(request.url).origin;
-        console.log('[Meta CAPI] 🔵 Dispatching QualifiedLead fire to /api/capi/send-lead', {
-          leadId: lead.id,
-          eventId: body.qualifiedLeadEventId,
-          gatingLtv,
-        });
-        try {
-          const qResp = await fetch(`${origin}/api/capi/send-lead`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              leadId: lead.id,
-              eventId: body.qualifiedLeadEventId,
-              eventName: 'QualifiedLead',
-              value: 0,
-              customData: {
-                content_name: 'Reverse Mortgage Qualified Lead (LTV≤50% / equity≥50%)',
-                property_value: vp.propertyValue || undefined,
-                mortgage_balance: vp.mortgageBalance || undefined,
-                ltv: gatingLtv,
-                ltv_source: vp.batchDataUsed ? 'batchdata' : 'user_verified',
-                ltv_ceiling: QUALIFIED_CEILING,
-              },
-              userOverrides: {
-                email,
-                phone: phoneNumber,
-                firstName,
-                lastName,
-                fbp: body.metaCookies?.fbp,
-                fbc: body.metaCookies?.fbc,
-                fbLoginId: body.metaCookies?.fbLoginId,
-                city: city || quizAnswers?.city || '',
-                state: state || addressState || '',
-                zipCode: zipCode || addressZip || '',
-              },
-            }),
-          });
-          const qJson = await qResp.json().catch(() => ({}));
-          console.log('[Meta CAPI] 🔵 QualifiedLead fire dispatch result', {
-            leadId: lead.id,
-            status: qResp.status,
-            success: qJson?.success,
-            skipped: qJson?.skipped,
-          });
-        } catch (qDispatchErr) {
-          console.error('[Meta CAPI] QualifiedLead dispatch error:', qDispatchErr);
-        }
-      }
-    }
+    // QualifiedLead custom event was REMOVED in the Option-A pivot.
+    // We fold the high-intent signal directly into the Lead event by gating
+    // it to LTV ≤ 0.50 above. Rationale: Meta's existing campaign already
+    // optimizes on Lead — we under-report rather than spin up a parallel
+    // custom event that would take weeks to accumulate stable volume.
 
     // Send to GHL webhook with timeout
     const webhookRequestLabel = '🚀 Making GHL webhook request...';
