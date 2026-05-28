@@ -8,17 +8,18 @@ import { initializeTracking, trackPageView, trackGA4Event } from '@/lib/temp-tra
 import { FAQ } from '@/components/quiz/FAQ'
 
 /**
- * Alt thank-you for reverse-mortgage leads that don't fit Buyer 1 (LTV > 35%).
+ * Alt thank-you for reverse-mortgage leads with LTV > 35%.
  *
- * The lead is captured in the DB but never sent to LynqFlux. This page:
- *   1. Tags the lead with ghl_status.buyer1_dq so we can segment downstream
- *   2. Shows a warm, neutral thank-you (no specific equity promise)
- *   3. Acts as the future surface for an offer wall / alt-buyer routing
+ * Behavior:
+ *   1. Delivers the lead to LynqFlux (same as /results — we monetize every lead
+ *      via the per-delivered fee, regardless of LTV).
+ *   2. Tags the lead with ghl_status.buyer1_dq so we can segment downstream
+ *      (e.g. when we sign a refi buyer, this is the cohort to route to them).
+ *   3. Shows a warm, neutral thank-you (no specific equity promise).
  *
- * Future enhancements (not yet wired):
- *   - Affiliate offer wall (debt consolidation, refi, HELOC, credit repair)
- *   - Direct route to a secondary mortgage buyer that accepts higher LTV
- *   - Email nurture sequence with content tailored to high-LTV homeowners
+ * The /results-alt vs /results split is for SEGMENTATION + UX, not delivery
+ * gating. Both pages deliver to LynqFlux. Future refi-buyer / offer-wall
+ * routing slots into this page.
  */
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
@@ -74,6 +75,35 @@ export default function ReverseMortgageResultsAltPage() {
 
     const vp = parsed.verifiedProperty
     if (parsed.sessionId && vp) {
+      // 1) Deliver to LynqFlux — same as /results. We monetize every lead.
+      //    LynqFlux makes its own accept/reject decision at their stage.
+      fetch('/api/leads/deliver-lynqflux', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: parsed.sessionId,
+          propertyValue: vp.propertyValue,
+          mortgageBalance: vp.mortgageBalance,
+          ltvRatio: vp.ltv,
+          userVerified: !vp.batchDataUsed,
+        }),
+      })
+        .then((r) => r.json())
+        .then((r) => {
+          if (r.success) {
+            console.log('🟢 LynqFlux delivered (alt path):', r.leadId)
+          } else {
+            console.warn('🔴 LynqFlux delivery (alt path) failed:', r)
+          }
+        })
+        .catch((err) => {
+          console.error('LynqFlux delivery (alt path) error:', err)
+        })
+
+      // 2) Tag the lead as buyer1_dq for segmentation. This is independent of
+      //    the LynqFlux delivery — both writes merge into ghl_status. Used by
+      //    downstream queries to identify the high-LTV cohort for routing to
+      //    a refi buyer / offer wall when that's wired up.
       fetch('/api/leads/mark-buyer1-dq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +118,7 @@ export default function ReverseMortgageResultsAltPage() {
         .then((r) => r.json())
         .then((r) => {
           if (r.success) {
-            console.log('🟠 Buyer-1 DQ recorded for lead', r.leadId)
+            console.log('🟠 Buyer-1 DQ tag recorded for lead', r.leadId)
             setTagged('done')
           } else {
             console.warn('🔴 Buyer-1 DQ tag failed:', r)

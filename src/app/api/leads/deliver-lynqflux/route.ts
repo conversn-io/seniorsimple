@@ -16,15 +16,12 @@ const LYNQFLUX_URL = 'https://lynqflux.com/data/244/incoming.php';
 const LYNQFLUX_PSWD = 'bXC9qjy4DEnMd4c7';
 const LYNQFLUX_LID = '244';
 
-// Buyer requires existing-mortgage LTV ≤ 35% to avoid "short to close" DNQs.
+// LTV threshold used for client-side segmentation only (route high-LTV leads
+// to /results-alt for future refi-buyer routing). NOT a server-side delivery
+// gate — every lead delivers to LynqFlux regardless of LTV so we monetize
+// the per-delivered fee on all of them. The buyer makes their own accept
+// decision at their underwriting stage.
 const MAX_QUALIFYING_LTV = 0.35;
-
-// Feature flag: when off, the LTV gate is bypassed and every lead delivers to
-// LynqFlux regardless of LTV. Default off so we can ship the BatchData fixes
-// (paid-off home recovery, verify-step failsafe) without changing the volume
-// LynqFlux currently receives. Flip to "on" via Vercel env when the per-lead
-// repricing conversation is settled.
-const LTV_GATE_ENABLED = process.env.NEXT_PUBLIC_RM_LTV_GATE === 'on';
 
 export async function OPTIONS() {
   return handleCorsOptions();
@@ -68,39 +65,10 @@ export async function POST(request: NextRequest) {
       return createCorsResponse({ success: true, message: 'Already delivered', leadId: lead.id });
     }
 
-    // Hard gate: LTV must be ≤ 35% to avoid buyer "short to close" DNQs.
-    // Gated behind LTV_GATE_ENABLED env flag — when off (default), every lead
-    // delivers regardless of LTV. Flip NEXT_PUBLIC_RM_LTV_GATE=on to activate.
-    if (LTV_GATE_ENABLED && effectiveLtv > MAX_QUALIFYING_LTV) {
-      console.log(
-        `🛑 LYNQFLUX SKIPPED — lead=${lead.id} ltv=${(effectiveLtv * 100).toFixed(1)}% exceeds ${MAX_QUALIFYING_LTV * 100}% cap`,
-      );
-      const existingGhlStatus = lead.ghl_status || {};
-      await callreadyQuizDb
-        .from('leads')
-        .update({
-          property_value: pvNum || null,
-          current_mortgage: mbNum || null,
-          ghl_status: {
-            ...existingGhlStatus,
-            lynqflux: {
-              skipped: true,
-              reason: 'ltv_above_35',
-              ltv: Number(effectiveLtv.toFixed(4)),
-              user_verified: !!userVerified,
-              timestamp: new Date().toISOString(),
-            },
-          },
-        })
-        .eq('id', lead.id);
-      return createCorsResponse({
-        success: false,
-        skipped: true,
-        reason: 'ltv_above_35',
-        ltv: Number(effectiveLtv.toFixed(4)),
-        leadId: lead.id,
-      });
-    }
+    // Note: no server-side LTV gate. Every lead delivers to LynqFlux regardless
+    // of LTV. The client-side router separately sends high-LTV leads to
+    // /results-alt for segmentation and buyer1_dq tagging, but the LynqFlux
+    // delivery happens for both /results and /results-alt paths.
 
     // Contact data is JSONB
     const contact = lead.contact || {};

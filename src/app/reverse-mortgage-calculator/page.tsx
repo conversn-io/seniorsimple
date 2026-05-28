@@ -780,13 +780,11 @@ export default function ReverseMortgageCalculatorPage() {
         address: address.formatted_address
       })
 
-      // Route based on buyer-1 fit. >35% LTV leads land on /results-alt so we can
-      // segment them downstream for offer-wall / alt-buyer routing.
-      // Gated behind NEXT_PUBLIC_RM_LTV_GATE — when off (default), every lead
-      // routes to /results regardless of LTV (preserves current LynqFlux volume).
-      const LTV_GATE_ENABLED = process.env.NEXT_PUBLIC_RM_LTV_GATE === 'on'
-      const isBuyer1Fit = !LTV_GATE_ENABLED
-        || (!!verifiedProperty && verifiedProperty.ltv <= MAX_QUALIFYING_LTV)
+      // Route based on buyer-1 fit. >35% LTV leads land on /results-alt so we
+      // can segment them downstream for refi-buyer / offer-wall routing. BOTH
+      // pages deliver to LynqFlux — segmentation is just routing + tagging,
+      // not a delivery gate. Every lead earns the per-delivered fee.
+      const isBuyer1Fit = !!verifiedProperty && verifiedProperty.ltv <= MAX_QUALIFYING_LTV
       router.push(
         isBuyer1Fit
           ? '/reverse-mortgage-calculator/results'
