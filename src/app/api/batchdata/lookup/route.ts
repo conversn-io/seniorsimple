@@ -108,19 +108,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    log('📊 Request parameters', { address, city, state, zip, place_id })
+    log('📊 Request parameters', { 
+        address, 
+        city, 
+        state, 
+        zip, 
+        has_place_id: !!place_id,
+        // Sanitize ZIP for common lookup issues (ZIP+4)
+        sanitized_zip: zip?.split('-')[0]
+    })
 
     const batchDataKey = process.env.BATCHDATA_LOOKUP_ONLY_KEY
 
     if (!batchDataKey) {
-      log('⚠️ No API key configured')
+      log('⚠️ CRITICAL: BATCHDATA_LOOKUP_ONLY_KEY is NOT set in environment variables')
       return NextResponse.json(
         {
           success: false,
-          error: 'BatchData API key not configured',
+          error: 'BatchData API key not configured. Please check Vercel environment variables.',
         },
         { status: 500 }
       )
+    } else {
+      log('🔑 API key detected (length: ' + batchDataKey.length + ')')
     }
 
     // Construct the full address for lookup
@@ -156,7 +166,7 @@ export async function POST(request: NextRequest) {
                 street: address,
                 city: city,
                 state: state,
-                zip: zip,
+                zip: zip.split('-')[0], // Use 5-digit ZIP for maximum compatibility
               },
             },
           ],
@@ -167,18 +177,22 @@ export async function POST(request: NextRequest) {
 
     if (!batchDataResponse.ok) {
       const errorText = await batchDataResponse.text()
-      log('❌ External API error', {
+      log('❌ BatchData API error', {
         status: batchDataResponse.status,
+        statusText: batchDataResponse.statusText,
         error: errorText,
+        address: address,
+        zip: zip
       })
 
       return NextResponse.json(
         {
           success: false,
-          error: 'Unable to retrieve property data. Please verify the address and try again.',
+          error: `BatchData API error (${batchDataResponse.status}): ${errorText.substring(0, 100)}`,
+          status: batchDataResponse.status,
           data: null,
         },
-        { status: 500 }
+        { status: 502 } // Use 502 Bad Gateway for external API failure
       )
     }
 
