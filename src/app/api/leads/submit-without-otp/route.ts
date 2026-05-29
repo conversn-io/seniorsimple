@@ -1056,7 +1056,14 @@ export async function POST(request: NextRequest) {
       console.log('✅ Lead Sent to GHL Successfully:', { leadId: lead.id, status: ghlResponse.status, trustedFormCertUrl: savedTrustedFormCertUrl || 'NOT PROVIDED' });
       
       // Update lead with GHL status (merge with existing to preserve capi_lead_sent, lynqflux, etc.)
-      const currentGhlStatus = lead.ghl_status || {};
+      // Re-fetch ghl_status — the inline CAPI dispatch above wrote capi_lead_sent
+      // after `lead` was loaded, so spreading the original snapshot would wipe it.
+      const { data: freshLead } = await callreadyQuizDb
+        .from('leads')
+        .select('ghl_status')
+        .eq('id', lead.id)
+        .maybeSingle();
+      const currentGhlStatus = freshLead?.ghl_status || lead.ghl_status || {};
       await callreadyQuizDb
         .from('leads')
         .update({
@@ -1110,7 +1117,13 @@ export async function POST(request: NextRequest) {
       });
 
       // Update lead with failed GHL status (merge with existing to preserve capi_lead_sent, lynqflux, etc.)
-      const currentGhlStatusFail = lead.ghl_status || {};
+      // Re-fetch ghl_status — see comment on the success branch above.
+      const { data: freshLeadFail } = await callreadyQuizDb
+        .from('leads')
+        .select('ghl_status')
+        .eq('id', lead.id)
+        .maybeSingle();
+      const currentGhlStatusFail = freshLeadFail?.ghl_status || lead.ghl_status || {};
       await callreadyQuizDb
         .from('leads')
         .update({
