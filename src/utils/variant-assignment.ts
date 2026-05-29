@@ -148,3 +148,101 @@ export function clearEntryVariantCookie(): void {
   document.cookie = `${ENTRY_VARIANT_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 }
 
+// ---------------------------------------------------------------------------
+// LTV pass/fail indicator on the Verify Property step (reverse-mortgage funnel)
+// ---------------------------------------------------------------------------
+// Controls whether the green/amber "Looks like a fit" / "Your equity is lower
+// than typical" qualify box is rendered alongside the LTV % readout in
+// VerifyPropertyDetails.tsx.
+//
+// Hypothesis: the explicit pass/fail signal may cause friction (users who see
+// the amber box may bounce before the lead is captured). The hidden variant
+// keeps the same LTV % readout but in neutral styling, with no icon or
+// qualifying copy.
+//
+// Rollout:
+//   - Today: LTV_INDICATOR_ROLLOUT_SPLIT = false → 100% 'hidden'. The flag is
+//     wired end-to-end but the experiment is not active yet.
+//   - To start the A/B: flip LTV_INDICATOR_ROLLOUT_SPLIT to true. Cookie
+//     assignment is sticky for 30 days, so users in flight stay in their
+//     variant.
+//   - Force a variant for QA / preview: ?ltv_indicator=shown or
+//     ?ltv_indicator=hidden in the URL.
+// ---------------------------------------------------------------------------
+
+export type LtvIndicatorVariant = 'hidden' | 'shown';
+
+const LTV_INDICATOR_COOKIE_NAME = 'ss_ltv_indicator_variant';
+const LTV_INDICATOR_ROLLOUT_SPLIT = false;
+
+/**
+ * Get assigned LTV indicator variant for current session.
+ * Priority: Query param > Cookie > Rollout assignment (today: 100% hidden).
+ */
+export function getAssignedLtvIndicatorVariant(): LtvIndicatorVariant {
+  if (typeof window === 'undefined') {
+    return 'hidden'; // SSR default — matches the post-rollout default state
+  }
+
+  // Check query parameter override (QA / preview)
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryVariant = urlParams.get('ltv_indicator');
+  if (queryVariant === 'shown' || queryVariant === 'hidden') {
+    setLtvIndicatorVariantCookie(queryVariant);
+    return queryVariant;
+  }
+
+  // Check existing cookie
+  const cookieVariant = getLtvIndicatorVariantCookie();
+  if (cookieVariant) {
+    return cookieVariant;
+  }
+
+  // Rollout assignment. While LTV_INDICATOR_ROLLOUT_SPLIT is false, everyone
+  // gets 'hidden' — the flag is staged but the A/B isn't running. Flip to true
+  // to start the 50/50 split.
+  const assigned: LtvIndicatorVariant = LTV_INDICATOR_ROLLOUT_SPLIT
+    ? (Math.random() < 0.5 ? 'shown' : 'hidden')
+    : 'hidden';
+  setLtvIndicatorVariantCookie(assigned);
+  return assigned;
+}
+
+/**
+ * Get LTV indicator variant from cookie
+ */
+function getLtvIndicatorVariantCookie(): LtvIndicatorVariant | null {
+  if (typeof document === 'undefined') return null;
+
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === LTV_INDICATOR_COOKIE_NAME) {
+      if (value === 'shown' || value === 'hidden') {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Set LTV indicator variant cookie with 30-day TTL
+ */
+function setLtvIndicatorVariantCookie(variant: LtvIndicatorVariant): void {
+  if (typeof document === 'undefined') return;
+
+  const expires = new Date();
+  expires.setTime(expires.getTime() + VARIANT_COOKIE_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+  document.cookie = `${LTV_INDICATOR_COOKIE_NAME}=${variant}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+}
+
+/**
+ * Clear LTV indicator variant cookie (for testing)
+ */
+export function clearLtvIndicatorVariantCookie(): void {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${LTV_INDICATOR_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
