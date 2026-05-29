@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react'
 import { Loader2, Home } from 'lucide-react'
 import { VerifyPropertyDetails } from './VerifyPropertyDetails'
+import {
+  getAssignedLtvIndicatorVariant,
+  type LtvIndicatorVariant,
+} from '@/utils/variant-assignment'
 
 interface PropertyData {
   property_value: number
@@ -50,6 +54,14 @@ export function PropertyVerificationStep({
   // The original BatchData LTV (before any user adjustment) — captured here so
   // we can pass it to onConfirm for downstream defensive gating decisions.
   const [batchDataLtv, setBatchDataLtv] = useState<number | undefined>(undefined)
+
+  // LTV pass/fail indicator A/B (see variant-assignment.ts). Default 'hidden'
+  // matches both SSR and the current 100%-off rollout.
+  const [ltvIndicatorVariant, setLtvIndicatorVariant] =
+    useState<LtvIndicatorVariant>('hidden')
+  useEffect(() => {
+    setLtvIndicatorVariant(getAssignedLtvIndicatorVariant())
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -142,6 +154,7 @@ export function PropertyVerificationStep({
         onConfirm({ ...values, batchDataUsed: !lookupFailed, batchDataLtv })
       }
       isSubmitting={isSubmitting}
+      showQualifyIndicator={ltvIndicatorVariant === 'shown'}
     />
   )
 }

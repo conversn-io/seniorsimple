@@ -17,6 +17,16 @@ interface VerifyPropertyDetailsProps {
    * for use inside an existing card (e.g. the quiz step container).
    */
   chrome?: 'page' | 'embedded'
+  /**
+   * Whether to render the pass/fail qualify indicator (green/amber color, icon,
+   * "Looks like a fit" / "lower than typical" copy) alongside the LTV % readout.
+   *
+   * Gated behind the `ss_ltv_indicator_variant` split test in
+   * variant-assignment.ts. Default `false` — caller must opt in. When `false`
+   * the box still renders the LTV %, but in neutral styling with no qualify
+   * signal.
+   */
+  showQualifyIndicator?: boolean
 }
 
 const PROPERTY_MIN = 100_000
@@ -41,6 +51,7 @@ export function VerifyPropertyDetails({
   onConfirm,
   isSubmitting = false,
   chrome = 'page',
+  showQualifyIndicator = false,
 }: VerifyPropertyDetailsProps) {
   const [propertyValue, setPropertyValue] = useState<number>(
     Math.min(Math.max(initialPropertyValue || 400_000, PROPERTY_MIN), PROPERTY_MAX)
@@ -151,31 +162,54 @@ export function VerifyPropertyDetails({
                 </div>
               </div>
 
-              {/* LTV readout + qualify indicator (no proceeds dollars by design) */}
+              {/* LTV readout. The pass/fail qualify styling (color + icon + copy) is
+                * gated behind the ss_ltv_indicator_variant flag in variant-assignment.ts.
+                * When showQualifyIndicator is false (default + current rollout) we keep
+                * the LTV % readout but in neutral styling — no green/amber, no icon, no
+                * qualifying sentence. */}
               <div
                 className={`rounded-xl border-2 p-5 transition-colors ${
-                  qualifies ? 'border-green-300 bg-green-50' : 'border-amber-300 bg-amber-50'
+                  showQualifyIndicator
+                    ? qualifies
+                      ? 'border-green-300 bg-green-50'
+                      : 'border-amber-300 bg-amber-50'
+                    : 'border-gray-200 bg-gray-50'
                 }`}
                 aria-live="polite"
               >
                 <div className="flex items-center gap-3">
-                  {qualifies ? (
-                    <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
-                  ) : (
-                    <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
-                  )}
+                  {showQualifyIndicator &&
+                    (qualifies ? (
+                      <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
+                    ))}
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-gray-700">
                       Your current loan-to-value:{' '}
-                      <span className={`text-base ${qualifies ? 'text-green-700' : 'text-amber-700'}`}>
+                      <span
+                        className={`text-base ${
+                          showQualifyIndicator
+                            ? qualifies
+                              ? 'text-green-700'
+                              : 'text-amber-700'
+                            : 'text-gray-800'
+                        }`}
+                      >
                         {ltvPct}%
                       </span>
                     </p>
-                    <p className={`text-sm mt-0.5 ${qualifies ? 'text-green-700' : 'text-amber-700'}`}>
-                      {qualifies
-                        ? 'Looks like a fit — a specialist can confirm your exact proceeds.'
-                        : 'Your equity is lower than typical for this program — a specialist will explore the right options for your situation.'}
-                    </p>
+                    {showQualifyIndicator && (
+                      <p
+                        className={`text-sm mt-0.5 ${
+                          qualifies ? 'text-green-700' : 'text-amber-700'
+                        }`}
+                      >
+                        {qualifies
+                          ? 'Looks like a fit — a specialist can confirm your exact proceeds.'
+                          : 'Your equity is lower than typical for this program — a specialist will explore the right options for your situation.'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

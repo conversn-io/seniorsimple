@@ -7,6 +7,10 @@ import { useFunnelLayout } from '@/hooks/useFunnelFooter'
 import { initializeTracking, trackPageView, trackGA4Event } from '@/lib/temp-tracking'
 import { FAQ } from '@/components/quiz/FAQ'
 import { VerifyPropertyDetails, MAX_QUALIFYING_LTV } from '@/components/reverse-mortgage/VerifyPropertyDetails'
+import {
+  getAssignedLtvIndicatorVariant,
+  type LtvIndicatorVariant,
+} from '@/utils/variant-assignment'
 
 const STORAGE_KEY = 'reverse_mortgage_calculator'
 
@@ -98,6 +102,14 @@ export default function ReverseMortgageResultsPage() {
   const [batchData, setBatchData] = useState<{ property?: PropertyData; state?: string; lookupFailed: boolean }>({
     lookupFailed: false,
   })
+
+  // LTV pass/fail indicator A/B (see variant-assignment.ts). Default 'hidden'
+  // matches both SSR and the current 100%-off rollout.
+  const [ltvIndicatorVariant, setLtvIndicatorVariant] =
+    useState<LtvIndicatorVariant>('hidden')
+  useEffect(() => {
+    setLtvIndicatorVariant(getAssignedLtvIndicatorVariant())
+  }, [])
 
   // Fire LynqFlux delivery + Meta CAPI ViewContent with the given property values.
   // Used for both the BatchData-trusted path and the user-verified path.
@@ -444,6 +456,7 @@ export default function ReverseMortgageResultsPage() {
         lookupFailed={batchData.lookupFailed}
         onConfirm={handleVerifyConfirm}
         isSubmitting={phase === 'submitting_verify'}
+        showQualifyIndicator={ltvIndicatorVariant === 'shown'}
       />
     )
   }
