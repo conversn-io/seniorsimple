@@ -564,12 +564,18 @@ export default function ReverseMortgageCalculatorPage() {
     // toward the cohort that actually converts with the buyer (low-LTV / high-
     // equity homeowners) instead of every form submit.
     // Defensive max() catches users who adjust numbers downward at step 5.
+    //
+    // Signal check uses propertyValue (not ltv) — a paid-off home is LTV = 0,
+    // which is the *highest* equity signal and must fire. The old `gatingLtv > 0`
+    // guard silently excluded those leads. We now require a real propertyValue
+    // (signals "user verified the step") instead.
     const LEAD_LTV_CEILING = 0.50
     const gatingLtv = Math.max(
       verifiedProperty?.ltv ?? 0,
       verifiedProperty?.batchDataLtv ?? 0,
     )
-    const fireLead = gatingLtv > 0 && gatingLtv <= LEAD_LTV_CEILING
+    const hasPropertySignal = (verifiedProperty?.propertyValue ?? 0) > 0
+    const fireLead = hasPropertySignal && gatingLtv <= LEAD_LTV_CEILING
     // Generated upfront so browser pixel and server CAPI share the same eventID.
     const capiEventId = fireLead
       ? `lead-rm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -736,7 +742,11 @@ export default function ReverseMortgageCalculatorPage() {
       } else if (fireLead && leadAlreadyFired) {
         console.log('[Meta CAPI] ⏭️ Skipping browser Lead pixel — already fired this session')
       } else if (!fireLead) {
-        console.log(`[Meta CAPI] ⏭️ Skipping browser Lead pixel — LTV ${(gatingLtv * 100).toFixed(1)}% > ${LEAD_LTV_CEILING * 100}% ceiling`)
+        if (!hasPropertySignal) {
+          console.log('[Meta CAPI] ⏭️ Skipping browser Lead pixel — no propertyValue (verifiedProperty missing or 0)')
+        } else {
+          console.log(`[Meta CAPI] ⏭️ Skipping browser Lead pixel — LTV ${(gatingLtv * 100).toFixed(1)}% > ${LEAD_LTV_CEILING * 100}% ceiling`)
+        }
       }
       
       console.log('📊 Lead Submitted Successfully:', {
