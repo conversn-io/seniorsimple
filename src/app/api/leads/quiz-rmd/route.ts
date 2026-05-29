@@ -97,7 +97,8 @@ async function upsertLead(
   sessionId: string | null,
   quizAnswers: any,
   utmParams: any,
-  trustedFormCertUrl?: string | null
+  trustedFormCertUrl?: string | null,
+  funnelType?: string
 ) {
   const verifiedAt = new Date().toISOString();
   
@@ -167,7 +168,7 @@ async function upsertLead(
     contact_id: contactId,
     session_id: sessionId,
     site_key: 'seniorsimple.org',
-    funnel_type: 'rmd-quiz',
+    funnel_type: funnelType || 'rmd-quiz', // Default matches this route's funnel; caller may override
     status: 'verified',
     is_verified: true,
     verified_at: verifiedAt,
@@ -197,7 +198,15 @@ async function upsertLead(
       .select('*')
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Database error updating lead:', {
+        error: error.message,
+        code: error.code,
+        leadId: existingLead.id,
+        funnelType
+      });
+      throw error;
+    }
     return updated || existingLead;
   } else {
     const { data: newLead, error } = await callreadyQuizDb
@@ -206,7 +215,15 @@ async function upsertLead(
       .select('*')
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Database error creating lead:', {
+        error: error.message,
+        code: error.code,
+        session_id: sessionId,
+        funnelType
+      });
+      throw error;
+    }
     return newLead;
   }
 }
@@ -251,7 +268,8 @@ export async function POST(request: NextRequest) {
       sessionId,
       quizAnswers,
       utmParams,
-      trustedFormCertUrl
+      trustedFormCertUrl,
+      body.funnelType || 'rmd-quiz' // Allow caller to override funnel type; default matches this route
     );
 
     // Prepare GHL webhook payload
