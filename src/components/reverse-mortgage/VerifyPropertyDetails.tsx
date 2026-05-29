@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CheckCircle, AlertTriangle, Home } from 'lucide-react'
+import { trackGA4Event } from '@/lib/temp-tracking'
 
 export const MAX_QUALIFYING_LTV = 0.35
 
@@ -86,6 +87,98 @@ export function VerifyPropertyDetails({
   const ltvPct = Math.round(ltv * 100)
   const qualifies = ltv <= MAX_QUALIFYING_LTV
 
+  // --- Telemetry -----------------------------------------------------------
+  // Four events fire to GA4 + Supabase analytics_events (via
+  // /api/analytics/track-event). Together they let us measure abandonment
+  // at this step:
+  //   viewed   - mount (denominator)
+  //   engaged  - first interaction of any kind (slider or input)
+  //   manual_entry - text input was actually typed into (per-field commit)
+  //   confirmed - Confirm button clicked
+  //
+  // Funnel:    viewed → engaged → confirmed
+  // Drop-offs: viewed-without-engaged (saw it, didn't touch);
+  //            engaged-without-confirmed (started editing, bailed).
+  // manual_entry is a per-field marker letting us compare typers vs slider-
+  // only users — useful since this step ships with the previously-broken
+  // currency input (PR #10).
+  const mountedAtRef = useRef<number>(Date.now())
+  const viewFiredRef = useRef(false)
+  const engagedFiredRef = useRef(false)
+  const propertyTypedRef = useRef(false)
+  const mortgageTypedRef = useRef(false)
+  const propertyFocusValueRef = useRef<number>(initialPropertyClamped)
+  const mortgageFocusValueRef = useRef<number>(initialMortgageClamped)
+  const manualEntryCountRef = useRef(0)
+  const interactionCountRef = useRef(0)
+
+  const fireVerifyEvent = (
+    eventName: string,
+    extra: Record<string, any> = {},
+    opts: { keepalive?: boolean } = {}
+  ) => {
+    const basePayload = {
+      home_value: propertyValue,
+      mortgage_balance: mortgageBalance,
+      ltv: Number(ltv.toFixed(4)),
+      ltv_pct: ltvPct,
+      lookup_failed: lookupFailed,
+      elapsed_ms_since_view: Date.now() - mountedAtRef.current,
+      manual_entry_count: manualEntryCountRef.current,
+      interaction_count: interactionCountRef.current,
+      source: 'verify-property',
+      ...extra,
+    }
+    try {
+      trackGA4Event(eventName, basePayload)
+    } catch (err) {
+      console.warn('[verify-property] GA4 track failed:', err)
+    }
+    if (typeof window === 'undefined') return
+    const sessionId = window.sessionStorage?.getItem('session_id') || ''
+    if (!sessionId) return
+    try {
+      fetch('/api/analytics/track-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: opts.keepalive ?? false,
+        body: JSON.stringify({
+          event_name: eventName,
+          properties: basePayload,
+          session_id: sessionId,
+          user_id: sessionId,
+          page_url: window.location.href,
+          referrer: typeof document !== 'undefined' ? document.referrer : '',
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+          event_category: 'quiz_step',
+          event_label: 'verify_property',
+        }),
+      }).catch(err => console.warn('[verify-property] track failed:', err))
+    } catch (err) {
+      console.warn('[verify-property] track error:', err)
+    }
+  }
+
+  // Fire 'viewed' once on mount. Captures the starting state so we can tell
+  // whether the user saw a BatchData prefill or an empty form (lookupFailed).
+  useEffect(() => {
+    if (viewFiredRef.current) return
+    viewFiredRef.current = true
+    fireVerifyEvent('verify_property_viewed', {
+      initial_home_value: initialPropertyClamped,
+      initial_mortgage_balance: initialMortgageClamped,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const markEngaged = (control: 'slider' | 'input', field: 'home_value' | 'mortgage_balance') => {
+    interactionCountRef.current += 1
+    if (engagedFiredRef.current) return
+    engagedFiredRef.current = true
+    fireVerifyEvent('verify_property_engaged', { first_control: control, first_field: field })
+  }
+  // -------------------------------------------------------------------------
+
   // Commit a clamped property value to state AND mirror it into raw text.
   // Also cascades a max-cap on mortgage balance (mortgage can't exceed home value).
   const commitPropertyValue = (next: number) => {
@@ -132,9 +225,35 @@ export function VerifyPropertyDetails({
                     type="text"
                     inputMode="numeric"
                     value={propertyValueRaw}
-                    onChange={(e) => setPropertyValueRaw(e.target.value)}
-                    onFocus={(e) => e.currentTarget.select()}
-                    onBlur={() => commitPropertyValue(parseCurrency(propertyValueRaw))}
+                    onChange={(e) => {
+                      setPropertyValueRaw(e.target.value)
+                      propertyTypedRef.current = true
+                      markEngaged('input', 'home_value')
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.select()
+                      propertyFocusValueRef.current = propertyValue
+                      propertyTypedRef.current = false
+                    }}
+                    onBlur={() => {
+                      const parsed = parseCurrency(propertyValueRaw)
+                      const before = propertyFocusValueRef.current
+                      commitPropertyValue(parsed)
+                      if (propertyTypedRef.current) {
+                        manualEntryCountRef.current += 1
+                        const clamped = Math.min(Math.max(parsed, PROPERTY_MIN), PROPERTY_MAX)
+                        fireVerifyEvent('verify_property_manual_entry', {
+                          field: 'home_value',
+                          before,
+                          typed_raw: propertyValueRaw,
+                          parsed,
+                          after: clamped,
+                          clamped_to_min: parsed < PROPERTY_MIN,
+                          clamped_to_max: parsed > PROPERTY_MAX,
+                        })
+                        propertyTypedRef.current = false
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -151,7 +270,10 @@ export function VerifyPropertyDetails({
                   max={PROPERTY_MAX}
                   step={PROPERTY_STEP}
                   value={propertyValue}
-                  onChange={(e) => commitPropertyValue(Number(e.target.value))}
+                  onChange={(e) => {
+                    commitPropertyValue(Number(e.target.value))
+                    markEngaged('slider', 'home_value')
+                  }}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   style={{
                     background: `linear-gradient(to right, #36596A 0%, #36596A ${propertyTrackPct}%, #e5e7eb ${propertyTrackPct}%, #e5e7eb 100%)`,
@@ -174,9 +296,35 @@ export function VerifyPropertyDetails({
                     type="text"
                     inputMode="numeric"
                     value={mortgageBalanceRaw}
-                    onChange={(e) => setMortgageBalanceRaw(e.target.value)}
-                    onFocus={(e) => e.currentTarget.select()}
-                    onBlur={() => commitMortgageBalance(parseCurrency(mortgageBalanceRaw))}
+                    onChange={(e) => {
+                      setMortgageBalanceRaw(e.target.value)
+                      mortgageTypedRef.current = true
+                      markEngaged('input', 'mortgage_balance')
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.select()
+                      mortgageFocusValueRef.current = mortgageBalance
+                      mortgageTypedRef.current = false
+                    }}
+                    onBlur={() => {
+                      const parsed = parseCurrency(mortgageBalanceRaw)
+                      const before = mortgageFocusValueRef.current
+                      commitMortgageBalance(parsed)
+                      if (mortgageTypedRef.current) {
+                        manualEntryCountRef.current += 1
+                        const clamped = Math.max(0, Math.min(parsed, propertyValue))
+                        fireVerifyEvent('verify_property_manual_entry', {
+                          field: 'mortgage_balance',
+                          before,
+                          typed_raw: mortgageBalanceRaw,
+                          parsed,
+                          after: clamped,
+                          clamped_to_min: parsed < 0,
+                          clamped_to_max: parsed > propertyValue,
+                        })
+                        mortgageTypedRef.current = false
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -193,7 +341,10 @@ export function VerifyPropertyDetails({
                   max={propertyValue}
                   step={MORTGAGE_STEP}
                   value={mortgageBalance}
-                  onChange={(e) => commitMortgageBalance(Number(e.target.value))}
+                  onChange={(e) => {
+                    commitMortgageBalance(Number(e.target.value))
+                    markEngaged('slider', 'mortgage_balance')
+                  }}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   style={{
                     background: `linear-gradient(to right, #36596A 0%, #36596A ${mortgageTrackPct}%, #e5e7eb ${mortgageTrackPct}%, #e5e7eb 100%)`,
@@ -259,7 +410,18 @@ export function VerifyPropertyDetails({
             </div>
 
             <button
-              onClick={() => onConfirm({ propertyValue, mortgageBalance, ltv })}
+              onClick={() => {
+                // Fire confirmed BEFORE handing off — onConfirm navigates away in
+                // both call sites. keepalive lets the fetch survive the unload.
+                fireVerifyEvent(
+                  'verify_property_confirmed',
+                  {
+                    qualifies, // based on MAX_QUALIFYING_LTV at submit time
+                  },
+                  { keepalive: true }
+                )
+                onConfirm({ propertyValue, mortgageBalance, ltv })
+              }}
               disabled={isSubmitting || propertyValue <= 0}
               className="mt-8 w-full bg-[#36596A] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#2a4a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
