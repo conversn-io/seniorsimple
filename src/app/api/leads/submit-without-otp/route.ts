@@ -803,18 +803,28 @@ export async function POST(request: NextRequest) {
     // Defensive server-side LTV gate (reverse-mortgage only). The client only
     // sends capiEventId when its gate passes, but we re-check using the stored
     // verifiedProperty in case the client payload was tampered with or stale.
+    //
+    // Signal check uses propertyValue (not ltv) — a paid-off home is LTV = 0
+    // and is the *highest* equity signal; the old `gatingLtv > 0` guard
+    // silently excluded those leads. We now require a real propertyValue to
+    // signal "user verified the step" and let LTV = 0 fire.
     let reverseMortgageServerGated = false;
     if (isReverseMortgage && body.capiEventId) {
       const vp = quizAnswers?.verifiedProperty || {};
       const gatingLtv = Math.max(Number(vp.ltv) || 0, Number(vp.batchDataLtv) || 0);
+      const propertyValue = Number(vp.propertyValue) || 0;
       const LEAD_CEILING = 0.50;
-      const serverShouldFire = gatingLtv > 0 && gatingLtv <= LEAD_CEILING;
+      const hasPropertySignal = propertyValue > 0;
+      const serverShouldFire = hasPropertySignal && gatingLtv <= LEAD_CEILING;
       if (!serverShouldFire) {
         reverseMortgageServerGated = true;
         console.log('[Meta CAPI] ⏭️ Skipping Lead event — server LTV re-check failed', {
           leadId: lead.id,
           gatingLtv,
+          propertyValue,
+          hasPropertySignal,
           ceiling: LEAD_CEILING,
+          reason: !hasPropertySignal ? 'no_property_value' : 'ltv_above_ceiling',
         });
       }
     }
