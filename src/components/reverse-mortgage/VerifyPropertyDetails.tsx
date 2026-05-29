@@ -53,11 +53,30 @@ export function VerifyPropertyDetails({
   chrome = 'page',
   showQualifyIndicator = false,
 }: VerifyPropertyDetailsProps) {
-  const [propertyValue, setPropertyValue] = useState<number>(
-    Math.min(Math.max(initialPropertyValue || 400_000, PROPERTY_MIN), PROPERTY_MAX)
+  const initialPropertyClamped = Math.min(
+    Math.max(initialPropertyValue || 400_000, PROPERTY_MIN),
+    PROPERTY_MAX
   )
-  const [mortgageBalance, setMortgageBalance] = useState<number>(
-    Math.max(0, Math.min(initialMortgageBalance ?? 0, propertyValue))
+  const initialMortgageClamped = Math.max(
+    0,
+    Math.min(initialMortgageBalance ?? 0, initialPropertyClamped)
+  )
+
+  const [propertyValue, setPropertyValue] = useState<number>(initialPropertyClamped)
+  const [mortgageBalance, setMortgageBalance] = useState<number>(initialMortgageClamped)
+
+  // Raw text shown in each currency input. Decoupled from the controlled
+  // number so the user can type freely without per-keystroke clamping — old
+  // bug: typing "5" then "0" against a "$400,000" prefill snapped to
+  // "$1,000,000" because parse-clamp-reformat ran on every keystroke and
+  // appended the new digit onto the already-formatted text. Raw text is
+  // committed (parsed + clamped) on blur/Enter, and slider drags also push
+  // the formatted result back into the raw text so the two stay in sync.
+  const [propertyValueRaw, setPropertyValueRaw] = useState<string>(
+    formatCurrency(initialPropertyClamped)
+  )
+  const [mortgageBalanceRaw, setMortgageBalanceRaw] = useState<string>(
+    formatCurrency(initialMortgageClamped)
   )
 
   const ltv = useMemo(
@@ -67,14 +86,22 @@ export function VerifyPropertyDetails({
   const ltvPct = Math.round(ltv * 100)
   const qualifies = ltv <= MAX_QUALIFYING_LTV
 
-  const handlePropertyChange = (next: number) => {
+  // Commit a clamped property value to state AND mirror it into raw text.
+  // Also cascades a max-cap on mortgage balance (mortgage can't exceed home value).
+  const commitPropertyValue = (next: number) => {
     const clamped = Math.min(Math.max(next, PROPERTY_MIN), PROPERTY_MAX)
     setPropertyValue(clamped)
-    if (mortgageBalance > clamped) setMortgageBalance(clamped)
+    setPropertyValueRaw(formatCurrency(clamped))
+    if (mortgageBalance > clamped) {
+      setMortgageBalance(clamped)
+      setMortgageBalanceRaw(formatCurrency(clamped))
+    }
   }
 
-  const handleMortgageChange = (next: number) => {
-    setMortgageBalance(Math.max(0, Math.min(next, propertyValue)))
+  const commitMortgageBalance = (next: number) => {
+    const clamped = Math.max(0, Math.min(next, propertyValue))
+    setMortgageBalance(clamped)
+    setMortgageBalanceRaw(formatCurrency(clamped))
   }
 
   const propertyTrackPct = ((propertyValue - PROPERTY_MIN) / (PROPERTY_MAX - PROPERTY_MIN)) * 100
@@ -104,8 +131,16 @@ export function VerifyPropertyDetails({
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={formatCurrency(propertyValue)}
-                    onChange={(e) => handlePropertyChange(parseCurrency(e.target.value))}
+                    value={propertyValueRaw}
+                    onChange={(e) => setPropertyValueRaw(e.target.value)}
+                    onFocus={(e) => e.currentTarget.select()}
+                    onBlur={() => commitPropertyValue(parseCurrency(propertyValueRaw))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        e.currentTarget.blur()
+                      }
+                    }}
                     className="w-40 text-right text-lg font-semibold text-[#36596A] border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#36596A]/40"
                     aria-label="Estimated home value"
                   />
@@ -116,7 +151,7 @@ export function VerifyPropertyDetails({
                   max={PROPERTY_MAX}
                   step={PROPERTY_STEP}
                   value={propertyValue}
-                  onChange={(e) => handlePropertyChange(Number(e.target.value))}
+                  onChange={(e) => commitPropertyValue(Number(e.target.value))}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   style={{
                     background: `linear-gradient(to right, #36596A 0%, #36596A ${propertyTrackPct}%, #e5e7eb ${propertyTrackPct}%, #e5e7eb 100%)`,
@@ -138,8 +173,16 @@ export function VerifyPropertyDetails({
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={formatCurrency(mortgageBalance)}
-                    onChange={(e) => handleMortgageChange(parseCurrency(e.target.value))}
+                    value={mortgageBalanceRaw}
+                    onChange={(e) => setMortgageBalanceRaw(e.target.value)}
+                    onFocus={(e) => e.currentTarget.select()}
+                    onBlur={() => commitMortgageBalance(parseCurrency(mortgageBalanceRaw))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        e.currentTarget.blur()
+                      }
+                    }}
                     className="w-40 text-right text-lg font-semibold text-[#36596A] border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#36596A]/40"
                     aria-label="Current mortgage balance"
                   />
@@ -150,7 +193,7 @@ export function VerifyPropertyDetails({
                   max={propertyValue}
                   step={MORTGAGE_STEP}
                   value={mortgageBalance}
-                  onChange={(e) => handleMortgageChange(Number(e.target.value))}
+                  onChange={(e) => commitMortgageBalance(Number(e.target.value))}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   style={{
                     background: `linear-gradient(to right, #36596A 0%, #36596A ${mortgageTrackPct}%, #e5e7eb ${mortgageTrackPct}%, #e5e7eb 100%)`,
