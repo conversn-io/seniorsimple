@@ -16,6 +16,8 @@ type StackItem = { name: string; desc: string; value: string };
 type Funnel = {
   badge: string;
   h1: string;
+  /** Optional substring of `h1` to render with the gold accent treatment. */
+  h1Hi?: string;
   subA: string;
   subHi: string;
   subB: string;
@@ -128,21 +130,22 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     ebookTitle: 'Simple Annuity Strategies',
   },
   'retirement-rescue-kit': {
-    badge: 'Free Kit · 2 Guides + Worksheets',
-    h1: 'The Retirement Rescue Kit: What to Do — and What to Avoid — With Your Retirement Income',
-    subA: 'Both guides in one free kit: stop the leaks that drain your income, and apply the strategies that may help you keep ',
-    subHi: 'up to 33% more of it',
+    badge: 'Free · 2 Guides + Worksheets',
+    h1: 'Retirement Made Simple',
+    h1Hi: 'Simple',
+    subA: 'Structure your retirement with annuities to receive ',
+    subHi: 'up to 33% more income',
     subB: '.',
     bullets: [
       { lead: "Guide 1 — The Don'ts: ", text: 'avoid the annuity mistakes that quietly cost you' },
       { lead: "Guide 2 — The Do's: ", text: 'the strategies to get more from the same dollars' },
       { lead: 'The Toolkit: ', text: 'worksheets + a one-page audit to put it all to work' },
     ],
-    heroCta: 'Get the Complete Kit',
+    heroCta: 'Get the Free Guides',
     cover: '/images/ebook/cover-kit-3d.png',
     coverW: 540,
-    coverAlt: 'The Retirement Rescue Kit — both free guides, fanned together',
-    insideTitle: 'Most people get half the picture — the Kit gives you both halves',
+    coverAlt: 'Retirement Made Simple — both free guides, fanned together',
+    insideTitle: 'Most people get half the picture — these guides give you both halves',
     cards: [
       { n: '1', title: "Guide 1 — The Don'ts", body: 'Avoid the annuity mistakes that quietly cost you: surrender traps, unused riders, and hidden fee layers.' },
       { n: '2', title: "Guide 2 — The Do's", body: 'The strategies to get more from the same dollars: modern income riders and the withdrawal sequence that stretches savings.' },
@@ -153,9 +156,9 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     stats: [
       { num: 'Up to 33% more', label: 'income when you protect what you have and optimize the structure*' },
       { num: '$2,000–$6,500', label: 'typical cost of a fee-only planning engagement' },
-      { num: '$0', label: 'what the full kit and your income walkthrough cost today' },
+      { num: '$0', label: 'what both guides and your income walkthrough cost today' },
     ],
-    caseLine: 'Most people get half the picture. The Kit gives you both halves.',
+    caseLine: 'Most people get half the picture. These guides give you both halves.',
     stack: [
       { name: "Annuity Do's & Don'ts guide", desc: 'stop the leaks before they start', value: '$49 value' },
       { name: 'Simple Annuity Strategies guide', desc: 'get more from the same dollars', value: '$49 value' },
@@ -165,11 +168,11 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
       { name: '15-minute Income Strategy Call', desc: 'with a licensed professional — no obligation, ever', value: '$200 value' },
     ],
     stackTotal: '$535',
-    finalTitle: 'Get the Complete Retirement Rescue Kit',
-    finalSub: 'Both guides + all worksheets, in one free kit — yours in the next two minutes.',
-    finalCta: 'Get the Complete Kit',
+    finalTitle: 'Get Retirement Made Simple',
+    finalSub: 'Both guides + all worksheets — yours in the next two minutes.',
+    finalCta: 'Get the Free Guides',
     finalMicro: 'Both guides + all worksheets — check your inbox.',
-    ebookTitle: 'Retirement Rescue Kit',
+    ebookTitle: 'Retirement Made Simple',
   },
 };
 
@@ -479,7 +482,22 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                 {f.badge}
               </span>
               <h1 className="ss-h1" style={{ fontFamily: 'Georgia, "Times New Roman", ui-serif, serif', fontWeight: 600, fontSize: 48, lineHeight: 1.06, margin: '22px 0 0', letterSpacing: '-.01em', textWrap: 'balance' as React.CSSProperties['textWrap'] }}>
-                {f.h1}
+                {f.h1Hi && f.h1.includes(f.h1Hi)
+                  ? (() => {
+                      const idx = f.h1.indexOf(f.h1Hi!);
+                      const pre = f.h1.slice(0, idx);
+                      const post = f.h1.slice(idx + f.h1Hi!.length);
+                      return (
+                        <>
+                          {pre}
+                          <span style={{ color: '#E4CDA1', textDecoration: 'underline', textDecorationColor: '#E4CDA1', textDecorationThickness: '3px', textUnderlineOffset: '8px' }}>
+                            {f.h1Hi}
+                          </span>
+                          {post}
+                        </>
+                      );
+                    })()
+                  : f.h1}
               </h1>
               <p className="ss-subhead" style={{ fontSize: 20, lineHeight: 1.5, color: '#dbe5ea', margin: '18px 0 0', maxWidth: '36ch', textWrap: 'pretty' as React.CSSProperties['textWrap'] }}>
                 {f.subA}
@@ -702,7 +720,7 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9, fontSize: 14 }}>
                   <li>Annuity Do&apos;s &amp; Don&apos;ts</li>
                   <li>Simple Annuity Strategies</li>
-                  <li>Retirement Rescue Kit</li>
+                  <li>Retirement Made Simple</li>
                 </ul>
               </div>
               <div>

@@ -30,8 +30,8 @@ const OFFERS: Record<OfferKey, Offer> = {
     ],
   },
   'retirement-rescue-kit': {
-    title: 'Retirement Rescue Kit',
-    headlineTemplate: 'Your complete Kit is ready, {name}',
+    title: 'Retirement Made Simple',
+    headlineTemplate: 'Your free guides are ready, {name}',
     files: [
       { name: "Annuity Do's & Don'ts for Baby Boomers", href: '/downloads/ebook/annuity-dos-donts.pdf' },
       { name: 'Simple Annuity Strategies', href: '/downloads/ebook/simple-annuity-strategies.pdf' },
@@ -160,7 +160,7 @@ export default function EbookThankYou() {
         {/* DOWNLOAD CARD */}
         <section style={{ padding: '0 24px', marginTop: -44, position: 'relative', zIndex: 5 }}>
           <div style={{ maxWidth: 720, margin: '0 auto', background: '#fff', border: '1px solid #E5E7EB', borderRadius: 18, boxShadow: '0 24px 56px rgba(0,0,0,.12)', padding: '34px 30px' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#a8895a', margin: '0 0 4px' }}>{isKit ? 'Your Complete Kit' : 'Your Free Download'}</p>
+            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#a8895a', margin: '0 0 4px' }}>{isKit ? 'Your Free Guides' : 'Your Free Download'}</p>
             <h2 style={{ textAlign: 'center', fontSize: 24, fontWeight: 700, color: '#36596A', margin: '0 0 22px', textWrap: 'balance' as React.CSSProperties['textWrap'] }}>{isKit ? 'Download your guides & worksheets' : 'Download your guide'}</h2>
             <div className="ty-dl-grid">
               {offer.files.map((d, i) => (
@@ -273,7 +273,7 @@ export default function EbookThankYou() {
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9, fontSize: 14 }}>
                   <li>Annuity Do&apos;s &amp; Don&apos;ts</li>
                   <li>Simple Annuity Strategies</li>
-                  <li>Retirement Rescue Kit</li>
+                  <li>Retirement Made Simple</li>
                 </ul>
               </div>
               <div>

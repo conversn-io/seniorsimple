@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import EbookFunnel from '../../../components/pages/EbookFunnel';
 
 export const metadata: Metadata = {
-  title: 'The Retirement Rescue Kit — What to Do and Avoid With Your Retirement Income | SeniorSimple',
+  title: 'Retirement Made Simple — Structure Your Retirement With Annuities | SeniorSimple',
   description:
-    'Both guides in one free kit: stop the leaks that drain your income, and apply the strategies that may help you keep up to 33% more of it.',
+    'Structure your retirement with annuities to receive up to 33% more income. Two free guides plus the worksheets to put them to work.',
 };
 
 export default function RetirementRescueKitPage() {
