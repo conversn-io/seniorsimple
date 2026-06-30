@@ -65,9 +65,9 @@ export default function EbookThankYou() {
   const headline = offer.headlineTemplate.replace('{name}', name);
   const isKit = key === 'retirement-rescue-kit';
   const sub =
-    "We've emailed your download and just sent a text with the link so it never gets lost in spam. Everything is below, ready whenever you are.";
+    "We've emailed your download link — check your inbox. Everything is also below, ready whenever you are.";
   const smsLine =
-    'Check your phone — we just texted your download link. No link? It can take a minute, or tap any button above to download right now.';
+    "Check your inbox — we just emailed your download link. Can't find it? It can take a minute, or tap any button above to download right now.";
 
   return (
     <>
@@ -188,8 +188,8 @@ export default function EbookThankYou() {
             </div>
             <div style={{ display: 'flex', gap: 11, alignItems: 'flex-start', marginTop: 22, background: '#eef4f1', border: '1px solid #d9e6df', borderRadius: 11, padding: '14px 16px' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f7d5b" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
-                <rect x="5" y="2" width="14" height="20" rx="2" />
-                <line x1="12" y1="18" x2="12" y2="18" />
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M22 6 12 13 2 6" />
               </svg>
               <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: '#3c5a4c' }}>{smsLine}</p>
             </div>

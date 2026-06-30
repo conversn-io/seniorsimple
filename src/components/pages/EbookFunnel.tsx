@@ -81,7 +81,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalTitle: "Get the Free Annuity Do's & Don'ts Guide",
     finalSub: 'The pitfalls to avoid and the checklist to use — in your hands in the next two minutes.',
     finalCta: 'Get the Free Guide',
-    finalMicro: "Instant download. We'll text you the link so it never gets lost.",
+    finalMicro: 'Instant download — check your inbox.',
     ebookTitle: "Annuity Do's and Don'ts for Baby Boomers",
   },
   'simple-annuity-strategies': {
@@ -124,7 +124,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalTitle: 'Get the Free Simple Strategies Guide',
     finalSub: "The modern moves most agents don't lead with — yours to read in the next two minutes.",
     finalCta: 'Reveal the Strategies',
-    finalMicro: "Instant download. We'll text you the link so it never gets lost.",
+    finalMicro: 'Instant download — check your inbox.',
     ebookTitle: 'Simple Annuity Strategies',
   },
   'retirement-rescue-kit': {
@@ -168,7 +168,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalTitle: 'Get the Complete Retirement Rescue Kit',
     finalSub: 'Both guides + all worksheets, in one free kit — yours in the next two minutes.',
     finalCta: 'Get the Complete Kit',
-    finalMicro: "Both guides + all worksheets. We'll text you the download link.",
+    finalMicro: 'Both guides + all worksheets — check your inbox.',
     ebookTitle: 'Retirement Rescue Kit',
   },
 };
@@ -176,8 +176,6 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
 const SUPABASE_FN = 'https://jqjftrlnyysqcwbbigpw.supabase.co/functions/v1/submit-form';
 const ANON =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxamZ0cmxueXlzcWN3YmJpZ3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTQ2MzksImV4cCI6MjA2Njg3MDYzOX0.ZqgLIflQJY5zC3ZnU5K9k_KEM9bDdNhtqek6ckuwjAo';
-const CONSENT_TEXT =
-  'I agree to receive my download and occasional retirement tips by call/text from SeniorSimple and its licensed partners at the number above. Consent is not a condition of any purchase. Msg/data rates may apply.';
 
 const THIRTY_THREE_FOOTNOTE =
   '*Illustrative and educational. “Up to 33%” refers to the combined impact that taxes, fees, and timing decisions can have on retirement income over time, based on the strategies discussed in this guide. Individual results vary and are not guaranteed.';
@@ -199,23 +197,7 @@ function isLiveHost() {
   return /seniorsimple\.org$/i.test(window.location.hostname);
 }
 
-function formatPhone(raw: string) {
-  const d = (raw || '').replace(/\D/g, '').slice(0, 10);
-  if (d.length > 6) return '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
-  if (d.length > 3) return '(' + d.slice(0, 3) + ') ' + d.slice(3);
-  if (d.length > 0) return '(' + d;
-  return d;
-}
-
-type SubmitPayload = {
-  first_name: string;
-  email: string;
-  phone?: string;
-  zip_code?: string;
-  tcpa_consent?: boolean;
-};
-
-async function submitLead(funnelKey: EbookFunnelKey, payload: SubmitPayload, step: string) {
+async function submitLead(funnelKey: EbookFunnelKey, firstName: string, email: string) {
   const f = FUNNELS[funnelKey];
   const utm =
     typeof window !== 'undefined' && (window as unknown as { __utmSessionId?: string | null }).__utmSessionId
@@ -223,11 +205,11 @@ async function submitLead(funnelKey: EbookFunnelKey, payload: SubmitPayload, ste
       : null;
   const body = {
     contact_info: {
-      first_name: payload.first_name || '',
+      first_name: firstName || '',
       last_name: '',
-      email: payload.email || '',
-      phone: payload.phone || '',
-      zip_code: payload.zip_code || '',
+      email: email || '',
+      phone: '',
+      zip_code: '',
     },
     form_type: 'contact_form',
     form_data: {
@@ -236,15 +218,15 @@ async function submitLead(funnelKey: EbookFunnelKey, payload: SubmitPayload, ste
       ebook_title: f.ebookTitle,
       campaign: 'list-reactivation',
       site_key: 'seniorsimple.org',
-      tcpa_consent: !!payload.tcpa_consent,
-      consent_language: payload.tcpa_consent ? CONSENT_TEXT : '',
+      tcpa_consent: false,
+      consent_language: '',
       page_url: typeof location !== 'undefined' ? location.href : '',
-      step,
+      step: 'email_capture',
     },
     utm_session_id: utm,
   };
   if (!isLiveHost()) {
-    console.log('[submit-form simulated]', step, body);
+    console.log('[submit-form simulated]', 'email_capture', body);
     return { ok: true, simulated: true };
   }
   try {
@@ -286,16 +268,10 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
 
   const f = FUNNELS[funnel];
   const [modalOpen, setModalOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 'done'>(1);
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [zip, setZip] = useState('');
-  const [consent, setConsent] = useState(false);
   const [errEmail, setErrEmail] = useState('');
-  const [errConsent, setErrConsent] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [doneContact, setDoneContact] = useState('');
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -317,45 +293,18 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
   const openForm = () => setModalOpen(true);
   const closeForm = () => setModalOpen(false);
 
-  const onSubmitStep1 = async () => {
+  const onSubmit = async () => {
     const trimmed = email.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
       setErrEmail('That email looks off — mind checking it?');
       return;
     }
     setErrEmail('');
-    // Fire-and-forget so the user advances immediately
-    void submitLead(
-      funnel,
-      { first_name: firstName.trim(), email: trimmed, phone: phone.replace(/\D/g, ''), tcpa_consent: false },
-      'step1_email'
-    );
-    setStep(2);
-  };
-
-  const onSubmitStep2 = async () => {
-    if (!consent) {
-      setErrConsent('Please check the box so we can text your link.');
-      return;
-    }
-    setErrConsent('');
     setSubmitting(true);
-    const phoneDigits = phone.replace(/\D/g, '');
-    await submitLead(
-      funnel,
-      { first_name: firstName.trim(), email: email.trim(), phone: phoneDigits, zip_code: zip, tcpa_consent: true },
-      'step2_complete'
-    );
-    const contact = phoneDigits ? phone : email.trim();
-    setSubmitting(false);
-    setDoneContact(contact);
-    setStep('done');
-    // Hard-redirect to thank-you with download key + first name
+    await submitLead(funnel, firstName.trim(), trimmed);
     const params = new URLSearchParams({ dl: funnel });
     if (firstName.trim()) params.set('name', firstName.trim());
-    setTimeout(() => {
-      window.location.href = `/ebook/thank-you?${params.toString()}`;
-    }, 1200);
+    window.location.href = `/ebook/thank-you?${params.toString()}`;
   };
 
   return (
@@ -804,117 +753,46 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
               </svg>
             </button>
 
-            {step === 1 ? (
-              <div>
-                <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#36596A' }}>Get your free guide</h3>
-                <p style={{ margin: '5px 0 0', fontSize: 14.5, color: '#737373' }}>Tell us where to send it — takes 20 seconds.</p>
-                <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>First name</label>
-                    <input
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      type="text"
-                      placeholder="Margaret"
-                      style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Email address</label>
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      type="email"
-                      inputMode="email"
-                      placeholder="you@example.com"
-                      style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
-                    />
-                    {errEmail ? <p style={{ margin: '6px 0 0', fontSize: 13, color: '#b4541f' }}>{errEmail}</p> : null}
-                  </div>
-                  <button
-                    onClick={onSubmitStep1}
-                    style={{ border: 'none', cursor: 'pointer', background: '#36596A', color: '#fff', fontSize: 17, fontWeight: 700, padding: 15, borderRadius: 9, borderBottom: '3px solid #E4CDA1', fontFamily: 'inherit', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                  >
-                    Send Me the Free Book
-                    <ArrowRight size={18} />
-                  </button>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#36596A' }}>Get your free guide</h3>
+              <p style={{ margin: '5px 0 0', fontSize: 14.5, color: '#737373' }}>Tell us where to send it — takes 20 seconds.</p>
+              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>First name</label>
+                  <input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    type="text"
+                    placeholder="Margaret"
+                    style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
+                  />
                 </div>
-                <p style={{ margin: '13px 0 0', fontSize: 12.5, color: '#9ca3af', lineHeight: 1.5, textAlign: 'center' }}>Your information is 100% secure and never sold to spammers.</p>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Email address</label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    inputMode="email"
+                    placeholder="you@example.com"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !submitting) onSubmit();
+                    }}
+                    style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
+                  />
+                  {errEmail ? <p style={{ margin: '6px 0 0', fontSize: 13, color: '#b4541f' }}>{errEmail}</p> : null}
+                </div>
+                <button
+                  onClick={onSubmit}
+                  disabled={submitting}
+                  style={{ border: 'none', cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1, background: '#36596A', color: '#fff', fontSize: 17, fontWeight: 700, padding: 15, borderRadius: 9, borderBottom: '3px solid #E4CDA1', fontFamily: 'inherit', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                >
+                  {submitting ? 'Sending…' : 'Send Me the Free Book'}
+                  <ArrowRight size={18} />
+                </button>
               </div>
-            ) : null}
-
-            {step === 2 ? (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2f7d5b', fontSize: 13.5, fontWeight: 600, marginBottom: 4 }}>
-                  <Check color="#2f7d5b" size={16} />
-                  Saved — your book is reserved
-                </div>
-                <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#36596A' }}>Last step — where should we text your download link?</h3>
-                <p style={{ margin: '7px 0 0', fontSize: 14, color: '#737373', lineHeight: 1.5 }}>We text the link so it doesn&apos;t get lost in spam. One message — no robocalls.</p>
-                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <div style={{ flex: 1.6 }}>
-                      <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Mobile phone</label>
-                      <input
-                        value={phone}
-                        onChange={(e) => setPhone(formatPhone(e.target.value))}
-                        type="tel"
-                        inputMode="tel"
-                        placeholder="(555) 123-4567"
-                        style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                        ZIP <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
-                      </label>
-                      <input
-                        value={zip}
-                        onChange={(e) => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={5}
-                        placeholder="85001"
-                        style={{ width: '100%', height: 50, border: '1.5px solid #E5E7EB', borderRadius: 9, padding: '0 14px', fontSize: 17, fontFamily: 'inherit', color: '#171717', outline: 'none' }}
-                      />
-                    </div>
-                  </div>
-                  <label style={{ display: 'flex', gap: 11, alignItems: 'flex-start', cursor: 'pointer', background: '#F5F5F0', border: '1px solid #E5E7EB', borderRadius: 10, padding: '13px 14px' }}>
-                    <input
-                      type="checkbox"
-                      checked={consent}
-                      onChange={(e) => {
-                        setConsent(e.target.checked);
-                        setErrConsent('');
-                      }}
-                      style={{ width: 20, height: 20, marginTop: 1, flexShrink: 0, accentColor: '#36596A', cursor: 'pointer' }}
-                    />
-                    <span style={{ fontSize: 12.5, lineHeight: 1.5, color: '#4b5563' }}>{CONSENT_TEXT}</span>
-                  </label>
-                  {errConsent ? <p style={{ margin: '-4px 0 0', fontSize: 13, color: '#b4541f' }}>{errConsent}</p> : null}
-                  <button
-                    onClick={onSubmitStep2}
-                    disabled={submitting}
-                    style={{ border: 'none', cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1, background: '#36596A', color: '#fff', fontSize: 16, fontWeight: 700, padding: 15, borderRadius: 9, borderBottom: '3px solid #E4CDA1', fontFamily: 'inherit', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center', lineHeight: 1.25 }}
-                  >
-                    {submitting ? 'Sending…' : 'Text Me the Book + Free Income Walkthrough'}
-                    <ArrowRight size={18} />
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            {step === 'done' ? (
-              <div style={{ textAlign: 'center', padding: '10px 4px' }}>
-                <div style={{ width: 58, height: 58, borderRadius: '50%', background: '#eaf3ee', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <Check color="#2f7d5b" size={30} />
-                </div>
-                <h3 style={{ margin: 0, fontSize: 21, fontWeight: 700, color: '#36596A' }}>Check your phone &amp; inbox</h3>
-                <p style={{ margin: '9px 0 0', fontSize: 15.5, color: '#4b5563', lineHeight: 1.55 }}>
-                  We just texted your download link to {doneContact} and emailed a copy. Redirecting you to your downloads…
-                </p>
-              </div>
-            ) : null}
+              <p style={{ margin: '13px 0 0', fontSize: 12.5, color: '#9ca3af', lineHeight: 1.5, textAlign: 'center' }}>Your information is 100% secure and never sold to spammers.</p>
+            </div>
           </div>
         </div>
       ) : null}
