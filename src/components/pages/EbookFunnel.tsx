@@ -685,12 +685,16 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
             <div className="ss-foot-grid">
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(228,205,161,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <SsLogo />
-                  </div>
-                  <span style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>SeniorSimple</span>
-                </div>
+                <a href="/" aria-label="SeniorSimple" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', marginBottom: 14 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/logos/senior-simple-logo-rectangle-header.png"
+                    alt="SeniorSimple"
+                    width={180}
+                    height={36}
+                    style={{ height: 36, width: 'auto', maxWidth: 200, display: 'block', filter: 'brightness(0) invert(1)' }}
+                  />
+                </a>
                 <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: '30ch' }}>Senior-centered retirement education. Calm, clear guidance for the decisions that matter most.</p>
               </div>
               <div>
