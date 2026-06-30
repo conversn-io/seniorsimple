@@ -2,9 +2,9 @@
 
 import { createContext, useContext, ReactNode, useState } from 'react';
 
-type FooterType = 'standard' | 'funnel' | 'minimal';
+type FooterType = 'standard' | 'funnel' | 'minimal' | 'none';
 type FooterVariant = 'insurance' | 'mortgage';
-type HeaderType = 'standard' | 'funnel';
+type HeaderType = 'standard' | 'funnel' | 'none';
 
 interface LayoutContextType {
   footerType: FooterType;
