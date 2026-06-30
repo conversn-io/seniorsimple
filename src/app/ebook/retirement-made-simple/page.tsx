@@ -7,6 +7,6 @@ export const metadata: Metadata = {
     'Structure your retirement with annuities to receive up to 33% more income. Two free guides plus the worksheets to put them to work.',
 };
 
-export default function RetirementRescueKitPage() {
-  return <EbookFunnel funnel="retirement-rescue-kit" />;
+export default function RetirementMadeSimplePage() {
+  return <EbookFunnel funnel="retirement-made-simple" />;
 }

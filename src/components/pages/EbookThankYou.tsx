@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 
-type OfferKey = 'annuity-dos-donts' | 'simple-annuity-strategies' | 'retirement-rescue-kit';
+type OfferKey = 'annuity-dos-donts' | 'simple-annuity-strategies' | 'retirement-made-simple';
 
 type DownloadFile = { name: string; href: string };
 type Offer = {
@@ -29,7 +29,7 @@ const OFFERS: Record<OfferKey, Offer> = {
       { name: 'Income Maximizer Worksheet + Strategy Comparison Chart', href: '/downloads/ebook/income-maximizer-worksheet.pdf' },
     ],
   },
-  'retirement-rescue-kit': {
+  'retirement-made-simple': {
     title: 'Retirement Made Simple',
     headlineTemplate: 'Your free guides are ready, {name}',
     files: [
@@ -59,11 +59,11 @@ export default function EbookThankYou() {
 
   const params = useSearchParams();
   const rawDl = (params?.get('dl') || '') as OfferKey;
-  const key: OfferKey = OFFERS[rawDl] ? rawDl : 'retirement-rescue-kit';
+  const key: OfferKey = OFFERS[rawDl] ? rawDl : 'retirement-made-simple';
   const offer = OFFERS[key];
   const name = (params?.get('name') || '').trim() || 'friend';
   const headline = offer.headlineTemplate.replace('{name}', name);
-  const isKit = key === 'retirement-rescue-kit';
+  const isKit = key === 'retirement-made-simple';
   const sub =
     "We've emailed your download link — check your inbox. Everything is also below, ready whenever you are.";
   const smsLine =

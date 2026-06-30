@@ -6,7 +6,7 @@ import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 export type EbookFunnelKey =
   | 'annuity-dos-donts'
   | 'simple-annuity-strategies'
-  | 'retirement-rescue-kit';
+  | 'retirement-made-simple';
 
 type Bullet = { lead: string; text: string };
 type Card = { n: string; title: string; body: string };
@@ -129,7 +129,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalMicro: 'Instant download — check your inbox.',
     ebookTitle: 'Simple Annuity Strategies',
   },
-  'retirement-rescue-kit': {
+  'retirement-made-simple': {
     badge: 'Free · 2 Guides + Worksheets',
     h1: 'Retirement Made Simple',
     h1Hi: 'Simple',
