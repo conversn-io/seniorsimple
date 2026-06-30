@@ -125,12 +125,16 @@ export default function EbookThankYou() {
         {/* NAV */}
         <header style={{ background: '#fff', borderBottom: '1px solid #E5E7EB' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: '#36596A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <SsLogo />
-              </div>
-              <span style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-.01em', color: '#36596A' }}>SeniorSimple</span>
-            </div>
+            <a href="/" aria-label="SeniorSimple" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logos/senior-simple-logo-rectangle-header.png"
+                alt="SeniorSimple"
+                width={200}
+                height={40}
+                style={{ height: 40, width: 'auto', maxWidth: 200, display: 'block' }}
+              />
+            </a>
             <nav className="ty-navlinks" style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
               <span style={{ fontSize: 15, color: '#737373' }}>Guides</span>
               <span style={{ fontSize: 15, color: '#737373' }}>How It Works</span>
