@@ -58,10 +58,10 @@ export default function EbookThankYou() {
   useStandaloneLayout();
 
   const params = useSearchParams();
-  const rawDl = (params.get('dl') || '') as OfferKey;
+  const rawDl = (params?.get('dl') || '') as OfferKey;
   const key: OfferKey = OFFERS[rawDl] ? rawDl : 'retirement-rescue-kit';
   const offer = OFFERS[key];
-  const name = (params.get('name') || '').trim() || 'friend';
+  const name = (params?.get('name') || '').trim() || 'friend';
   const headline = offer.headlineTemplate.replace('{name}', name);
   const isKit = key === 'retirement-rescue-kit';
   const sub =
