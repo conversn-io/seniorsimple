@@ -2,5 +2,11 @@
   "name": "seniorsimple",
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "rewrites": [
+    {
+      "source": "/:key([a-f0-9]{32}).txt",
+      "destination": "/api/indexnow-key/:key"
+    }
+  ]
 }
