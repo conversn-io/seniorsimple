@@ -13,7 +13,7 @@ type EbookFunnelKey = keyof typeof EBOOK_FUNNELS;
 
 const SENIORSIMPLE_WEBHOOK = process.env.EBOOK_SENIORSIMPLE_GHL_WEBHOOK_URL || '';
 const RETIREMENT_RESCUE_WEBHOOK = process.env.EBOOK_RETIREMENT_RESCUE_GHL_WEBHOOK_URL || '';
-const SLACK_WEBHOOK = process.env.EBOOK_SLACK_WEBHOOK_URL || '';
+const SLACK_WEBHOOK = process.env.SLACK_LEADS_WEBHOOK_URL || '';
 
 // Real fires only on production Vercel deploys. Preview + local simulate.
 const IS_PROD = process.env.VERCEL_ENV === 'production';
