@@ -176,9 +176,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
   },
 };
 
-const SUPABASE_FN = 'https://jqjftrlnyysqcwbbigpw.supabase.co/functions/v1/submit-form';
-const ANON =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxamZ0cmxueXlzcWN3YmJpZ3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTQ2MzksImV4cCI6MjA2Njg3MDYzOX0.ZqgLIflQJY5zC3ZnU5K9k_KEM9bDdNhtqek6ckuwjAo';
+const SUBMIT_ENDPOINT = '/api/ebook/submit';
 
 const THIRTY_THREE_FOOTNOTE =
   '*Illustrative and educational. “Up to 33%” refers to the combined impact that taxes, fees, and timing decisions can have on retirement income over time, based on the strategies discussed in this guide. Individual results vary and are not guaranteed.';
@@ -195,52 +193,27 @@ const TRUST = [
   { label: 'No Obligation, Ever' },
 ];
 
-function isLiveHost() {
-  if (typeof window === 'undefined') return false;
-  return /seniorsimple\.org$/i.test(window.location.hostname);
-}
-
 async function submitLead(funnelKey: EbookFunnelKey, firstName: string, email: string) {
-  const f = FUNNELS[funnelKey];
   const utm =
     typeof window !== 'undefined' && (window as unknown as { __utmSessionId?: string | null }).__utmSessionId
       ? (window as unknown as { __utmSessionId?: string | null }).__utmSessionId
       : null;
   const body = {
-    contact_info: {
-      first_name: firstName || '',
-      last_name: '',
-      email: email || '',
-      phone: '',
-      zip_code: '',
-    },
-    form_type: 'contact_form',
-    form_data: {
-      lead_magnet: funnelKey,
-      funnel_type: funnelKey,
-      ebook_title: f.ebookTitle,
-      campaign: 'list-reactivation',
-      site_key: 'seniorsimple.org',
-      tcpa_consent: false,
-      consent_language: '',
-      page_url: typeof location !== 'undefined' ? location.href : '',
-      step: 'email_capture',
-    },
+    funnel: funnelKey,
+    first_name: firstName || '',
+    email: email || '',
+    page_url: typeof location !== 'undefined' ? location.href : '',
     utm_session_id: utm,
   };
-  if (!isLiveHost()) {
-    console.log('[submit-form simulated]', 'email_capture', body);
-    return { ok: true, simulated: true };
-  }
   try {
-    const res = await fetch(SUPABASE_FN, {
+    const res = await fetch(SUBMIT_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: ANON, Authorization: 'Bearer ' + ANON },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     return await res.json();
   } catch (e) {
-    console.error('submit-form error', e);
+    console.error('[ebook-submit] client fetch error', e);
     return { ok: false };
   }
 }
