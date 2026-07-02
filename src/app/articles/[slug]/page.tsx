@@ -225,13 +225,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Scroll-Revealed Call Button */}
-      {phoneNumber && (
-        <ScrollRevealedCallButton
-          phoneNumber={phoneNumber}
-          serviceName={article.category_details?.name || 'Medicare Services'}
-        />
-      )}
+      {/* Scroll-Revealed Call Button — Medicare articles only.
+          Kill switch: set NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON=false. */}
+      {process.env.NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON !== 'false' &&
+        isMedicareArticle &&
+        phoneNumber && (
+          <ScrollRevealedCallButton
+            phoneNumber={phoneNumber}
+            serviceName={article.category_details?.name || 'Medicare Services'}
+          />
+        )}
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
