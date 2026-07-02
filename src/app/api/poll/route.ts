@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   const issueSlug = searchParams.get('issue')
   const questionKey = searchParams.get('q')
   const answerValue = searchParams.get('a')
-  const answerLabel = searchParams.get('al') || answerValue
+  const answerLabel = searchParams.get('al') || searchParams.get('label') || answerValue
   const subscriberId = searchParams.get('sid') || null
 
   const baseUrl = new URL(request.url).origin
