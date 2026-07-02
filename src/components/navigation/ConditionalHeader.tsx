@@ -6,7 +6,8 @@ import { useHeader } from '../../contexts/FooterContext';
 
 const ConditionalHeader = () => {
   const { headerType } = useHeader();
-  
+
+  if (headerType === 'none') return null;
   return headerType === 'funnel' ? <FunnelHeader /> : <Header />;
 };
 
