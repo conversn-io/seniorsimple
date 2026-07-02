@@ -19,8 +19,6 @@ function getSupabase() {
   return _supabase
 }
 
-const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'seniorsimple'
-
 interface LeadArticle {
   category?: string
   title?: string
@@ -50,7 +48,6 @@ async function getIssue(slug: string): Promise<NewsletterIssue | null> {
       .from('newsletter_issues')
       .select('issue_number, subject, sent_at, dynamic_template_data')
       .eq('slug', slug)
-      .eq('site_id', SITE_ID)
       .maybeSingle()
     if (error) {
       console.error('Trivia issue lookup error:', error)
