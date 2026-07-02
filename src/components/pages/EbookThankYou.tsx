@@ -12,31 +12,33 @@ type Offer = {
   files: DownloadFile[];
 };
 
+// Public Supabase Storage bucket, one PDF per book. Uploaded via storage.buckets
+// insert + REST /storage/v1/object POST. To add worksheets: upload to the same
+// bucket and reference `${EBOOK_ASSETS}/<slug>.pdf` here.
+const EBOOK_ASSETS =
+  'https://jqjftrlnyysqcwbbigpw.supabase.co/storage/v1/object/public/ebook-downloads';
+
 const OFFERS: Record<OfferKey, Offer> = {
   'annuity-dos-donts': {
     title: "Annuity Do's and Don'ts for Baby Boomers",
     headlineTemplate: 'Your guide is ready, {name}',
     files: [
-      { name: "Annuity Do's & Don'ts for Baby Boomers", href: '/downloads/ebook/annuity-dos-donts.pdf' },
-      { name: 'Retirement Income Gap Worksheet', href: '/downloads/ebook/income-gap-worksheet.pdf' },
+      { name: "Annuity Do's & Don'ts for Baby Boomers", href: `${EBOOK_ASSETS}/annuity-dos-donts.pdf` },
     ],
   },
   'simple-annuity-strategies': {
     title: 'Simple Annuity Strategies',
     headlineTemplate: 'Your guide is ready, {name}',
     files: [
-      { name: 'Simple Annuity Strategies', href: '/downloads/ebook/simple-annuity-strategies.pdf' },
-      { name: 'Income Maximizer Worksheet + Strategy Comparison Chart', href: '/downloads/ebook/income-maximizer-worksheet.pdf' },
+      { name: 'Simple Annuity Strategies', href: `${EBOOK_ASSETS}/simple-annuity-strategies.pdf` },
     ],
   },
   'retirement-made-simple': {
     title: 'Retirement Made Simple',
     headlineTemplate: 'Your free guides are ready, {name}',
     files: [
-      { name: "Annuity Do's & Don'ts for Baby Boomers", href: '/downloads/ebook/annuity-dos-donts.pdf' },
-      { name: 'Simple Annuity Strategies', href: '/downloads/ebook/simple-annuity-strategies.pdf' },
-      { name: 'Retirement Income Gap Worksheet', href: '/downloads/ebook/income-gap-worksheet.pdf' },
-      { name: 'Income Maximizer Worksheet', href: '/downloads/ebook/income-maximizer-worksheet.pdf' },
+      { name: "Annuity Do's & Don'ts for Baby Boomers", href: `${EBOOK_ASSETS}/annuity-dos-donts.pdf` },
+      { name: 'Simple Annuity Strategies', href: `${EBOOK_ASSETS}/simple-annuity-strategies.pdf` },
     ],
   },
 };
