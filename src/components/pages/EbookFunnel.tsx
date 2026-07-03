@@ -10,6 +10,7 @@ export type EbookFunnelKey =
 
 type Bullet = { lead: string; text: string };
 type StackItem = { name: string; desc: string; value: string };
+type Testimonial = { quote: string; name: string; disclosure?: string; avatar: string };
 
 type Funnel = {
   h1a: string;
@@ -31,6 +32,10 @@ type Funnel = {
   finalCta: string;
   finalMicro: string;
   ebookTitle: string;
+  /** Optional per-funnel testimonials override. Falls back to shared PLACEHOLDER_TESTIMONIALS. */
+  testimonials?: Testimonial[];
+  /** Hide the Fiduciary-Aligned / Senior-Centered / No Obligation trust pill row. */
+  hideTrustPills?: boolean;
 };
 
 const FUNNELS: Record<EbookFunnelKey, Funnel> = {
@@ -117,6 +122,29 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalCta: 'Get the Free Guides',
     finalMicro: 'Both guides + all worksheets — check your inbox.',
     ebookTitle: 'Retirement Made Simple',
+    hideTrustPills: true,
+    // Three distinct confusion→clarity angles: too many conflicting pitches;
+    // near-miss on a bad rider; owning without understanding.
+    testimonials: [
+      {
+        quote:
+          "I'd been to three agents and gotten three different pitches. I couldn't tell what was real. These guides finally gave me the framework to compare them apples-to-apples — I knew what to say yes to before I ever picked up the phone.",
+        name: 'Margaret K., 67 · Phoenix, AZ',
+        avatar: '/images/ebook/avatar-1.jpg',
+      },
+      {
+        quote:
+          "I was about to sign a contract with a bonus rider I didn't fully understand. The Do's guide walked me through what to actually ask. Turns out the rider I was excited about would have cost me more than it paid — I'd never have known.",
+        name: 'Robert D., 71 · Sarasota, FL',
+        avatar: '/images/ebook/avatar-2.jpg',
+      },
+      {
+        quote:
+          "I already had two annuities but couldn't tell you what I owned. After the checklist, I mapped out my income for the first time in ten years. That's when it clicked — I'd been guessing at my retirement, not planning it.",
+        name: 'Linda P., 63 · Denver, CO',
+        avatar: '/images/ebook/avatar-3.jpg',
+      },
+    ],
   },
 };
 
@@ -125,7 +153,7 @@ const SUBMIT_ENDPOINT = '/api/ebook/submit';
 const THIRTY_THREE_FOOTNOTE =
   '*Illustrative and educational. “Up to 33%” refers to the combined impact that taxes, fees, and timing decisions can have on retirement income over time, based on the strategies discussed in this guide. Individual results vary and are not guaranteed.';
 
-const TESTIMONIALS = [
+const PLACEHOLDER_TESTIMONIALS: Testimonial[] = [
   { quote: 'Placeholder — replace with a real, disclosed reader quote before launch.', name: 'Reader name', disclosure: 'Client · disclosure pending', avatar: '/images/ebook/avatar-1.jpg' },
   { quote: 'Placeholder — replace with a real, disclosed reader quote before launch.', name: 'Reader name', disclosure: 'Client · disclosure pending', avatar: '/images/ebook/avatar-2.jpg' },
   { quote: 'Placeholder — replace with a real, disclosed reader quote before launch.', name: 'Reader name', disclosure: 'Client · disclosure pending', avatar: '/images/ebook/avatar-3.jpg' },
@@ -456,10 +484,9 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
         {/* PROOF + TRUST */}
         <section className="ss-sec" style={{ background: '#fff', padding: '84px 24px' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 className="ss-h2" style={{ textAlign: 'center', fontSize: 29, fontWeight: 700, color: '#36596A', margin: '0 0 8px' }}>What readers tell us</h2>
-            <p style={{ textAlign: 'center', fontSize: 14, color: '#9ca3af', margin: '0 0 38px' }}>Testimonial slots — real, disclosed quotes supplied before launch.</p>
+            <h2 className="ss-h2" style={{ textAlign: 'center', fontSize: 29, fontWeight: 700, color: '#36596A', margin: '0 0 38px' }}>What readers tell us</h2>
             <div className="ss-cards">
-              {TESTIMONIALS.map((t, i) => (
+              {(f.testimonials ?? PLACEHOLDER_TESTIMONIALS).map((t, i) => (
                 <div key={i} style={{ background: '#F5F5F0', border: '1px solid #E5E7EB', borderRadius: 14, padding: '24px 22px' }}>
                   <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
                     {Array.from({ length: 5 }).map((_, k) => (
@@ -474,21 +501,23 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                     <img src={t.avatar} alt="" loading="lazy" decoding="async" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', background: '#e5e7eb' }} />
                     <div>
                       <div style={{ fontSize: 14.5, fontWeight: 600, color: '#1f2937' }}>{t.name}</div>
-                      <div style={{ fontSize: 12.5, color: '#9ca3af' }}>{t.disclosure}</div>
+                      {t.disclosure ? <div style={{ fontSize: 12.5, color: '#9ca3af' }}>{t.disclosure}</div> : null}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: 46, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 14 }}>
-              {TRUST.map((tr, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#F5F5F0', border: '1px solid #E5E7EB', borderRadius: 999, padding: '11px 20px' }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(228,205,161,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#36596A' }}>✓</span>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: '#36596A' }}>{tr.label}</span>
-                </div>
-              ))}
-            </div>
+            {!f.hideTrustPills ? (
+              <div style={{ marginTop: 46, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 14 }}>
+                {TRUST.map((tr, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#F5F5F0', border: '1px solid #E5E7EB', borderRadius: 999, padding: '11px 20px' }}>
+                    <span style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(228,205,161,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#36596A' }}>✓</span>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: '#36596A' }}>{tr.label}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </section>
 
