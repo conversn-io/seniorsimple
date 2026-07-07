@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
 import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
+import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
 
 interface ArticlePageProps {
@@ -316,30 +317,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </section>
       )}
 
-      {/* Newsletter CTA */}
-      <section className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #36596A 0%, #82A6B1 100%)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-serif font-semibold text-white mb-4">
-            Stay Informed About Retirement Planning
-          </h2>
-          <p className="text-xl text-white mb-8 opacity-90">
-            Get expert insights and practical advice delivered to your inbox weekly.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className="flex-1 px-4 py-3 rounded-lg border-0 text-gray-900"
-            />
-            <button className="bg-white text-[#36596A] px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-              Subscribe
-            </button>
-          </div>
-          <p className="text-sm text-white mt-4 opacity-80">
-            Join 50,000+ seniors making informed retirement decisions.
-          </p>
-        </div>
-      </section>
+      <NewsletterCaptureCTA slug={slug} category={article.category_details?.name ?? null} />
     </div>
   )
 }
