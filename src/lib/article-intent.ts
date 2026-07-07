@@ -1,13 +1,16 @@
 // Page-intent classifier for CTA routing.
 //
-// Money-in-motion pages (Medicare, Medigap, annuity, life insurance, final
-// expense) are where a phone call is worth real money right now — Medicare
-// = $8.75/lead, annuity = $12.50/lead. On those pages we keep phone CTAs
-// live regardless of the email-CTA rollout; email is added, not swapped.
+// Money-in-motion pages are where a phone call is worth real money right now —
+// Medicare = $8.75/lead, annuity = $12.50/lead. On those pages we keep phone
+// CTAs live regardless of the email-CTA rollout; email is added, not swapped.
 //
-// Everything else (Social Security explainers, retirement basics, general
-// how-to) is editorial / top-of-funnel — email is the right primary and
-// phone CTAs get suppressed.
+// Everything else (general retirement basics, unrelated how-to) is editorial /
+// top-of-funnel — email is the right primary and phone CTAs get suppressed.
+//
+// Term list scope note: Social Security / pension / lump sum / retirement
+// income / IRA rollover / reverse mortgage pages all buy annuity leads. The
+// #3 seniorsimple page by impressions is a Social Security calculator
+// (~6k/28d); it MUST be in-scope for phone CTAs.
 
 interface ArticleLike {
   title?: string | null
@@ -17,6 +20,7 @@ interface ArticleLike {
 }
 
 const MONEY_IN_MOTION_TERMS = [
+  // Insurance verticals
   'medicare',
   'medigap',
   'annuity',
@@ -25,6 +29,18 @@ const MONEY_IN_MOTION_TERMS = [
   'life insurance',
   'life-insurance',
   'insurance',
+  // Annuity-lead-adjacent retirement topics
+  'social security',
+  'social-security',
+  'pension',
+  'lump sum',
+  'lump-sum',
+  'retirement income',
+  'retirement-income',
+  'ira rollover',
+  'ira-rollover',
+  'reverse mortgage',
+  'reverse-mortgage',
 ]
 
 function includesAny(haystack: string | null | undefined, needles: string[]): boolean {
