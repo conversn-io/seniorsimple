@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 
-type OfferKey = 'annuity-dos-donts' | 'simple-annuity-strategies' | 'retirement-made-simple';
+type OfferKey = 'annuity-dos-donts' | 'advanced-annuity-strategies' | 'retirement-made-simple';
 
 type DownloadFile = { name: string; href: string };
 type Offer = {
@@ -26,11 +26,11 @@ const OFFERS: Record<OfferKey, Offer> = {
       { name: "Annuity Do's & Don'ts for Baby Boomers", href: `${EBOOK_ASSETS}/annuity-dos-donts.pdf` },
     ],
   },
-  'simple-annuity-strategies': {
-    title: 'Simple Annuity Strategies',
+  'advanced-annuity-strategies': {
+    title: 'Advanced Annuity Strategies',
     headlineTemplate: 'Your guide is ready, {name}',
     files: [
-      { name: 'Simple Annuity Strategies', href: `${EBOOK_ASSETS}/simple-annuity-strategies.pdf` },
+      { name: 'Advanced Annuity Strategies', href: `${EBOOK_ASSETS}/advanced-annuity-strategies.pdf` },
     ],
   },
   'retirement-made-simple': {
@@ -38,7 +38,7 @@ const OFFERS: Record<OfferKey, Offer> = {
     headlineTemplate: 'Your free guides are ready, {name}',
     files: [
       { name: "Annuity Do's & Don'ts for Baby Boomers", href: `${EBOOK_ASSETS}/annuity-dos-donts.pdf` },
-      { name: 'Simple Annuity Strategies', href: `${EBOOK_ASSETS}/simple-annuity-strategies.pdf` },
+      { name: 'Advanced Annuity Strategies', href: `${EBOOK_ASSETS}/advanced-annuity-strategies.pdf` },
     ],
   },
 };
@@ -274,7 +274,7 @@ export default function EbookThankYou() {
                 <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#E4CDA1', marginBottom: 14 }}>Guides</div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9, fontSize: 14 }}>
                   <li>Annuity Do&apos;s &amp; Don&apos;ts</li>
-                  <li>Simple Annuity Strategies</li>
+                  <li>Advanced Annuity Strategies</li>
                   <li>Retirement Made Simple</li>
                 </ul>
               </div>

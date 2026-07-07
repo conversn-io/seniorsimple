@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const EBOOK_FUNNELS = {
   'annuity-dos-donts': "Annuity Do's and Don'ts for Baby Boomers",
-  'simple-annuity-strategies': 'Simple Annuity Strategies',
+  'advanced-annuity-strategies': 'Advanced Annuity Strategies',
   'retirement-made-simple': 'Retirement Made Simple',
 } as const;
 type EbookFunnelKey = keyof typeof EBOOK_FUNNELS;

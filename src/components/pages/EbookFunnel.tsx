@@ -5,7 +5,7 @@ import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 
 export type EbookFunnelKey =
   | 'annuity-dos-donts'
-  | 'simple-annuity-strategies'
+  | 'advanced-annuity-strategies'
   | 'retirement-made-simple';
 
 type Bullet = { lead: string; text: string };
@@ -69,9 +69,9 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalMicro: 'Instant download — check your inbox.',
     ebookTitle: "Annuity Do's and Don'ts for Baby Boomers",
   },
-  'simple-annuity-strategies': {
+  'advanced-annuity-strategies': {
     h1a: '',
-    h1em: 'Simple',
+    h1em: 'Advanced',
     h1b: ' Annuity Strategies: How to Get More From the Same Retirement Dollars',
     subA: 'The newer annuity strategies that may help you keep ',
     subHi: 'up to 33% more total income',
@@ -83,19 +83,19 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     ],
     heroCta: 'Reveal the Strategies',
     coverFlat: '/images/ebook/cover-strategies-flat.png',
-    coverAlt: 'Simple Annuity Strategies — free guide cover',
+    coverAlt: 'Advanced Annuity Strategies — free guide cover',
     stack: [
-      { name: 'Simple Annuity Strategies guide', desc: 'get more from the same dollars', value: '$49 value' },
+      { name: 'Advanced Annuity Strategies guide', desc: 'get more from the same dollars', value: '$49 value' },
       { name: 'Income Maximizer Worksheet', desc: 'model your optimized monthly income', value: '$99 value' },
       { name: 'Strategy Comparison Chart', desc: 'see default vs. optimized side by side', value: '$39 value' },
       { name: '15-minute Income Strategy Call', desc: 'with a licensed professional — no obligation, ever', value: '$200 value' },
     ],
     stackTotal: '$387',
-    finalTitle: 'Get the Free Simple Strategies Guide',
+    finalTitle: 'Get the Free Advanced Strategies Guide',
     finalSub: "The modern moves most agents don't lead with — yours to read in the next two minutes.",
     finalCta: 'Reveal the Strategies',
     finalMicro: 'Instant download — check your inbox.',
-    ebookTitle: 'Simple Annuity Strategies',
+    ebookTitle: 'Advanced Annuity Strategies',
   },
   'retirement-made-simple': {
     h1a: 'The Little-Known Annuity “',
@@ -105,7 +105,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     subHi: 'Up to 33% More Guaranteed Income',
     subB: ' For Life',
     heroSubtext:
-      "Most advisors will never show you this strategy — because most of them don't know it exists. Inside Simple Annuity Strategies, you'll discover the exact laddering method that pulls every last dollar of guaranteed lifetime income out of the savings you already have. No new risk. No market exposure. Just more income, contractually guaranteed for as long as you live.",
+      "Most advisors will never show you this strategy — because most of them don't know it exists. Inside Advanced Annuity Strategies, you'll discover the exact laddering method that pulls every last dollar of guaranteed lifetime income out of the savings you already have. No new risk. No market exposure. Just more income, contractually guaranteed for as long as you live.",
     bullets: [],
     heroCta: 'Get the Free Guides',
     isKit: true,
@@ -113,7 +113,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     coverAlt: 'Retirement Made Simple — both free guides, fanned together',
     stack: [
       { name: "Annuity Do's & Don'ts guide", desc: 'stop the leaks before they start', value: '$49 value' },
-      { name: 'Simple Annuity Strategies guide', desc: 'get more from the same dollars', value: '$49 value' },
+      { name: 'Advanced Annuity Strategies guide', desc: 'get more from the same dollars', value: '$49 value' },
       { name: 'Retirement Income Gap Worksheet', desc: 'see your real monthly shortfall', value: '$99 value' },
       { name: 'Income Maximizer Worksheet', desc: 'model your optimized income', value: '$99 value' },
       { name: "“10 Questions” card + 1-page audit", desc: 'stay in control of every conversation', value: '$39 value' },
@@ -254,14 +254,14 @@ function KitBooks() {
             <div style={{ position: 'absolute', top: 0, left: 0, width: 14, height: '100%', background: 'linear-gradient(90deg,rgba(0,0,0,.24),rgba(0,0,0,0))' }} />
           </div>
         </div>
-        {/* FRONT: Simple Annuity Strategies */}
+        {/* FRONT: Advanced Annuity Strategies */}
         <div style={{ position: 'absolute', left: 4, top: 0, zIndex: 2, width: 272, height: 356, transformStyle: 'preserve-3d', transform: 'perspective(2400px) rotateY(-22deg) rotateX(4deg)' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: 272, height: 34, transform: 'translateY(-17px) rotateX(90deg)', background: TOP_EDGES_H }} />
           <div style={{ position: 'absolute', top: 0, left: 0, width: 34, height: 356, transform: 'translateX(255px) rotateY(90deg)', background: SIDE_EDGES_V }} />
           <div style={{ position: 'absolute', top: 0, left: 0, width: 34, height: 356, transform: 'translateX(-17px) rotateY(-90deg)', background: SPINE_GRADIENT, borderRight: '2px solid rgba(228,205,161,.5)' }} />
           <div style={{ position: 'absolute', top: 0, left: 0, width: 272, height: 356, transform: 'translateZ(17px)', borderRadius: '2px 5px 5px 2px', overflow: 'hidden', boxShadow: 'inset 6px 0 14px rgba(0,0,0,.16), inset 0 0 0 1px rgba(0,0,0,.05)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/ebook/cover-strategies-flat.png" alt="Simple Annuity Strategies guide cover" decoding="async" style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
+            <img src="/images/ebook/cover-strategies-flat.png" alt="Advanced Annuity Strategies guide cover" decoding="async" style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
             <div style={{ position: 'absolute', top: 0, left: 0, width: 14, height: '100%', background: 'linear-gradient(90deg,rgba(0,0,0,.22),rgba(0,0,0,0))' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 34%)', pointerEvents: 'none' }} />
           </div>
@@ -589,7 +589,7 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                 <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#E4CDA1', marginBottom: 14 }}>Guides</div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9, fontSize: 14 }}>
                   <li>Annuity Do&apos;s &amp; Don&apos;ts</li>
-                  <li>Simple Annuity Strategies</li>
+                  <li>Advanced Annuity Strategies</li>
                   <li>Retirement Made Simple</li>
                 </ul>
               </div>

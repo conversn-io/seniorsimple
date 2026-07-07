@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         destination: '/ebook/retirement-made-simple',
         permanent: true,
       },
+      {
+        source: '/ebook/simple-annuity-strategies',
+        destination: '/ebook/advanced-annuity-strategies',
+        permanent: true,
+      },
     ];
   },
   // Rewrite rules for IndexNow key file
