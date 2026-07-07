@@ -23,10 +23,12 @@ type Funnel = {
   heroSubtext?: string;
   bullets: Bullet[];
   heroCta: string;
-  /** Flat cover PNG rendered inside the 3D paperback front face. Not used when isKit is true (kit renders a hardcoded pair). */
+  /** Flat cover PNG rendered inside the 3D paperback front face. Not used when isKit is true. */
   coverFlat?: string;
   coverAlt: string;
   isKit?: boolean;
+  /** Pre-rendered kit image (e.g. a 3D fanned pair PNG). When set + isKit, replaces the CSS-drawn <KitBooks /> component. */
+  coverKit?: string;
   stack: StackItem[];
   stackTotal: string;
   finalTitle: string;
@@ -107,6 +109,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     bullets: [],
     heroCta: 'Get the Free Guides',
     isKit: true,
+    coverKit: '/images/ebook/cover-kit-advanced-3d.png',
     coverAlt: 'Retirement Made Simple — both free guides, fanned together',
     stack: [
       { name: "Annuity Do's & Don'ts guide", desc: 'stop the leaks before they start', value: '$49 value' },
@@ -455,7 +458,17 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                 </span>
                 Trusted by over 23,000 seniors
               </span>
-              {f.isKit ? (
+              {f.isKit && f.coverKit ? (
+                <div className="ss-bookstage" style={{ padding: '18px 20px 6px' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.coverKit}
+                    alt={f.coverAlt}
+                    decoding="async"
+                    style={{ width: '100%', maxWidth: 452, height: 'auto', display: 'block', margin: '0 auto', filter: 'drop-shadow(-20px 30px 26px rgba(20,35,43,.4))' }}
+                  />
+                </div>
+              ) : f.isKit ? (
                 <KitBooks />
               ) : f.coverFlat ? (
                 <SingleBook src={f.coverFlat} alt={f.coverAlt} />
