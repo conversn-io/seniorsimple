@@ -9,6 +9,7 @@ import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmail
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
+import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -48,11 +49,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     null
 
   // Check if this is a Medicare-related article (for calculator integration)
-  const isMedicareArticle = 
+  const isMedicareArticle =
     article.title?.toLowerCase().includes('medicare') ||
     article.category_details?.name?.toLowerCase().includes('medicare') ||
     article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
     article.slug?.includes('medicare')
+
+  // Money-in-motion pages (Medicare, Medigap, annuity, final expense, life
+  // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
+  // Editorial pages (Social Security, retirement basics) get email only.
+  const isMoneyPage = isMoneyInMotionArticle(article)
 
   // Generate structured data for SEO/AEO
   const structuredData = {
@@ -181,8 +187,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   lineHeight: '1.8',
                 }}
               />
-              {/* Mid-content CTA — phone (gated) or email (gated), see article-cta-flags.ts */}
-              {articleCtaFlags.phoneCtasEnabled && phoneNumber && (
+              {/* Mid-content CTA — phone renders on money-in-motion pages only
+                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
+                  renders on all pages when the email flag is on. */}
+              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -212,8 +220,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   }}
                 />
               </div>
-              {/* Mid-content CTA — phone (gated) or email (gated), see article-cta-flags.ts */}
-              {articleCtaFlags.phoneCtasEnabled && phoneNumber && (
+              {/* Mid-content CTA — phone renders on money-in-motion pages only
+                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
+                  renders on all pages when the email flag is on. */}
+              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -241,9 +251,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Sticky scroll CTAs — phone or email, both flag-gated (article-cta-flags.ts).
-          Post 2026-07-07 both default OFF pending review of the email variants. */}
-      {articleCtaFlags.phoneCtasEnabled && isMedicareArticle && phoneNumber && (
+      {/* Sticky scroll CTAs:
+          - phone: money-in-motion pages only (Medicare/Medigap/annuity/final-expense/life-insurance)
+          - email: all pages, once NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
+          Both can coexist — email supplements the phone CTA on money-in-motion pages. */}
+      {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
         <ScrollRevealedCallButton
           phoneNumber={phoneNumber}
           serviceName={article.category_details?.name || 'Medicare Services'}

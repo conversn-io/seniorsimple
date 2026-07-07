@@ -2,18 +2,27 @@
 // values are inlined at build time and readable from both server and client
 // components. Toggle in Vercel → redeploy to flip.
 //
-// Defaults: BOTH off. Phone CTAs (ScrollRevealedCallButton + InterstitialCTABanner)
-// stay dark until we've evaluated the email-capture variants, per the
-// 2026-07-07 capture-leak fix.
+// Semantics:
+//
+// - `phoneCtasEnabled` (default: TRUE — kill-switch): phone CTAs render on
+//   money-in-motion pages (isMoneyInMotionArticle). Set NEXT_PUBLIC_ARTICLE_PHONE_CTAS=off
+//   to force all phone CTAs dark. Money-in-motion = Medicare/Medigap/annuity/
+//   final-expense/life-insurance pages, where a phone call = $8.75-$12.50/lead.
+//
+// - `emailCtasEnabled` (default: FALSE — opt-in): email CTAs render on ALL
+//   article pages regardless of intent. Set NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
+//   to turn on the mid-scroll + sticky email captures.
 
-function readFlag(name: string): boolean {
+function readFlagBool(name: string, defaultValue: boolean): boolean {
   const raw = process.env[name]
-  if (!raw) return false
+  if (raw === undefined) return defaultValue
   const v = raw.toLowerCase().trim()
-  return v === 'on' || v === 'true' || v === '1' || v === 'yes'
+  if (v === 'on' || v === 'true' || v === '1' || v === 'yes') return true
+  if (v === 'off' || v === 'false' || v === '0' || v === 'no' || v === '') return false
+  return defaultValue
 }
 
 export const articleCtaFlags = {
-  phoneCtasEnabled: readFlag('NEXT_PUBLIC_ARTICLE_PHONE_CTAS'),
-  emailCtasEnabled: readFlag('NEXT_PUBLIC_ARTICLE_EMAIL_CTAS'),
+  phoneCtasEnabled: readFlagBool('NEXT_PUBLIC_ARTICLE_PHONE_CTAS', true),
+  emailCtasEnabled: readFlagBool('NEXT_PUBLIC_ARTICLE_EMAIL_CTAS', false),
 } as const
