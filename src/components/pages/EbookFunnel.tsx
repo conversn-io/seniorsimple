@@ -19,6 +19,8 @@ type Funnel = {
   subA: string;
   subHi: string;
   subB: string;
+  /** Optional prose paragraph rendered under the subhead. When set, pairs well with an empty bullets array on copy-heavy funnels. */
+  heroSubtext?: string;
   bullets: Bullet[];
   heroCta: string;
   /** Flat cover PNG rendered inside the 3D paperback front face. Not used when isKit is true (kit renders a hardcoded pair). */
@@ -94,17 +96,15 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     ebookTitle: 'Simple Annuity Strategies',
   },
   'retirement-made-simple': {
-    h1a: 'Retirement Made ',
-    h1em: 'Simple',
-    h1b: '',
-    subA: 'Structure your retirement with annuities to receive ',
-    subHi: 'up to 33% more income',
-    subB: '.',
-    bullets: [
-      { lead: "Guide 1 — The Don'ts: ", text: 'avoid the annuity mistakes that quietly cost you' },
-      { lead: "Guide 2 — The Do's: ", text: 'the strategies to get more from the same dollars' },
-      { lead: 'The Toolkit: ', text: 'worksheets + a one-page audit to put it all to work' },
-    ],
+    h1a: 'The Little-Known Annuity “',
+    h1em: 'Ladder Strategy',
+    h1b: '”',
+    subA: 'That Can Pay You ',
+    subHi: 'Up to 33% More Guaranteed Income',
+    subB: ' For Life',
+    heroSubtext:
+      "Most advisors will never show you this strategy — because most of them don't know it exists. Inside Simple Annuity Strategies, you'll discover the exact laddering method that pulls every last dollar of guaranteed lifetime income out of the savings you already have. No new risk. No market exposure. Just more income, contractually guaranteed for as long as you live.",
+    bullets: [],
     heroCta: 'Get the Free Guides',
     isKit: true,
     coverAlt: 'Retirement Made Simple — both free guides, fanned together',
@@ -424,19 +424,26 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
                 <span style={{ color: '#E4CDA1', fontWeight: 700 }}>{f.subHi}</span>
                 {f.subB}
               </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '24px 0 0', display: 'flex', flexDirection: 'column', gap: 13 }}>
-                {f.bullets.map((b, i) => (
-                  <li key={i} className="ss-bullet" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', fontSize: 17, lineHeight: 1.45, color: '#eef3f5' }}>
-                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 7, background: 'rgba(228,205,161,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                      <Check />
-                    </span>
-                    <span>
-                      {b.lead ? <strong style={{ color: '#fff', fontWeight: 700 }}>{b.lead}</strong> : null}
-                      {b.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {f.heroSubtext ? (
+                <p style={{ fontSize: 16, lineHeight: 1.6, color: '#c6d3d9', margin: '20px 0 0', maxWidth: '52ch', textWrap: 'pretty' as React.CSSProperties['textWrap'] }}>
+                  {f.heroSubtext}
+                </p>
+              ) : null}
+              {f.bullets.length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, margin: '24px 0 0', display: 'flex', flexDirection: 'column', gap: 13 }}>
+                  {f.bullets.map((b, i) => (
+                    <li key={i} className="ss-bullet" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', fontSize: 17, lineHeight: 1.45, color: '#eef3f5' }}>
+                      <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 7, background: 'rgba(228,205,161,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                        <Check />
+                      </span>
+                      <span>
+                        {b.lead ? <strong style={{ color: '#fff', fontWeight: 700 }}>{b.lead}</strong> : null}
+                        {b.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               <div style={{ marginTop: 30 }}>
                 <button
                   onClick={openForm}
