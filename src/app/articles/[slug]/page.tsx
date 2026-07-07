@@ -3,9 +3,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
+import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
 import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
+import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import { articleCtaFlags } from '@/lib/article-cta-flags'
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -178,8 +181,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   lineHeight: '1.8',
                 }}
               />
-              {/* Interstitial CTA Banner - appears mid-content */}
-              {phoneNumber && (
+              {/* Mid-content CTA — phone (gated) or email (gated), see article-cta-flags.ts */}
+              {articleCtaFlags.phoneCtasEnabled && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -189,12 +192,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   dismissible={true}
                 />
               )}
+              {articleCtaFlags.emailCtasEnabled && (
+                <InterstitialEmailBanner
+                  slug={slug}
+                  category={article.category_details?.name ?? null}
+                />
+              )}
             </>
           ) : (
             // Fallback to markdown content with prose wrapper
             <>
               <div className="prose prose-lg max-w-none">
-                <div 
+                <div
                   className="text-gray-800 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: article.content }}
                   style={{
@@ -203,8 +212,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   }}
                 />
               </div>
-              {/* Interstitial CTA Banner - appears mid-content */}
-              {phoneNumber && (
+              {/* Mid-content CTA — phone (gated) or email (gated), see article-cta-flags.ts */}
+              {articleCtaFlags.phoneCtasEnabled && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -212,6 +221,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   subheadline="Speak with a licensed Medicare advisor today"
                   variant="friendly"
                   dismissible={true}
+                />
+              )}
+              {articleCtaFlags.emailCtasEnabled && (
+                <InterstitialEmailBanner
+                  slug={slug}
+                  category={article.category_details?.name ?? null}
                 />
               )}
             </>
@@ -226,16 +241,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Scroll-Revealed Call Button — Medicare articles only.
-          Kill switch: set NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON=false. */}
-      {process.env.NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON !== 'false' &&
-        isMedicareArticle &&
-        phoneNumber && (
-          <ScrollRevealedCallButton
-            phoneNumber={phoneNumber}
-            serviceName={article.category_details?.name || 'Medicare Services'}
-          />
-        )}
+      {/* Sticky scroll CTAs — phone or email, both flag-gated (article-cta-flags.ts).
+          Post 2026-07-07 both default OFF pending review of the email variants. */}
+      {articleCtaFlags.phoneCtasEnabled && isMedicareArticle && phoneNumber && (
+        <ScrollRevealedCallButton
+          phoneNumber={phoneNumber}
+          serviceName={article.category_details?.name || 'Medicare Services'}
+        />
+      )}
+      {articleCtaFlags.emailCtasEnabled && (
+        <ScrollRevealedEmailButton
+          slug={slug}
+          category={article.category_details?.name ?? null}
+        />
+      )}
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
