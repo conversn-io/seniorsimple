@@ -132,19 +132,19 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
       {
         quote:
           "I'd been to three agents and gotten three different pitches. I couldn't tell what was real. These guides finally gave me the framework to compare them apples-to-apples — I knew what to say yes to before I ever picked up the phone.",
-        name: 'Margaret K., 67 · Phoenix, AZ',
+        name: 'Robert D., 71 · Sarasota, FL',
         avatar: '/images/ebook/avatar-1.jpg',
       },
       {
         quote:
           "I was about to sign a contract with a bonus rider I didn't fully understand. The Do's guide walked me through what to actually ask. Turns out the rider I was excited about would have cost me more than it paid — I'd never have known.",
-        name: 'Robert D., 71 · Sarasota, FL',
+        name: 'Margaret K., 67 · Phoenix, AZ',
         avatar: '/images/ebook/avatar-2.jpg',
       },
       {
         quote:
           "I already had two annuities but couldn't tell you what I owned. After the checklist, I mapped out my income for the first time in ten years. That's when it clicked — I'd been guessing at my retirement, not planning it.",
-        name: 'Linda P., 63 · Denver, CO',
+        name: 'Bill P., 63 · Denver, CO',
         avatar: '/images/ebook/avatar-3.jpg',
       },
     ],
@@ -522,7 +522,7 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
         {/* PROOF + TRUST */}
         <section className="ss-sec" style={{ background: '#fff', padding: '84px 24px' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 className="ss-h2" style={{ textAlign: 'center', fontSize: 29, fontWeight: 700, color: '#36596A', margin: '0 0 38px' }}>What readers tell us</h2>
+            <h2 className="ss-h2" style={{ textAlign: 'center', fontSize: 29, fontWeight: 700, color: '#36596A', margin: '0 0 38px' }}>What Retirees Say</h2>
             <div className="ss-cards">
               {(f.testimonials ?? PLACEHOLDER_TESTIMONIALS).map((t, i) => (
                 <div key={i} style={{ background: '#F5F5F0', border: '1px solid #E5E7EB', borderRadius: 14, padding: '24px 22px' }}>
