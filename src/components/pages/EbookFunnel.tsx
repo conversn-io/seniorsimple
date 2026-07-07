@@ -402,15 +402,7 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
         <section className="ss-hero" style={{ background: '#36596A', backgroundImage: 'radial-gradient(120% 90% at 85% 10%,#3f6678 0%,#36596A 55%,#2f4e5d 100%)', color: '#fff', padding: '64px 24px 76px' }}>
           <div style={{ maxWidth: 1180, margin: '0 auto' }} className="ss-hero-grid">
             <div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#E4CDA1', color: '#33404a', fontSize: 13, fontWeight: 700, letterSpacing: '.02em', padding: '8px 17px', borderRadius: 999 }}>
-                  <span style={{ display: 'inline-flex', gap: 1 }}>
-                    <Star /><Star /><Star /><Star /><Star />
-                  </span>
-                  Trusted by over 23,000 seniors
-                </span>
-              </div>
-              <h1 className="ss-h1" style={{ fontFamily: 'Georgia, "Times New Roman", ui-serif, serif', fontWeight: 600, fontSize: 48, lineHeight: 1.06, margin: '22px 0 0', letterSpacing: '-.01em', textWrap: 'balance' as React.CSSProperties['textWrap'] }}>
+              <h1 className="ss-h1" style={{ fontFamily: 'Georgia, "Times New Roman", ui-serif, serif', fontWeight: 600, fontSize: 48, lineHeight: 1.06, margin: 0, letterSpacing: '-.01em', textWrap: 'balance' as React.CSSProperties['textWrap'] }}>
                 {f.h1a}
                 {f.h1em ? (
                   <span style={{ color: '#E4CDA1', textDecoration: 'underline', textDecorationColor: 'rgba(228,205,161,.55)', textDecorationThickness: '4px', textUnderlineOffset: '8px' }}>
@@ -456,7 +448,13 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
               </div>
             </div>
 
-            <div className="ss-hero-media" style={{ display: 'flex', flexDirection: 'column', gap: 26, alignItems: 'center', justifyContent: 'center' }}>
+            <div className="ss-hero-media" style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#E4CDA1', color: '#33404a', fontSize: 13, fontWeight: 700, letterSpacing: '.02em', padding: '8px 17px', borderRadius: 999 }}>
+                <span style={{ display: 'inline-flex', gap: 1 }}>
+                  <Star /><Star /><Star /><Star /><Star />
+                </span>
+                Trusted by over 23,000 seniors
+              </span>
               {f.isKit ? (
                 <KitBooks />
               ) : f.coverFlat ? (
