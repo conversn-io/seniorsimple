@@ -122,6 +122,16 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
 
 const SUBMIT_ENDPOINT = '/api/ebook/submit';
 
+/**
+ * Value-stack section toggle.
+ * - Default state comes from NEXT_PUBLIC_SHOW_EBOOK_VALUE_STACK env var:
+ *   unset or "true" → shown, "false" → hidden.
+ * - Per-page override via ?stack=on|off query param (useful for internal
+ *   preview and ad-level A/B split tests without touching env).
+ */
+const SHOW_VALUE_STACK_DEFAULT =
+  process.env.NEXT_PUBLIC_SHOW_EBOOK_VALUE_STACK !== 'false';
+
 const THIRTY_THREE_FOOTNOTE =
   '*Illustrative and educational. “Up to 33%” refers to the combined impact that taxes, fees, and timing decisions can have on retirement income over time, based on the strategies discussed in this guide. Individual results vary and are not guaranteed.';
 
@@ -245,6 +255,14 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
   const [email, setEmail] = useState('');
   const [errEmail, setErrEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showValueStack, setShowValueStack] = useState(SHOW_VALUE_STACK_DEFAULT);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search).get('stack');
+    if (p === 'off') setShowValueStack(false);
+    else if (p === 'on') setShowValueStack(true);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -413,7 +431,8 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
           </div>
         </section>
 
-        {/* VALUE STACK */}
+        {/* VALUE STACK — hidden when NEXT_PUBLIC_SHOW_EBOOK_VALUE_STACK=false or ?stack=off */}
+        {showValueStack ? (
         <section className="ss-sec" style={{ background: '#F5F5F0', padding: '84px 24px' }}>
           <div className="ss-stack-wrap" style={{ maxWidth: 680, margin: '0 auto' }}>
             <h2 className="ss-h2" style={{ textAlign: 'center', fontSize: 29, fontWeight: 700, color: '#36596A', margin: '0 0 8px', textWrap: 'balance' as React.CSSProperties['textWrap'] }}>
@@ -452,6 +471,7 @@ export default function EbookFunnel({ funnel }: { funnel: EbookFunnelKey }) {
             </div>
           </div>
         </section>
+        ) : null}
 
         {/* PROOF + TRUST */}
         <section className="ss-sec" style={{ background: '#fff', padding: '84px 24px' }}>
