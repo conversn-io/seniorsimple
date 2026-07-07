@@ -105,7 +105,7 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     subHi: 'Up to 33% More Guaranteed Income',
     subB: ' For Life',
     heroSubtext:
-      "Most advisors will never show you this strategy — because most of them don't know it exists. Inside Simple Annuity Strategies, you'll discover the exact laddering method that pulls every last dollar of guaranteed lifetime income out of the savings you already have. No new risk. No market exposure. Just more income, contractually guaranteed for as long as you live.",
+      "Most advisors will never show you this strategy — because most of them don't know it exists. Inside Advanced Annuity Strategies, you'll discover the exact laddering method that pulls every last dollar of guaranteed lifetime income out of the savings you already have. No new risk. No market exposure. Just more income, contractually guaranteed for as long as you live.",
     bullets: [],
     heroCta: 'Get the Free Guides',
     isKit: true,
