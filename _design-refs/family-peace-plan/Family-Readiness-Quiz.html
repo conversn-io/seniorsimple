@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Family Readiness Check — SeniorSimple</title>
+<style>
+  :root{--teal:#36596A;--teal-ink:#274655;--cream:#F7F5EF;--cream-2:#EFEBDF;--gold:#E4CDA1;--gold-ink:#A98B4E;--ink:#26313A;--muted:#6E6A5F;--line:#E7E1D2;--good:#1D7A5A;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#EDEAE0;color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.55;}
+  .bar{background:var(--teal);color:#fff;text-align:center;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:8px;}
+  .page{max-width:640px;margin:0 auto;background:#fff;min-height:100vh;}
+  .inner{padding:26px 34px 40px;}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .brand{font-family:Arial,sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);font-weight:700;}
+  .count{font-size:13px;color:var(--muted);}
+  .progress{height:8px;background:var(--cream-2);border-radius:99px;overflow:hidden;margin-bottom:30px;}
+  .progress .fill{height:100%;width:0;background:var(--teal);border-radius:99px;transition:width .35s ease;}
+  h1{font-family:Georgia,serif;font-size:31px;line-height:1.2;color:var(--teal);font-weight:600;margin:6px 0 12px;}
+  .dek{font-size:18px;color:#3d4a53;margin:0 0 24px;}
+  .q{font-family:Georgia,serif;font-size:25px;line-height:1.28;color:var(--teal);font-weight:600;margin:4px 0 8px;}
+  .why{font-size:14px;color:var(--muted);background:var(--cream);border-left:3px solid var(--gold);padding:9px 14px;border-radius:0 8px 8px 0;margin:0 0 22px;}
+  .opts{display:flex;flex-direction:column;gap:12px;}
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:17px 20px;font-size:18px;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s;font-family:inherit;}
+  .opt:hover{border-color:var(--teal);background:var(--cream);}
+  .opt:focus-visible{outline:3px solid var(--gold);}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px;}
+  .back{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;font-family:inherit;padding:8px;}
+  .back:hover{color:var(--teal);}
+  .btn{display:inline-block;background:var(--gold);color:#3a2f12;font-weight:700;font-size:18px;text-decoration:none;padding:15px 34px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
+  .btn:hover{filter:brightness(.97);}
+  .field{margin:0 0 16px;}
+  .field label{display:block;font-size:14px;font-weight:700;color:var(--teal-ink);margin-bottom:6px;}
+  .field input{width:100%;padding:15px 16px;font-size:18px;border:2px solid var(--line);border-radius:10px;font-family:inherit;}
+  .field input:focus{outline:none;border-color:var(--teal);}
+  .consent{font-size:13px;color:var(--muted);margin:14px 0 20px;line-height:1.5;}
+  .trust{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:22px;font-size:13px;color:var(--muted);}
+  .trust span{white-space:nowrap;}
+  .capwrap{text-align:center;}
+  .capwrap .lock{font-size:13px;color:var(--good);font-weight:700;margin-bottom:8px;}
+  /* result */
+  .scorecard{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:26px 26px 22px;text-align:center;margin:6px 0 22px;}
+  .meter{height:14px;background:#E3DECF;border-radius:99px;overflow:hidden;margin:16px 0 10px;}
+  .meter .mfill{height:100%;border-radius:99px;transition:width .6s ease;}
+  .band{font-family:Georgia,serif;font-size:26px;font-weight:600;margin:4px 0 2px;}
+  .scoreline{font-size:15px;color:var(--muted);}
+  .offer-card{background:var(--teal);color:#fff;border-radius:16px;padding:28px 28px 26px;text-align:center;margin:22px 0 8px;}
+  .offer-card .k{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+  .offer-card .ttl{font-family:Georgia,serif;font-size:25px;font-weight:600;margin:6px 0 8px;}
+  .offer-card .sub{color:#CFE0E6;font-size:16px;margin:0 auto 20px;max-width:440px;line-height:1.5;}
+  .offer-card .cta{display:inline-block;background:var(--gold);color:#3a2f12;font-weight:700;font-size:18px;text-decoration:none;padding:15px 38px;border-radius:10px;}
+  .checkmsg{background:#E8F3EE;border:1px solid #BFE0D0;color:#1D5C44;border-radius:10px;padding:12px 16px;font-size:14px;margin:0 0 18px;text-align:center;}
+  .hide{display:none;}
+  .foot{font-size:12px;color:#8a857a;line-height:1.55;border-top:1px solid var(--line);padding:18px 34px 40px;max-width:640px;margin:0 auto;background:#fff;}
+</style>
+</head>
+<body>
+<div class="bar">SeniorSimple · The Simple Life</div>
+<div class="page">
+  <div class="inner">
+    <div class="brandrow">
+      <span class="brand">The Family Readiness Check</span>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="progress"><div class="fill" id="fill"></div></div>
+
+    <!-- INTRO -->
+    <section id="intro">
+      <h1>How ready is your family — really?</h1>
+      <p class="dek">Six quick questions. Sixty seconds. You'll see exactly where your family's "Guessing Gap" is — the space between the things you've got handled and the things they'd have to guess about — plus a simple plan to close it.</p>
+      <button class="btn" id="startBtn">Start the Free Check &rarr;</button>
+      <div class="trust">
+        <span>&#10003; 100% free</span><span>&#10003; 60 seconds</span><span>&#10003; No obligation, ever</span>
+      </div>
+    </section>
+
+    <!-- QUESTIONS -->
+    <section id="quiz" class="hide">
+      <div class="q" id="qText"></div>
+      <div class="why" id="qWhy"></div>
+      <div class="opts" id="opts"></div>
+      <div class="nav"><button class="back hide" id="backBtn">&larr; Back</button><span></span></div>
+    </section>
+
+    <!-- CAPTURE -->
+    <section id="capture" class="hide">
+      <div class="capwrap">
+        <div class="lock">&#128274; Your answers are ready</div>
+        <h1>Where should we send your results?</h1>
+        <p class="dek">We'll show your Family Readiness Score on the next screen and email you a copy — along with your free <b>Family Map&trade; Starter</b> and The Simple Life weekly letter.</p>
+      </div>
+      <form id="capForm">
+        <div class="field"><label for="fname">First name</label><input id="fname" name="fname" type="text" autocomplete="given-name" required placeholder="Carol"></div>
+        <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="capwrap"><button class="btn" type="submit">See My Results &rarr;</button></div>
+        <p class="consent">By continuing you'll join The Simple Life (50,000+ readers) and receive your result and free Family Map&trade; Starter. Unsubscribe anytime in one click. We never sell your information. This is a free educational self-assessment — not legal, financial, or medical advice.</p>
+      </form>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="hide">
+      <div class="checkmsg" id="checkmsg">&#10003; You're in — check your inbox for your free Family Map&trade; Starter.</div>
+      <h1 id="rGreeting">Your Family Readiness Score</h1>
+      <div class="scorecard">
+        <div class="band" id="rBand"></div>
+        <div class="meter"><div class="mfill" id="rMeter"></div></div>
+        <div class="scoreline" id="rScoreLine"></div>
+      </div>
+      <p id="rBody" style="font-size:19px;color:#3d4a53;"></p>
+      <div class="offer-card">
+        <div class="k">Your next step</div>
+        <div class="ttl">The Family Peace Plan&trade;</div>
+        <div class="sub" id="rOfferSub">The simplest way to close your Guessing Gap — one large-print place for everything your family would ever need to find, with prompts so you never wonder what goes where.</div>
+        <a href="#offer" class="cta" id="offerCta">Close My Guessing Gap &rarr;</a>
+      </div>
+      <p style="font-size:14px;color:var(--muted);text-align:center;">Or watch your inbox — your free Family Map&trade; Starter is on its way, and this week's Simple Life letter lands soon.</p>
+    </section>
+  </div>
+</div>
+<div class="foot" id="foot">
+  The Family Readiness Check is a free educational self-assessment offered by SeniorSimple. It is not legal, financial, tax, or medical advice, and the Family Peace Plan / Simple Life Organizer is not a will or a substitute for one. Any resources referenced connect you with SeniorSimple's help line at no cost and with no obligation. &copy; SeniorSimple.
+</div>
+
+<script>
+/* ============================================================================
+   INTEGRATION HOOK — newsletter / subscriber capture
+   Set OPTIN_ENDPOINT to the SeniorSimple subscribe endpoint (Supabase edge
+   function or SendGrid). It will receive a POST with the JSON payload below.
+   If left blank, the quiz still works end-to-end (capture is skipped) for
+   testing. Also update OFFER_URL to the live Family Peace Plan offer page.
+   ============================================================================ */
+const OPTIN_ENDPOINT = ""; // e.g. "https://<project>.supabase.co/functions/v1/subscribe"
+const OFFER_URL = "Family-Peace-Plan-Offer.html"; // Family Peace Plan sales letter / $27 offer
+
+const QUESTIONS = [
+  { t:"If your family needed something important from you tomorrow, would they know exactly where to find it?",
+    w:"This is the heart of it — a will says who gets what, but not where anything is.",
+    a:[["Yes — they'd know exactly where",2],["Some things, not everything",1],["Honestly… no",0]] },
+  { t:"Is there ONE place your family could look for your accounts, insurance, and key documents?",
+    w:"Scattered information is the #1 reason families spend days searching.",
+    a:[["Yes, one place",2],["A few different places",1],["It's mostly in my head",0]] },
+  { t:"Have you written down who your family should call first — advisors, doctors, attorney?",
+    w:"In a stressful moment, knowing who to call first saves hours and arguments.",
+    a:[["Yes, it's written down",2],["A few of them",1],["Not yet",0]] },
+  { t:"Could your loved ones reach your important digital accounts and passwords if they needed to?",
+    w:"More of life lives online every year — and logins are where families get stuck.",
+    a:[["Yes",2],["Some of them",1],["No",0]] },
+  { t:"Do the people you love know your key medical details, medications, and wishes?",
+    w:"These are the questions families ask first — and the ones they hate having to guess.",
+    a:[["Yes",2],["Partly",1],["Not really",0]] },
+  { t:"Have you had “the conversation” with your family about where everything is?",
+    w:"The plan matters — but so does making sure someone knows it exists.",
+    a:[["Yes, we've talked",2],["We've started",1],["Not yet",0]] }
+];
+
+const BANDS = [
+  { min:9, name:"You're Ahead of Most Families", color:"#1D7A5A",
+    body:"Wonderful — you've clearly thought about this more than most. You've got the big pieces handled. The opportunity now is to pull those pieces into one simple place so your family isn't relying on memory or a few scattered drawers. A Family Peace Plan turns “mostly ready” into “completely done.”",
+    sub:"You're close. The Family Peace Plan gathers what you've already got handled into one large-print place — so it's not just organized in your head, it's ready for the people you love." },
+  { min:5, name:"You Have a Few Gaps to Close", color:"#A98B4E",
+    body:"You're in good company — this is where most thoughtful families land. You've handled some of it, but there are real gaps your loved ones would have to guess through. The good news: closing them isn't a huge project. It's one relaxed weekend with a cup of coffee and the right prompts.",
+    sub:"A handful of gaps stand between your family and real peace of mind. The Family Peace Plan walks you through closing them, one simple section at a time." },
+  { min:0, name:"There's a Real Guessing Gap", color:"#B15A3C",
+    body:"Thank you for being honest — that's the hardest part, and it means you care. Right now, if your family needed answers, they'd be doing a lot of guessing. That's not a reflection on you; it's what happens to every family that keeps life in their head. The reassuring part: this is very fixable, and faster than you'd think.",
+    sub:"Right now your family would have to guess about a lot. The Family Peace Plan gives you one simple, guided place to write it all down — so “I really should” finally becomes “it's done.”" }
+];
+
+let step = -1;           // -1 intro, 0..N-1 questions
+const answers = new Array(QUESTIONS.length).fill(null);
+const $ = id => document.getElementById(id);
+
+function setProgress(){
+  const total = QUESTIONS.length + 1; // questions + capture
+  let done = 0;
+  if(step >= 0) done = step;
+  if(captured) done = total;
+  const pct = step < 0 ? 0 : Math.min(100, (done/total)*100);
+  $("fill").style.width = pct + "%";
+  $("count").textContent = step >= 0 && step < QUESTIONS.length ? ("Question " + (step+1) + " of " + QUESTIONS.length) : "";
+}
+
+let captured = false;
+
+function show(sectionId){
+  ["intro","quiz","capture","result"].forEach(s=>$(s).classList.add("hide"));
+  $(sectionId).classList.remove("hide");
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[step];
+  $("qText").textContent = q.t;
+  $("qWhy").textContent = "Why we ask: " + q.w;
+  const opts = $("opts");
+  opts.innerHTML = "";
+  q.a.forEach(([label,val])=>{
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.textContent = label;
+    b.onclick = ()=>{ answers[step]=val; next(); };
+    opts.appendChild(b);
+  });
+  $("backBtn").classList.toggle("hide", step===0);
+  show("quiz");
+  setProgress();
+}
+
+function next(){
+  if(step < QUESTIONS.length - 1){ step++; renderQuestion(); }
+  else { show("capture"); setProgress(); }
+}
+function back(){
+  if(step > 0){ step--; renderQuestion(); }
+  else { step = -1; show("intro"); setProgress(); }
+}
+
+$("startBtn").onclick = ()=>{ step=0; renderQuestion(); };
+$("backBtn").onclick = back;
+
+$("capForm").onsubmit = async (e)=>{
+  e.preventDefault();
+  const fname = $("fname").value.trim();
+  const email = $("email").value.trim();
+  const score = answers.reduce((a,b)=>a+(b||0),0);
+  const band = BANDS.find(b=>score>=b.min);
+  const payload = {
+    source:"family-readiness-quiz",
+    fname, email, score, maxScore: QUESTIONS.length*2,
+    band: band.name,
+    answers: QUESTIONS.map((q,i)=>({q:q.t, value:answers[i]})),
+    ts: new Date().toISOString()
+  };
+  // Fire-and-forget to the newsletter/subscriber endpoint if configured.
+  if(OPTIN_ENDPOINT){
+    try{
+      await fetch(OPTIN_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    }catch(err){ console.warn("opt-in post failed (showing result anyway):", err); }
+  } else {
+    console.log("[Family Readiness Check] OPTIN_ENDPOINT not set — payload:", payload);
+  }
+  captured = true;
+  renderResult(fname, score, band);
+};
+
+function renderResult(fname, score, band){
+  const max = QUESTIONS.length*2;
+  const pct = Math.round((score/max)*100);
+  $("rGreeting").textContent = fname ? (fname + ", here's your Family Readiness Score") : "Your Family Readiness Score";
+  $("rBand").textContent = band.name;
+  $("rBand").style.color = band.color;
+  $("rMeter").style.width = pct + "%";
+  $("rMeter").style.background = band.color;
+  $("rScoreLine").textContent = "Score: " + score + " of " + max + " — " + pct + "% ready";
+  $("rBody").textContent = band.body;
+  $("rOfferSub").textContent = band.sub;
+  $("offerCta").setAttribute("href", OFFER_URL);
+  show("result");
+  setProgress();
+}
+
+setProgress();
+</script>
+</body>
+</html>
