@@ -455,7 +455,15 @@
 .fpp-letter .fpp-guarantee { margin: 32px 0 28px; }
 
 /* ================= POST-FORM BLOCK ================= */
-.fpp-postform { background: #fff; border-top: 1px solid var(--fpp-line); }
+/* Matches the letter body column: 720px, centered white surface. Without this
+   constraint the block used to span the full viewport, which felt off against
+   the tightly-columned letter above. */
+.fpp-postform {
+  background: #fff;
+  border-top: 1px solid var(--fpp-line);
+  max-width: 720px;
+  margin: 0 auto;
+}
 .fpp-postform .fpp-inner { padding: 40px 40px 36px; }
 .fpp-postform h2 {
   font-family: var(--fpp-serif); font-weight: 600; color: var(--fpp-teal);

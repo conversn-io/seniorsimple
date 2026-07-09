@@ -34,6 +34,8 @@ export function SalesLetterPage() {
 
   const [utm, setUtm] = useState<UTMParameters>({});
   const [modalOpen, setModalOpen] = useState(false);
+  const [warmed, setWarmed] = useState(false);
+  const warmCheckout = () => setWarmed(true);
 
   useEffect(() => {
     const inbound = extractUTMParameters();
@@ -63,6 +65,15 @@ export function SalesLetterPage() {
     e.preventDefault();
     fppAnalytics.offerCtaClick(47);
     setModalOpen(true);
+  };
+
+  // Handlers spread onto every CTA so hover/focus warms the iframe and click
+  // opens the modal. onPointerEnter fires on both mouse hover and touchstart
+  // for a small but real head-start on the GHL fetch.
+  const ctaProps = {
+    onClick: handleCtaClick,
+    onPointerEnter: warmCheckout,
+    onFocus: warmCheckout,
   };
 
   return (
@@ -373,7 +384,7 @@ export function SalesLetterPage() {
             </div>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
+              <CtaButton href={checkoutHref} size="lg" {...ctaProps}>
                 Get My Family Peace Plan
               </CtaButton>
               <p className="fpp-cta-note">
@@ -394,7 +405,7 @@ export function SalesLetterPage() {
             </div>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
+              <CtaButton href={checkoutHref} size="lg" {...ctaProps}>
                 Get My Family Peace Plan
               </CtaButton>
             </div>
@@ -424,7 +435,7 @@ export function SalesLetterPage() {
             </figure>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
+              <CtaButton href={checkoutHref} size="lg" {...ctaProps}>
                 Get My Family Peace Plan
               </CtaButton>
               <p className="fpp-cta-note">
@@ -438,10 +449,11 @@ export function SalesLetterPage() {
           The Family Peace Plan is an organizational tool — not legal, financial, tax, or medical advice, and not a will or a substitute for one; consult the appropriate licensed professional for those. It never asks for full account numbers, PINs, or passwords — only where they&apos;re kept (for example, where the Medicare card is, not the number). Stories shown are illustrative of the experience it&apos;s designed to create. © SeniorSimple · The Simple Life&trade;
         </ComplianceFooter>
 
-        <PostFormBlock checkoutHref={checkoutHref} onCtaClick={handleCtaClick} />
+        <PostFormBlock checkoutHref={checkoutHref} ctaProps={ctaProps} />
 
         <CheckoutModal
           open={modalOpen}
+          warm={warmed}
           src={checkoutHref}
           onClose={() => setModalOpen(false)}
         />
@@ -450,12 +462,18 @@ export function SalesLetterPage() {
   );
 }
 
+interface CtaPropsBundle {
+  onClick: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
+  onPointerEnter: () => void;
+  onFocus: () => void;
+}
+
 function PostFormBlock({
   checkoutHref,
-  onCtaClick,
+  ctaProps,
 }: {
   checkoutHref: string;
-  onCtaClick: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
+  ctaProps: CtaPropsBundle;
 }) {
   return (
     <section className="fpp-postform">
@@ -527,7 +545,7 @@ function PostFormBlock({
         </div>
 
         <div className="fpp-cta-block">
-          <CtaButton href={checkoutHref} size="lg" onClick={onCtaClick}>
+          <CtaButton href={checkoutHref} size="lg" {...ctaProps}>
             Get My Family Peace Plan
           </CtaButton>
           <p className="fpp-cta-note">

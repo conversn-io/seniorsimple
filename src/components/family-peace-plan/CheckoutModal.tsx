@@ -4,6 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 
 interface CheckoutModalProps {
   open: boolean;
+  /**
+   * If true, mount the iframe now (hidden) so the GHL order form starts
+   * loading before the modal is actually opened — e.g. on CTA hover.
+   * Once true, stays mounted for the rest of the session.
+   */
+  warm?: boolean;
   /** GHL order-form URL. Preserved as an anchor href on the fallback link so users can still escape to a new tab. */
   src: string;
   onClose: () => void;
@@ -27,14 +33,16 @@ interface CheckoutModalProps {
  * frame; if a future GHL change breaks that, the visible "Open it in a new
  * tab" link at the bottom is the escape hatch.
  */
-export function CheckoutModal({ open, src, onClose }: CheckoutModalProps) {
+export function CheckoutModal({ open, warm = false, src, onClose }: CheckoutModalProps) {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const [hasEverOpened, setHasEverOpened] = useState(false);
+  const [shouldMount, setShouldMount] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
+  // Mount as soon as EITHER the modal is opened OR a CTA is warmed
+  // (hovered/focused). Once mounted, stays mounted.
   useEffect(() => {
-    if (open) setHasEverOpened(true);
-  }, [open]);
+    if (open || warm) setShouldMount(true);
+  }, [open, warm]);
 
   useEffect(() => {
     if (!open) return;
@@ -51,8 +59,8 @@ export function CheckoutModal({ open, src, onClose }: CheckoutModalProps) {
     };
   }, [open, onClose]);
 
-  // If it's never been opened, don't render anything (no wasted DOM).
-  if (!hasEverOpened) return null;
+  // Nothing to render until warmed or opened.
+  if (!shouldMount) return null;
 
   return (
     <div
