@@ -503,3 +503,64 @@
   margin: 0 0 16px; font-family: var(--fpp-sans);
   font-size: clamp(15px, 1.9vw, 17px); color: var(--fpp-ink); line-height: 1.6;
 }
+
+/* ================= CheckoutModal (iframe overlay) ================= */
+.fpp-modal-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(38, 49, 58, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: fpp-fade-in 0.15s ease-out;
+}
+@keyframes fpp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.fpp-modal-body {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(90vh, 900px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.fpp-modal-close {
+  position: absolute; top: 6px; right: 10px; z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--fpp-line);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  font-family: var(--fpp-sans); font-size: 22px; line-height: 1;
+  color: var(--fpp-teal); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.fpp-modal-close:hover { background: var(--fpp-cream); color: var(--fpp-teal-ink); }
+.fpp-modal-close:focus-visible { outline: 3px solid var(--fpp-gold); outline-offset: 2px; }
+.fpp-modal-iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 560px;
+  border: 0;
+  background: #fff;
+}
+.fpp-modal-fallback {
+  margin: 0;
+  padding: 10px 16px 12px;
+  font-family: var(--fpp-sans);
+  font-size: 13px;
+  text-align: center;
+  color: var(--fpp-muted);
+  border-top: 1px solid var(--fpp-line);
+  background: var(--fpp-cream);
+}
+.fpp-modal-fallback a { color: var(--fpp-teal); font-weight: 600; }
+.fpp-modal-fallback a:hover { color: var(--fpp-teal-ink); }
+@media (max-width: 640px) {
+  .fpp-modal-backdrop { padding: 0; }
+  .fpp-modal-body {
+    max-width: 100%; max-height: 100vh; height: 100vh;
+    border-radius: 0;
+  }
+  .fpp-modal-close { top: 10px; right: 14px; }
+}

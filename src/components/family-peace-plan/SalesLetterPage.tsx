@@ -11,6 +11,7 @@ import {
   type UTMParameters,
 } from '@/utils/utm-utils';
 import { CtaButton } from './CtaButton';
+import { CheckoutModal } from './CheckoutModal';
 import { ComplianceFooter } from './ComplianceFooter';
 import { fppAnalytics } from './_lib/analytics';
 import { buildCheckoutUrl, IS_CHECKOUT_CONFIGURED } from './_lib/checkoutUrl';
@@ -32,6 +33,8 @@ export function SalesLetterPage() {
   useMinimalFunnelLayout({ variant: 'insurance' });
 
   const [utm, setUtm] = useState<UTMParameters>({});
+  const [modalOpen, setModalOpen] = useState(false);
+
   useEffect(() => {
     const inbound = extractUTMParameters();
     if (hasUTMParameters(inbound)) storeUTMParameters(inbound);
@@ -48,7 +51,19 @@ export function SalesLetterPage() {
     [utm],
   );
 
-  const fireCta = () => fppAnalytics.offerCtaClick(47);
+  /**
+   * CTA handler. Intercepts left-click on a plain <a> to open the modal iframe.
+   * Modifier / right / middle clicks fall through so users can still open the
+   * GHL form in a new tab if the modal misbehaves (see CheckoutModal note on
+   * the cross-origin risk).
+   */
+  const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    const me = e as React.MouseEvent<HTMLAnchorElement>;
+    if (me.metaKey || me.ctrlKey || me.shiftKey || me.altKey || me.button === 1) return;
+    e.preventDefault();
+    fppAnalytics.offerCtaClick(47);
+    setModalOpen(true);
+  };
 
   return (
     <div className={playfairDisplay.variable}>
@@ -350,7 +365,7 @@ export function SalesLetterPage() {
             </div>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onFire={fireCta}>
+              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
                 Get My Family Peace Plan
               </CtaButton>
               <p className="fpp-cta-note">
@@ -371,7 +386,7 @@ export function SalesLetterPage() {
             </div>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onFire={fireCta}>
+              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
                 Get My Family Peace Plan
               </CtaButton>
             </div>
@@ -401,7 +416,7 @@ export function SalesLetterPage() {
             </figure>
 
             <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" onFire={fireCta}>
+              <CtaButton href={checkoutHref} size="lg" onClick={handleCtaClick}>
                 Get My Family Peace Plan
               </CtaButton>
               <p className="fpp-cta-note">
@@ -415,13 +430,25 @@ export function SalesLetterPage() {
           The Family Peace Plan is an organizational tool — not legal, financial, tax, or medical advice, and not a will or a substitute for one; consult the appropriate licensed professional for those. It never asks for full account numbers, PINs, or passwords — only where they&apos;re kept (for example, where the Medicare card is, not the number). Stories shown are illustrative of the experience it&apos;s designed to create. © SeniorSimple · The Simple Life&trade;
         </ComplianceFooter>
 
-        <PostFormBlock checkoutHref={checkoutHref} fireCta={fireCta} />
+        <PostFormBlock checkoutHref={checkoutHref} onCtaClick={handleCtaClick} />
+
+        <CheckoutModal
+          open={modalOpen}
+          src={checkoutHref}
+          onClose={() => setModalOpen(false)}
+        />
       </div>
     </div>
   );
 }
 
-function PostFormBlock({ checkoutHref, fireCta }: { checkoutHref: string; fireCta: () => void }) {
+function PostFormBlock({
+  checkoutHref,
+  onCtaClick,
+}: {
+  checkoutHref: string;
+  onCtaClick: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
+}) {
   return (
     <section className="fpp-postform">
       <div className="fpp-inner">
@@ -492,7 +519,7 @@ function PostFormBlock({ checkoutHref, fireCta }: { checkoutHref: string; fireCt
         </div>
 
         <div className="fpp-cta-block">
-          <CtaButton href={checkoutHref} size="lg" onFire={fireCta}>
+          <CtaButton href={checkoutHref} size="lg" onClick={onCtaClick}>
             Get My Family Peace Plan
           </CtaButton>
           <p className="fpp-cta-note">
