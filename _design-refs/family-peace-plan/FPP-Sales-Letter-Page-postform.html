@@ -1,0 +1,115 @@
+<!--
+  Family Peace Plan™ — POST-FORM  ·  GHL full-width HTML section (BELOW the order form)
+  Paste into the custom-HTML/code section that sits UNDER the GHL 2-step order form.
+  · Peace of Mind Promise · trust row · FAQ (pure HTML <details> — no JS) · footer/compliance.
+  · Scoped under .fpp-pf. The CTA opens the SAME order-form popup defined in the top sales-letter block
+    (both blocks share one page DOM, so its data-fpp-open trigger is handled by that block's script). No JS of its own.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  .fpp-pf{
+    --teal:#36596A; --teal-ink:#274655; --cream:#F5F5F0; --cream-2:#EFEBDF;
+    --gold:#E4CDA1; --gold-ink:#A98B4E; --ink:#26313A; --muted:#6E6A5F;
+    --line:#E4DFD2; --good:#1D7A5A; --page:#EDEAE0;
+    --serif:"Playfair Display", Georgia, "Times New Roman", serif;
+    --sans:"Geist", -apple-system, "system-ui", "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--page); color:var(--ink);
+    font-family:var(--sans); font-size:18px; line-height:1.7;
+    -webkit-font-smoothing:antialiased; margin:0; padding:0; width:100%;
+  }
+  .fpp-pf *{box-sizing:border-box;}
+  .fpp-pf .wrap{max-width:720px; margin:0 auto; background:#fff; padding:46px 34px 40px;}
+  @media(min-width:768px){ .fpp-pf .wrap{padding:56px 56px 48px;} }
+  .fpp-pf h2{font-family:var(--serif); font-weight:600; color:var(--teal); font-size:clamp(24px,4vw,30px); line-height:1.22; margin:0 0 14px; text-align:center;}
+  .fpp-pf h3{font-family:var(--sans); font-weight:600; color:var(--teal-ink); font-size:17px; margin:0;}
+  .fpp-pf p{margin:0 0 18px; font-size:clamp(16px,2vw,18px);}
+  .fpp-pf strong{color:var(--teal-ink);}
+
+  /* guarantee */
+  .fpp-pf .guar{background:#fff; border:2px solid var(--gold); border-radius:16px; padding:28px 28px; margin:0 0 32px;}
+  .fpp-pf .guar p{margin:0; font-size:clamp(16px,2vw,18px);}
+
+  /* trust row */
+  .fpp-pf .trust{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:0 0 34px;}
+  @media(min-width:640px){ .fpp-pf .trust{grid-template-columns:repeat(4,1fr);} }
+  .fpp-pf .trust .t{background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:16px 14px; text-align:center;}
+  .fpp-pf .trust .t .ic{font-size:22px; line-height:1; color:var(--teal); display:block; margin-bottom:7px;}
+  .fpp-pf .trust .t .lb{font-family:var(--sans); font-weight:600; color:var(--teal-ink); font-size:13.5px; line-height:1.35;}
+
+  /* FAQ */
+  .fpp-pf .faq{margin:0 0 32px;}
+  .fpp-pf details{background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:2px 20px; margin:0 0 12px;}
+  .fpp-pf summary{cursor:pointer; list-style:none; padding:16px 30px 16px 0; position:relative; font-family:var(--sans); font-weight:600; color:var(--teal-ink); font-size:clamp(15px,2vw,17px); line-height:1.45;}
+  .fpp-pf summary::-webkit-details-marker{display:none;}
+  .fpp-pf summary:after{content:"+"; position:absolute; right:2px; top:14px; font-size:24px; font-weight:400; color:var(--gold-ink); line-height:1;}
+  .fpp-pf details[open] summary:after{content:"\2013";}
+  .fpp-pf details p{margin:0 0 16px; font-size:clamp(15px,1.9vw,17px); color:var(--ink);}
+
+  /* CTA */
+  .fpp-pf .cta-wrap{text-align:center; margin:8px 0 6px;}
+  .fpp-pf a.cta{display:inline-block; background:var(--gold); color:#3a2f12; font-family:var(--sans); font-weight:700; font-size:clamp(18px,2.4vw,21px); text-decoration:none; padding:18px 44px; border-radius:12px; box-shadow:0 6px 18px rgba(54,89,106,.14);}
+  .fpp-pf a.cta:focus{outline:3px solid var(--teal); outline-offset:3px;}
+  @media(max-width:560px){ .fpp-pf a.cta{display:block; width:100%; padding:18px 20px;} }
+  .fpp-pf .cta-note{font-family:var(--sans); font-size:13.5px; color:var(--muted); margin:12px 0 0;}
+
+  .fpp-pf .foot{max-width:720px; margin:0 auto; background:#fff; border-top:1px solid var(--line); padding:22px 34px 44px; font-family:var(--sans); font-size:12.5px; line-height:1.6; color:#8a857a;}
+  @media(min-width:768px){ .fpp-pf .foot{padding:24px 56px 52px;} }
+</style>
+
+<div class="fpp-pf">
+  <div class="wrap">
+
+    <div class="guar">
+      <h2>The Peace of Mind Promise</h2>
+      <p>Get it. Fill it out. Talk with your family. If you don't feel more prepared after finally seeing everything gathered in one place, tell us any time in the next 60 days and we'll refund every penny — and you keep the workbook. The only thing you can't get back is another year of "I really should." This is how we make sure you never risk a dime to find out how good it feels to see your plan finally coming together.</p>
+    </div>
+
+    <div class="trust">
+      <div class="t"><span class="ic">&#9829;</span><span class="lb">60-Day Peace of Mind Promise</span></div>
+      <div class="t"><span class="ic">&#128274;</span><span class="lb">Secure checkout · card details never stored</span></div>
+      <div class="t"><span class="ic">&#9200;</span><span class="lb">Instant digital access · watch anytime</span></div>
+      <div class="t"><span class="ic">&#128231;</span><span class="lb">No spam · unsubscribe in one click</span></div>
+    </div>
+
+    <h2>Questions people ask before they start</h2>
+    <div class="faq">
+      <details>
+        <summary>Is this a will or a legal document?</summary>
+        <p>No. The Family Peace Plan is an organizational tool — a simple, guided place to gather where everything is and what your family would need to find. It doesn't replace a will, a trust, or legal advice; it connects them, so the documents you already have are actually findable. For legal matters, consult the appropriate licensed professional.</p>
+      </details>
+      <details>
+        <summary>I'm not "techy." Is this hard to use?</summary>
+        <p>Not at all. It's built for exactly this. You can fill it in by hand in large print, or type it online and print it — whichever feels easier. There's no app to install, no login to remember, and no live class or Zoom. A calm, watch-anytime walkthrough guides you one plain question at a time.</p>
+      </details>
+      <details>
+        <summary>How long does it take?</summary>
+        <p>Most people finish a first pass in one quiet afternoon. But you can't fall behind — five minutes today, ten tomorrow is perfectly fine. Each page asks one simple question at a time, and nothing has to be perfect before you move on.</p>
+      </details>
+      <details>
+        <summary>Is my information safe? Do you ask for account numbers or passwords?</summary>
+        <p>Never. The plan only asks <strong>where</strong> things are kept — for example, where the Medicare card is, not the number itself. It never asks for full account numbers, PINs, or passwords. You stay in control of the sensitive details; your family simply knows where to look.</p>
+      </details>
+      <details>
+        <summary>What exactly do I get for $47?</summary>
+        <p>The complete Family Peace Plan: the 12-section workbook, the Sunday Afternoon Method™ guided walkthrough, the Family Map™ Quick-Start, the Open First Page + Family Letter™ template, the Annual Peace Review™, and 60 days of The Simple Life Club free. One time, instant access, yours to keep. If you'd like a professionally printed copy shipped to your door, you can add the printed edition for $49 at checkout.</p>
+      </details>
+      <details>
+        <summary>What if it's not right for me?</summary>
+        <p>You're covered by the 60-Day Peace of Mind Promise. Fill it out, talk with your family, and if you don't feel more prepared, tell us any time within 60 days for a full refund — and you keep the workbook. You never risk a dime to find out how it feels to have it done.</p>
+      </details>
+    </div>
+
+    <div class="cta-wrap">
+      <a class="cta" href="#fpp-order" data-fpp-open>Get My Family Peace Plan</a>
+      <p class="cta-note">One-time $47 · instant access · 60-day Peace of Mind Promise</p>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    The Family Peace Plan is an organizational tool — not legal, financial, tax, or medical advice, and not a will or a substitute for one; consult the appropriate licensed professional for those. It never asks for full account numbers, PINs, or passwords — only where they're kept (for example, where the Medicare card is, not the number). Stories shown are illustrative of the experience it's designed to create. &copy; SeniorSimple · The Simple Life™
+  </div>
+</div>
