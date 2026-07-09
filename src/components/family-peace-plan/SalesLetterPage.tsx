@@ -67,6 +67,14 @@ export function SalesLetterPage() {
 
   return (
     <div className={playfairDisplay.variable}>
+      {/*
+        Warm the connection to GHL before the first CTA click.
+        React 19 hoists these <link> tags into <head>, so they take effect on
+        initial load — DNS, TCP, and TLS handshake to go.seniorsimple.org are
+        already done by the time the modal iframe requests the page.
+      */}
+      <link rel="preconnect" href="https://go.seniorsimple.org" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://go.seniorsimple.org" />
       <div className="fpp fpp-letter">
         {IS_DRAFT_MODE && (
           <div className="fpp-draft-badge">Draft · Not published · Awaiting sign-off</div>
