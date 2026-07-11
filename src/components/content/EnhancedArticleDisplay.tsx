@@ -21,6 +21,7 @@ import { EnhancedArticle } from '../../lib/enhanced-articles'
 import CalculatorWrapper from '../calculators/CalculatorWrapper'
 import InteractiveTool from '../tools/InteractiveTool'
 import InteractiveChecklist from '../checklists/InteractiveChecklist'
+import MedicareCaptureMount from '../capture/MedicareCaptureMount'
 // Markdown processing is now handled on the server side
 
 interface EnhancedArticleDisplayProps {
@@ -497,11 +498,14 @@ export default function EnhancedArticleDisplay({
 
       {/* Article Content */}
       <div className="article-prose prose prose-lg max-w-none">
-        <div 
+        <div
           dangerouslySetInnerHTML={{ __html: article.html_body || article.content }}
           className="text-gray-800 leading-relaxed"
         />
       </div>
+
+      {/* Medicare email-capture unit — no-op unless slug matches config */}
+      <MedicareCaptureMount slug={article.slug} only={['inline', 'exit']} />
 
       {/* Article Footer */}
       <footer className="mt-12 pt-8 border-t border-gray-200">
