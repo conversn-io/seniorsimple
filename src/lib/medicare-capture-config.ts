@@ -12,49 +12,111 @@ export type TopicTag =
 
 export interface MagnetSpec {
   id: MagnetId
+  /** URL slug for the landing page: /resources/[lpSlug] */
+  lpSlug: string
   title: string
   fileName: string
   downloadPath: string
+  coverImagePath: string
   emailSubject: string
   successHeadline: string
   successBody: string
   ctaLabel: string
+  /** Ad-card copy shown inline in article body / sidebar */
+  adHeadline: string
+  adSubhead: string
+  /** LP hero copy */
+  lpHeadline: string
+  lpSubhead: string
+  lpBullets: string[]
 }
 
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
     id: 'decision-kit',
+    lpSlug: 'medicare-decision-kit-2026',
     title: '2026 Medicare Decision Kit',
     fileName: 'seniorsimple-medicare-decision-kit-2026.pdf',
     downloadPath: '/lead-magnets/medicare-decision-kit-2026.pdf',
+    coverImagePath: '/lead-magnets/covers/medicare-decision-kit-2026.svg',
     emailSubject: 'Your 2026 Medicare Decision Kit is inside',
     successHeadline: 'Your Decision Kit is on the way.',
     successBody:
       "Check your inbox — we've sent the 2026 Medicare Decision Kit. You can also download it now.",
     ctaLabel: 'Send Me the Decision Kit',
+    adHeadline: 'Free 2026 Medicare Decision Kit',
+    adSubhead:
+      'Plain-English guide to Medicare, Medigap, Advantage, and Part D — 2026 rates included.',
+    lpHeadline: 'Everything you need to pick a Medicare plan this year.',
+    lpSubhead:
+      "A step-by-step guide from SeniorSimple. No agent will contact you — just the numbers, the trade-offs, and a decision framework you can act on.",
+    lpBullets: [
+      "2026 premiums, deductibles, and out-of-pocket caps for every plan type",
+      "Medigap vs. Medicare Advantage — a plain-English side-by-side",
+      "The one Part D question that saves seniors ~$700/year",
+      "A 3-step enrollment checklist so you don't miss a deadline",
+    ],
   },
   'tool-result': {
     id: 'tool-result',
+    lpSlug: 'medicare-estimate',
     title: 'Your Medicare Estimate',
     fileName: 'seniorsimple-medicare-estimate.pdf',
     downloadPath: '/lead-magnets/medicare-estimate-template.pdf',
+    coverImagePath: '/lead-magnets/covers/medicare-estimate.svg',
     emailSubject: 'Your Medicare estimate is inside',
     successHeadline: "Your estimate is on the way.",
     successBody:
       "We've emailed your Medicare estimate. You can also download a copy now.",
     ctaLabel: 'Email Me My Estimate',
+    adHeadline: 'Get your Medicare estimate — by email',
+    adSubhead:
+      'A saved copy of your Medicare cost estimate, plus the SeniorSimple planning guide.',
+    lpHeadline: 'Your Medicare estimate, on paper.',
+    lpSubhead:
+      "Save your Medicare cost estimate as a PDF and get the SeniorSimple planning guide alongside it. No agent, no sales call.",
+    lpBullets: [
+      "Your monthly premium estimate broken down by Medicare part",
+      "How your income triggers IRMAA — and what to do about it",
+      "The 4-question checklist for picking Medigap vs. Advantage",
+      "Enrollment periods and late-enrollment penalties, explained",
+    ],
   },
   'starter-guide': {
     id: 'starter-guide',
+    lpSlug: 'medicare-starter-guide',
     title: 'Medicare Starter Guide',
     fileName: 'seniorsimple-medicare-starter-guide.pdf',
     downloadPath: '/lead-magnets/medicare-starter-guide.pdf',
+    coverImagePath: '/lead-magnets/covers/medicare-starter-guide.svg',
     emailSubject: 'Your Medicare Starter Guide is inside',
     successHeadline: 'Your Starter Guide is on the way.',
     successBody:
       "Check your inbox — we've sent the plain-English Medicare Starter Guide. You can also download it now.",
     ctaLabel: 'Send Me the Starter Guide',
+    adHeadline: 'New to Medicare? Start here.',
+    adSubhead:
+      'A plain-English Medicare Starter Guide from SeniorSimple. No jargon, no sales calls.',
+    lpHeadline: 'The plain-English Medicare Starter Guide.',
+    lpSubhead:
+      "Everything a newly eligible senior needs to know — in one short, plain-English guide. No jargon, no agents.",
+    lpBullets: [
+      "The four parts of Medicare, in ten minutes",
+      "Enrollment windows and how to avoid a lifetime penalty",
+      "Medicaid vs. Medicare — who qualifies for what",
+      "The 5 questions to ask before picking a plan",
+    ],
   },
+}
+
+export function getMagnetByLpSlug(lpSlug: string): MagnetSpec | null {
+  return (
+    Object.values(MAGNETS).find((m) => m.lpSlug === lpSlug) ?? null
+  )
+}
+
+export function getAllMagnets(): MagnetSpec[] {
+  return Object.values(MAGNETS)
 }
 
 export interface PageCaptureConfig {
