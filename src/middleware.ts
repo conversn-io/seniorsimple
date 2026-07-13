@@ -1,14 +1,22 @@
 /**
- * SeniorSimple A/B Test Middleware
- * 
- * Handles traffic splitting for landing page variants:
- * - /quiz → splits to /quiz-book-b (control), /quiz-rmd-v1, or /quiz-rmd-v2
- * 
- * Uses shared middleware utility from shared-utils/ab-test-middleware.ts
+ * SeniorSimple Split-Test Middleware
+ *
+ * Two split-test types coexist:
+ *
+ * 1. QUIZ (redirect model, shared-utils/ab-test-middleware.ts):
+ *    /quiz → splits to /quiz-book-b (control), /quiz-rmd-v1, /quiz-rmd-v2
+ *
+ * 2. ADVERTORIAL (slot-swap model, shared-utils/layered-flags.ts):
+ *    /lp/* → assigns ad_header + ad_headline cookies, no redirect.
+ *    The /lp/[slug] page reads the cookies server-side and renders the
+ *    assigned variant into the header + H1 slots. See
+ *    shared-utils/ADVERTORIAL_SPLIT_TESTING.md for the full contract.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSplitTestMiddleware } from './utils/ab-test-middleware';
+import { resolveFlags, applyFlagAssignments } from './utils/layered-flags';
+import { buildAdvertorialFlagsConfig } from './lib/advertorial-flags-config';
 
 // Explicitly set Edge Runtime for Next.js 15
 export const runtime = 'edge';
@@ -34,26 +42,33 @@ const sharedMiddleware = createSplitTestMiddleware({
   allowQueryOverride: true
 });
 
-// Export middleware with proper Next.js types
+const advertorialConfig = buildAdvertorialFlagsConfig('seniorsimple.org');
+
 export const middleware = async (request: NextRequest) => {
-  // Debug logging
-  console.log('[Middleware] Request pathname:', request.nextUrl.pathname);
-  console.log('[Middleware] Request URL:', request.url);
-  
+  const { pathname } = request.nextUrl;
+  console.log('[Middleware] Request pathname:', pathname);
+
+  // 1. Advertorial slot-swap allocation on /lp/*.
+  //    No redirect — just stamps ad_header + ad_headline cookies (and
+  //    debug headers) so the LP's server component can render the
+  //    assigned variant into its slots.
+  if (pathname.startsWith('/lp/')) {
+    const assignments = resolveFlags(request, advertorialConfig);
+    return applyFlagAssignments(NextResponse.next(), assignments, 'seniorsimple.org');
+  }
+
+  // 2. Quiz-funnel entry-path split (existing behavior).
   const result = await sharedMiddleware(request);
   console.log('[Middleware] Result:', result);
-  
-  // If no result, pass through
+
   if (!result) {
     console.log('[Middleware] No result, passing through');
     return NextResponse.next();
   }
-  
-  // Create redirect response
+
   if (result.status === 307 && result.url) {
     const response = NextResponse.redirect(new URL(result.url, request.url));
-    
-    // Set cookie if specified
+
     if (result.setCookie) {
       const expires = new Date();
       expires.setTime(expires.getTime() + result.setCookie.ttlDays * 24 * 60 * 60 * 1000);
@@ -64,21 +79,19 @@ export const middleware = async (request: NextRequest) => {
         httpOnly: false
       });
     }
-    
-    // Set custom headers
+
     if (result.headers) {
       Object.entries(result.headers).forEach(([key, value]) => {
         response.headers.set(key, value as string);
       });
     }
-    
+
     return response;
   }
-  
+
   return NextResponse.next();
 };
 
-// Configure which routes the middleware should run on
 export const config = {
-  matcher: '/quiz'
+  matcher: ['/quiz', '/lp/:path*']
 };
