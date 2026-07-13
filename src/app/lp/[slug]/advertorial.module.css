@@ -1,5 +1,5 @@
 /*
- * SeniorSimple Advertorial — Canonical Theme (v1)
+ * SeniorSimple Advertorial — Canonical Theme (v2)
  *
  * The default theme for /lp/[slug] advertorial LPs. Every new advertorial
  * rendered through this route inherits these tokens with zero manual
@@ -8,6 +8,9 @@
  * Canonical guide (change tokens THERE first, then here):
  *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_STYLE_GUIDE.md
  *
+ * Component-level companion:
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_COMPONENT_LIBRARY_v2.html
+ *
  * Rules baked in:
  *   • Serif H1 (Georgia bold) + serif body — newspaper voice.
  *   • Sans meta only (byline, date, captions, "Advertisement", disclosures,
@@ -15,21 +18,40 @@
  *   • Inline body links: news blue #1a5089, underlined. Brand teal
  *     (#36596A) is reserved for the masthead wordmark + section numerals —
  *     NEVER for text links.
- *   • CTA button: high-contrast green (#1a7f37). Blue is the sanctioned
- *     A/B alternate, not a replacement.
+ *   • Primary CTA: high-contrast green (#1a7f37). Sanctioned alternate:
+ *     button blue (#1e63c7). A/B one or the other — never both on the
+ *     same screen.
+ *
+ * v2 additions (tokens only — component classes land as their React
+ * primitives get built, not speculatively):
+ *   --blue  sanctioned CTA button alternate
+ *   --sel   selected-state fill for quiz tiles + option pills
+ *   --gold  pull-quote left border
+ *   --warn  compliance-warning tone (review UI only, never on a live LP)
  */
 
 .root {
   --ink: #1a1a1a;
   --muted: #6b7280;
   --rule: #e5e7eb;
-  /* Brand teal — masthead wordmark + section numerals ONLY. Never on links. */
+  /* Brand teal — masthead wordmark + section numerals + step-indicator ONLY. */
   --teal: #36596a;
-  /* News blue for inline body links. Decoupled from --teal on purpose. */
+  /* News blue for inline body text links. Decoupled from --teal on purpose. */
   --link: #1a5089;
   --cta: #1a7f37;
   --cta2: #166a2e;
+  /* CTA button ALTERNATE — for A/B against --cta. Distinct hex from --link:
+     --link is a text color, --blue is a button background. Never both on
+     one screen. */
+  --blue: #1e63c7;
   --band: #f3f4f6;
+  /* Selected-state fill for quiz tiles / option pills. Green-tinted so it
+     reads with --cta borders. Used by future D-series components. */
+  --sel: #eaf3ea;
+  /* Warm editorial accent for pull-quote left border. */
+  --gold: #e4cda1;
+  /* Compliance-warning tone (BANNED components, review UI). Never on live LP. */
+  --warn: #fdecea;
 
   font-family: Georgia, 'Times New Roman', serif;
   color: var(--ink);
@@ -165,9 +187,9 @@
   text-decoration: none;
   font-family: Arial, sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
   padding: 14px 26px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .cta:hover {
