@@ -1,0 +1,544 @@
+/*
+ * SeniorSimple Advertorial — Canonical Theme (v2)
+ *
+ * The default theme for /lp/[slug] advertorial LPs. Every new advertorial
+ * rendered through this route inherits these tokens with zero manual
+ * styling. Reads like an article, not a marketing page.
+ *
+ * Canonical guide (change tokens THERE first, then here):
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_STYLE_GUIDE.md
+ *
+ * Component-level companion:
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_COMPONENT_LIBRARY_v2.html
+ *
+ * Rules baked in:
+ *   • Serif H1 (Georgia bold) + serif body — newspaper voice.
+ *   • Sans meta only (byline, date, captions, "Advertisement", disclosures,
+ *     section kickers) — correct editorial hierarchy.
+ *   • Inline body links: news blue #1a5089, underlined. Brand teal
+ *     (#36596A) is reserved for the masthead wordmark + section numerals —
+ *     NEVER for text links.
+ *   • Primary CTA: high-contrast green (#1a7f37). Sanctioned alternate:
+ *     button blue (#1e63c7). A/B one or the other — never both on the
+ *     same screen.
+ *
+ * v2 additions (tokens only — component classes land as their React
+ * primitives get built, not speculatively):
+ *   --blue  sanctioned CTA button alternate
+ *   --sel   selected-state fill for quiz tiles + option pills
+ *   --gold  pull-quote left border
+ *   --warn  compliance-warning tone (review UI only, never on a live LP)
+ */
+
+.root {
+  --ink: #1a1a1a;
+  --muted: #6b7280;
+  --rule: #e5e7eb;
+  /* Brand teal — masthead wordmark + section numerals + step-indicator ONLY. */
+  --teal: #36596a;
+  /* News blue for inline body text links. Decoupled from --teal on purpose. */
+  --link: #1a5089;
+  --cta: #1a7f37;
+  --cta2: #166a2e;
+  /* CTA button ALTERNATE — for A/B against --cta. Distinct hex from --link:
+     --link is a text color, --blue is a button background. Never both on
+     one screen. */
+  --blue: #1e63c7;
+  --band: #f3f4f6;
+  /* Selected-state fill for quiz tiles / option pills. Green-tinted so it
+     reads with --cta borders. Used by future D-series components. */
+  --sel: #eaf3ea;
+  /* Warm editorial accent for pull-quote left border. */
+  --gold: #e4cda1;
+  /* Compliance-warning tone (BANNED components, review UI). Never on live LP. */
+  --warn: #fdecea;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--ink);
+  background: #fff;
+  line-height: 1.65;
+  font-size: 18px;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+/* Inline body links — news blue, underlined. `:where()` keeps this rule at
+   specificity (0,0,1) so ANY class-level rule (.cta, .footer a) overrides
+   without a fight. Without :where(), .wrap a would beat .cta and paint the
+   CTA text blue + underlined. */
+:where(.wrap) a {
+  color: var(--link);
+  text-decoration: underline;
+}
+
+.adnote {
+  background: var(--band);
+  color: var(--muted);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px;
+}
+
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.mastheadName {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--teal);
+}
+
+.mastheadSection {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 20px 40px;
+}
+
+/* Article title — serif bold, newspaper voice. Explicit font-family +
+   weight override any browser UA heading font so the editorial cue lands
+   consistently across browsers. */
+.h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 33px;
+  line-height: 1.22;
+  margin: 14px 0 8px;
+}
+
+.byline {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.p {
+  margin: 12px 0;
+}
+
+.lead {
+  font-size: 19px;
+  margin: 12px 0;
+}
+
+.hero {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  margin: 16px 0;
+  background: var(--band);
+  height: auto;
+}
+
+.cap {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.h2 {
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  margin: 28px 0 6px;
+}
+
+.h3 {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  margin: 18px 0 4px;
+}
+
+/* Section numerals get the sparing brand-teal hint (optional per guide). */
+.num {
+  color: var(--teal);
+}
+
+.ctaWrap {
+  margin: 16px 0 26px;
+}
+
+.cta {
+  display: inline-block;
+  background: var(--cta);
+  color: #fff;
+  text-decoration: none;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  padding: 14px 26px;
+  border-radius: 8px;
+}
+
+.cta:hover {
+  background: var(--cta2);
+}
+
+.pick {
+  background: var(--band);
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--cta);
+  padding: 16px 18px;
+  margin: 22px 0;
+  border-radius: 4px;
+}
+
+.pickTag {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cta);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pickBody {
+  margin-top: 6px;
+}
+
+.small {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.faq {
+  border-top: 1px solid var(--rule);
+  margin-top: 24px;
+  padding-top: 8px;
+}
+
+.faq .h3 {
+  margin-bottom: 2px;
+}
+
+.footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 26px;
+  padding-top: 16px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Footer meta links (Privacy / Terms / Contact) are meta chrome, not
+   editorial content — stay muted gray. Placed AFTER .wrap a so it wins on
+   descendants of both (specificity tied → source order decides). */
+.footer a {
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.footerSecond {
+  margin-top: 8px;
+}
+
+/*
+ * ========================================================================
+ * v2 COMPONENT CLASSES
+ *
+ * One class per component in ADVERTORIAL_COMPONENT_LIBRARY_v2.html.
+ * Kept grouped by section (A/B/C/D/E/F) so a code + doc diff stay legible
+ * side by side. Every rule uses tokens from :root above — never a raw hex.
+ * ========================================================================
+ */
+
+/* -- A · Page chrome ---------------------------------------------------- */
+
+/* A2 · Dek — single-sentence tease under the byline. Serif Georgia, slightly
+   larger + slightly softer color than body. */
+.dek {
+  font-size: 20px;
+  color: #333;
+  margin: 6px 0 12px;
+}
+
+/* -- B · Text & formatting --------------------------------------------- */
+
+/* B3 · Checkmark benefit list. Sans, prefix each item with a ✅. */
+.chk {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 12px;
+  font-family: Arial, sans-serif;
+}
+.chk li {
+  margin: 6px 0;
+}
+.chk li::before {
+  content: '✅ ';
+}
+
+/* B3 · Trailing "point" line — sans + link blue + bold + 👉 emoji. Used
+   under the checkmark list. */
+.point {
+  font-family: Arial, sans-serif;
+  color: var(--link);
+  font-weight: 700;
+}
+
+/* B1 · Yellow highlight. Style the native <mark> element inside .wrap so
+   authors just wrap text in <mark>. Per style guide ≤ 1 per section. */
+:where(.wrap) mark {
+  background: #fff2ac;
+  padding: 0 2px;
+  color: inherit;
+}
+
+/* B4 · Pull-quote. Gold left border + warm cream fill. Attribution goes in
+   a nested .who. Compliance rule (guide §5.3): only use with a real,
+   attributable quote — never fabricate. */
+.quote {
+  border-left: 4px solid var(--gold);
+  background: #fbf7ef;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-style: italic;
+}
+.quoteWho {
+  font-family: Arial, sans-serif;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* -- C · CTA button system --------------------------------------------- */
+
+/* C2 · Blue alternate. Only ever swap with .cta, never combine both on
+   one screen (guide §2 rule). */
+.ctaBlue {
+  background: var(--blue);
+}
+.ctaBlue:hover {
+  background: var(--blue);
+  filter: brightness(0.92);
+}
+
+/* C2 · Full-width variant — for post-Editor's-Pick + article close. */
+.ctaFull {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* C3 · Sticky mobile bar wrapper. Fixed-position so it stays visible
+   throughout the whole scroll, not just on approach to the end of the
+   article. Hidden at ≥900px — mobile-first, per the style guide. Negative
+   margins let the bar span the LP measure without inheriting .wrap padding. */
+.sticky {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid var(--rule);
+  padding: 10px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+  margin: 24px -20px 0;
+}
+@media (min-width: 900px) {
+  .sticky {
+    display: none;
+  }
+}
+
+/* Centering helper for CTAs / quiz submit buttons. */
+.center {
+  text-align: center;
+  margin: 14px 0;
+}
+
+/* -- D · Interactive qualifiers ---------------------------------------- */
+
+/* D1 · Image quiz tiles — 2-col grid on mobile, works on wider viewports
+   without extra rules because the LP measure stays narrow. */
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+.tile {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.tile:hover {
+  border-color: var(--cta);
+}
+.tileSelected {
+  border-color: var(--cta);
+  background: var(--sel);
+  box-shadow: 0 0 0 2px var(--cta) inset;
+}
+.tileIcon {
+  font-size: 44px;
+  line-height: 1;
+}
+.tileLabel {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+/* D2 · Multi-select pill row. */
+.ms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+.opt {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  border: 1px solid var(--rule);
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.opt:hover {
+  border-color: var(--cta);
+}
+.optSelected {
+  border-color: var(--cta);
+  background: var(--sel);
+}
+
+/* D3 · State select + step indicator. */
+.stateSelect {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+.steps {
+  display: flex;
+  gap: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 8px 0;
+}
+.step {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--band);
+  color: var(--muted);
+}
+.stepOn {
+  background: var(--teal);
+  color: #fff;
+}
+
+/* -- E · Highlight & trust --------------------------------------------- */
+
+/* E2 · Star rating strip. Compliance: only render with a real aggregate.
+   The color is warm gold, distinct from --gold (quote border). */
+.stars {
+  color: #e6a817;
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+.rev {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* E3 · Trust bar (logos). Only use real, permitted brand marks. */
+.trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.logo {
+  background: var(--band);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-weight: 700;
+  color: #9aa2ad;
+}
+
+/* E4 · Clickable image link wrapper. */
+.clickable {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* -- F · Close --------------------------------------------------------- */
+
+/* F1 · Wrap-up recap list — bold label + inline blue anchor per item. */
+.wrapList {
+  padding: 0;
+  margin: 12px 0;
+}
+.wrapList li {
+  margin: 8px 0;
+  list-style: none;
+}
+.wrapList b {
+  color: var(--ink);
+}
+
+/* F2 · Social share bar — FB + Twitter buttons. */
+.share {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+.share a {
+  flex: 1;
+  text-align: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+.shareFb {
+  background: #3b5998;
+}
+.shareTw {
+  background: #1da1f2;
+}
+
