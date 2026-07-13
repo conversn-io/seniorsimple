@@ -18,9 +18,6 @@ import { createSplitTestMiddleware } from './utils/ab-test-middleware';
 import { resolveFlags, applyFlagAssignments } from './utils/layered-flags';
 import { buildAdvertorialFlagsConfig } from './lib/advertorial-flags-config';
 
-// Explicitly set Edge Runtime for Next.js 15
-export const runtime = 'edge';
-
 // Create middleware with SeniorSimple-specific configuration
 const sharedMiddleware = createSplitTestMiddleware({
   entryPath: '/quiz',
@@ -52,9 +49,23 @@ export const middleware = async (request: NextRequest) => {
   //    No redirect — just stamps ad_header + ad_headline cookies (and
   //    debug headers) so the LP's server component can render the
   //    assigned variant into its slots.
+  //
+  //    First-visit correctness: response.cookies.set() writes for the NEXT
+  //    request, so cookies() in the server component would read null on
+  //    first visit and always fall back to control — skewing the test.
+  //    Mirror the assignment onto request.cookies and forward via
+  //    NextResponse.next({ request }) so the SSR render for THIS request
+  //    sees the newly allocated variant.
   if (pathname.startsWith('/lp/')) {
     const assignments = resolveFlags(request, advertorialConfig);
-    return applyFlagAssignments(NextResponse.next(), assignments, 'seniorsimple.org');
+    for (const a of Object.values(assignments)) {
+      request.cookies.set(a.cookieName, a.variant);
+    }
+    return applyFlagAssignments(
+      NextResponse.next({ request }),
+      assignments,
+      'seniorsimple.org'
+    );
   }
 
   // 2. Quiz-funnel entry-path split (existing behavior).

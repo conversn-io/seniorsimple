@@ -1,0 +1,202 @@
+/*
+ * Editorial-native advertorial styles — ported verbatim from the source LP
+ * HTML (perks_bridge_lp.html / perks_lp_B_listicle.html) so the "native" feel
+ * is preserved exactly (Georgia body, Arial-sans headings, main-page-only
+ * layout).
+ *
+ * Scoped as a CSS module: only imported by /lp/[slug]/*, does not leak to the
+ * rest of the site. Kept as raw class names for a 1:1 diff against the source.
+ */
+
+.root {
+  --ink: #1a1a1a;
+  --muted: #6b7280;
+  --rule: #e5e7eb;
+  --teal: #36596a;
+  --link: #36596a;
+  --cta: #1a7f37;
+  --cta2: #166a2e;
+  --band: #f3f4f6;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--ink);
+  background: #fff;
+  line-height: 1.65;
+  font-size: 18px;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+.adnote {
+  background: var(--band);
+  color: var(--muted);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px;
+}
+
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.mastheadName {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--teal);
+}
+
+.mastheadSection {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 20px 40px;
+}
+
+.h1 {
+  font-size: 33px;
+  line-height: 1.22;
+  margin: 14px 0 8px;
+}
+
+.byline {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.p {
+  margin: 12px 0;
+}
+
+.lead {
+  font-size: 19px;
+  margin: 12px 0;
+}
+
+.hero {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  margin: 16px 0;
+  background: var(--band);
+  height: auto;
+}
+
+.cap {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.h2 {
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  margin: 28px 0 6px;
+}
+
+.h3 {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  margin: 18px 0 4px;
+}
+
+.num {
+  color: var(--link);
+}
+
+.ctaWrap {
+  margin: 16px 0 26px;
+}
+
+.cta {
+  display: inline-block;
+  background: var(--cta);
+  color: #fff;
+  text-decoration: none;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 14px 26px;
+  border-radius: 6px;
+}
+
+.cta:hover {
+  background: var(--cta2);
+}
+
+.pick {
+  background: var(--band);
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--cta);
+  padding: 16px 18px;
+  margin: 22px 0;
+  border-radius: 4px;
+}
+
+.pickTag {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cta);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pickBody {
+  margin-top: 6px;
+}
+
+.small {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.faq {
+  border-top: 1px solid var(--rule);
+  margin-top: 24px;
+  padding-top: 8px;
+}
+
+.faq .h3 {
+  margin-bottom: 2px;
+}
+
+.footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 26px;
+  padding-top: 16px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer a {
+  color: var(--muted);
+}
+
+.footerSecond {
+  margin-top: 8px;
+}
