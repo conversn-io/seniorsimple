@@ -3,30 +3,30 @@
 /**
  * Advertorial LP shell (client component).
  *
- * The default surface for every /lp/[slug] advertorial. Any new advertorial
- * (new slug, new angle) renders through this shell and inherits the
- * editorial-native theme in `advertorial.module.css` with zero manual
- * styling.
+ * The default surface for every /lp/[slug] advertorial. Composes from the
+ * v2 component library — any new advertorial (new slug, new angle) renders
+ * through this shell and inherits the editorial-native theme + primitives
+ * with zero manual styling.
  *
  * Design spec (typography, color, layout tokens):
  *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_STYLE_GUIDE.md
  *
+ * Component-level spec (17 named primitives):
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_COMPONENT_LIBRARY_v2.html
+ *
  * Split-test contract (allocation, slot resolution):
  *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_SPLIT_TESTING.md
  *
- * Renders masthead + adnote + footer around the angle-specific body. Handles:
- *   • Geo personalization — `?state=Ohio` populates the H1 {STATE} token and
- *     in-body "your area" mentions; empty falls back to "Your State" /
- *     "your area".
- *   • CTA URL construction — appends sub1={click_id}&sub2={widget_id}
- *     &sub3={ad_header}&sub4={ad_headline}&sub5={slug} to the Prismique
- *     tracking base. click_id / widget_id come from inbound RevContent
- *     params (?click_id or ?clickid or ?sub1; ?widget_id or ?sub2); variant
- *     ids are server-resolved (from ss_ad_header + ss_ad_headline cookies)
- *     and passed in as props.
- *   • Analytics — fires GA4 page_view + POST /api/analytics/track-event with
- *     ad_header_variant + ad_headline_variant stamped so downstream Supabase
- *     attribution splits by variant without re-joining sessions.
+ * Responsibilities:
+ *   • Read inbound URL params (state, click_id, widget_id) on mount.
+ *   • Compute the CtaContext `subs` object (sub1–sub5) and install
+ *     <CtaProvider> so every downstream CTA + interactive quiz resolves to
+ *     the same outbound URL. D-series quiz selections append as sub6+.
+ *   • Fire GA4 page_view + POST /api/analytics/track-event with
+ *     ad_header_variant + ad_headline_variant stamped for downstream
+ *     Supabase / Meta CAPI attribution.
+ *   • Render <Masthead> + body + <DisclosureFooter> — everything else lives
+ *     in the angle-specific body.
  */
 
 import { useEffect, useState } from 'react';
@@ -34,6 +34,12 @@ import type { AdvertorialAngle } from '@/lib/advertorial-content';
 import AngleABody from './AngleABody';
 import AngleBBody from './AngleBBody';
 import styles from './advertorial.module.css';
+import {
+  CtaProvider,
+  DisclosureFooter,
+  Masthead,
+  type CtaSubs,
+} from './components';
 
 interface LpPageProps {
   slug: string;
@@ -46,28 +52,6 @@ interface LpPageProps {
 }
 
 const SITE_KEY = 'seniorsimple.org';
-
-interface CtaSubs {
-  clickId: string;
-  widgetId: string;
-  headerId: string;
-  headlineId: string;
-  slug: string;
-}
-
-function buildCtaHref(base: string, subs: CtaSubs): string {
-  try {
-    const url = new URL(base);
-    url.searchParams.set('sub1', subs.clickId);
-    url.searchParams.set('sub2', subs.widgetId);
-    url.searchParams.set('sub3', subs.headerId);
-    url.searchParams.set('sub4', subs.headlineId);
-    url.searchParams.set('sub5', subs.slug);
-    return url.toString();
-  } catch {
-    return base;
-  }
-}
 
 function getOrCreateSessionId(): string {
   const existing = sessionStorage.getItem('session_id');
@@ -93,15 +77,10 @@ export default function LpPage({
   offerTrackingUrl,
 }: LpPageProps) {
   const [stateName, setStateName] = useState<string>('');
-  const [ctaHref, setCtaHref] = useState<string>(() =>
-    buildCtaHref(offerTrackingUrl, {
-      clickId: '',
-      widgetId: '',
-      headerId: headerId ?? '',
-      headlineId: headlineId ?? '',
-      slug,
-    })
-  );
+  const [inbound, setInbound] = useState<{ clickId: string; widgetId: string }>({
+    clickId: '',
+    widgetId: '',
+  });
 
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search);
@@ -111,22 +90,9 @@ export default function LpPage({
     const widgetId = qp.get('widget_id') || qp.get('sub2') || '';
 
     if (st) setStateName(st);
-
-    setCtaHref(
-      buildCtaHref(offerTrackingUrl, {
-        clickId,
-        widgetId,
-        headerId: headerId ?? '',
-        headlineId: headlineId ?? '',
-        slug,
-      })
-    );
+    setInbound({ clickId, widgetId });
 
     const sessionId = getOrCreateSessionId();
-    const flagProps = {
-      ad_header_variant: headerId,
-      ad_headline_variant: headlineId,
-    };
     const commonProps = {
       site_key: SITE_KEY,
       slug,
@@ -134,7 +100,8 @@ export default function LpPage({
       state: st || null,
       click_id: clickId || null,
       widget_id: widgetId || null,
-      ...flagProps,
+      ad_header_variant: headerId,
+      ad_headline_variant: headlineId,
     };
 
     if (typeof window.gtag === 'function') {
@@ -164,7 +131,15 @@ export default function LpPage({
     }).catch(() => {
       /* non-blocking */
     });
-  }, [slug, angle, headerId, headlineId, offerTrackingUrl]);
+  }, [slug, angle, headerId, headlineId]);
+
+  const subs: CtaSubs = {
+    sub1: inbound.clickId,
+    sub2: inbound.widgetId,
+    sub3: headerId ?? '',
+    sub4: headlineId ?? '',
+    sub5: slug,
+  };
 
   const stateArea = stateName || 'your area';
   const displayStateName = stateName || 'Your State';
@@ -172,35 +147,41 @@ export default function LpPage({
   const bodyProps = {
     headline,
     headerSrc,
-    ctaHref,
     stateName: displayStateName,
     stateArea,
   };
 
   return (
-    <article className={styles.root}>
-      <div className={styles.adnote}>Advertisement</div>
-      <div className={styles.masthead}>
-        <span className={styles.mastheadName}>SeniorSimple</span>
-        <span className={styles.mastheadSection}>Money · Retirement</span>
-      </div>
-      <div className={styles.wrap}>
-        {angle === 'A' ? <AngleABody {...bodyProps} /> : <AngleBBody {...bodyProps} />}
-
-        <footer className={styles.footer}>
-          <p className={styles.p}>
-            Advertisement. SeniorSimple publishes independent money and retirement
-            guides and may earn compensation from products featured, including American
-            Perks Club, a third-party membership service. Discounts and savings vary by
-            location and use.
-          </p>
-          <p className={styles.footerSecond}>
-            © 2026 SeniorSimple — a Simple Media Network property ·{' '}
-            <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> ·{' '}
-            <a href="/contact">Contact</a>
-          </p>
-        </footer>
-      </div>
-    </article>
+    <CtaProvider base={offerTrackingUrl} subs={subs}>
+      <article className={styles.root}>
+        <Masthead />
+        <div className={styles.wrap}>
+          {angle === 'A' ? (
+            <AngleABody {...bodyProps} />
+          ) : (
+            <AngleBBody {...bodyProps} />
+          )}
+          <DisclosureFooter
+            disclosure={
+              <>
+                Advertisement. SeniorSimple publishes independent money and
+                retirement guides and may earn compensation from products
+                featured, including American Perks Club, a third-party
+                membership service. Discounts and savings vary by location and
+                use.
+              </>
+            }
+            copyright={
+              <>© 2026 SeniorSimple — a Simple Media Network property</>
+            }
+            legalLinks={[
+              { label: 'Privacy', href: '/privacy' },
+              { label: 'Terms', href: '/terms' },
+              { label: 'Contact', href: '/contact' },
+            ]}
+          />
+        </div>
+      </article>
+    </CtaProvider>
   );
 }
