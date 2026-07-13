@@ -14,9 +14,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createSplitTestMiddleware } from './utils/ab-test-middleware';
-import { resolveFlags, applyFlagAssignments } from './utils/layered-flags';
-import { buildAdvertorialFlagsConfig } from './lib/advertorial-flags-config';
+import { createSplitTestMiddleware } from '@/utils/ab-test-middleware';
+import { resolveFlags, applyFlagAssignments } from '@/utils/layered-flags';
+import { buildAdvertorialFlagsConfig } from '@/lib/advertorial-flags-config';
 
 // Create middleware with SeniorSimple-specific configuration
 const sharedMiddleware = createSplitTestMiddleware({
