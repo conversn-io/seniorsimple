@@ -9,7 +9,7 @@
  */
 
 import type { AngleBodyProps } from './lp-types';
-import styles from './perks.module.css';
+import styles from './advertorial.module.css';
 
 export default function AngleABody({
   headline,

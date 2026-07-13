@@ -3,6 +3,17 @@
 /**
  * Advertorial LP shell (client component).
  *
+ * The default surface for every /lp/[slug] advertorial. Any new advertorial
+ * (new slug, new angle) renders through this shell and inherits the
+ * editorial-native theme in `advertorial.module.css` with zero manual
+ * styling.
+ *
+ * Design spec (typography, color, layout tokens):
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_STYLE_GUIDE.md
+ *
+ * Split-test contract (allocation, slot resolution):
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_SPLIT_TESTING.md
+ *
  * Renders masthead + adnote + footer around the angle-specific body. Handles:
  *   • Geo personalization — `?state=Ohio` populates the H1 {STATE} token and
  *     in-body "your area" mentions; empty falls back to "Your State" /
@@ -22,7 +33,7 @@ import { useEffect, useState } from 'react';
 import type { AdvertorialAngle } from '@/lib/advertorial-content';
 import AngleABody from './AngleABody';
 import AngleBBody from './AngleBBody';
-import styles from './perks.module.css';
+import styles from './advertorial.module.css';
 
 interface LpPageProps {
   slug: string;

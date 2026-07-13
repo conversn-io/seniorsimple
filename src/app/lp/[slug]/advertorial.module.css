@@ -1,19 +1,32 @@
 /*
- * Editorial-native advertorial styles — ported verbatim from the source LP
- * HTML (perks_bridge_lp.html / perks_lp_B_listicle.html) so the "native" feel
- * is preserved exactly (Georgia body, Arial-sans headings, main-page-only
- * layout).
+ * SeniorSimple Advertorial — Canonical Theme (v1)
  *
- * Scoped as a CSS module: only imported by /lp/[slug]/*, does not leak to the
- * rest of the site. Kept as raw class names for a 1:1 diff against the source.
+ * The default theme for /lp/[slug] advertorial LPs. Every new advertorial
+ * rendered through this route inherits these tokens with zero manual
+ * styling. Reads like an article, not a marketing page.
+ *
+ * Canonical guide (change tokens THERE first, then here):
+ *   02-Expansion-Operations-Planning/shared-utils/ADVERTORIAL_STYLE_GUIDE.md
+ *
+ * Rules baked in:
+ *   • Serif H1 (Georgia bold) + serif body — newspaper voice.
+ *   • Sans meta only (byline, date, captions, "Advertisement", disclosures,
+ *     section kickers) — correct editorial hierarchy.
+ *   • Inline body links: news blue #1a5089, underlined. Brand teal
+ *     (#36596A) is reserved for the masthead wordmark + section numerals —
+ *     NEVER for text links.
+ *   • CTA button: high-contrast green (#1a7f37). Blue is the sanctioned
+ *     A/B alternate, not a replacement.
  */
 
 .root {
   --ink: #1a1a1a;
   --muted: #6b7280;
   --rule: #e5e7eb;
+  /* Brand teal — masthead wordmark + section numerals ONLY. Never on links. */
   --teal: #36596a;
-  --link: #36596a;
+  /* News blue for inline body links. Decoupled from --teal on purpose. */
+  --link: #1a5089;
   --cta: #1a7f37;
   --cta2: #166a2e;
   --band: #f3f4f6;
@@ -27,6 +40,13 @@
 
 .root * {
   box-sizing: border-box;
+}
+
+/* Inline body links — news blue, underlined. Applies to every <a> inside
+   the .wrap column; .cta and .footer a rules below override where needed. */
+.wrap a {
+  color: var(--link);
+  text-decoration: underline;
 }
 
 .adnote {
@@ -70,7 +90,12 @@
   padding: 18px 20px 40px;
 }
 
+/* Article title — serif bold, newspaper voice. Explicit font-family +
+   weight override any browser UA heading font so the editorial cue lands
+   consistently across browsers. */
 .h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
   font-size: 33px;
   line-height: 1.22;
   margin: 14px 0 8px;
@@ -122,8 +147,9 @@
   margin: 18px 0 4px;
 }
 
+/* Section numerals get the sparing brand-teal hint (optional per guide). */
 .num {
-  color: var(--link);
+  color: var(--teal);
 }
 
 .ctaWrap {
@@ -193,8 +219,12 @@
   color: var(--muted);
 }
 
+/* Footer meta links (Privacy / Terms / Contact) are meta chrome, not
+   editorial content — stay muted gray. Placed AFTER .wrap a so it wins on
+   descendants of both (specificity tied → source order decides). */
 .footer a {
   color: var(--muted);
+  text-decoration: underline;
 }
 
 .footerSecond {
