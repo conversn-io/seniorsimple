@@ -344,8 +344,10 @@
   text-align: center;
 }
 
-/* C3 · Sticky mobile bar wrapper. Component decides when to render
-   (mobile only, optional). */
+/* C3 · Sticky mobile bar wrapper. Fixed-position so it stays visible
+   throughout the whole scroll, not just on approach to the end of the
+   article. Hidden at ≥900px — mobile-first, per the style guide. Negative
+   margins let the bar span the LP measure without inheriting .wrap padding. */
 .sticky {
   position: sticky;
   bottom: 0;
@@ -354,6 +356,12 @@
   padding: 10px;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
   z-index: 10;
+  margin: 24px -20px 0;
+}
+@media (min-width: 900px) {
+  .sticky {
+    display: none;
+  }
 }
 
 /* Centering helper for CTAs / quiz submit buttons. */
