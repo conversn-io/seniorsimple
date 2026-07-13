@@ -3,100 +3,190 @@
 /**
  * CtaContext — one source of truth for the outbound offer URL on an LP.
  *
- * LpPage computes the base tracking URL + the server-known subs (header
- * variant, headline variant, slug) and reads the inbound RevContent params
- * (click_id, widget_id) from the URL, then passes those into <CtaProvider>.
+ * LOCKED parameter scheme (do not reorder without updating
+ * ADVERTORIAL_STYLE_GUIDE.md §6 + every downstream Prismique / RevContent
+ * mapping):
  *
- * Every non-interactive CTA (SectionCTA, PrimaryCTA, StickyCTA, BlueAnchor
- * that has no explicit href, WrapUpList) reads the resolved href via
- * `useCtaHref()`.
+ *   source_id — static publisher identifier ("keenanshaw_1323")
+ *   sub1      — RevContent click_id (inbound URL param)
+ *   sub2      — RevContent widget_id (inbound URL param)
+ *   sub3      — ad_header variant (server-resolved from cookie)
+ *   sub4      — ad_headline variant (server-resolved from cookie)
+ *   sub5      — LP slug
+ *   sub6      — spend_focus (above-fold quiz answer)
+ *   sub7      — state (URL param + / StateSelector selection)
+ *   sub8      — frequency (secondary quiz — reserved)
+ *   sub9      — angle A/B (server-known — creative id)
+ *   sub10     — reserved
  *
- * D-series interactive components (ImageQuiz, MultiSelectQuiz, StateSelector)
- * call `useSetSelection(key, value)` to append their user selection as a
- * higher-numbered sub param (sub6, sub7, ...) so Prismique attribution can
- * split by the quiz answer. sub1–sub5 are RESERVED for the split-test +
- * RevContent chain (see ADVERTORIAL_SPLIT_TESTING.md §Downstream propagation).
+ * Slot assignment is explicit via SLOT_BY_KEY (semantic key → sub#), not
+ * insertion order — a component that mounts second can't accidentally
+ * claim a slot meant for something else.
  */
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
 
-export interface CtaSubs {
-  /** RevContent click id (inbound). */
-  sub1: string;
-  /** RevContent widget id (inbound). */
-  sub2: string;
-  /** Assigned ad_header variant. */
-  sub3: string;
-  /** Assigned ad_headline variant. */
-  sub4: string;
-  /** Slug of the LP. */
-  sub5: string;
-}
+export type CtaSubKey =
+  | 'source_id'
+  | 'sub1'
+  | 'sub2'
+  | 'sub3'
+  | 'sub4'
+  | 'sub5'
+  | 'sub6'
+  | 'sub7'
+  | 'sub8'
+  | 'sub9'
+  | 'sub10';
+
+export type CtaSubs = Partial<Record<CtaSubKey, string>>;
+
+/**
+ * Semantic key → sub-slot mapping. Interactive components pass a semantic
+ * name (`selectionKey="spend_focus"`) and the provider routes it to the
+ * canonical slot. Locked per ADVERTORIAL_STYLE_GUIDE.md §6.
+ */
+const SLOT_BY_KEY: Record<string, CtaSubKey> = {
+  spend_focus: 'sub6',
+  state: 'sub7',
+  frequency: 'sub8',
+  angle: 'sub9',
+};
+
+/** URL param output order — matches the locked scheme. */
+const ORDERED_KEYS: CtaSubKey[] = [
+  'source_id',
+  'sub1',
+  'sub2',
+  'sub3',
+  'sub4',
+  'sub5',
+  'sub6',
+  'sub7',
+  'sub8',
+  'sub9',
+  'sub10',
+];
 
 interface CtaContextValue {
   base: string;
   href: string;
-  setSelection: (key: string, value: string) => void;
+  setSub: (key: CtaSubKey, value: string) => void;
 }
 
 const Ctx = createContext<CtaContextValue | null>(null);
 
 interface CtaProviderProps {
   base: string;
+  /**
+   * Initial (server-known + inbound-URL-read) subs. LpPage should memoize
+   * this so the internal sync effect only fires when a slot value actually
+   * changes.
+   */
   subs: CtaSubs;
   children: React.ReactNode;
 }
 
-export function CtaProvider({ base, subs, children }: CtaProviderProps) {
-  // Selection keys are ordered by insertion so sub6/sub7/... are stable.
-  const [selection, setSelection] = useState<Record<string, string>>({});
+function subsReducer(
+  state: CtaSubs,
+  action: { key: CtaSubKey; value: string }
+): CtaSubs {
+  if (state[action.key] === action.value) return state;
+  return { ...state, [action.key]: action.value };
+}
 
-  const setSelectionCb = useCallback((key: string, value: string) => {
-    setSelection((prev) => {
-      if (prev[key] === value) return prev;
-      return { ...prev, [key]: value };
-    });
+export function CtaProvider({ base, subs, children }: CtaProviderProps) {
+  const [runtimeSubs, dispatch] = useReducer(subsReducer, subs);
+
+  // Sync `subs` prop → reducer state when parent-owned slots update.
+  // In practice this fires once after mount (LpPage's useEffect reads
+  // URL params and re-renders with the populated subs); after that the
+  // memoized subs prop is stable and this effect skips.
+  useEffect(() => {
+    for (const [key, value] of Object.entries(subs) as [
+      CtaSubKey,
+      string | undefined,
+    ][]) {
+      if (value !== undefined && value !== '') {
+        dispatch({ key, value });
+      }
+    }
+  }, [subs]);
+
+  const setSub = useCallback((key: CtaSubKey, value: string) => {
+    dispatch({ key, value });
   }, []);
 
   const href = useMemo(() => {
     try {
       const url = new URL(base);
-      url.searchParams.set('sub1', subs.sub1);
-      url.searchParams.set('sub2', subs.sub2);
-      url.searchParams.set('sub3', subs.sub3);
-      url.searchParams.set('sub4', subs.sub4);
-      url.searchParams.set('sub5', subs.sub5);
-      // Assign interactive selections to sub6+ in stable insertion order.
-      Object.entries(selection).forEach(([, v], i) => {
-        if (v) url.searchParams.set(`sub${6 + i}`, v);
-      });
+      for (const key of ORDERED_KEYS) {
+        const value = runtimeSubs[key];
+        if (value !== undefined && value !== '') {
+          url.searchParams.set(key, value);
+        }
+      }
       return url.toString();
     } catch {
       return base;
     }
-  }, [base, subs, selection]);
+  }, [base, runtimeSubs]);
 
   const value = useMemo<CtaContextValue>(
-    () => ({ base, href, setSelection: setSelectionCb }),
-    [base, href, setSelectionCb]
+    () => ({ base, href, setSub }),
+    [base, href, setSub]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/** Resolved outbound URL (base + subs + interactive selections). */
+/** Resolved outbound URL (base + all populated slots in canonical order). */
 export function useCtaHref(): string {
   const ctx = useContext(Ctx);
   return ctx?.href ?? '#';
 }
 
 /**
- * Report an interactive component's user selection. `key` is the semantic
- * dimension (e.g. 'discount_category', 'state', 'frequency'); `value` is
- * the user's answer. The provider maps each unique key to sub6/sub7/... in
- * insertion order.
+ * Report an interactive component's selection by semantic key. Routes via
+ * SLOT_BY_KEY to the canonical sub-slot per the locked scheme.
+ *
+ * Known keys: 'spend_focus' → sub6, 'state' → sub7, 'frequency' → sub8,
+ * 'angle' → sub9. Passing an unknown key logs a warning and is a no-op —
+ * don't invent new keys; edit SLOT_BY_KEY and the style guide together.
  */
 export function useSetCtaSelection() {
   const ctx = useContext(Ctx);
-  return ctx?.setSelection ?? (() => {});
+  const setSub = ctx?.setSub;
+  return useCallback(
+    (key: string, value: string) => {
+      if (!setSub) return;
+      const slot = SLOT_BY_KEY[key];
+      if (!slot) {
+        console.warn(
+          `[CtaContext] Unknown selection key "${key}" — add it to SLOT_BY_KEY + ADVERTORIAL_STYLE_GUIDE.md §6.`
+        );
+        return;
+      }
+      setSub(slot, value);
+    },
+    [setSub]
+  );
+}
+
+/**
+ * Advanced: write to a specific sub-slot directly. Used for programmatic
+ * writes from LpPage (e.g. propagating URL params on mount). Prefer
+ * useSetCtaSelection in interactive components so the semantic key stays
+ * greppable across the codebase.
+ */
+export function useSetCtaSub() {
+  const ctx = useContext(Ctx);
+  return ctx?.setSub ?? (() => {});
 }

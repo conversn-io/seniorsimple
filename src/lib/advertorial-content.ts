@@ -36,10 +36,20 @@ const HEADER_VARIANTS: HeaderVariant[] = [
   },
 ];
 
-// Prismique tracking base — sub params filled at CTA-render time:
+// Prismique tracking base — every sub-param slot is documented in the
+// LOCKED parameter scheme (ADVERTORIAL_STYLE_GUIDE.md §6) + CtaContext.tsx:
+//   source_id — publisher id (see SOURCE_ID export below)
 //   sub1={click_id}  sub2={widget_id}  sub3={ad_header_variant}
-//   sub4={ad_headline_variant}  sub5={slug}
+//   sub4={ad_headline_variant}  sub5={slug}  sub6={spend_focus}
+//   sub7={state}  sub8={frequency}  sub9={angle}  sub10={reserved}
 const OFFER_TRACKING_URL = 'https://www.xe54ghj.com/352QZN8/J7HQGBF/';
+
+/**
+ * Static publisher identifier. Same value on every SeniorSimple LP so
+ * Prismique rolls all our clicks into one publisher bucket. Locked by
+ * Keenan 2026-07-13 — change here (single source of truth) if it moves.
+ */
+export const SOURCE_ID = 'keenanshaw_1323';
 
 const ADVERTORIALS: Record<string, AdvertorialSpec> = {
   'senior-discounts': {

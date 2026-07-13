@@ -19,18 +19,32 @@
  *
  * Responsibilities:
  *   • Read inbound URL params (state, click_id, widget_id) on mount.
- *   • Compute the CtaContext `subs` object (sub1–sub5) and install
- *     <CtaProvider> so every downstream CTA + interactive quiz resolves to
- *     the same outbound URL. D-series quiz selections append as sub6+.
+ *   • Compose the CtaContext `subs` object per the LOCKED parameter scheme
+ *     (source_id + sub1–sub10) and install <CtaProvider> so every downstream
+ *     CTA + interactive quiz resolves to the same outbound URL. Interactive
+ *     D-series selections write to sub6+ via useSetCtaSelection.
  *   • Fire GA4 page_view + POST /api/analytics/track-event with
  *     ad_header_variant + ad_headline_variant stamped for downstream
  *     Supabase / Meta CAPI attribution.
  *   • Render <Masthead> + body + <DisclosureFooter> — everything else lives
  *     in the angle-specific body.
+ *
+ * LOCKED parameter scheme (ADVERTORIAL_STYLE_GUIDE.md §6):
+ *   source_id — SOURCE_ID constant ("keenanshaw_1323")
+ *   sub1      — RevContent click_id (inbound URL)
+ *   sub2      — RevContent widget_id (inbound URL)
+ *   sub3      — ad_header variant (server cookie)
+ *   sub4      — ad_headline variant (server cookie)
+ *   sub5      — slug
+ *   sub6      — spend_focus (quiz answer — set by ImageQuiz/MultiSelectQuiz)
+ *   sub7      — state (URL param OR StateSelector selection)
+ *   sub8      — frequency (reserved)
+ *   sub9      — angle A/B (server-known)
+ *   sub10     — reserved
  */
 
-import { useEffect, useState } from 'react';
-import type { AdvertorialAngle } from '@/lib/advertorial-content';
+import { useEffect, useMemo, useState } from 'react';
+import { SOURCE_ID, type AdvertorialAngle } from '@/lib/advertorial-content';
 import AngleABody from './AngleABody';
 import AngleBBody from './AngleBBody';
 import styles from './advertorial.module.css';
@@ -133,13 +147,28 @@ export default function LpPage({
     });
   }, [slug, angle, headerId, headlineId]);
 
-  const subs: CtaSubs = {
-    sub1: inbound.clickId,
-    sub2: inbound.widgetId,
-    sub3: headerId ?? '',
-    sub4: headlineId ?? '',
-    sub5: slug,
-  };
+  // Memoized so CtaProvider's sync-effect only fires when a slot value
+  // actually changes (LpPage re-renders after inbound URL params land in
+  // state; without useMemo this object identity would churn every render
+  // and thrash the reducer).
+  const subs: CtaSubs = useMemo(
+    () => ({
+      source_id: SOURCE_ID,
+      sub1: inbound.clickId,
+      sub2: inbound.widgetId,
+      sub3: headerId ?? '',
+      sub4: headlineId ?? '',
+      sub5: slug,
+      // sub6 (spend_focus) is set exclusively by the D-series quizzes.
+      // sub7 (state) starts from the ?state= URL param; StateSelector can
+      // overwrite it later via useSetCtaSelection('state', ...).
+      sub7: stateName || undefined,
+      // sub8 (frequency) — reserved.
+      sub9: angle,
+      // sub10 — reserved.
+    }),
+    [inbound.clickId, inbound.widgetId, headerId, headlineId, slug, stateName, angle]
+  );
 
   const stateArea = stateName || 'your area';
   const displayStateName = stateName || 'Your State';
