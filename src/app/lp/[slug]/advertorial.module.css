@@ -42,9 +42,11 @@
   box-sizing: border-box;
 }
 
-/* Inline body links — news blue, underlined. Applies to every <a> inside
-   the .wrap column; .cta and .footer a rules below override where needed. */
-.wrap a {
+/* Inline body links — news blue, underlined. `:where()` keeps this rule at
+   specificity (0,0,1) so ANY class-level rule (.cta, .footer a) overrides
+   without a fight. Without :where(), .wrap a would beat .cta and paint the
+   CTA text blue + underlined. */
+:where(.wrap) a {
   color: var(--link);
   text-decoration: underline;
 }
