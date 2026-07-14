@@ -36,13 +36,28 @@ const HEADER_VARIANTS: HeaderVariant[] = [
   },
 ];
 
-// Prismique tracking base — every sub-param slot is documented in the
-// LOCKED parameter scheme (ADVERTORIAL_STYLE_GUIDE.md §6) + CtaContext.tsx:
-//   source_id — publisher id (see SOURCE_ID export below)
-//   sub1={click_id}  sub2={widget_id}  sub3={ad_header_variant}
-//   sub4={ad_headline_variant}  sub5={slug}  sub6={spend_focus}
-//   sub7={state}  sub8={frequency}  sub9={angle}  sub10={reserved}
-const OFFER_TRACKING_URL = 'https://www.xe54ghj.com/352QZN8/J7HQGBF/';
+/**
+ * Funnel targets:
+ *   Advertorial LP (/lp/[slug])   →  Bridge (/bridge/perks)   →  Offer
+ *
+ * Advertorial CTAs point at the bridge page, not the offer directly.
+ * The bridge hosts the SavingsCalculator + SavingsBreakdown + full logo
+ * TrustBar and is the conversion vehicle. Sub params flow through the
+ * whole chain via CtaContext (see components/CtaContext.tsx and
+ * ADVERTORIAL_STYLE_GUIDE.md §6 for the locked parameter scheme).
+ */
+export const BRIDGE_TRACKING_URL = '/bridge/perks';
+
+/**
+ * Offer tracking URL — final funnel target. Used by BridgePage (not by
+ * advertorial LPs directly). Every sub-param slot documented in the
+ * LOCKED parameter scheme (ADVERTORIAL_STYLE_GUIDE.md §6) + CtaContext.tsx:
+ *   source_id — publisher id (see SOURCE_ID export below)
+ *   sub1={click_id}  sub2={widget_id}  sub3={ad_header_variant}
+ *   sub4={ad_headline_variant}  sub5={slug}  sub6={spend_focus}
+ *   sub7={state}  sub8={frequency}  sub9={angle}  sub10={click_source}
+ */
+export const OFFER_TRACKING_URL = 'https://www.xe54ghj.com/352QZN8/J7HQGBF/';
 
 /**
  * Static publisher identifier. Same value on every SeniorSimple LP so
@@ -57,6 +72,11 @@ export const SOURCE_ID = 'keenanshaw_1323';
  * Sourced from APC's public partner directory per the reference:
  * ADVERTORIAL_COMPONENT_LIBRARY_v2.html §E3 + perks_lp_optimization_v2_calculator.md.
  *
+ * `domain` is the brand's canonical domain — used by TrustBar to fetch a
+ * favicon-quality logo from a public icon service. Real logo files can
+ * later be uploaded to Supabase Storage and swapped in per-brand without
+ * touching the component (change domain URL to a full logo CDN URL).
+ *
  * OPERATOR-CONFIRMED (verified against APC's live directory):
  *   Costco, Sam's Club, InterContinental, Palace Resorts
  *
@@ -68,33 +88,38 @@ export const SOURCE_ID = 'keenanshaw_1323';
  *   IHOP, Papa John's,
  *   Ford, Goodyear
  */
-export const APC_BRANDS: string[] = [
+export interface ApcBrand {
+  name: string;
+  domain: string;
+}
+
+export const APC_BRANDS: ApcBrand[] = [
   // Retail (6)
-  'Walmart',
-  'Costco',
-  "Sam's Club",
-  'Target',
-  'Amazon',
-  'Home Depot',
+  { name: 'Walmart', domain: 'walmart.com' },
+  { name: 'Costco', domain: 'costco.com' },
+  { name: "Sam's Club", domain: 'samsclub.com' },
+  { name: 'Target', domain: 'target.com' },
+  { name: 'Amazon', domain: 'amazon.com' },
+  { name: 'Home Depot', domain: 'homedepot.com' },
   // Theme parks (3)
-  'Disney World',
-  'Universal',
-  'Six Flags',
+  { name: 'Disney World', domain: 'disneyworld.disney.go.com' },
+  { name: 'Universal', domain: 'universalstudios.com' },
+  { name: 'Six Flags', domain: 'sixflags.com' },
   // Hotels (3)
-  'InterContinental',
-  'Extended Stay America',
-  'Palace Resorts',
+  { name: 'InterContinental', domain: 'ihg.com' },
+  { name: 'Extended Stay America', domain: 'extendedstayamerica.com' },
+  { name: 'Palace Resorts', domain: 'palaceresorts.com' },
   // Rental cars (4)
-  'Avis',
-  'Budget',
-  'Enterprise',
-  'Alamo',
+  { name: 'Avis', domain: 'avis.com' },
+  { name: 'Budget', domain: 'budget.com' },
+  { name: 'Enterprise', domain: 'enterprise.com' },
+  { name: 'Alamo', domain: 'alamo.com' },
   // Dining (2)
-  'IHOP',
-  "Papa John's",
+  { name: 'IHOP', domain: 'ihop.com' },
+  { name: "Papa John's", domain: 'papajohns.com' },
   // Auto (2)
-  'Ford',
-  'Goodyear',
+  { name: 'Ford', domain: 'ford.com' },
+  { name: 'Goodyear', domain: 'goodyear.com' },
 ];
 
 const ADVERTORIALS: Record<string, AdvertorialSpec> = {
@@ -108,7 +133,7 @@ const ADVERTORIALS: Record<string, AdvertorialSpec> = {
         text: 'Senior Discounts in {STATE}: Where Adults 55+ Are Quietly Saving in 2026',
       },
     ],
-    offer_tracking_url: OFFER_TRACKING_URL,
+    offer_tracking_url: BRIDGE_TRACKING_URL,
   },
   'things-retirees-cut': {
     slug: 'things-retirees-cut',
@@ -120,7 +145,7 @@ const ADVERTORIALS: Record<string, AdvertorialSpec> = {
         text: '9 Things Retirees Are Quietly Cutting to Stretch Every Dollar in 2026',
       },
     ],
-    offer_tracking_url: OFFER_TRACKING_URL,
+    offer_tracking_url: BRIDGE_TRACKING_URL,
   },
 };
 

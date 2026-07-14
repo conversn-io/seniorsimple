@@ -38,8 +38,6 @@ import {
   LeadIn,
   MultiSelectQuiz,
   QualifyChecklist,
-  SavingsBreakdown,
-  SavingsCalculator,
   Section,
   SectionCTA,
   StickyCTA,
@@ -86,15 +84,10 @@ export default function AngleBBody({ headline, headerSrc }: AngleBodyProps) {
         Most of these take minutes to set up once — and keep paying off every month after.
       </div>
 
-      {/* H1 · SavingsCalculator + H2 · SavingsBreakdown — the primary
-          above-the-fold conversion vehicle. Live yearly total → checkout
-          CTA (blue full-width) → offer. sub10=calc gets set on any input
-          touch so Prismique attributes calc-driven conversions distinctly. */}
-      <SavingsCalculator />
-      <SavingsBreakdown />
-
-      {/* P1.1 — secondary qualifier below the calculator. Both fire into
-          the same outbound URL: quiz → sub6=spend_focus, calc → sub10=calc. */}
+      {/* P1.1 — micro-commitment above the fold. Selection persists as
+          sub6 on the outbound URL, which points at /bridge/perks where
+          the SavingsCalculator + full APC TrustBar live. Advertorial =
+          editorial framing + click-through; bridge = conversion vehicle. */}
       <MultiSelectQuiz
         question="What do you spend the most on?"
         selectionKey="spend_focus"
