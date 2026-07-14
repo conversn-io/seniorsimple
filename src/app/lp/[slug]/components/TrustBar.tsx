@@ -2,18 +2,25 @@
  * E3 · TrustBar — "member pricing at brands including..." logo strip,
  * grouped by category for scannability.
  *
+ * Renders each brand as a fixed-height pill with the logo `object-fit:
+ * contain`-ed so mixed logo aspect ratios (wide Walmart wordmark, square
+ * Costco disc, round Ford oval) normalize to a consistent row height.
+ *
  * COMPLIANCE (style guide §5.3 spirit): only use REAL brand marks the
  * offer actually includes. Never imply an endorsement or affiliation
  * that isn't real. Callers pass an ApcBrand list they've verified
  * against the offer's own partner directory.
  *
- * Logos are pulled from DuckDuckGo's public favicon service (reliable
- * HTTP 200 for every APC brand tested, no API key, no CORS). Upgrade
- * path: swap `logoUrl(domain)` for a Supabase-hosted full-color brand
- * SVG per brand without changing the component.
+ * Logo source: `brandLogoSrc()` from advertorial-content — local file
+ * in public/logos/apc/* when present, DuckDuckGo favicon fallback
+ * otherwise.
  */
 
-import type { ApcBrand, ApcCategory } from '@/lib/advertorial-content';
+import {
+  brandLogoSrc,
+  type ApcBrand,
+  type ApcCategory,
+} from '@/lib/advertorial-content';
 import styles from '../advertorial.module.css';
 
 type BrandInput = string | ApcBrand;
@@ -21,10 +28,6 @@ type BrandInput = string | ApcBrand;
 interface TrustBarProps {
   label?: React.ReactNode;
   brands: BrandInput[];
-}
-
-function logoUrl(domain: string): string {
-  return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 }
 
 function normalize(input: BrandInput): ApcBrand {
@@ -47,19 +50,19 @@ function groupByCategory(brands: ApcBrand[]): Array<[ApcCategory, ApcBrand[]]> {
 }
 
 function Pill({ brand }: { brand: ApcBrand }) {
+  const src = brandLogoSrc(brand);
   return (
-    <span key={brand.name} className={styles.logo}>
-      {brand.domain ? (
+    <span className={styles.logo} title={brand.name}>
+      {src ? (
         <img
           className={styles.logoIcon}
-          src={logoUrl(brand.domain)}
-          alt=""
+          src={src}
+          alt={brand.name}
           loading="lazy"
-          width={24}
-          height={24}
         />
-      ) : null}
-      <span>{brand.name}</span>
+      ) : (
+        <span className={styles.logoText}>{brand.name}</span>
+      )}
     </span>
   );
 }

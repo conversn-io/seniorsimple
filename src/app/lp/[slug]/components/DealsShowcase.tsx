@@ -29,41 +29,52 @@ interface DealsShowcaseProps {
  * Sourced from APC's live public deals directory (see
  * ADVERTORIAL_COMPONENT_LIBRARY_v2.html §H2). Spans 6 categories so a
  * reader sees the breadth of the value in one glance.
+ *
+ * `logoPath` points at local files in public/logos/apc/*. The
+ * brandLogoSrc helper falls back to DuckDuckGo favicons when the local
+ * file is missing (any brand whose logo the sourcing pass couldn't
+ * find still renders — just less crisply).
  */
 export const DEFAULT_DEALS: Deal[] = [
   {
     brand: 'Bealls',
     domain: 'beallsflorida.com',
+    logoPath: '/logos/apc/bealls.svg',
     discount: 'Up to 70% off',
     category: 'Retail',
   },
   {
     brand: 'HelloFresh',
     domain: 'hellofresh.com',
+    logoPath: '/logos/apc/hellofresh.svg',
     discount: '55% off first box',
     category: 'Meal delivery',
   },
   {
     brand: 'Member travel (hotels)',
     domain: 'ihg.com',
+    logoPath: '/logos/apc/intercontinental.svg',
     discount: 'Up to 50% off hotels',
     category: 'Travel',
   },
   {
     brand: 'Bass Pro Shops',
     domain: 'basspro.com',
+    logoPath: '/logos/apc/bass-pro-shops.svg',
     discount: 'Up to 40% off',
     category: 'Outdoor',
   },
   {
     brand: 'LeafFilter',
     domain: 'leaffilter.com',
+    logoPath: '/logos/apc/leaffilter.svg',
     discount: 'Up to 35% off',
     category: 'Home services',
   },
   {
     brand: "Papa John's",
     domain: 'papajohns.com',
+    logoPath: '/logos/apc/papa-johns.svg',
     discount: '20% off',
     category: 'Dining',
   },

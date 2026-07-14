@@ -513,25 +513,38 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+/* TrustBar pill — fixed height, roomy width. The pill is the size
+   normalizer: logos of wildly different aspect ratios (wide wordmarks
+   like Walmart, round marks like Ford, tall stacks like Six Flags) all
+   render at the same visual weight thanks to object-fit: contain on the
+   inner <img>. */
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   background: #fff;
   border: 1px solid var(--rule);
   border-radius: 6px;
-  padding: 6px 10px;
-  font-weight: 600;
+  height: 40px;
+  min-width: 72px;
+  padding: 6px 12px;
   color: var(--ink);
-  font-size: 13px;
-  line-height: 1;
 }
 .logoIcon {
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
+  max-height: 24px;
+  max-width: 96px;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  flex-shrink: 0;
+  display: block;
+}
+/* Text-only fallback when no logo src is available. */
+.logoText {
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink);
 }
 
 /* E4 · Clickable image link wrapper. */
@@ -728,14 +741,28 @@
 .dealCard:hover {
   border-color: var(--cta);
 }
-.dealCardLogo {
-  width: 44px;
-  height: 44px;
-  border-radius: 6px;
-  object-fit: contain;
-  background: var(--band);
-  padding: 4px;
+/* DealCard logo — fixed 56×56 white box with a subtle border; the logo
+   inside is object-fit: contain so wide wordmarks + round marks both
+   sit centered without distortion. */
+.dealCardLogoBox {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
   flex-shrink: 0;
+}
+.dealCardLogo {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 .dealCardBody {
   display: flex;
