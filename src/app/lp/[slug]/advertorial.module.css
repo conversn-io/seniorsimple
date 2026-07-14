@@ -477,21 +477,36 @@
   margin-top: 4px;
 }
 
-/* E3 · Trust bar (logos). Only use real, permitted brand marks. Pills
-   render the brand name next to a small favicon-quality logo — upgrade
-   the logo URL per-brand for higher fidelity without touching the
-   component. */
+/* E3 · Trust bar (logos), grouped by category for scannability. */
 .trust {
   font-family: Arial, sans-serif;
   font-size: 13px;
   color: var(--muted);
-  margin: 16px 0;
+  margin: 24px 0;
 }
 .trustLabel {
   display: block;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.trustGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.trustGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.trustGroupHeading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
 }
 .trustPills {
   display: flex;
@@ -663,5 +678,91 @@
   color: var(--muted);
   margin-top: 8px;
   font-style: italic;
+}
+
+/* -- DealsShowcase (grid of DealCards) --------------------------------- */
+
+.deals {
+  margin: 24px 0;
+}
+.dealsHeader {
+  margin-bottom: 12px;
+}
+.dealsHeading {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.dealsSubline {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  font-style: italic;
+}
+.dealsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 520px) {
+  .dealsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* One deal card. Editorial: brand favicon on the left, brand + discount
+   + category-chip stacked to the right. */
+.dealCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+.dealCard:hover {
+  border-color: var(--cta);
+}
+.dealCardLogo {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: var(--band);
+  padding: 4px;
+  flex-shrink: 0;
+}
+.dealCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.dealCardBrand {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.dealCardDiscount {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cta);
+  line-height: 1.2;
+}
+.dealCardCategory {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
 }
 

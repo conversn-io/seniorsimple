@@ -50,3 +50,5 @@ export { default as ShareBar } from './ShareBar';
 // H · Conversion engine
 export { default as SavingsCalculator, type SavingsInput } from './SavingsCalculator';
 export { default as SavingsBreakdown } from './SavingsBreakdown';
+export { default as DealCard, type Deal } from './DealCard';
+export { default as DealsShowcase, DEFAULT_DEALS } from './DealsShowcase';
