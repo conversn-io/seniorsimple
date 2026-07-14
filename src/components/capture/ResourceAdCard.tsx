@@ -41,16 +41,20 @@ export default function ResourceAdCard({
   const magnet = MAGNETS[magnetId]
   const rootRef = useRef<HTMLDivElement | null>(null)
 
+  // Map layout → analytics variant so sidebar vs mobile-inline placements are
+  // bucketed separately in the scoreboard.
+  const analyticsVariant = layout === 'sidebar' ? 'sidebar-ad' : 'inline-ad'
+
   const fireImpression = useCallback(() => {
     trackCaptureEvent({
       eventName: 'capture_impression',
       pageSlug,
-      variant: 'inline',
+      variant: analyticsVariant,
       magnetId,
       topicTag,
       abArm,
     })
-  }, [pageSlug, magnetId, topicTag, abArm])
+  }, [pageSlug, magnetId, topicTag, abArm, analyticsVariant])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -86,12 +90,12 @@ export default function ResourceAdCard({
     trackCaptureEvent({
       eventName: 'capture_submit',
       pageSlug,
-      variant: 'inline',
+      variant: analyticsVariant,
       magnetId,
       topicTag,
       abArm,
     })
-  }, [pageSlug, magnetId, topicTag, abArm])
+  }, [pageSlug, magnetId, topicTag, abArm, analyticsVariant])
 
   if (layout === 'inline') {
     // Horizontal ad card — cover on left, copy + CTA on right.

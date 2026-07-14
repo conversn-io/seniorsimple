@@ -1,5 +1,14 @@
 export type MagnetId = 'decision-kit' | 'tool-result' | 'starter-guide'
-export type CaptureVariant = 'inline' | 'exit' | 'tool-gate'
+export type CaptureVariant =
+  | 'inline'
+  | 'exit'
+  | 'tool-gate'
+  | 'sidebar-ad'
+  | 'inline-ad'
+
+/** Fallback magnet shown in the sidebar for non-Medicare articles. */
+export const DEFAULT_SIDEBAR_MAGNET_ID: MagnetId = 'decision-kit'
+export const DEFAULT_SIDEBAR_TOPIC_TAG: TopicTag = 'open-enrollment'
 
 export type TopicTag =
   | 'glp1'
