@@ -9,9 +9,12 @@ const ConditionalHeader = () => {
   const { headerType } = useHeader();
   const pathname = usePathname();
 
-  // Editorial-native advertorials render without site chrome. See
+  // Editorial-native advertorials AND their /bridge/* funnel targets
+  // render with only their own Masthead — no site chrome. See
   // shared-utils/ADVERTORIAL_SPLIT_TESTING.md.
-  if (pathname?.startsWith('/lp/')) return null;
+  if (pathname?.startsWith('/lp/') || pathname?.startsWith('/bridge/')) {
+    return null;
+  }
   if (headerType === 'none') return null;
   return headerType === 'funnel' ? <FunnelHeader /> : <Header />;
 };

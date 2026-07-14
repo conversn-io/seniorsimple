@@ -88,38 +88,47 @@ export const SOURCE_ID = 'keenanshaw_1323';
  *   IHOP, Papa John's,
  *   Ford, Goodyear
  */
+export type ApcCategory =
+  | 'Retail'
+  | 'Theme parks'
+  | 'Hotels'
+  | 'Rental cars'
+  | 'Dining'
+  | 'Auto';
+
 export interface ApcBrand {
   name: string;
   domain: string;
+  category: ApcCategory;
 }
 
 export const APC_BRANDS: ApcBrand[] = [
-  // Retail (6)
-  { name: 'Walmart', domain: 'walmart.com' },
-  { name: 'Costco', domain: 'costco.com' },
-  { name: "Sam's Club", domain: 'samsclub.com' },
-  { name: 'Target', domain: 'target.com' },
-  { name: 'Amazon', domain: 'amazon.com' },
-  { name: 'Home Depot', domain: 'homedepot.com' },
-  // Theme parks (3)
-  { name: 'Disney World', domain: 'disneyworld.disney.go.com' },
-  { name: 'Universal', domain: 'universalstudios.com' },
-  { name: 'Six Flags', domain: 'sixflags.com' },
-  // Hotels (3)
-  { name: 'InterContinental', domain: 'ihg.com' },
-  { name: 'Extended Stay America', domain: 'extendedstayamerica.com' },
-  { name: 'Palace Resorts', domain: 'palaceresorts.com' },
-  // Rental cars (4)
-  { name: 'Avis', domain: 'avis.com' },
-  { name: 'Budget', domain: 'budget.com' },
-  { name: 'Enterprise', domain: 'enterprise.com' },
-  { name: 'Alamo', domain: 'alamo.com' },
-  // Dining (2)
-  { name: 'IHOP', domain: 'ihop.com' },
-  { name: "Papa John's", domain: 'papajohns.com' },
-  // Auto (2)
-  { name: 'Ford', domain: 'ford.com' },
-  { name: 'Goodyear', domain: 'goodyear.com' },
+  // Retail
+  { name: 'Walmart', domain: 'walmart.com', category: 'Retail' },
+  { name: 'Costco', domain: 'costco.com', category: 'Retail' },
+  { name: "Sam's Club", domain: 'samsclub.com', category: 'Retail' },
+  { name: 'Target', domain: 'target.com', category: 'Retail' },
+  { name: 'Amazon', domain: 'amazon.com', category: 'Retail' },
+  { name: 'Home Depot', domain: 'homedepot.com', category: 'Retail' },
+  // Theme parks
+  { name: 'Disney World', domain: 'disneyworld.disney.go.com', category: 'Theme parks' },
+  { name: 'Universal', domain: 'universalstudios.com', category: 'Theme parks' },
+  { name: 'Six Flags', domain: 'sixflags.com', category: 'Theme parks' },
+  // Hotels
+  { name: 'InterContinental', domain: 'ihg.com', category: 'Hotels' },
+  { name: 'Extended Stay America', domain: 'extendedstayamerica.com', category: 'Hotels' },
+  { name: 'Palace Resorts', domain: 'palaceresorts.com', category: 'Hotels' },
+  // Rental cars
+  { name: 'Avis', domain: 'avis.com', category: 'Rental cars' },
+  { name: 'Budget', domain: 'budget.com', category: 'Rental cars' },
+  { name: 'Enterprise', domain: 'enterprise.com', category: 'Rental cars' },
+  { name: 'Alamo', domain: 'alamo.com', category: 'Rental cars' },
+  // Dining
+  { name: 'IHOP', domain: 'ihop.com', category: 'Dining' },
+  { name: "Papa John's", domain: 'papajohns.com', category: 'Dining' },
+  // Auto
+  { name: 'Ford', domain: 'ford.com', category: 'Auto' },
+  { name: 'Goodyear', domain: 'goodyear.com', category: 'Auto' },
 ];
 
 const ADVERTORIALS: Record<string, AdvertorialSpec> = {

@@ -19,9 +19,9 @@ import { APC_BRANDS, OFFER_TRACKING_URL, SOURCE_ID } from '@/lib/advertorial-con
 import styles from '@/app/lp/[slug]/advertorial.module.css';
 import {
   CtaProvider,
+  DealsShowcase,
   DisclosureFooter,
   Masthead,
-  SavingsBreakdown,
   SavingsCalculator,
   TrustBar,
   type CtaSubs,
@@ -124,8 +124,17 @@ export default function BridgePage({
           </div>
 
           <SavingsCalculator />
-          <SavingsBreakdown />
 
+          {/* A small sampling of what members see inside — points to the
+              value of the program without asking anyone to click through
+              to see the deal texture. Sourced from APC's live public
+              directory (see DealsShowcase docstring). */}
+          <DealsShowcase />
+
+          {/* Full APC brand set, grouped by category — Retail / Theme
+              parks / Hotels / Rental cars / Dining / Auto. Real favicons
+              from icons.duckduckgo.com; upgrade to full-color logos in
+              Supabase Storage when sourced. */}
           <TrustBar
             label="Member pricing at brands including:"
             brands={APC_BRANDS}
