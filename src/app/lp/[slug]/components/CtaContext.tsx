@@ -129,18 +129,31 @@ export function CtaProvider({ base, subs, children }: CtaProviderProps) {
   }, []);
 
   const href = useMemo(() => {
-    try {
-      const url = new URL(base);
-      for (const key of ORDERED_KEYS) {
-        const value = runtimeSubs[key];
-        if (value !== undefined && value !== '') {
-          url.searchParams.set(key, value);
-        }
+    // Build the params in canonical order. Supports absolute URLs (offer
+    // tracking link on the bridge) AND relative paths (advertorial CTA →
+    // /bridge/perks) — no more `new URL('/bridge/perks')` throw.
+    const params = new URLSearchParams();
+    for (const key of ORDERED_KEYS) {
+      const value = runtimeSubs[key];
+      if (value !== undefined && value !== '') {
+        params.set(key, value);
       }
-      return url.toString();
-    } catch {
-      return base;
     }
+    const qs = params.toString();
+    if (!qs) return base;
+    // Absolute URL — round-trip through URL so pre-existing query params
+    // on `base` are preserved and de-duped by name.
+    if (/^https?:\/\//i.test(base)) {
+      try {
+        const url = new URL(base);
+        params.forEach((v, k) => url.searchParams.set(k, v));
+        return url.toString();
+      } catch {
+        return base + (base.includes('?') ? '&' : '?') + qs;
+      }
+    }
+    // Relative path — plain string concat.
+    return base + (base.includes('?') ? '&' : '?') + qs;
   }, [base, runtimeSubs]);
 
   const value = useMemo<CtaContextValue>(

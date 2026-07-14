@@ -477,24 +477,46 @@
   margin-top: 4px;
 }
 
-/* E3 · Trust bar (logos). Only use real, permitted brand marks. */
+/* E3 · Trust bar (logos). Only use real, permitted brand marks. Pills
+   render the brand name next to a small favicon-quality logo — upgrade
+   the logo URL per-brand for higher fidelity without touching the
+   component. */
 .trust {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 16px 0;
+}
+.trustLabel {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.trustPills {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  align-items: center;
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  color: var(--muted);
-  margin: 14px 0;
+  gap: 8px;
 }
 .logo {
-  background: var(--band);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
   border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 8px 14px;
-  font-weight: 700;
-  color: #9aa2ad;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1;
+}
+.logoIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* E4 · Clickable image link wrapper. */
