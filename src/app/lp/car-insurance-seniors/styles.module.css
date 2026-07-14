@@ -1,0 +1,213 @@
+/*
+ * Advertorial LP — Cheapest Car Insurance for Seniors.
+ *
+ * Scoped module port of seniorsimple_advertorial_autoinsurance.html.
+ * Compliance-reviewed source; keep the visual result equivalent (SeniorSimple
+ * teal / gold / cream, Georgia serif H1, editorial masthead + full disclosure
+ * footer). Sibling to /lp/[slug] but standalone — different offer + tracking
+ * scheme, so it doesn't share the angle-A/B advertorial pipeline.
+ */
+
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  background: #fff;
+  color: #1f2427;
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.62;
+}
+
+/* Page background — mirrors <body> in source. */
+.page {
+  background: #F5F5F0;
+  min-height: 100vh;
+}
+
+.adlabel {
+  background: #eee;
+  color: #666;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 2px solid #36596A;
+}
+
+.logo {
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #36596A;
+}
+
+.logo span {
+  color: #C9A961;
+}
+
+.discTop {
+  font-size: 11px;
+  color: #737373;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+}
+
+.discBox {
+  background: #F5F5F0;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 11.5px;
+  color: #737373;
+  padding: 10px 22px;
+  line-height: 1.5;
+}
+
+.discBox a {
+  color: #36596A;
+}
+
+.main {
+  padding: 26px 24px 6px;
+}
+
+.h1 {
+  font-family: Georgia, serif;
+  font-size: 29px;
+  line-height: 1.22;
+  margin: 0.1em 0 0.35em;
+  color: #2b4653;
+}
+
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #737373;
+  font-size: 13.5px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 14px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #36596A;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.hero {
+  width: 100%;
+  border-radius: 10px;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 20px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #e9eef0, #dfe7e9);
+}
+
+.p {
+  margin: 0 0 15px;
+}
+
+.lede {
+  font-size: 18px;
+}
+
+.footnoteMark {
+  color: #36596A;
+}
+
+.cta {
+  display: inline-block;
+  background: #C9A961;
+  color: #3a2e12;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  padding: 13px 20px;
+  border-radius: 9px;
+  box-shadow: 0 2px 0 #b9973f;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.cta:hover {
+  filter: brightness(1.04);
+}
+
+.ctaBlock {
+  display: block;
+  text-align: center;
+  font-size: 18px;
+  padding: 16px;
+  margin: 16px 0 6px;
+}
+
+.fineprint {
+  font-size: 12px;
+  color: #737373;
+  text-align: center;
+  margin: 6px 0 0;
+}
+
+.h2 {
+  font-family: Georgia, serif;
+  font-size: 21px;
+  color: #2b4653;
+  margin: 22px 0 8px;
+}
+
+.footer {
+  background: #2b4653;
+  color: #cdd8dd;
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 24px 24px 34px;
+  margin-top: 20px;
+}
+
+.footer a {
+  color: #e4cda1;
+  text-decoration: none;
+}
+
+.footer h4 {
+  color: #fff;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 14px 0 6px;
+}
+
+.footlinks {
+  margin: 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.entity {
+  color: #9fb0b6;
+}
