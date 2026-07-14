@@ -28,6 +28,7 @@
  * then swap the BODY_IMAGES map below.
  */
 
+import { APC_BRANDS } from '@/lib/advertorial-content';
 import type { AngleBodyProps } from './lp-types';
 import styles from './advertorial.module.css';
 import {
@@ -37,6 +38,8 @@ import {
   LeadIn,
   MultiSelectQuiz,
   QualifyChecklist,
+  SavingsBreakdown,
+  SavingsCalculator,
   Section,
   SectionCTA,
   StickyCTA,
@@ -83,8 +86,15 @@ export default function AngleBBody({ headline, headerSrc }: AngleBodyProps) {
         Most of these take minutes to set up once — and keep paying off every month after.
       </div>
 
-      {/* P1.1 — micro-commitment above the fold. Selection persists as sub6
-          on the outbound CTA URL for Prismique attribution. */}
+      {/* H1 · SavingsCalculator + H2 · SavingsBreakdown — the primary
+          above-the-fold conversion vehicle. Live yearly total → checkout
+          CTA (blue full-width) → offer. sub10=calc gets set on any input
+          touch so Prismique attributes calc-driven conversions distinctly. */}
+      <SavingsCalculator />
+      <SavingsBreakdown />
+
+      {/* P1.1 — secondary qualifier below the calculator. Both fire into
+          the same outbound URL: quiz → sub6=spend_focus, calc → sub10=calc. */}
       <MultiSelectQuiz
         question="What do you spend the most on?"
         selectionKey="spend_focus"
@@ -154,13 +164,11 @@ export default function AngleBBody({ headline, headerSrc }: AngleBodyProps) {
         pointLabel="See what a membership unlocks »"
       />
 
-      {/* P2.8 — TrustBar with categories. Compliance-safe stand-in: verify
-          real brand coverage against the offer's logo wall before flipping
-          to specific brand names (guide §5.3 — no fake trust signals). */}
-      <TrustBar
-        label="Member pricing across:"
-        brands={['Dining', 'Travel', 'Groceries', 'Entertainment', 'Auto', 'Wellness']}
-      />
+      {/* P2.8 — TrustBar with REAL APC brand set (per E3 reference).
+          Costco/Sam's/InterContinental/Palace = operator-confirmed; the
+          rest are from APC's public directory — spot-verify before scaling
+          spend (see APC_BRANDS docstring in advertorial-content.ts). */}
+      <TrustBar label="Member pricing at brands including:" brands={APC_BRANDS} />
 
       <Section number={2} title="Subscriptions you forgot you had">
         <p className={styles.p}>

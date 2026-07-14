@@ -51,6 +51,52 @@ const OFFER_TRACKING_URL = 'https://www.xe54ghj.com/352QZN8/J7HQGBF/';
  */
 export const SOURCE_ID = 'keenanshaw_1323';
 
+/**
+ * Real American Perks Club brand set used by the E3 TrustBar component,
+ * categorized (Retail · Theme parks · Hotels · Rental cars · Dining · Auto).
+ * Sourced from APC's public partner directory per the reference:
+ * ADVERTORIAL_COMPONENT_LIBRARY_v2.html §E3 + perks_lp_optimization_v2_calculator.md.
+ *
+ * OPERATOR-CONFIRMED (verified against APC's live directory):
+ *   Costco, Sam's Club, InterContinental, Palace Resorts
+ *
+ * TO-VERIFY (from reference — check APC's directory before paid traffic):
+ *   Walmart, Target, Amazon, Home Depot,
+ *   Disney World, Universal, Six Flags,
+ *   Extended Stay America,
+ *   Avis, Budget, Enterprise, Alamo,
+ *   IHOP, Papa John's,
+ *   Ford, Goodyear
+ */
+export const APC_BRANDS: string[] = [
+  // Retail (6)
+  'Walmart',
+  'Costco',
+  "Sam's Club",
+  'Target',
+  'Amazon',
+  'Home Depot',
+  // Theme parks (3)
+  'Disney World',
+  'Universal',
+  'Six Flags',
+  // Hotels (3)
+  'InterContinental',
+  'Extended Stay America',
+  'Palace Resorts',
+  // Rental cars (4)
+  'Avis',
+  'Budget',
+  'Enterprise',
+  'Alamo',
+  // Dining (2)
+  'IHOP',
+  "Papa John's",
+  // Auto (2)
+  'Ford',
+  'Goodyear',
+];
+
 const ADVERTORIALS: Record<string, AdvertorialSpec> = {
   'senior-discounts': {
     slug: 'senior-discounts',
