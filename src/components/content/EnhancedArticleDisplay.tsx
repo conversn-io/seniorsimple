@@ -21,7 +21,8 @@ import { EnhancedArticle } from '../../lib/enhanced-articles'
 import CalculatorWrapper from '../calculators/CalculatorWrapper'
 import InteractiveTool from '../tools/InteractiveTool'
 import InteractiveChecklist from '../checklists/InteractiveChecklist'
-import MedicareCaptureMount from '../capture/MedicareCaptureMount'
+import ArticleSidebar from '../capture/ArticleSidebar'
+import ArticleInlineResourceAd from '../capture/ArticleInlineResourceAd'
 // Markdown processing is now handled on the server side
 
 interface EnhancedArticleDisplayProps {
@@ -325,7 +326,10 @@ export default function EnhancedArticleDisplay({
   }
 
   return (
-    <article className={`article-wrapper max-w-4xl mx-auto ${className}`}>
+    <div
+      className={`mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12 ${className}`}
+    >
+    <article className="article-wrapper min-w-0">
       {/* Reading Progress Bar */}
       <div className="article-reading-progress fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
         <div 
@@ -504,8 +508,8 @@ export default function EnhancedArticleDisplay({
         />
       </div>
 
-      {/* Medicare email-capture unit — no-op unless slug matches config */}
-      <MedicareCaptureMount slug={article.slug} only={['inline', 'exit']} />
+      {/* Mobile-only resource ad — sidebar is hidden on <lg, so surface it here */}
+      <ArticleInlineResourceAd slug={article.slug} />
 
       {/* Article Footer */}
       <footer className="mt-12 pt-8 border-t border-gray-200">
@@ -557,5 +561,8 @@ export default function EnhancedArticleDisplay({
         </div>
       </footer>
     </article>
+
+      <ArticleSidebar slug={article.slug} />
+    </div>
   )
 }
