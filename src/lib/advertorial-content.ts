@@ -100,35 +100,56 @@ export interface ApcBrand {
   name: string;
   domain: string;
   category: ApcCategory;
+  /**
+   * Optional local logo path — e.g. '/logos/apc/walmart.svg'. When
+   * present, wins over the DuckDuckGo favicon fallback. See
+   * `brandLogoSrc` below and `public/logos/apc/` for the file store.
+   */
+  logoPath?: string;
+}
+
+/**
+ * Resolve a brand's logo image URL. Prefers the local file in
+ * public/logos/apc/ (crisp, no third-party runtime dependency) and falls
+ * back to DuckDuckGo's favicon service (reliable HTTP 200 for any
+ * registered domain, but tiny). Used by TrustBar + DealCard.
+ */
+export function brandLogoSrc(input: {
+  domain?: string;
+  logoPath?: string;
+}): string {
+  if (input.logoPath) return input.logoPath;
+  if (input.domain) return `https://icons.duckduckgo.com/ip3/${input.domain}.ico`;
+  return '';
 }
 
 export const APC_BRANDS: ApcBrand[] = [
   // Retail
-  { name: 'Walmart', domain: 'walmart.com', category: 'Retail' },
-  { name: 'Costco', domain: 'costco.com', category: 'Retail' },
-  { name: "Sam's Club", domain: 'samsclub.com', category: 'Retail' },
-  { name: 'Target', domain: 'target.com', category: 'Retail' },
-  { name: 'Amazon', domain: 'amazon.com', category: 'Retail' },
-  { name: 'Home Depot', domain: 'homedepot.com', category: 'Retail' },
+  { name: 'Walmart', domain: 'walmart.com', category: 'Retail', logoPath: '/logos/apc/walmart.svg' },
+  { name: 'Costco', domain: 'costco.com', category: 'Retail', logoPath: '/logos/apc/costco.svg' },
+  { name: "Sam's Club", domain: 'samsclub.com', category: 'Retail', logoPath: '/logos/apc/sams-club.svg' },
+  { name: 'Target', domain: 'target.com', category: 'Retail', logoPath: '/logos/apc/target.svg' },
+  { name: 'Amazon', domain: 'amazon.com', category: 'Retail', logoPath: '/logos/apc/amazon.svg' },
+  { name: 'Home Depot', domain: 'homedepot.com', category: 'Retail', logoPath: '/logos/apc/home-depot.svg' },
   // Theme parks
-  { name: 'Disney World', domain: 'disneyworld.disney.go.com', category: 'Theme parks' },
-  { name: 'Universal', domain: 'universalstudios.com', category: 'Theme parks' },
-  { name: 'Six Flags', domain: 'sixflags.com', category: 'Theme parks' },
+  { name: 'Disney World', domain: 'disneyworld.disney.go.com', category: 'Theme parks', logoPath: '/logos/apc/disney-world.svg' },
+  { name: 'Universal', domain: 'universalstudios.com', category: 'Theme parks', logoPath: '/logos/apc/universal.svg' },
+  { name: 'Six Flags', domain: 'sixflags.com', category: 'Theme parks', logoPath: '/logos/apc/six-flags.svg' },
   // Hotels
-  { name: 'InterContinental', domain: 'ihg.com', category: 'Hotels' },
-  { name: 'Extended Stay America', domain: 'extendedstayamerica.com', category: 'Hotels' },
-  { name: 'Palace Resorts', domain: 'palaceresorts.com', category: 'Hotels' },
+  { name: 'InterContinental', domain: 'ihg.com', category: 'Hotels', logoPath: '/logos/apc/intercontinental.svg' },
+  { name: 'Extended Stay America', domain: 'extendedstayamerica.com', category: 'Hotels', logoPath: '/logos/apc/extended-stay-america.svg' },
+  { name: 'Palace Resorts', domain: 'palaceresorts.com', category: 'Hotels', logoPath: '/logos/apc/palace-resorts.svg' },
   // Rental cars
-  { name: 'Avis', domain: 'avis.com', category: 'Rental cars' },
-  { name: 'Budget', domain: 'budget.com', category: 'Rental cars' },
-  { name: 'Enterprise', domain: 'enterprise.com', category: 'Rental cars' },
-  { name: 'Alamo', domain: 'alamo.com', category: 'Rental cars' },
+  { name: 'Avis', domain: 'avis.com', category: 'Rental cars', logoPath: '/logos/apc/avis.svg' },
+  { name: 'Budget', domain: 'budget.com', category: 'Rental cars', logoPath: '/logos/apc/budget.svg' },
+  { name: 'Enterprise', domain: 'enterprise.com', category: 'Rental cars', logoPath: '/logos/apc/enterprise.svg' },
+  { name: 'Alamo', domain: 'alamo.com', category: 'Rental cars', logoPath: '/logos/apc/alamo.svg' },
   // Dining
-  { name: 'IHOP', domain: 'ihop.com', category: 'Dining' },
-  { name: "Papa John's", domain: 'papajohns.com', category: 'Dining' },
+  { name: 'IHOP', domain: 'ihop.com', category: 'Dining', logoPath: '/logos/apc/ihop.svg' },
+  { name: "Papa John's", domain: 'papajohns.com', category: 'Dining', logoPath: '/logos/apc/papa-johns.svg' },
   // Auto
-  { name: 'Ford', domain: 'ford.com', category: 'Auto' },
-  { name: 'Goodyear', domain: 'goodyear.com', category: 'Auto' },
+  { name: 'Ford', domain: 'ford.com', category: 'Auto', logoPath: '/logos/apc/ford.svg' },
+  { name: 'Goodyear', domain: 'goodyear.com', category: 'Auto', logoPath: '/logos/apc/goodyear.svg' },
 ];
 
 const ADVERTORIALS: Record<string, AdvertorialSpec> = {
