@@ -542,3 +542,104 @@
   background: #1da1f2;
 }
 
+/* -- H · Conversion engine (SavingsCalculator + SavingsBreakdown) ------ */
+
+/* H1 · SavingsCalculator. Green-bordered result on top, inputs below,
+   compliance-labeled "estimated" caption at the bottom. */
+.calc {
+  margin: 22px 0;
+}
+.calcResult {
+  border: 2px solid var(--cta);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 12px;
+  background: #fff;
+}
+.calcKicker {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.calcTotal {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--cta);
+  font-family: Arial, sans-serif;
+  margin: 4px 0 2px;
+  font-variant-numeric: tabular-nums;
+}
+.calcHint {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.calcInputs {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  padding: 4px 4px 8px;
+}
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  gap: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.calcRow:last-child {
+  border-bottom: 0;
+}
+.calcRow > span {
+  flex: 1;
+}
+.calcInput {
+  width: 72px;
+  padding: 7px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.calcInput:focus {
+  outline: 2px solid var(--cta);
+  outline-offset: -1px;
+  border-color: var(--cta);
+}
+.calcNote {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  padding-top: 6px;
+  border-top: 1px dashed var(--rule);
+  margin-top: 4px;
+}
+
+/* H2 · SavingsBreakdown. Sits right below the calculator — validates the
+   estimated total by listing sourced real deals + category rollups. */
+.breakdown {
+  margin: 16px 0 22px;
+  padding: 14px;
+  background: var(--band);
+  border-radius: 8px;
+}
+.breakdownHeading {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.breakdownFine {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+

@@ -46,3 +46,7 @@ export { default as ClickableImage } from './ClickableImage';
 // F · Close
 export { default as WrapUpList } from './WrapUpList';
 export { default as ShareBar } from './ShareBar';
+
+// H · Conversion engine
+export { default as SavingsCalculator, type SavingsInput } from './SavingsCalculator';
+export { default as SavingsBreakdown } from './SavingsBreakdown';

@@ -58,6 +58,10 @@ const SLOT_BY_KEY: Record<string, CtaSubKey> = {
   state: 'sub7',
   frequency: 'sub8',
   angle: 'sub9',
+  // SavingsCalculator engagement — value = 'calc' when user has touched
+  // any calculator input. Distinct slot from sub6 so quiz answer +
+  // calculator engagement can coexist without stomping each other.
+  click_source: 'sub10',
 };
 
 /** URL param output order — matches the locked scheme. */
