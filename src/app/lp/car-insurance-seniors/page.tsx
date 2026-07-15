@@ -157,11 +157,11 @@ export default async function Page({ searchParams }: PageProps) {
           </p>
           <h2 className={styles.h2}>How it works</h2>
           <p className={styles.p}>
-            Tap the tile that matches your car above and answer a few quick
-            questions about your driving history. The tool returns real
-            quotes from insurers competing for your business. There&apos;s no
-            obligation to switch — many people simply use it to confirm they
-            aren&apos;t overpaying.
+            Tap your answer above and share a few quick details about your
+            vehicle and driving history. The tool returns real quotes from
+            insurers competing for your business. There&apos;s no obligation
+            to switch — many people simply use it to confirm they aren&apos;t
+            overpaying.
           </p>
 
           <a

@@ -35,6 +35,21 @@
   }
 }
 
+/*
+ * 3-tile variant (e.g. AgeBandTap: 55-65 / 66-75 / 76+). Stays 3-across
+ * on every viewport — bigger tap targets than 2-col, still one row.
+ */
+.gridThree {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 480px;
+}
+
+@media (min-width: 520px) {
+  .gridThree {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .tile {
   display: flex;
   align-items: center;
