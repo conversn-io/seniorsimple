@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Family Peace Plan™ — End the Guessing · SeniorSimple</title>
+<style>
+  :root{--teal:#36596A;--teal-ink:#274655;--cream:#F7F5EF;--cream-2:#EFEBDF;--gold:#E4CDA1;--gold-ink:#A98B4E;--ink:#26313A;--muted:#6E6A5F;--line:#E7E1D2;--good:#1D7A5A;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#EDEAE0;color:var(--ink);font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.62;}
+  .bar{background:var(--teal);color:#fff;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:8px;}
+  .page{max-width:720px;margin:0 auto;background:#fff;}
+  .inner{padding:34px 40px 46px;}
+  .eyebrow{font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);font-weight:700;}
+  h1{font-size:37px;line-height:1.16;color:var(--teal);font-weight:600;margin:10px 0 14px;}
+  .dek{font-size:20px;color:#3d4a53;margin:0 0 22px;}
+  p{margin:0 0 18px;}
+  .lead::first-letter{font-size:58px;float:left;line-height:.86;padding:6px 10px 0 0;color:var(--teal);font-weight:700;}
+  h2{font-size:26px;color:var(--teal);font-weight:600;margin:32px 0 10px;}
+  .pull{border-left:4px solid var(--gold);background:var(--cream);padding:14px 20px;margin:24px 0;font-size:21px;color:var(--teal-ink);border-radius:0 8px 8px 0;}
+  .qlist{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:24px 0;font-family:Arial,Helvetica,sans-serif;font-size:17px;}
+  .qlist div{padding:6px 0 6px 26px;position:relative;}
+  .qlist div:before{content:"\201C";position:absolute;left:6px;top:6px;color:var(--gold-ink);font-size:22px;font-family:Georgia,serif;}
+  .inside{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:26px 0;font-family:Arial,Helvetica,sans-serif;}
+  .inside h3{font-family:Georgia,serif;color:var(--teal);font-size:20px;margin:0 0 14px;}
+  .inside .row{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.45;}
+  .inside .row:last-child{border-bottom:none;}
+  .inside .ic{color:var(--teal);font-size:20px;flex-shrink:0;width:24px;text-align:center;}
+  .bullets{font-family:Arial,Helvetica,sans-serif;font-size:17px;padding-left:0;list-style:none;margin:20px 0;}
+  .bullets li{position:relative;padding:8px 0 8px 30px;border-bottom:1px solid var(--line);}
+  .bullets li:before{content:"\2713";position:absolute;left:2px;top:8px;color:var(--good);font-weight:700;}
+  .steps{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:24px 0;font-family:Arial,Helvetica,sans-serif;}
+  .steps .how{font-family:Georgia,serif;color:var(--teal);font-size:20px;font-weight:600;margin-bottom:12px;}
+  .steps .step{display:flex;gap:12px;align-items:flex-start;padding:7px 0;font-size:16px;}
+  .steps .step .n{background:var(--teal);color:#fff;min-width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .steps .friction{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:14px;color:var(--gold-ink);font-weight:700;}
+  .quote{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:20px 0;}
+  .quote p{font-size:18px;font-style:italic;color:#3d4a53;margin:0 0 8px;}
+  .quote .who{font-family:Arial,sans-serif;font-size:13px;color:var(--muted);font-style:normal;}
+  .stars{color:#E0B94A;letter-spacing:2px;}
+  .offer{background:var(--teal);color:#fff;border-radius:16px;padding:30px 30px 26px;margin:32px 0 10px;font-family:Arial,Helvetica,sans-serif;text-align:center;}
+  .offer .k{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+  .offer .ttl{font-family:Georgia,serif;font-size:28px;font-weight:600;margin:6px 0 2px;}
+  .offer .sub{color:#CFE0E6;font-size:15px;margin-bottom:18px;}
+  .stack{background:rgba(255,255,255,.08);border-radius:12px;padding:16px 20px;text-align:left;margin:0 auto 18px;max-width:460px;}
+  .stack .li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.16);font-size:15px;}
+  .stack .li:last-child{border-bottom:none;}
+  .stack .li .val{color:#CFE0E6;white-space:nowrap;}
+  .stack .li.free .val{color:var(--gold);font-weight:700;}
+  .stack .tot{display:flex;justify-content:space-between;gap:12px;padding:12px 0 2px;font-weight:700;font-size:15px;}
+  .price{margin:10px 0 4px;}
+  .price .old{color:#9fb4bd;text-decoration:line-through;font-size:19px;margin-right:10px;}
+  .price .new{font-family:Georgia,serif;font-size:46px;font-weight:600;color:#fff;}
+  .price .note{display:block;color:#CFE0E6;font-size:13px;margin-top:2px;}
+  .cta{display:inline-block;background:var(--gold);color:#3a2f12;font-weight:700;font-size:20px;text-decoration:none;padding:16px 46px;border-radius:10px;margin:14px 0 8px;letter-spacing:.01em;}
+  .guar-badge{font-size:13px;color:#CFE0E6;}
+  .bumps{display:flex;flex-direction:column;gap:10px;margin:14px 0 0;}
+  .bump{background:var(--cream);border:1px dashed var(--gold-ink);border-radius:10px;padding:14px 18px;font-family:Arial,sans-serif;font-size:14px;color:#5a5346;text-align:left;display:flex;gap:10px;align-items:flex-start;}
+  .bump b{color:var(--teal-ink);}
+  .bump .chk{color:var(--gold-ink);font-size:18px;flex-shrink:0;line-height:1.35;}
+  .guarantee{background:#fff;border:2px solid var(--gold);border-radius:14px;padding:22px 26px;margin:28px 0;}
+  .guarantee h3{font-family:Georgia,serif;color:var(--teal);font-size:22px;margin:0 0 8px;}
+  .guarantee p{font-size:17px;margin:0;}
+  .foot{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8a857a;line-height:1.55;border-top:1px solid var(--line);padding:18px 40px 40px;max-width:720px;margin:0 auto;background:#fff;}
+</style>
+</head>
+<body>
+<div class="bar">SeniorSimple · The Simple Life</div>
+<div class="page">
+  <div class="inner">
+    <div class="eyebrow">The Family Peace Plan&trade;</div>
+    <h1>Get Your Family Peace Plan Done This Sunday Afternoon</h1>
+    <p class="dek">A guided, watch-anytime system that walks you through organizing the most important information your family would ever need — in one calm afternoon. Press play, fill in the most important pages, and finally get everything into one simple place.</p>
+    <div class="pull">Most organizers just hand you more pages to figure out. The Family Peace Plan <b>guides you through it</b> — so you actually finish.</div>
+
+    <p>By Sunday evening, the coffee cup is empty, the pages are filled, and one important thing you've carried for years is finally handled.</p>
+
+    <p class="lead">Before I tell you what's inside, I need to tell you about the worst filing cabinet I ever saw.</p>
+
+    <p>It belonged to a man named Bob. Bob wasn't disorganized — far from it. Thirty-eight years at the same company. Never missed a mortgage payment. Raised three kids. Took his wife dancing every Friday night. By every measure, Bob had built a beautiful life. The kind of person people describe as having "everything together."</p>
+
+    <p>So when his daughter asked me over one Saturday to help "find a few papers," I figured we'd be done in an hour. We opened one drawer. Then another. Envelopes from fifteen years ago. Expired insurance cards. A deed to a house he'd sold twenty years earlier. Six notebooks. A safe nobody had the combination to. And somewhere, mixed into all of it, were the documents his family actually needed.</p>
+
+    <p>His daughter looked at me — half laughing, half crying — and said something I'll never forget. "Dad knew where everything was." She paused. "We don't."</p>
+
+    <div class="pull">The problem was never missing documents. Everything existed. The problem was missing directions.</div>
+
+    <h2>What a will can't tell your family</h2>
+    <p>Here's what almost nobody realizes. A will is important. So is life insurance. But those documents tell your family <b>who</b> gets what. They never tell them <b>where</b> anything is — or what to do first.</p>
+
+    <p>And those are the questions families actually ask first:</p>
+
+    <div class="qlist">
+      <div>Where's the Medicare card?</div>
+      <div>Which bank has the checking account?</div>
+      <div>Who insures the house?</div>
+      <div>Who has the spare key?</div>
+      <div>What bills are on automatic payment?</div>
+      <div>Where are the passwords?</div>
+    </div>
+
+    <p>A will can't answer those. Your attorney usually can't. Your financial advisor probably can't. Only one person can. <b>You.</b> And that's exactly why loving families spend days — sometimes weeks — piecing together information that could have been written down in a single afternoon.</p>
+
+    <p>Families don't panic because someone forgot to plan. They panic because they have to <i>guess.</i> And every guess carries a cost — hours, stress, and sometimes tension between people who love each other. I started calling that space the <b>Guessing Gap&trade;.</b></p>
+
+    <h2>Why getting organized never seems to happen</h2>
+    <p>It isn't because people don't care. It's because they picture it taking weeks — boxes everywhere, the dining table covered for days. So they promise to start "later." But here's what surprises everyone who finally does it: the hardest part isn't filling it out. The hardest part is opening the cover. After that, it's just one page, one section, one small win at a time. No legal language. No computer. No app. No password to remember.</p>
+
+    <h2>Introducing The Family Peace Plan™</h2>
+    <p>It isn't another planner, a stack of legal forms, or a blank workbook you have to figure out alone. It's a <b>guided system</b>: a large-print, 12-section workbook <b>plus a watch-anytime video walkthrough</b> — the Sunday Afternoon Method — that sits beside you and walks you through it, one page at a time. Press play, and we do it together. The Sunday Afternoon Method&trade; isn't a class to attend — it's a calm afternoon you spend with us. Think of it as the map that goes with your life: a will tells people what you wanted; the Family Peace Plan helps them know where everything is.</p>
+
+    <div class="steps">
+      <div class="how">How it works</div>
+      <div class="step"><span class="n">1</span><span>Press play. The Sunday Afternoon Method guides you, one page at a time.</span></div>
+      <div class="step"><span class="n">2</span><span>Fill in the most important pages as we go — at your own pace.</span></div>
+      <div class="step"><span class="n">3</span><span>Close the cover. Slide it onto the shelf. For the first time in years, your family's most important answers are no longer only in your head.</span></div>
+      <div class="friction">No live class. No Zoom. No camera. No schedule. No tech setup. Pause anytime, come back anytime.</div>
+    </div>
+
+    <ul class="bullets">
+      <li>The one page your children may thank you for more than any other.</li>
+      <li>Why writing down <i>where</i> your documents are can matter even more than the documents themselves.</li>
+      <li>The simple "Sunday Afternoon Method" that helps most families finish years of procrastination in one relaxed afternoon.</li>
+      <li>The one mistake that sends loving families searching the wrong places first.</li>
+      <li>Why the real goal isn't organizing your paperwork — it's organizing your family's confidence.</li>
+    </ul>
+
+    <div class="inside">
+      <h3>All 12 sections — everything has a place</h3>
+      <div class="row"><span class="ic">&#9829;</span><span><b>Health &amp; Medical</b> — medications, doctors, and health details on one page.</span></div>
+      <div class="row"><span class="ic">&#9873;</span><span><b>Benefits &amp; Coverage</b> — Medicare, Social Security, and insurance in one spot.</span></div>
+      <div class="row"><span class="ic">&#128188;</span><span><b>Money &amp; Accounts</b> — where every account and document is kept.</span></div>
+      <div class="row"><span class="ic">&#9737;</span><span><b>Family Wishes</b> — who to call first, and anything you'd like them to know.</span></div>
+      <div class="row"><span class="ic">&#43;</span><span><b>…and 8 more</b> — Open First, Emergency Contacts, Bills &amp; Household, Home &amp; Utilities, Digital Life, Insurance &amp; Advisors, Important Documents, and your Annual Peace Review.</span></div>
+    </div>
+
+    <div class="quote">
+      <p class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</p>
+      <p>"I'd been putting this off for years. I sat down one evening and just started. For the first time, everything is finally in order — and my kids know where to look."</p>
+      <span class="who">— Patricia D., verified SeniorSimple reader</span>
+    </div>
+
+    <h2>This isn't about getting organized</h2>
+    <p>It's about becoming the person who finally took care of it — the one who, quietly and without fuss, made sure the people they love will never have to guess.</p>
+    <p>That's why the very first page isn't a form. Before the forms begin, it reminds you why you're doing this: you're not filling out paperwork, you're making a promise.</p>
+    <p>And it doesn't have to be perfect the first time. Every year, one quiet Sunday afternoon can become the moment your family's peace gets updated — a small ritual that keeps the promise kept.</p>
+
+    <div class="offer">
+      <div class="k">Instant access · Watch anytime · Large print</div>
+      <div class="ttl">The Family Peace Plan&trade;</div>
+      <div class="sub">The complete guided system — done in one calm afternoon.</div>
+      <div class="stack">
+        <div class="li"><span>The complete 12-section Family Peace Plan workbook (large print)</span><span class="val">$49</span></div>
+        <div class="li"><span>The Sunday Afternoon Method — guided video walkthrough</span><span class="val">$79</span></div>
+        <div class="li"><span>Open First page + Completion Checklist</span><span class="val">$15</span></div>
+        <div class="li"><span>The Family Letter template</span><span class="val">$19</span></div>
+        <div class="li"><span>The Annual Peace Review</span><span class="val">$19</span></div>
+        <div class="li free"><span>BONUS: 60 Days of The Simple Life Club</span><span class="val">FREE</span></div>
+        <div class="tot"><span>Total value</span><span>$181</span></div>
+      </div>
+      <div class="price"><span class="old">$181</span><span class="new">$47</span><span class="note">One-time · instant access · watch anytime</span></div>
+      <a href="#checkout" class="cta" id="checkoutCta">Get My Family Peace Plan &rarr;</a>
+      <div class="guar-badge">60-day peace-of-mind guarantee · No obligation, ever</div>
+      <div class="bumps">
+        <div class="bump"><span class="chk">&#9744;</span><span><b>Prefer paper? Add the printed Family Peace Plan — $49.</b> Professionally printed, large-print, and shipped to your door — so you can fill it out by hand and keep it somewhere your family can find.</span></div>
+      </div>
+    </div>
+
+    <div class="guarantee">
+      <h3>The Peace of Mind Promise</h3>
+      <p>Get it. Fill it out. Talk with your family. If you don't feel more prepared after finally seeing everything gathered in one place, tell us any time in the next 60 days and we'll refund every penny — and you keep the organizer. The only thing you can't get back is another year of "I really should." This is how we make sure you never risk a dime to find out how good it feels to have it done.</p>
+    </div>
+
+    <h2>Five years from now</h2>
+    <p>You won't remember buying this. But one day, someone you love may quietly pull it off a shelf, open it, and find every answer waiting for them — calmly, clearly, in your own handwriting. They'll smile. And they'll think, "They really did think of everything." That's the gift. Not the organizer. The peace.</p>
+
+    <p style="margin-top:24px;">Don't wait for the "right time." Sit down this weekend with a cup of coffee and a pen — and finally close your family's Guessing Gap.</p>
+
+    <div style="text-align:center;margin-top:22px;">
+      <a href="#checkout" class="cta">Get My Family Peace Plan — $47 &rarr;</a>
+    </div>
+  </div>
+</div>
+<div class="foot">
+  Patricia D. is illustrative of the experience the Family Peace Plan is designed to provide; replace with a verified customer story before publishing. The Family Peace Plan / Simple Life Organizer is an organizational tool. It is not legal, financial, tax, or medical advice, and it is not a will or a substitute for one — consult the appropriate licensed professional for those matters. Value figures reflect standalone pricing of the components and are shown for comparison. Any resources referenced connect you with SeniorSimple's help line at no cost and with no obligation. &copy; SeniorSimple.
+</div>
+
+<script>
+/* INTEGRATION HOOK — checkout
+   Frontend: Family Peace Plan (guided system) — CONTROL $47 / PREMIUM TEST $67 (A/B).
+   Order bump on the checkout page: Printed Family Peace Plan — test $49 / $59.
+   POST-PURCHASE one-click UPSELL (not on this page): Family Peace Protection Kit — $99.
+   POST-PURCHASE BONUS delivered after checkout: 60 Days of The Simple Life Club.
+   Point CHECKOUT_URL at the live checkout with the correct SKU + price-test bucket. */
+const CHECKOUT_URL = "#checkout"; // e.g. "/checkout?sku=family-peace-plan&price=47"
+document.querySelectorAll('.cta').forEach(a=>{
+  a.addEventListener('click',function(e){
+    if(CHECKOUT_URL && CHECKOUT_URL!=="#checkout"){ return; } // let real link navigate
+    e.preventDefault();
+    console.log("[Family Peace Plan] checkout clicked — set CHECKOUT_URL to go live. Frontend price: $47 (test $67).");
+  });
+});
+</script>
+</body>
+</html>
