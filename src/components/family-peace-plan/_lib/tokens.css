@@ -12,8 +12,11 @@
   --fpp-line: #E7E1D2;
   --fpp-good: #1D7A5A;
   --fpp-page-bg: #EDEAE0;
-  --fpp-serif: Georgia, "Times New Roman", serif;
-  --fpp-sans: Arial, Helvetica, sans-serif;
+  /* Fonts: if the route wrapper injects `--font-playfair` / `--font-geist-sans`,
+     they take over as the DR-editorial pair; otherwise we fall back to the
+     safe stack from PR #35. */
+  --fpp-serif: var(--font-playfair, Georgia, "Times New Roman", serif);
+  --fpp-sans: var(--font-geist-sans, Arial, Helvetica, sans-serif);
 
   background: var(--fpp-page-bg);
   color: var(--fpp-ink);
@@ -293,3 +296,304 @@
   .fpp-cta, .fpp-cta-lg { width: 100%; padding: 16px 20px; }
   .fpp-foot, .fpp-foot--narrow { padding: 18px 22px 32px; }
 }
+
+/* ============================================================================
+   Sales-Letter route (`/the-simple-life/family-peace-plan-letter`) styles.
+   Everything below is scoped under `.fpp.fpp-letter` so it doesn't affect the
+   PR #35 advertorial / quiz / offer routes.
+   ============================================================================ */
+
+.fpp-letter { font-size: 18px; line-height: 1.7; }
+.fpp-letter .fpp-inner { padding: 46px 40px 46px; }
+.fpp-letter h1 { font-size: clamp(32px, 5.2vw, 46px); line-height: 1.15; margin: 6px 0 18px; letter-spacing: -0.005em; }
+.fpp-letter h2 { font-size: clamp(24px, 4vw, 30px); line-height: 1.22; margin: 34px 0 14px; }
+.fpp-letter h3 { font-family: var(--fpp-serif); font-size: clamp(20px, 3vw, 24px); color: var(--fpp-teal); font-weight: 600; margin: 28px 0 10px; }
+.fpp-letter .fpp-dek { font-size: clamp(17px, 2.1vw, 20px); line-height: 1.55; color: #3d4a53; margin: 0 0 26px; }
+.fpp-letter p { font-family: var(--fpp-serif); font-size: clamp(17px, 2vw, 19px); line-height: 1.7; margin: 0 0 20px; }
+
+/* Product photo frames — replace PR #35's `.fpp-hero-photo` with an unpadded
+   figure that lets the photo breathe end-to-end in the column. */
+.fpp-letter figure { margin: 26px 0 30px; }
+.fpp-letter figure.fpp-photo { border-radius: 14px; overflow: hidden; background: #EFEBDF; line-height: 0; }
+.fpp-letter figure.fpp-photo img { width: 100%; height: auto; display: block; }
+.fpp-letter figcaption { font-family: var(--fpp-sans); font-size: 13px; color: var(--fpp-muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+
+/* Drop-cap on the Bob lead paragraph. */
+.fpp-letter .fpp-lead::first-letter {
+  font-family: var(--fpp-serif);
+  font-size: 62px; float: left; line-height: 0.86;
+  padding: 8px 12px 0 0; color: var(--fpp-teal); font-weight: 700;
+}
+
+/* Guessing Gap™ 3-chip diagram — CSS only, no image. */
+.fpp-letter .fpp-gap-diagram {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center; gap: 10px;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 14px;
+  padding: 22px 20px; margin: 22px 0 24px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-gap-chip {
+  background: #fff; border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 14px 12px; text-align: center; font-size: 14px; line-height: 1.35;
+  color: var(--fpp-teal-ink); font-weight: 600;
+}
+.fpp-letter .fpp-gap-arrow {
+  color: var(--fpp-gold-ink); font-size: 22px; font-weight: 700; text-align: center;
+}
+@media (max-width: 640px) {
+  .fpp-letter .fpp-gap-diagram { grid-template-columns: 1fr; }
+  .fpp-letter .fpp-gap-arrow { transform: rotate(90deg); font-size: 18px; }
+}
+
+/* "Mistake almost every family makes" question block. */
+.fpp-letter .fpp-questions {
+  background: var(--fpp-cream); border-left: 4px solid var(--fpp-gold);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 24px; margin: 22px 0 24px;
+  font-family: var(--fpp-serif); font-style: italic; font-size: 18px;
+  color: var(--fpp-teal-ink); line-height: 1.6;
+}
+.fpp-letter .fpp-questions p { margin: 0 0 10px; font-style: italic; font-size: inherit; }
+.fpp-letter .fpp-questions p:last-child { margin: 0; }
+
+/* Numbered steps for the Sunday Afternoon Method. */
+.fpp-letter .fpp-method-steps {
+  list-style: none; padding: 0; margin: 20px 0 26px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.fpp-letter .fpp-method-steps li {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 16px 20px;
+  font-family: var(--fpp-sans); font-size: 16px; line-height: 1.55; color: var(--fpp-ink);
+}
+.fpp-letter .fpp-method-steps li b { color: var(--fpp-teal-ink); }
+.fpp-letter .fpp-method-num {
+  background: var(--fpp-teal); color: #fff;
+  min-width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fpp-sans); font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+
+/* What's-inside checklist. */
+.fpp-letter .fpp-checklist { list-style: none; padding: 0; margin: 18px 0 26px; }
+.fpp-letter .fpp-checklist li {
+  position: relative; padding: 10px 0 10px 32px;
+  border-bottom: 1px solid var(--fpp-line);
+  font-family: var(--fpp-sans); font-size: 16px; line-height: 1.55; color: var(--fpp-ink);
+}
+.fpp-letter .fpp-checklist li:last-child { border-bottom: none; }
+.fpp-letter .fpp-checklist li::before {
+  content: "✓"; position: absolute; left: 4px; top: 10px;
+  color: var(--fpp-good); font-weight: 700; font-size: 16px;
+}
+
+/* Value stack (publisher voice — no infomercial strikethrough). */
+.fpp-letter .fpp-value-table {
+  width: 100%; border-collapse: collapse; margin: 20px 0 22px;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 14px;
+  overflow: hidden; font-family: var(--fpp-sans); font-size: 15px;
+}
+.fpp-letter .fpp-value-table td {
+  padding: 14px 20px; border-bottom: 1px solid var(--fpp-line); line-height: 1.45;
+}
+.fpp-letter .fpp-value-table tr:last-child td { border-bottom: none; }
+.fpp-letter .fpp-value-table td:last-child {
+  text-align: right; white-space: nowrap; color: var(--fpp-teal-ink); font-weight: 600;
+}
+.fpp-letter .fpp-value-total {
+  background: #fff;
+  font-family: var(--fpp-serif); font-weight: 600; font-size: 17px; color: var(--fpp-teal);
+}
+.fpp-letter .fpp-value-total td { padding-top: 16px; padding-bottom: 16px; }
+.fpp-letter .fpp-value-free td:last-child { color: var(--fpp-gold-ink); font-weight: 700; }
+
+/* Dominant $47 price row (no strikethrough tote-board — quiet). */
+.fpp-letter .fpp-price {
+  text-align: center; margin: 8px 0 18px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-price .fpp-price-anchor {
+  color: var(--fpp-muted); font-size: 15px;
+  display: block; margin-bottom: 6px;
+}
+.fpp-letter .fpp-price .fpp-price-anchor s { text-decoration-color: var(--fpp-muted); }
+.fpp-letter .fpp-price .fpp-price-big {
+  font-family: var(--fpp-serif); font-weight: 700; color: var(--fpp-teal);
+  font-size: clamp(44px, 8vw, 60px); line-height: 1; display: block;
+}
+.fpp-letter .fpp-price .fpp-price-note {
+  color: var(--fpp-muted); font-size: 14px; margin-top: 8px; display: block;
+}
+
+/* Cream pull-quote sitting directly above CTA #1 (emphasized antidote line). */
+.fpp-letter .fpp-antidote {
+  background: var(--fpp-cream); border-left: 4px solid var(--fpp-gold);
+  border-radius: 0 12px 12px 0;
+  padding: 20px 26px; margin: 26px 0 20px;
+  font-family: var(--fpp-serif); font-size: clamp(19px, 2.4vw, 23px);
+  color: var(--fpp-teal-ink); line-height: 1.4; font-weight: 600; text-align: center;
+}
+
+/* Big CTA blocks + reassurance line under button. */
+.fpp-letter .fpp-cta-block { text-align: center; margin: 22px 0 30px; }
+.fpp-letter .fpp-cta-block .fpp-cta-lg {
+  box-shadow: 0 6px 18px rgba(54, 89, 106, 0.14);
+  font-size: clamp(18px, 2.4vw, 21px);
+  padding: 18px 44px;
+}
+@media (max-width: 560px) {
+  .fpp-letter .fpp-cta-block .fpp-cta-lg { display: block; width: 100%; padding: 18px 20px; }
+}
+.fpp-letter .fpp-cta-note {
+  font-family: var(--fpp-sans); font-size: 13.5px; color: var(--fpp-muted);
+  margin: 12px 0 0;
+}
+
+/* Guarantee box — reused pattern, adjusted spacing for letter density. */
+.fpp-letter .fpp-guarantee { margin: 32px 0 28px; }
+
+/* ================= POST-FORM BLOCK ================= */
+/* Matches the letter body column: 720px, centered white surface. Without this
+   constraint the block used to span the full viewport, which felt off against
+   the tightly-columned letter above. */
+.fpp-postform {
+  background: #fff;
+  border-top: 1px solid var(--fpp-line);
+  max-width: 720px;
+  margin: 0 auto;
+}
+.fpp-postform .fpp-inner { padding: 40px 40px 36px; }
+.fpp-postform h2 {
+  font-family: var(--fpp-serif); font-weight: 600; color: var(--fpp-teal);
+  font-size: clamp(24px, 4vw, 30px); line-height: 1.22; margin: 0 0 14px; text-align: center;
+}
+
+/* Trust row (4-up on desktop, 2-up on mobile). */
+.fpp-postform .fpp-trust-row {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  margin: 8px 0 34px;
+}
+@media (min-width: 640px) {
+  .fpp-postform .fpp-trust-row { grid-template-columns: repeat(4, 1fr); }
+}
+.fpp-postform .fpp-trust-cell {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 16px 14px; text-align: center; font-family: var(--fpp-sans);
+}
+.fpp-postform .fpp-trust-icon {
+  font-size: 22px; line-height: 1; color: var(--fpp-teal);
+  display: block; margin-bottom: 7px;
+}
+.fpp-postform .fpp-trust-label {
+  font-weight: 600; color: var(--fpp-teal-ink); font-size: 13.5px; line-height: 1.35;
+}
+
+/* FAQ — native <details>/<summary>, no JS. */
+.fpp-postform .fpp-faq { margin: 0 0 32px; }
+.fpp-postform details {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 2px 20px; margin: 0 0 12px;
+}
+.fpp-postform summary {
+  cursor: pointer; list-style: none; padding: 16px 30px 16px 0; position: relative;
+  font-family: var(--fpp-sans); font-weight: 600; color: var(--fpp-teal-ink);
+  font-size: clamp(15px, 2vw, 17px); line-height: 1.45;
+}
+.fpp-postform summary::-webkit-details-marker { display: none; }
+.fpp-postform summary::after {
+  content: "+"; position: absolute; right: 2px; top: 14px;
+  font-size: 24px; font-weight: 400; color: var(--fpp-gold-ink); line-height: 1;
+}
+.fpp-postform details[open] summary::after { content: "–"; }
+.fpp-postform details p {
+  margin: 0 0 16px; font-family: var(--fpp-sans);
+  font-size: clamp(15px, 1.9vw, 17px); color: var(--fpp-ink); line-height: 1.6;
+}
+
+/* ================= CheckoutModal (iframe overlay) ================= */
+.fpp-modal-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(38, 49, 58, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: fpp-fade-in 0.15s ease-out;
+}
+@keyframes fpp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.fpp-modal-body {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(90vh, 900px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.fpp-modal-close {
+  position: absolute; top: 6px; right: 10px; z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--fpp-line);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  font-family: var(--fpp-sans); font-size: 22px; line-height: 1;
+  color: var(--fpp-teal); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.fpp-modal-close:hover { background: var(--fpp-cream); color: var(--fpp-teal-ink); }
+.fpp-modal-close:focus-visible { outline: 3px solid var(--fpp-gold); outline-offset: 2px; }
+.fpp-modal-iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 560px;
+  border: 0;
+  background: #fff;
+}
+.fpp-modal-fallback {
+  margin: 0;
+  padding: 10px 16px 12px;
+  font-family: var(--fpp-sans);
+  font-size: 13px;
+  text-align: center;
+  color: var(--fpp-muted);
+  border-top: 1px solid var(--fpp-line);
+  background: var(--fpp-cream);
+}
+.fpp-modal-fallback a { color: var(--fpp-teal); font-weight: 600; }
+.fpp-modal-fallback a:hover { color: var(--fpp-teal-ink); }
+@media (max-width: 640px) {
+  .fpp-modal-backdrop { padding: 0; }
+  .fpp-modal-body {
+    max-width: 100%; max-height: 100vh; height: 100vh;
+    border-radius: 0;
+  }
+  .fpp-modal-close { top: 10px; right: 14px; }
+}
+
+/* Modal — hidden state (iframe persists in DOM for warm re-opens). */
+.fpp-modal-backdrop--hidden { display: none !important; }
+
+/* Skeleton overlay shown until the GHL iframe finishes loading. */
+.fpp-modal-skeleton {
+  position: absolute; inset: 0; z-index: 1;
+  background: var(--fpp-cream);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px; padding: 40px 24px;
+  pointer-events: none;
+  animation: fpp-fade-in 0.2s ease-out;
+}
+.fpp-modal-skeleton p {
+  margin: 0; font-family: var(--fpp-sans); font-size: 14px;
+  color: var(--fpp-muted);
+}
+.fpp-modal-skeleton-spinner {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 4px solid var(--fpp-cream-2);
+  border-top-color: var(--fpp-teal);
+  animation: fpp-spin 0.9s linear infinite;
+}
+@keyframes fpp-spin { to { transform: rotate(360deg); } }
