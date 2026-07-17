@@ -44,6 +44,7 @@ import {
   ComponentSwitch,
   type ComponentItem,
 } from '@/advertorial-kit/components/ComponentSwitch';
+import KitCtaShell from '@/advertorial-kit/components/KitCtaShell';
 
 export const dynamic = 'force-dynamic';
 
@@ -170,7 +171,7 @@ async function renderKitAdvertorial(
 
   const useComponentSwitch = componentItems.some((i) => i.component_type);
 
-  return (
+  const body = (
     <AdvertorialLayout
       brand={brand}
       headline={advertorial.headline}
@@ -202,6 +203,17 @@ async function renderKitAdvertorial(
         />
       ))}
     </AdvertorialLayout>
+  );
+
+  // Library components (EditorsPick, MultiSelectQuiz, ImageQuiz, PrimaryCTA,
+  // SectionCTA, StickyCTA) require a CtaProvider in their tree to satisfy
+  // useCtaHref(). Wrap when the kit path is in use with ComponentSwitch.
+  return useComponentSwitch ? (
+    <KitCtaShell slug={slug} siteId={advertorial.site_id}>
+      {body}
+    </KitCtaShell>
+  ) : (
+    body
   );
 }
 
