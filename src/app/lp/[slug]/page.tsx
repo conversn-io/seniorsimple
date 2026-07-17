@@ -43,14 +43,40 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-  referrer: 'no-referrer',
-};
-
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+/**
+ * Per-slug metadata: title from the DB row when the kit path wins; robots +
+ * referrer applied on every response so noindex/no-referrer never regress on
+ * the legacy path either.
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const baseNoindex: Metadata = {
+    robots: { index: false, follow: false, nocache: true, noimageindex: true },
+    referrer: 'no-referrer',
+    openGraph: undefined,
+    twitter: undefined,
+  };
+  try {
+    const appSiteId = getSiteId();
+    const supabase = getAdvertorialSupabase();
+    const { data } = await supabase
+      .from('advertorials')
+      .select('title, headline, site_id, status')
+      .eq('slug', slug)
+      .eq('status', 'live')
+      .maybeSingle<{ title: string; headline: string; site_id: string; status: string }>();
+    if (data && data.site_id === appSiteId) {
+      return { ...baseNoindex, title: data.title || data.headline || 'Sponsored Editorial' };
+    }
+  } catch {
+    // env not configured or DB error — fall through to noindex-only
+  }
+  return baseNoindex;
 }
 
 interface AdvertorialRow {
