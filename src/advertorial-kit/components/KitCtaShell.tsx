@@ -18,14 +18,16 @@
  */
 
 import { CtaProvider, type CtaSubs } from '@/components/advertorial-library'
+import { KitTracker } from './KitTracker'
 
 interface KitCtaShellProps {
   slug: string
   siteId: string
+  variant?: string | null
   children: React.ReactNode
 }
 
-export default function KitCtaShell({ slug, siteId, children }: KitCtaShellProps) {
+export default function KitCtaShell({ slug, siteId, variant, children }: KitCtaShellProps) {
   const subs: CtaSubs = {
     source_id: siteId,
     sub1: '',
@@ -36,6 +38,8 @@ export default function KitCtaShell({ slug, siteId, children }: KitCtaShellProps
   }
   return (
     <CtaProvider base={`/lp/${encodeURIComponent(slug)}`} subs={subs}>
+      {/* Fires lp_view + provides handles for CTA/tap events (W2 analytics). */}
+      <KitTracker slug={slug} brand={siteId} variant={variant ?? null} />
       {children}
     </CtaProvider>
   )

@@ -28,6 +28,7 @@ import { checkTapOnly } from '@/advertorial-kit/lib/tap-only'
 import { checkItemStrings } from '@/advertorial-kit/lib/block-line'
 import { renderMarkdown } from '@/advertorial-kit/lib/markdown'
 import type { AdvertorialBrand } from '@/advertorial-kit/lib/brand-config'
+import { SITE_KEY, fireKitEvent } from '@/advertorial-kit/lib/analytics'
 
 // Library primitives (moved to shared location in W1).
 import {
@@ -134,14 +135,45 @@ export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
       }
       const bodyHtml = renderMarkdown(item.body_md)
       return (
-        <EditorsPick
-          tag={p.tag ?? 'Editor’s Pick'}
-          ctaLabel={item.cta_text ?? p.ctaLabel ?? 'See if you qualify »'}
-          href={outHref}
-          disclosure={p.disclosure ?? 'Sponsored. See disclosure at the bottom.'}
+        <div
+          data-position={item.position}
+          data-component="editors_pick"
+          onClick={(e) => {
+            // Fire lp_cta_click when an anchor inside the pick is clicked.
+            // Event delegation lets us instrument EditorsPick without forking it.
+            const target = e.target as HTMLElement | null
+            if (target && target.closest('a[href]')) {
+              fireKitEvent(
+                'lp_cta_click',
+                {
+                  site_key: SITE_KEY,
+                  brand: brand.siteId,
+                  slug,
+                  component_type: 'editors_pick',
+                  variant: item.variant_key,
+                },
+                {
+                  eventLabel: `slot_${item.slot_key ?? 'none'}`,
+                  extraProps: {
+                    slot_key: item.slot_key,
+                    position: item.position,
+                    item_type: item.item_type,
+                    cta_text: item.cta_text,
+                  },
+                },
+              )
+            }
+          }}
         >
-          <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-        </EditorsPick>
+          <EditorsPick
+            tag={p.tag ?? 'Editor’s Pick'}
+            ctaLabel={item.cta_text ?? p.ctaLabel ?? 'See if you qualify »'}
+            href={outHref}
+            disclosure={p.disclosure ?? 'Sponsored. See disclosure at the bottom.'}
+          >
+            <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          </EditorsPick>
+        </div>
       )
     }
 
@@ -236,6 +268,29 @@ export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
                 style={{ background: brand.accent, color: brand.accentText }}
                 rel="nofollow sponsored"
                 prefetch={false}
+                onClick={() => {
+                  // W2 analytics: fire lp_cta_click BEFORE /out redirect.
+                  // keepalive:true on the fetch survives the navigation.
+                  fireKitEvent(
+                    'lp_cta_click',
+                    {
+                      site_key: SITE_KEY,
+                      brand: brand.siteId,
+                      slug,
+                      component_type: componentType,
+                      variant: item.variant_key,
+                    },
+                    {
+                      eventLabel: `slot_${item.slot_key ?? 'none'}`,
+                      extraProps: {
+                        slot_key: item.slot_key,
+                        position: item.position,
+                        item_type: item.item_type,
+                        cta_text: item.cta_text,
+                      },
+                    },
+                  )
+                }}
               >
                 {item.cta_text || 'See if you qualify »'}
               </Link>
