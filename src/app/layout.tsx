@@ -166,6 +166,28 @@ export default function RootLayout({
         {/* Client-side pixel initializer - handles route-based initialization */}
         <MetaPixelInitializer />
         
+        {/* Taboola / Realize base pixel — loads _tfa global for use by AdvertorialCta
+            and any other client-side event pushes. Account 2006370. */}
+        <Script
+          id="taboola-tfa-base"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function (t, f, a, x) {
+                if (!document.getElementById(x)) {
+                  t.async = 1; t.src = a; t.id = x;
+                  f.parentNode.insertBefore(t, f);
+                }
+              }(document.createElement("script"),
+                document.getElementsByTagName("script")[0],
+                "//cdn.taboola.com/libtrc/unip/2006370/tfa.js",
+                "tb_tfa_script");
+              window._tfa = window._tfa || [];
+              window._tfa.push({notify: 'event', name: 'page_view', id: 2006370});
+            `
+          }}
+        />
+
         {/* PageTest.ai - Lazy Load */}
         <Script
           id="pagetest-init"
