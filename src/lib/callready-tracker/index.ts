@@ -139,9 +139,10 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     get("ttclid") ||
     get("twclid") ||
     get("li_fat_id") ||
-    get("nb_click_id") ||   // NewsBreak native macro
+    get("newsbreak_cid") || // NewsBreak (per NewsBreak's own postback docs — any param name works except `nb_cid`)
+    get("nb_click_id") ||
     get("nbclid") ||
-    get("sub1");            // Everflow-style click id used by NewsBreak when Everflow tracker preset is selected (confirmed 2026-07-16)
+    get("sub1");            // Everflow-style click id (used when NewsBreak configured with Everflow tracker preset)
 
   if (!click_id) {
     log(config, "no click_id (organic traffic) — skipping");
@@ -157,7 +158,7 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     else if (get("ttclid")) s2_network = "tiktok";
     else if (get("twclid")) s2_network = "twitter";
     else if (get("li_fat_id")) s2_network = "linkedin";
-    else if (get("nb_click_id") || get("nbclid")) s2_network = "newsbreak";
+    else if (get("newsbreak_cid") || get("nb_click_id") || get("nbclid")) s2_network = "newsbreak";
   }
   if (!s2_network) {
     log(config, "no s2_network (cannot route postback) — skipping");
@@ -215,13 +216,15 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
   // on landing (not just on conversion) to validate the postback integration. NewsBreak's
   // test flow requires their `view_content` event to fire from the browser on landing —
   // our dispatcher only fires on conversion (from the ledger trigger), so we handle the
-  // landing signal here. Fire-and-forget, no-cors (endpoint is a 1x1 pixel-style tracker).
-  const beaconUrl = buildLandingBeacon(s2_network, click_id);
-  if (beaconUrl) {
+  // landing signal here.
+  const beacon = buildLandingBeacon(s2_network, click_id);
+  if (beacon) {
     try {
-      fetch(beaconUrl, {
-        method: "GET",
-        mode: "no-cors",
+      fetch(beacon.url, {
+        method: beacon.method,
+        headers: beacon.headers,
+        body: beacon.body,
+        mode: "no-cors",  // beacon endpoints don't set CORS; we don't need the response
         keepalive: true,
         credentials: "omit",
       })
@@ -233,14 +236,27 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
   }
 }
 
+type LandingBeacon = {
+  url: string;
+  method: "GET" | "POST";
+  headers?: Record<string, string>;
+  body?: string;
+};
+
 // Per-network landing beacons. Add here when a new network needs a client-side signal
 // on page load. Called synchronously; return null to skip.
-function buildLandingBeacon(s2_network: string, click_id: string): string | null {
+function buildLandingBeacon(s2_network: string, click_id: string): LandingBeacon | null {
   switch (s2_network) {
     case "newsbreak":
-      // NewsBreak Postback URL confirmed 2026-07-16 via ad-manager UI (Everflow tracker preset).
-      // NewsBreak's server identifies the ad account via the callback token; no per-brand creds.
-      return `https://business.newsbreak.com/tracking/attribute?callback=${encodeURIComponent(click_id)}&event_type=view_content`;
+      // NewsBreak Postback per NewsBreak's docs (attributev2 endpoint, POST body).
+      // text/plain content-type is required — application/json would trigger CORS
+      // preflight which their endpoint doesn't handle. Body is still JSON-formatted.
+      return {
+        url: "https://business.newsbreak.com/tracking/attributev2",
+        method: "POST",
+        headers: { "content-type": "text/plain" },
+        body: JSON.stringify({ callback: click_id, event_type: "view_content" }),
+      };
     default:
       return null;
   }
