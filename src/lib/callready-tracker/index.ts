@@ -159,6 +159,7 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     else if (get("twclid")) s2_network = "twitter";
     else if (get("li_fat_id")) s2_network = "linkedin";
     else if (get("newsbreak_cid") || get("nb_click_id") || get("nbclid")) s2_network = "newsbreak";
+    else if (get("taboola_cid") || get("taboola_click_id")) s2_network = "taboola";
   }
   if (!s2_network) {
     log(config, "no s2_network (cannot route postback) — skipping");
