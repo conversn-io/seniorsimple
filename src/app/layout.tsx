@@ -6,6 +6,7 @@ import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
 import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
+import { TrackerBoot } from "@/lib/callready-tracker/TrackerBoot";
 // TrustedForm removed from global layout - loaded per-page when forms exist
 // import { TrustedForm } from "../components/tracking/TrustedForm";
 
@@ -236,6 +237,9 @@ export default function RootLayout({
           <main>{children}</main>
           <ConditionalFooter />
         </LayoutProvider>
+
+        {/* CallReady in-house tracker + network landing beacons (NewsBreak view_content, etc.) */}
+        <TrackerBoot brand="seniorsimple" />
       </body>
     </html>
   );
