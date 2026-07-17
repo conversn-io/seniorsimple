@@ -1,6 +1,13 @@
+'use client'
+
 /**
  * ComponentSwitch — dispatches an advertorial_items row to the appropriate
  * primitive from src/components/advertorial-library.
+ *
+ * Marked `'use client'` because several library primitives (EditorsPick,
+ * MultiSelectQuiz, ImageQuiz, PrimaryCTA, etc.) call `useCtaHref()` /
+ * `useSetCtaSelection()` from CtaContext. A CtaProvider must already wrap
+ * this tree (see KitCtaShell).
  *
  * Guardrails enforced HERE (fail-closed):
  *   • checkTapOnly() — reject unknown component_type or free-text identifying
