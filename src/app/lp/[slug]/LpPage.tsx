@@ -47,13 +47,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { SOURCE_ID, type AdvertorialAngle } from '@/lib/advertorial-content';
 import AngleABody from './AngleABody';
 import AngleBBody from './AngleBBody';
-import styles from './advertorial.module.css';
+import styles from '@/components/advertorial-library/advertorial.module.css';
 import {
   CtaProvider,
   DisclosureFooter,
   Masthead,
   type CtaSubs,
-} from './components';
+} from '@/components/advertorial-library';
 
 interface LpPageProps {
   slug: string;

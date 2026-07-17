@@ -9,7 +9,7 @@
  * component's children.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface SectionProps {
   /** Numbered listicle prefix; omit for un-numbered sections. */

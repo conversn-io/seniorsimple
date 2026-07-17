@@ -17,7 +17,7 @@
  */
 
 import { useState } from 'react';
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import { useCtaHref, useSetCtaSelection } from './CtaContext';
 
 export interface StateOption {

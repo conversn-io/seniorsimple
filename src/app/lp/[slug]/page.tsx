@@ -40,6 +40,10 @@ import {
   AdvertorialItem,
   type AdvertorialItemData,
 } from '@/advertorial-kit/components/AdvertorialItem';
+import {
+  ComponentSwitch,
+  type ComponentItem,
+} from '@/advertorial-kit/components/ComponentSwitch';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,6 +107,9 @@ interface ItemRow {
   cta_text: string | null;
   slot_id: string | null;
   slot: { slot_key: number } | null;
+  component_type: string | null;
+  component_props: Record<string, unknown> | null;
+  variant_key: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +125,7 @@ async function renderKitAdvertorial(
     .from('advertorial_items')
     .select(`
       id, advertorial_id, position, item_type, heading, body_md, image_url,
-      cta_text, slot_id,
+      cta_text, slot_id, component_type, component_props, variant_key,
       slot:advertorial_slots (slot_key)
     `)
     .eq('advertorial_id', advertorial.id)
@@ -133,15 +140,35 @@ async function renderKitAdvertorial(
   const disclosureHtml = renderMarkdown(disclosureMd);
   const introHtml = renderMarkdown(advertorial.intro_md);
 
-  const items: AdvertorialItemData[] = itemsRaw.map((row) => ({
+  // Any item with a component_type set (non-null) renders via the library
+  // ComponentSwitch (W1). Legacy items (component_type NULL) fall through to
+  // the AdvertorialItem listicle path for backwards-compatibility.
+  const componentItems: ComponentItem[] = itemsRaw.map((row) => ({
     position: row.position,
     item_type: row.item_type,
     heading: row.heading,
-    bodyHtml: renderMarkdown(row.body_md),
+    body_md: row.body_md,
     image_url: row.image_url,
     cta_text: row.cta_text,
     slot_key: row.item_type === 'monetized' ? row.slot?.slot_key ?? null : null,
+    component_type: row.component_type,
+    component_props: row.component_props,
+    variant_key: row.variant_key,
   }));
+
+  const legacyItems: AdvertorialItemData[] = itemsRaw
+    .filter((row) => !row.component_type)
+    .map((row) => ({
+      position: row.position,
+      item_type: row.item_type,
+      heading: row.heading,
+      bodyHtml: renderMarkdown(row.body_md),
+      image_url: row.image_url,
+      cta_text: row.cta_text,
+      slot_key: row.item_type === 'monetized' ? row.slot?.slot_key ?? null : null,
+    }));
+
+  const useComponentSwitch = componentItems.some((i) => i.component_type);
 
   return (
     <AdvertorialLayout
@@ -157,7 +184,16 @@ async function renderKitAdvertorial(
           dangerouslySetInnerHTML={{ __html: introHtml }}
         />
       ) : null}
-      {items.map((item) => (
+      {useComponentSwitch
+        ? componentItems.map((item) => (
+            <ComponentSwitch
+              key={`${item.position}-${item.item_type}`}
+              item={item}
+              slug={slug}
+              brand={brand}
+            />
+          ))
+        : legacyItems.map((item) => (
         <AdvertorialItem
           key={`${item.position}-${item.item_type}`}
           item={item}

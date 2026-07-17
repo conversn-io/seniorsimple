@@ -4,7 +4,7 @@
  * brand hint above the fold. No nav menu, no large logo.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface MastheadProps {
   /** Native-ad label text. Default keeps the strict "Advertisement". */

@@ -7,7 +7,7 @@
  * If no verifiable review exists, omit this component — do not fabricate.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface QuoteProps {
   quote: string;

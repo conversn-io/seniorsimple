@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { APC_BRANDS, OFFER_TRACKING_URL, SOURCE_ID } from '@/lib/advertorial-content';
-import styles from '@/app/lp/[slug]/advertorial.module.css';
+import styles from '@/components/advertorial-library/advertorial.module.css';
 import {
   CtaProvider,
   DealsShowcase,
@@ -25,7 +25,7 @@ import {
   SavingsCalculator,
   TrustBar,
   type CtaSubs,
-} from '@/app/lp/[slug]/components';
+} from '@/components/advertorial-library';
 
 interface BridgePageProps {
   bridgeSlug: string;

@@ -15,12 +15,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import {
-  captureTracking,
+  assembleTracking,
+  captureQueryTracking,
   encodeSubId,
   inferSourceFromReferrer,
   pickRotationOffer,
   substituteTemplate,
-  type CapturedTracking,
   type RotationEntry,
 } from '@/advertorial-kit/lib/router'
 import { getAdvertorialSupabase } from '@/advertorial-kit/lib/supabase-admin'
@@ -94,22 +94,26 @@ export async function GET(
     : []
   const pickedOfferId = pickRotationOffer(rotation) ?? slotRow.offer_id ?? null
 
-  // 3. Capture tracking. s1..s3 = server state; s4..s8 + source = query.
+  // 3. Capture tracking per the canonical taxonomy (see router.ts header).
+  //    s1 = brand (server state)
+  //    s2 = source (query or referrer inference)
+  //    s3 = component (CTA-provided via ?component=<type>)
+  //    s4..s6, s8 = query
+  //    s7 = variant (CTA-provided via ?variant=<id>)
+  //    slug + slot_key = reconciliation-only, encoded into sub_id
   const url = new URL(req.url)
-  const captured = captureTracking(url.searchParams)
+  const query = captureQueryTracking(url.searchParams)
   const referrer = req.headers.get('referer')
-  const tracking: CapturedTracking = {
-    s1: advertorial.site_id,
-    s2: slug,
-    s3: String(slotKey),
-    s4: captured.s4,
-    s5: captured.s5,
-    s6: captured.s6,
-    s7: captured.s7,
-    s8: captured.s8,
-    source: captured.source ?? inferSourceFromReferrer(referrer),
-  }
-  const subId = encodeSubId(tracking)
+  const componentType = url.searchParams.get('component') || null
+  const tracking = assembleTracking({
+    brand: advertorial.site_id,
+    component: componentType,
+    queryCapture: {
+      ...query,
+      source: query.source ?? inferSourceFromReferrer(referrer),
+    },
+  })
+  const subId = encodeSubId(tracking, { slug, slotKey })
 
   // 4. Load offer template (metadata.tracking_template preferred over offer_url).
   let offerTemplate: string | null = null

@@ -5,6 +5,32 @@ Server-rendered listicle advertorials, per-slot click routing, and postback-driv
 **Data lives in publishare Supabase** (`vpysqshhafthuxvokwqj`). Property apps (SeniorSimple, MoneySimple, RateRoots, HomeSimple, ParentSimple) install this kit and read/write into that one Supabase using their existing service-role key.
 
 Design doc: `00 - Reports/mega_listicle_backend_design_2026-07-15.md`
+Phase 3 go-live spec: `00 - Reports/GOLIVE-SPEC_Advertorial-Kit-Phase3-Unification_2026-07-17.md`
+
+---
+
+## s1..s8 canonical taxonomy (Phase 3 W6)
+
+| Slot | Meaning | Source | Notes |
+|---|---|---|---|
+| **s1** | brand | server (`advertorial.site_id`) | seniorsimple / moneysimple / rateroots.com / etc. |
+| **s2** | source | query `?source=` or inferred macro / referrer | prismique / revcontent / mgid / taboola / … |
+| **s3** | component | query `?component=` from the CTA item render | image_quiz / state_selector / editors_pick / listicle_entry / savings_calculator / wrap_up / … |
+| **s4** | angle | query `?s4=` or `?hook=` | hook / headline variant identifier |
+| **s5** | creative | query `?s5=` or `?creative=` | creative / image variant |
+| **s6** | placement | query `?s6=`, `?placement=`, or `?audience=` | placement or geo segment |
+| **s7** | variant | query `?s7=` or `?variant=` from CTA / cookie | split-test variant id |
+| **s8** | network_click_id | query `?s8=` or `ob_click_id / tblci / rcid / realize_click_id` | network's echoed click id (unsubstituted `$…$` macros are ignored) |
+
+**Reconciliation keys travel in `sub_id`, not in s-slots:**
+- `sub1` = our `advertorial_clicks.id` UUID (Prismique convention — round-trips via the postback)
+- `sub2` = compact `sub_id` string `s1=…|s2=…|s3=…|s4=…|…|slug=…|slot=…`
+- `slug` and `slot_key` live in the `sub_id` (encoded), not in top-level s-slots.
+
+**Server-set (untamperable at the network):** s1 (brand), s3 (component), s7 (variant if server-assigned via cookie).
+**Query-supplied (from the ad or from the CTA URL):** s2, s4, s5, s6, s8. If a CTA passes both server intent and network macros (e.g. component + variant + ob_click_id), the CTA URL should be shaped as `/out/<slug>/<slot_key>?component=<type>&variant=<id>&<network macros>`.
+
+Never contains PII. All slots are display / attribution tokens only.
 
 ---
 

@@ -6,7 +6,7 @@
  * drift between advertorials.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface LegalLink {
   label: React.ReactNode;

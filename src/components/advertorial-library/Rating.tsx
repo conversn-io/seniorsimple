@@ -7,7 +7,7 @@
  * component.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface RatingProps {
   /** 0–5. Filled = ★, empty = ☆. Fractional values round down. */

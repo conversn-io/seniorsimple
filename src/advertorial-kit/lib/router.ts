@@ -5,21 +5,33 @@
  * (macro capture, sub_id encoding, template substitution, weighted rotation
  * pick) without spinning up Supabase or Next.
  *
- * Convention for s1..s8 (defensible default, adjust if a canonical spec lands):
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CANONICAL s1..s8 TAXONOMY (Phase 3 W6, 2026-07-17)
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- *   s1  = property site_id           (server-set from advertorial.site_id)
- *   s2  = advertorial slug           (server-set)
- *   s3  = slot_key                   (server-set)
- *   s4  = hook / headline variant    (query: s4 or hook)
- *   s5  = creative / image variant   (query: s5 or creative)
- *   s6  = audience / geo segment     (query: s6 or audience)
- *   s7  = campaign id                (query: s7 or campaign_id / <net>_campaign_id)
- *   s8  = network click id           (query: s8 or ob_click_id / tblci / rcid / realize_click_id)
- *   source = network                 (query: source, or auto-inferred from s8 macro name)
+ *   s1 = brand              — site_id (server-set from advertorial.site_id)
+ *   s2 = source             — network source (prismique, revcontent, mgid, …)
+ *                             from ?source= or inferred from macro/referrer
+ *   s3 = component          — component_type at the CTA site
+ *                             (image_quiz, state_selector, editors_pick,
+ *                              listicle_entry, savings_calculator, wrap_up, …)
+ *                             from ?component= appended by the item render
+ *   s4 = angle              — hook / headline variant   (?s4 or ?hook)
+ *   s5 = creative           — creative / image variant  (?s5 or ?creative)
+ *   s6 = placement          — placement / geo segment   (?s6 or ?placement or ?audience)
+ *   s7 = variant            — split-test variant id
+ *                             from ?variant= appended by the item render
+ *   s8 = network_click_id   — the network's echoed click_id
+ *                             (?s8 or ob_click_id / tblci / rcid / realize_click_id)
  *
- * s1..s3 come from server state (untamperable). s4..s8 + source come from the
- * native ad's query string. sub_id is a compact "s1=…&s4=…" URL-fragment sent
- * to the network as sub2 for reconciliation. Never contains PII.
+ * Reconciliation keys NOT in the s-slots:
+ *   sub1 = <click_id>       — our advertorial_clicks.id UUID (Prismique convention)
+ *   sub2 = <sub_id>         — compact encoded taxonomy string (below)
+ *   slug + slot_key         — live in sub_id (encoded), not top-level slots
+ *
+ * s1 + s3 + s7 come from server state (untamperable at the network).
+ * s2 + s4..s6 + s8 come from the ad's query string or the CTA URL.
+ * sub_id is compact "s1=…|s2=…|slug=…|slot=…|component=…|variant=…" — never PII.
  */
 
 // ---------------------------------------------------------------------------
@@ -32,18 +44,31 @@ export interface RotationEntry {
 }
 
 export interface SParams {
-  s1?: string | null
-  s2?: string | null
-  s3?: string | null
-  s4?: string | null
-  s5?: string | null
-  s6?: string | null
-  s7?: string | null
-  s8?: string | null
+  s1?: string | null   // brand
+  s2?: string | null   // source
+  s3?: string | null   // component
+  s4?: string | null   // angle
+  s5?: string | null   // creative
+  s6?: string | null   // placement / geo
+  s7?: string | null   // variant
+  s8?: string | null   // network_click_id
 }
 
+/**
+ * Full captured tracking. Semantics per the taxonomy at the top of the file.
+ * `source` is a legacy alias for `s2` — kept on the type only for the encoder
+ * so historical `src=…` keys in old sub_id strings remain readable. Prefer s2.
+ */
 export interface CapturedTracking extends SParams {
   source: string | null
+}
+
+/**
+ * Reconciliation-only fields — travel in sub_id, not in s-slots.
+ */
+export interface ReconciliationKeys {
+  slug: string
+  slotKey: number | string
 }
 
 // ---------------------------------------------------------------------------
@@ -55,13 +80,6 @@ const NETWORK_CLICK_ID_KEYS: Array<{ key: string; source: string }> = [
   { key: 'tblci',            source: 'taboola'    },
   { key: 'rcid',             source: 'revcontent' },
   { key: 'realize_click_id', source: 'realize'    },
-]
-
-const NETWORK_CAMPAIGN_ID_KEYS = [
-  'ob_campaign_id',
-  'taboola_campaign_id',
-  'revcontent_campaign_id',
-  'realize_campaign_id',
 ]
 
 // A native macro that never got substituted (e.g. `$ob_click_id$`) is worthless
@@ -83,10 +101,19 @@ function firstReal(...values: Array<string | null | undefined>): string | null {
 // ---------------------------------------------------------------------------
 
 /**
- * Extract s4..s8 + source from a native ad's query string.
- * s1..s3 are supplied separately by the caller (server state).
+ * Extract query-supplied slots (s2 source, s4 angle, s5 creative, s6 placement,
+ * s7 variant, s8 network_click_id) from the /out request's URL. s1 (brand) and
+ * s3 (component) are supplied separately by the caller (server state) — see
+ * `assembleTracking`.
  */
-export function captureTracking(params: URLSearchParams): Omit<CapturedTracking, 's1' | 's2' | 's3'> {
+export function captureQueryTracking(params: URLSearchParams): {
+  source: string | null
+  s4: string | null
+  s5: string | null
+  s6: string | null
+  s7: string | null
+  s8: string | null
+} {
   const explicitSource = params.get('source')
 
   // s8 = network click id. Prefer explicit s8, then any known network macro.
@@ -101,22 +128,37 @@ export function captureTracking(params: URLSearchParams): Omit<CapturedTracking,
 
   const source = firstReal(explicitSource, inferredSource)
 
-  // s7 = campaign id. Prefer explicit s7, then any network campaign_id macro.
-  let s7: string | null = firstReal(params.get('s7'), params.get('campaign_id'))
-  if (!s7) {
-    for (const key of NETWORK_CAMPAIGN_ID_KEYS) {
-      const v = firstReal(params.get(key))
-      if (v) { s7 = v; break }
-    }
-  }
-
   return {
+    source,
     s4: firstReal(params.get('s4'), params.get('hook')),
     s5: firstReal(params.get('s5'), params.get('creative')),
-    s6: firstReal(params.get('s6'), params.get('audience')),
-    s7,
+    s6: firstReal(params.get('s6'), params.get('placement'), params.get('audience')),
+    s7: firstReal(params.get('s7'), params.get('variant')),
     s8,
-    source,
+  }
+}
+
+/**
+ * Assemble the full CapturedTracking record from server state + query capture.
+ * Server-set fields (brand, component) are always trusted; query-supplied
+ * fields fall through the placeholder/emptiness guard already.
+ */
+export function assembleTracking(input: {
+  brand: string                                // s1
+  component: string | null                     // s3
+  queryCapture: ReturnType<typeof captureQueryTracking>
+}): CapturedTracking {
+  const { brand, component, queryCapture } = input
+  return {
+    s1: brand,
+    s2: queryCapture.source,
+    s3: component,
+    s4: queryCapture.s4,
+    s5: queryCapture.s5,
+    s6: queryCapture.s6,
+    s7: queryCapture.s7,
+    s8: queryCapture.s8,
+    source: queryCapture.source,
   }
 }
 
@@ -125,25 +167,41 @@ export function captureTracking(params: URLSearchParams): Omit<CapturedTracking,
 // ---------------------------------------------------------------------------
 
 /**
- * Encode the s-string. Compact `k=v` pairs joined by `|` so a single field
- * carries the whole taxonomy without conflicting with URL-encoded delimiters.
- * Empty/null values are omitted. Never contains PII by construction — only
- * s1..s8 + source, which are all server-controlled or ad-parameter values.
+ * Encode the s-string + reconciliation keys. Compact `k=v` pairs joined by `|`
+ * so a single field carries the whole taxonomy without conflicting with
+ * URL-encoded delimiters.
+ *
+ * slug + slot_key are included as `slug=` and `slot=` for reconciliation — they
+ * are NOT top-level s-slots in the current taxonomy, but the sub_id must carry
+ * them so we can join click rows back to the DB row that produced them.
+ *
+ * Empty / placeholder values are omitted. Never contains PII by construction —
+ * only server-controlled tokens or ad-parameter values.
  */
-export function encodeSubId(t: CapturedTracking): string {
+export function encodeSubId(
+  tracking: CapturedTracking,
+  recon?: ReconciliationKeys,
+): string {
   const parts: string[] = []
-  const pushIf = (k: string, v: string | null | undefined) => {
-    if (v && !isPlaceholder(v)) parts.push(`${k}=${encodeURIComponent(v)}`)
+  const pushIf = (k: string, v: string | number | null | undefined) => {
+    if (v === null || v === undefined) return
+    const s = String(v)
+    if (!s.length) return
+    if (isPlaceholder(s)) return
+    parts.push(`${k}=${encodeURIComponent(s)}`)
   }
-  pushIf('s1', t.s1)
-  pushIf('s2', t.s2)
-  pushIf('s3', t.s3)
-  pushIf('s4', t.s4)
-  pushIf('s5', t.s5)
-  pushIf('s6', t.s6)
-  pushIf('s7', t.s7)
-  pushIf('s8', t.s8)
-  pushIf('src', t.source)
+  pushIf('s1', tracking.s1)
+  pushIf('s2', tracking.s2)
+  pushIf('s3', tracking.s3)
+  pushIf('s4', tracking.s4)
+  pushIf('s5', tracking.s5)
+  pushIf('s6', tracking.s6)
+  pushIf('s7', tracking.s7)
+  pushIf('s8', tracking.s8)
+  if (recon) {
+    pushIf('slug', recon.slug)
+    pushIf('slot', recon.slotKey)
+  }
   return parts.join('|')
 }
 
@@ -164,8 +222,8 @@ export interface SubstituteInput {
  * Case-insensitive on the placeholder name; empty values become empty strings.
  *
  * If the template has no {S1} placeholder AND no existing s1 query param,
- * append `s1=<siteId>` so the network still receives the property tag
- * (§0.5 of the design doc: router injects s1 dynamically per property).
+ * append `s1=<siteId>` so the network still receives the brand tag even when
+ * the offer's tracking template was authored before this convention landed.
  */
 export function substituteTemplate(input: SubstituteInput): string {
   const { template, clickId, subId, siteId, tracking } = input
@@ -232,7 +290,6 @@ export function pickRotationOffer(
     cursor += entry.weight
     if (roll < cursor) return entry.offer_id
   }
-  // rounding safety
   return cleaned[cleaned.length - 1].offer_id
 }
 
@@ -262,4 +319,21 @@ export function inferSourceFromReferrer(referrer: string | null | undefined): st
     // malformed referer — ignore
   }
   return null
+}
+
+// ---------------------------------------------------------------------------
+// Back-compat re-export (transitional — remove after callers migrate)
+// ---------------------------------------------------------------------------
+
+/**
+ * @deprecated Use `captureQueryTracking` + `assembleTracking`. Kept only so
+ * external callers (if any) don't break on upgrade. The returned shape maps
+ * old s-slot semantics to the new ones: old s7 (campaign_id) is dropped;
+ * new s7 (variant) comes from the query as `?variant=` or `?s7=`.
+ */
+export function captureTracking(
+  params: URLSearchParams,
+): Omit<CapturedTracking, 's1' | 's2' | 's3'> {
+  const q = captureQueryTracking(params)
+  return { s4: q.s4, s5: q.s5, s6: q.s6, s7: q.s7, s8: q.s8, source: q.source }
 }

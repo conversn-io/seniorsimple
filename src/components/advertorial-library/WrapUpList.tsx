@@ -9,7 +9,7 @@
  * BANNED §5.3 list is enforced at review, not at component boundaries.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import { useCtaHref } from './CtaContext';
 
 interface WrapUpItem {

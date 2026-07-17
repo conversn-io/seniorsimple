@@ -8,7 +8,7 @@
  * Rule (per style guide): no CTA in the lead-in. This is a hook, not a sell.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface LeadInProps {
   /** Article H1 text. Already state-interpolated by the caller. */
