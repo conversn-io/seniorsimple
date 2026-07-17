@@ -1,9 +1,17 @@
+'use client'
+
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { MegaMenu } from "./MegaMenu"
 import { MobileMenu } from "./MobileMenu"
 
 export function Header() {
+  const pathname = usePathname()
+  // Sponsored editorials (/lp/*) ship their own property masthead — hide the
+  // site header on those pages so it doesn't double up. See advertorial-kit.
+  if (pathname?.startsWith("/lp/")) return null
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
