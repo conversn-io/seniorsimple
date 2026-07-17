@@ -157,63 +157,39 @@ async function renderKitAdvertorial(
     variant_key: row.variant_key,
   }));
 
-  const legacyItems: AdvertorialItemData[] = itemsRaw
-    .filter((row) => !row.component_type)
-    .map((row) => ({
-      position: row.position,
-      item_type: row.item_type,
-      heading: row.heading,
-      bodyHtml: renderMarkdown(row.body_md),
-      image_url: row.image_url,
-      cta_text: row.cta_text,
-      slot_key: row.item_type === 'monetized' ? row.slot?.slot_key ?? null : null,
-    }));
-
-  const useComponentSwitch = componentItems.some((i) => i.component_type);
-
-  const body = (
-    <AdvertorialLayout
-      brand={brand}
-      headline={advertorial.headline}
-      subhead={advertorial.subhead}
-      heroImageUrl={advertorial.hero_image_url}
-      disclosureHtml={disclosureHtml}
-    >
-      {introHtml ? (
-        <div
-          className="advertorial-prose text-lg leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-accent)]"
-          dangerouslySetInnerHTML={{ __html: introHtml }}
-        />
-      ) : null}
-      {useComponentSwitch
-        ? componentItems.map((item) => (
-            <ComponentSwitch
-              key={`${item.position}-${item.item_type}`}
-              item={item}
-              slug={slug}
-              brand={brand}
-            />
-          ))
-        : legacyItems.map((item) => (
-        <AdvertorialItem
-          key={`${item.position}-${item.item_type}`}
-          item={item}
-          slug={slug}
-          brand={brand}
-        />
-      ))}
-    </AdvertorialLayout>
-  );
-
-  // Library components (EditorsPick, MultiSelectQuiz, ImageQuiz, PrimaryCTA,
-  // SectionCTA, StickyCTA) require a CtaProvider in their tree to satisfy
-  // useCtaHref(). Wrap when the kit path is in use with ComponentSwitch.
-  return useComponentSwitch ? (
+  // Kit path is ALWAYS taken when the DB advertorial resolves — regardless of
+  // whether any item declares component_type. Rows with a null component_type
+  // fall through to ComponentSwitch's default 'listicle_entry' render, which
+  // matches the pre-W1 shape. This ensures W2 analytics (lp_view, lp_cta_click)
+  // fire on every kit-native advertorial and the sub-scheme is consistent.
+  //
+  // The legacy AdvertorialItem render is intentionally dead code and can be
+  // removed after a green-light window on prod.
+  return (
     <KitCtaShell slug={slug} siteId={advertorial.site_id}>
-      {body}
+      <AdvertorialLayout
+        brand={brand}
+        headline={advertorial.headline}
+        subhead={advertorial.subhead}
+        heroImageUrl={advertorial.hero_image_url}
+        disclosureHtml={disclosureHtml}
+      >
+        {introHtml ? (
+          <div
+            className="advertorial-prose text-lg leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-accent)]"
+            dangerouslySetInnerHTML={{ __html: introHtml }}
+          />
+        ) : null}
+        {componentItems.map((item) => (
+          <ComponentSwitch
+            key={`${item.position}-${item.item_type}`}
+            item={item}
+            slug={slug}
+            brand={brand}
+          />
+        ))}
+      </AdvertorialLayout>
     </KitCtaShell>
-  ) : (
-    body
   );
 }
 
