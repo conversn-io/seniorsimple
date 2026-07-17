@@ -30,7 +30,7 @@
 
 import { APC_BRANDS } from '@/lib/advertorial-content';
 import type { AngleBodyProps } from './lp-types';
-import styles from './advertorial.module.css';
+import styles from '@/components/advertorial-library/advertorial.module.css';
 import {
   BlueAnchor,
   ClickableImage,
@@ -43,7 +43,7 @@ import {
   StickyCTA,
   TrustBar,
   WrapUpList,
-} from './components';
+} from '@/components/advertorial-library';
 
 const BODY_IMG_BASE =
   'https://vpysqshhafthuxvokwqj.supabase.co/storage/v1/object/public/media/ai-hero/';

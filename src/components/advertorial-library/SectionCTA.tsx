@@ -5,7 +5,7 @@
  * monetized section per style guide §Layout.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import { useCtaHref } from './CtaContext';
 
 interface SectionCTAProps {

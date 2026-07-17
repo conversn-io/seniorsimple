@@ -21,7 +21,7 @@ import {
   type ApcBrand,
   type ApcCategory,
 } from '@/lib/advertorial-content';
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 type BrandInput = string | ApcBrand;
 

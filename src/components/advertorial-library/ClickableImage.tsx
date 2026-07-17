@@ -6,7 +6,7 @@
  * editorial/candid, not a marketing thumbnail.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import { useCtaHref } from './CtaContext';
 
 interface ClickableImageProps {

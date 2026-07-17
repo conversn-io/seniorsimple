@@ -5,7 +5,7 @@
  * not first-fold. Green left border matches the CTA color.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import { useCtaHref } from './CtaContext';
 
 interface EditorsPickProps {

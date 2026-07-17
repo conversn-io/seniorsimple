@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface ShareBarProps {
   /** Optional pre-populated tweet copy. */

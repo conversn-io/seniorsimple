@@ -10,7 +10,7 @@
  * when APC refreshes their directory.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface SavingsBreakdownProps {
   /** Deal lines. Author-supplied so this component doesn't hardcode brands. */

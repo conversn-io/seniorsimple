@@ -7,7 +7,7 @@
  * and 👉 (the point pointer).
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 interface QualifyChecklistProps {
   /** Optional intro sentence before the list. */

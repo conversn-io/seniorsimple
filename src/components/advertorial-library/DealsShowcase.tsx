@@ -13,7 +13,7 @@
  * DEFAULT_DEALS in one place; every render inherits.
  */
 
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 import DealCard, { type Deal } from './DealCard';
 
 interface DealsShowcaseProps {

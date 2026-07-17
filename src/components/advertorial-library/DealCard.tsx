@@ -10,7 +10,7 @@
  */
 
 import { brandLogoSrc } from '@/lib/advertorial-content';
-import styles from '../advertorial.module.css';
+import styles from './advertorial.module.css';
 
 export interface Deal {
   brand: string;
