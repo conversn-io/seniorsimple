@@ -19,12 +19,18 @@ interface Props {
 }
 
 const TABOOLA_ACCOUNT_ID = 2006370;
+// RevContent conversion pixel token (per-account). Hardcoded for MVP; refactor
+// to per-brand config when we run RevContent on multiple advertiser accounts.
+const REVCONTENT_CONV_TOKEN =
+  'Xw2W2S9nP8K6Jffy5vGx6VnYE9SE1rb8aXnxRzJrzJ15lFNNWHxWyzR7FZdud2Dm';
 
 export function AdvertorialCta({ href, ctaText, brand }: Props) {
   function handleClick() {
-    // Taboola form_submit — upper-funnel conversion signal on CTA click.
-    // _tfa is defined by Taboola's base pixel loaded in the root layout.
-    // Wrapped in try/catch so a missing pixel never blocks the CTA navigation.
+    // Fire all network-side conversion pixels in one handler. Each is wrapped
+    // in its own try/catch so a broken pixel never blocks CTA navigation OR
+    // prevents other pixels from firing.
+
+    // Taboola form_submit — upper-funnel conversion signal.
     try {
       const w = window as Window & { _tfa?: Array<Record<string, unknown>> };
       w._tfa = w._tfa || [];
@@ -33,9 +39,15 @@ export function AdvertorialCta({ href, ctaText, brand }: Props) {
         name: 'form_submit',
         id: TABOOLA_ACCOUNT_ID,
       });
-    } catch {
-      /* never block navigation on pixel error */
-    }
+    } catch { /* never block navigation */ }
+
+    // RevContent conversion pixel (image beacon). Loads a 1x1 tracking pixel
+    // via new Image() — no need for a preloaded SDK. `t=` param is our
+    // conversion tracking token from the RevContent dashboard.
+    try {
+      new Image().src =
+        'https://trends.revcontent.com/conv.php?t=' + REVCONTENT_CONV_TOKEN;
+    } catch { /* never block navigation */ }
   }
 
   return (

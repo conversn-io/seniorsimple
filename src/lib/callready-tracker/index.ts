@@ -139,10 +139,14 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     get("ttclid") ||
     get("twclid") ||
     get("li_fat_id") ||
-    get("newsbreak_cid") || // NewsBreak (per NewsBreak's own postback docs — any param name works except `nb_cid`)
+    get("newsbreak_cid") ||    // NewsBreak (per NB docs — any param name works except `nb_cid`)
     get("nb_click_id") ||
     get("nbclid") ||
-    get("sub1");            // Everflow-style click id (used when NewsBreak configured with Everflow tracker preset)
+    get("taboola_cid") ||      // Taboola/Realize
+    get("taboola_click_id") ||
+    get("utm_content_id") ||   // RevContent (`{content_id}` macro, typically passed as utm_content_id)
+    get("content_id") ||
+    get("sub1");               // Everflow-style click id (used when tracker preset is Everflow)
 
   if (!click_id) {
     log(config, "no click_id (organic traffic) — skipping");
@@ -160,6 +164,7 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     else if (get("li_fat_id")) s2_network = "linkedin";
     else if (get("newsbreak_cid") || get("nb_click_id") || get("nbclid")) s2_network = "newsbreak";
     else if (get("taboola_cid") || get("taboola_click_id")) s2_network = "taboola";
+    else if (get("utm_content_id") || get("content_id") || get("boost_id")) s2_network = "revcontent";
   }
   if (!s2_network) {
     log(config, "no s2_network (cannot route postback) — skipping");
