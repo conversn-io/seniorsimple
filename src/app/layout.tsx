@@ -166,6 +166,30 @@ export default function RootLayout({
         {/* Client-side pixel initializer - handles route-based initialization */}
         <MetaPixelInitializer />
         
+        {/* MGID Sensor — client-side pixel for MGID pageview + attribution.
+            CID 984642. Loads mgsensor.js which auto-tracks the pageview event. */}
+        <Script
+          id="mgid-sensor-base"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var d = document, w = window;
+                w.MgSensorData = w.MgSensorData || [];
+                w.MgSensorData.push({ cid: 984642, project: "a.mgid.com" });
+                var l = "a.mgid.com";
+                var n = d.getElementsByTagName("script")[0];
+                var s = d.createElement("script");
+                s.type = "text/javascript";
+                s.async = true;
+                var dt = !Date.now ? new Date().valueOf() : Date.now();
+                s.src = "https://" + l + "/mgsensor.js?d=" + dt;
+                n.parentNode.insertBefore(s, n);
+              })();
+            `
+          }}
+        />
+
         {/* Taboola / Realize base pixel — loads _tfa global for use by AdvertorialCta
             and any other client-side event pushes. Account 2006370. */}
         <Script
