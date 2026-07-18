@@ -36,6 +36,12 @@ import { getAdvertorialBrand } from '@/advertorial-kit/lib/brand-config';
 import { renderMarkdown } from '@/advertorial-kit/lib/markdown';
 import { maybeBuildPreview } from '@/advertorial-kit/lib/preview-fixture';
 import { pickVariant, itemMatchesVariant } from '@/advertorial-kit/lib/variant';
+import {
+  resolveLocation,
+  substituteLocation,
+  substituteLocationDeep,
+  type KitLocation,
+} from '@/advertorial-kit/lib/location';
 import { AdvertorialLayout } from '@/advertorial-kit/components/AdvertorialLayout';
 import {
   AdvertorialItem,
@@ -80,7 +86,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       .eq('status', 'live')
       .maybeSingle<{ title: string; headline: string; site_id: string; status: string }>();
     if (data && data.site_id === appSiteId) {
-      return { ...baseNoindex, title: data.title || data.headline || 'Sponsored Editorial' };
+      // W4 — same {{location}} substitution as the body render so the
+      // browser tab title matches on-page headline.
+      const location = resolveLocation(await headers());
+      const rawTitle = data.title || data.headline || 'Sponsored Editorial';
+      const title = substituteLocation(rawTitle, location) ?? rawTitle;
+      return { ...baseNoindex, title };
     }
   } catch {
     // env not configured or DB error — fall through to noindex-only
@@ -127,6 +138,7 @@ async function renderKitAdvertorial(
   advertorial: AdvertorialRow,
   slug: string,
   variantContext: { chosen: string | null; source: string },
+  location: KitLocation,
 ) {
   const supabase = getAdvertorialSupabase();
   const { data: rawItems } = await supabase
@@ -145,8 +157,15 @@ async function renderKitAdvertorial(
   const disclosureMd = advertorial.disclosure_md?.trim()
     ? advertorial.disclosure_md
     : brand.defaultDisclosureMd;
-  const disclosureHtml = renderMarkdown(disclosureMd);
-  const introHtml = renderMarkdown(advertorial.intro_md);
+  // W4 — location substitution happens BEFORE renderMarkdown so tokens in
+  // markdown (e.g. `**{{location}} seniors**`) survive into the final HTML.
+  // Disclosure copy is legal boilerplate; a stray {{location}} there would
+  // never appear in real content, but running through the substitutor keeps
+  // the pipeline uniform and cheap.
+  const disclosureHtml = renderMarkdown(substituteLocation(disclosureMd, location));
+  const introHtml = renderMarkdown(substituteLocation(advertorial.intro_md, location));
+  const localizedHeadline = substituteLocation(advertorial.headline, location) ?? '';
+  const localizedSubhead = substituteLocation(advertorial.subhead, location);
 
   // W3 — filter rows to the chosen variant. Items with variant_key IS NULL
   // are shared across all variants; items with a matching variant_key render
@@ -157,19 +176,21 @@ async function renderKitAdvertorial(
     itemMatchesVariant(row.variant_key, variantContext.chosen),
   );
 
-  // Any item with a component_type set (non-null) renders via the library
-  // ComponentSwitch (W1). Legacy items (component_type NULL) fall through to
-  // the AdvertorialItem listicle path for backwards-compatibility.
+  // W4 — substitute {{location}} in every field that renders to the user:
+  // heading, body_md, cta_text, and any nested string in component_props.
+  // Never in slug/slot/variant_key/item_type — those are structural and flow
+  // to /out URLs. Never in image_url — that's already an absolute URL and a
+  // token there would be a config bug PS-00 should see.
   const componentItems: ComponentItem[] = filteredItems.map((row) => ({
     position: row.position,
     item_type: row.item_type,
-    heading: row.heading,
-    body_md: row.body_md,
+    heading: substituteLocation(row.heading, location),
+    body_md: substituteLocation(row.body_md, location),
     image_url: row.image_url,
-    cta_text: row.cta_text,
+    cta_text: substituteLocation(row.cta_text, location),
     slot_key: row.item_type === 'monetized' ? row.slot?.slot_key ?? null : null,
     component_type: row.component_type,
-    component_props: row.component_props,
+    component_props: substituteLocationDeep(row.component_props, location),
     variant_key: row.variant_key,
   }));
 
@@ -185,8 +206,8 @@ async function renderKitAdvertorial(
     <KitCtaShell slug={slug} siteId={advertorial.site_id} variant={variantContext.chosen}>
       <AdvertorialLayout
         brand={brand}
-        headline={advertorial.headline}
-        subhead={advertorial.subhead}
+        headline={localizedHeadline}
+        subhead={localizedSubhead}
         heroImageUrl={advertorial.hero_image_url}
         disclosureHtml={disclosureHtml}
       >
@@ -260,6 +281,12 @@ export default async function Page({ params, searchParams }: PageProps) {
       ? query.variant.trim()
       : null;
 
+  // W4 — server-side geo lookup from Vercel's edge headers. On local dev
+  // and non-Vercel hosts this returns the safe fallback ('your area'), so
+  // `{{location}}` tokens render as generic copy rather than raw braces.
+  const requestHeaders = await headers();
+  const location = resolveLocation(requestHeaders);
+
   // --- Dev-only preview mode (kit path) ---
   const previewSiteId = (() => {
     try { return getSiteId(); } catch { return 'seniorsimple'; }
@@ -288,7 +315,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     return renderKitAdvertorial(previewAdvertorial, slug, {
       chosen: previewPick.variant,
       source: previewPick.source,
-    });
+    }, location);
   }
 
   // --- DB-driven path (kit) ---
@@ -312,7 +339,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       return renderKitAdvertorial(advertorial, slug, {
         chosen: pick.variant,
         source: pick.source,
-      });
+      }, location);
     }
   } catch (err) {
     // Env not configured (e.g. ADVERTORIAL_SITE_ID missing) — fall through
