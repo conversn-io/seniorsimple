@@ -35,6 +35,7 @@ import { getSiteId } from '@/advertorial-kit/lib/get-site-id';
 import { getAdvertorialBrand } from '@/advertorial-kit/lib/brand-config';
 import { renderMarkdown } from '@/advertorial-kit/lib/markdown';
 import { maybeBuildPreview } from '@/advertorial-kit/lib/preview-fixture';
+import { pickVariant, itemMatchesVariant } from '@/advertorial-kit/lib/variant';
 import { AdvertorialLayout } from '@/advertorial-kit/components/AdvertorialLayout';
 import {
   AdvertorialItem,
@@ -45,6 +46,9 @@ import {
   type ComponentItem,
 } from '@/advertorial-kit/components/ComponentSwitch';
 import KitCtaShell from '@/advertorial-kit/components/KitCtaShell';
+
+/** W3 — kept in sync with middleware.ts (KIT_SEED_COOKIE). */
+const KIT_SEED_COOKIE = 'ss_kit_seed';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,6 +99,8 @@ interface AdvertorialRow {
   hero_image_url: string | null;
   disclosure_md: string | null;
   status: string;
+  /** W3 — weighted split-test config; NULL means single-variant render. */
+  variants: Record<string, unknown> | null;
 }
 
 interface ItemRow {
@@ -120,6 +126,7 @@ interface ItemRow {
 async function renderKitAdvertorial(
   advertorial: AdvertorialRow,
   slug: string,
+  variantContext: { chosen: string | null; source: string },
 ) {
   const supabase = getAdvertorialSupabase();
   const { data: rawItems } = await supabase
@@ -141,10 +148,19 @@ async function renderKitAdvertorial(
   const disclosureHtml = renderMarkdown(disclosureMd);
   const introHtml = renderMarkdown(advertorial.intro_md);
 
+  // W3 — filter rows to the chosen variant. Items with variant_key IS NULL
+  // are shared across all variants; items with a matching variant_key render
+  // only for that variant; items with a non-matching key are hidden this
+  // request. See variant.ts / itemMatchesVariant for the acceptance-tested
+  // predicate.
+  const filteredItems = itemsRaw.filter((row) =>
+    itemMatchesVariant(row.variant_key, variantContext.chosen),
+  );
+
   // Any item with a component_type set (non-null) renders via the library
   // ComponentSwitch (W1). Legacy items (component_type NULL) fall through to
   // the AdvertorialItem listicle path for backwards-compatibility.
-  const componentItems: ComponentItem[] = itemsRaw.map((row) => ({
+  const componentItems: ComponentItem[] = filteredItems.map((row) => ({
     position: row.position,
     item_type: row.item_type,
     heading: row.heading,
@@ -166,7 +182,7 @@ async function renderKitAdvertorial(
   // The legacy AdvertorialItem render is intentionally dead code and can be
   // removed after a green-light window on prod.
   return (
-    <KitCtaShell slug={slug} siteId={advertorial.site_id}>
+    <KitCtaShell slug={slug} siteId={advertorial.site_id} variant={variantContext.chosen}>
       <AdvertorialLayout
         brand={brand}
         headline={advertorial.headline}
@@ -182,10 +198,11 @@ async function renderKitAdvertorial(
         ) : null}
         {componentItems.map((item) => (
           <ComponentSwitch
-            key={`${item.position}-${item.item_type}`}
+            key={`${item.position}-${item.item_type}-${item.variant_key ?? 'shared'}`}
             item={item}
             slug={slug}
             brand={brand}
+            chosenVariant={variantContext.chosen}
           />
         ))}
       </AdvertorialLayout>
@@ -233,6 +250,16 @@ export default async function Page({ params, searchParams }: PageProps) {
   const query = await searchParams;
   const previewFlag = query.preview === '1' || query.preview === 'true';
 
+  // W3 — read the sticky seed cookie stamped by middleware and the optional
+  // ?variant=<key> override. `pickVariant` will decide whether either matters
+  // once we have the advertorial's `variants` config.
+  const cookieStore = await cookies();
+  const kitSeed = cookieStore.get(KIT_SEED_COOKIE)?.value ?? null;
+  const variantOverride =
+    typeof query.variant === 'string' && query.variant.trim().length > 0
+      ? query.variant.trim()
+      : null;
+
   // --- Dev-only preview mode (kit path) ---
   const previewSiteId = (() => {
     try { return getSiteId(); } catch { return 'seniorsimple'; }
@@ -250,8 +277,18 @@ export default async function Page({ params, searchParams }: PageProps) {
       hero_image_url: preview.advertorial.hero_image_url,
       disclosure_md: preview.advertorial.disclosure_md,
       status: 'live',
+      variants: null,
     };
-    return renderKitAdvertorial(previewAdvertorial, slug);
+    const previewPick = pickVariant({
+      slug,
+      seed: kitSeed,
+      weights: null,
+      queryOverride: variantOverride,
+    });
+    return renderKitAdvertorial(previewAdvertorial, slug, {
+      chosen: previewPick.variant,
+      source: previewPick.source,
+    });
   }
 
   // --- DB-driven path (kit) ---
@@ -260,13 +297,22 @@ export default async function Page({ params, searchParams }: PageProps) {
     const supabase = getAdvertorialSupabase();
     const { data: advertorial, error } = await supabase
       .from('advertorials')
-      .select('id, slug, site_id, title, headline, subhead, intro_md, hero_image_url, disclosure_md, status')
+      .select('id, slug, site_id, title, headline, subhead, intro_md, hero_image_url, disclosure_md, status, variants')
       .eq('slug', slug)
       .eq('status', 'live')
       .maybeSingle<AdvertorialRow>();
 
     if (!error && advertorial && advertorial.site_id === appSiteId) {
-      return renderKitAdvertorial(advertorial, slug);
+      const pick = pickVariant({
+        slug,
+        seed: kitSeed,
+        weights: advertorial.variants ?? null,
+        queryOverride: variantOverride,
+      });
+      return renderKitAdvertorial(advertorial, slug, {
+        chosen: pick.variant,
+        source: pick.source,
+      });
     }
   } catch (err) {
     // Env not configured (e.g. ADVERTORIAL_SITE_ID missing) — fall through
