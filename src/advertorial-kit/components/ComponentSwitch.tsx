@@ -33,12 +33,24 @@ import { SITE_KEY, fireKitEvent } from '@/advertorial-kit/lib/analytics'
 // Library primitives (moved to shared location in W1).
 import {
   BlueAnchor,
+  ClickableImage,
+  CtaProvider,
   EditorsPick,
+  ImageQuiz,
   LeadIn,
+  MultiSelectQuiz,
   QualifyChecklist,
   Quote,
+  Rating,
+  SavingsCalculator,
   Section,
+  StateSelector,
   TrustBar,
+  type CtaSubs,
+  type ImageQuizOption,
+  type QuizOption,
+  type SavingsInput,
+  type StateOption,
 } from '@/components/advertorial-library'
 
 export interface ComponentItem {
@@ -218,6 +230,180 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
       return <Quote quote={quoteText} attribution={p.attribution} />
     }
 
+    // -----------------------------------------------------------------------
+    // Interactive tap components (WO: Wire Interactive Tap Components).
+    // Every one wraps its render in a per-slot CtaProvider so the primitive's
+    // useCtaHref() resolves to THIS item's outHref (not the shell's /lp/<slug>
+    // fallback). Analytics fire via event delegation on a wrapper div so we
+    // don't need to fork the shared primitives.
+    // -----------------------------------------------------------------------
+
+    case 'image_quiz': {
+      const p = (item.component_props ?? {}) as {
+        question?: string
+        selectionKey?: string
+        options?: ImageQuizOption[]
+        submitLabel?: string
+        submitVariant?: 'green' | 'blue'
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} image_quiz has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'image_quiz',
+        children: (
+          <ImageQuiz
+            question={p.question ?? item.heading ?? ''}
+            selectionKey={p.selectionKey ?? 'spend_focus'}
+            options={options}
+            submitLabel={p.submitLabel ?? item.cta_text ?? 'See My Results »'}
+            submitVariant={p.submitVariant}
+          />
+        ),
+      })
+    }
+
+    case 'multi_select_quiz': {
+      const p = (item.component_props ?? {}) as {
+        question?: string
+        selectionKey?: string
+        options?: QuizOption[]
+        submitLabel?: string
+        submitVariant?: 'green' | 'blue'
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} multi_select_quiz has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'multi_select_quiz',
+        children: (
+          <MultiSelectQuiz
+            question={p.question ?? item.heading ?? ''}
+            selectionKey={p.selectionKey ?? 'spend_focus'}
+            options={options}
+            submitLabel={p.submitLabel ?? item.cta_text ?? 'See My Results »'}
+            submitVariant={p.submitVariant}
+          />
+        ),
+      })
+    }
+
+    case 'state_selector': {
+      const p = (item.component_props ?? {}) as {
+        step1Label?: string
+        step2Label?: string
+        prompt?: string
+        selectionKey?: string
+        options?: StateOption[]
+        ctaLabel?: string
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} state_selector has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'state_selector',
+        children: (
+          <StateSelector
+            step1Label={p.step1Label}
+            step2Label={p.step2Label}
+            prompt={p.prompt ?? item.heading ?? undefined}
+            selectionKey={p.selectionKey ?? 'state'}
+            options={options}
+            ctaLabel={p.ctaLabel ?? item.cta_text ?? 'See Plans in My State »'}
+          />
+        ),
+      })
+    }
+
+    case 'savings_calculator': {
+      const p = (item.component_props ?? {}) as {
+        inputs?: SavingsInput[]
+        ctaLabel?: string
+        monthlyCost?: number
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} savings_calculator has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const inputs = Array.isArray(p.inputs) ? p.inputs : undefined
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'savings_calculator',
+        children: (
+          <SavingsCalculator
+            inputs={inputs}
+            ctaLabel={p.ctaLabel ?? item.cta_text}
+            monthlyCost={p.monthlyCost}
+          />
+        ),
+      })
+    }
+
+    case 'clickable_image': {
+      const p = (item.component_props ?? {}) as {
+        src?: string
+        alt?: string
+        caption?: string
+      }
+      const src = p.src ?? item.image_url
+      if (!src || !outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} clickable_image missing src or slot_key — skipped.`,
+        )
+        return null
+      }
+      // Don't pass explicit `href` — let ClickableImage read useCtaHref()
+      // from the per-slot CtaProvider so it participates in the same sub-
+      // scheme composition as the other interactive components (adds
+      // source_id + sub5=slug to the outbound URL).
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'clickable_image',
+        children: (
+          <ClickableImage
+            src={src}
+            alt={p.alt ?? item.heading ?? ''}
+            caption={p.caption}
+          />
+        ),
+      })
+    }
+
+    case 'rating': {
+      const p = (item.component_props ?? {}) as {
+        starsFilled?: number
+        attribution?: string
+      }
+      // Compliance mirror of the quote rule: bare star rating without a
+      // citation trips block-line intent (`fabricated_verification`), so we
+      // fail-closed with a warn.
+      if (!p.attribution) {
+        console.warn(
+          `[advertorial-kit] rating item #${item.position} missing required attribution — skipped.`,
+        )
+        return null
+      }
+      const stars = typeof p.starsFilled === 'number' ? p.starsFilled : 0
+      return <Rating starsFilled={stars} attribution={p.attribution} />
+    }
+
     case 'trust_bar': {
       const p = (item.component_props ?? {}) as {
         label?: string
@@ -329,4 +515,106 @@ function buildOutHref(input: {
   params.set('component', input.componentType)
   if (input.variantKey) params.set('variant', input.variantKey)
   return `/out/${encodeURIComponent(input.slug)}/${input.slotKey}?${params.toString()}`
+}
+
+// ---------------------------------------------------------------------------
+// Interactive helper (WO: Wire Interactive Tap Components).
+// ---------------------------------------------------------------------------
+
+interface RenderInteractiveArgs {
+  item: ComponentItem
+  slug: string
+  brand: AdvertorialBrand
+  effectiveVariant: string | null
+  outHref: string
+  componentType: string
+  children: React.ReactNode
+}
+
+/**
+ * Wrap an interactive primitive in a per-slot CtaProvider (so useCtaHref()
+ * inside resolves to this slot's outHref, not the shell's /lp fallback) plus
+ * an event-delegation wrapper that fires analytics events without forking
+ * the shared primitive.
+ *
+ * Wire (per WO §60–66):
+ *   • Any `a[href]` click inside → lp_cta_click (before /out navigation).
+ *   • Any `button[role="radio"]` / `input[type="checkbox"]` / `select` / any
+ *     element with `data-quiz-option` change or click → lp_step. First
+ *     lp_step per mount is fired only once so we don't spam a step for
+ *     every keypress on a calculator input.
+ */
+function renderInteractive({
+  item, slug, brand, effectiveVariant, outHref, componentType, children,
+}: RenderInteractiveArgs) {
+  const subs: CtaSubs = {
+    source_id: brand.siteId,
+    sub5: slug,
+  }
+
+  const commonEventProps = {
+    site_key: SITE_KEY,
+    brand: brand.siteId,
+    slug,
+    component_type: componentType,
+    variant: effectiveVariant,
+  }
+  const extraProps = {
+    slot_key: item.slot_key,
+    position: item.position,
+    item_type: item.item_type,
+    cta_text: item.cta_text,
+  }
+
+  return (
+    <div
+      data-position={item.position}
+      data-component={componentType}
+      className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+      onClick={(e) => {
+        const target = e.target as HTMLElement | null
+        if (!target) return
+        // CTA link → lp_cta_click (matches EditorsPick + listicle_entry).
+        // The click continues to /out; keepalive fetch survives the nav.
+        if (target.closest('a[href]')) {
+          fireKitEvent('lp_cta_click', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}`,
+            extraProps,
+          })
+          return
+        }
+        // Interaction with a tap surface (quiz option / calculator toggle) →
+        // lp_step. Debounced-by-flag on the wrapping div so a rapid sequence
+        // of taps only fires one step per interaction burst.
+        const isTap =
+          target.closest('button[role="radio"]') ||
+          target.closest('button[data-quiz-option]') ||
+          target.closest('[data-tap-target]')
+        if (isTap) {
+          fireKitEvent('lp_step', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}_step`,
+            extraProps: { ...extraProps, step_source: 'tap' },
+          })
+        }
+      }}
+      onChange={(e) => {
+        // <select> (StateSelector) and <input type="checkbox"> (multi-select
+        // in quizzes that use native form controls) route through onChange.
+        const target = e.target as HTMLElement | null
+        if (!target) return
+        if (target instanceof HTMLSelectElement ||
+            (target instanceof HTMLInputElement &&
+             (target.type === 'checkbox' || target.type === 'number'))) {
+          fireKitEvent('lp_step', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}_step`,
+            extraProps: { ...extraProps, step_source: 'change' },
+          })
+        }
+      }}
+    >
+      <CtaProvider base={outHref} subs={subs}>
+        {children}
+      </CtaProvider>
+    </div>
+  )
 }
