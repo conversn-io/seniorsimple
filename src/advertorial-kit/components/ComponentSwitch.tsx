@@ -58,13 +58,25 @@ interface ComponentSwitchProps {
   item: ComponentItem
   slug: string
   brand: AdvertorialBrand
+  /**
+   * W3 — the advertorial-level chosen variant key, or null when no split-test
+   * is configured. Distinct from item.variant_key (which is a per-row filter
+   * applied upstream in page.tsx). This is the value that flows to s7 on
+   * every analytics event and every /out click emitted from this render.
+   */
+  chosenVariant?: string | null
 }
 
 // ---------------------------------------------------------------------------
 // Public component
 // ---------------------------------------------------------------------------
 
-export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
+export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: ComponentSwitchProps) {
+  // W3 — the effective variant for outbound URLs + analytics events. Prefer
+  // the advertorial-level chosen variant (uniform across every CTA on this
+  // render) and fall back to item.variant_key only for legacy items that
+  // predate the W3 dispatcher plumbing.
+  const effectiveVariant = chosenVariant ?? item.variant_key ?? null
   // 1. Tap-only guard
   const tap = checkTapOnly({
     component_type: item.component_type,
@@ -96,7 +108,7 @@ export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
     slug,
     slotKey: item.slot_key,
     componentType,
-    variantKey: item.variant_key,
+    variantKey: effectiveVariant,
   })
 
   switch (componentType) {
@@ -150,7 +162,7 @@ export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
                   brand: brand.siteId,
                   slug,
                   component_type: 'editors_pick',
-                  variant: item.variant_key,
+                  variant: effectiveVariant,
                 },
                 {
                   eventLabel: `slot_${item.slot_key ?? 'none'}`,
@@ -278,7 +290,7 @@ export function ComponentSwitch({ item, slug, brand }: ComponentSwitchProps) {
                       brand: brand.siteId,
                       slug,
                       component_type: componentType,
-                      variant: item.variant_key,
+                      variant: effectiveVariant,
                     },
                     {
                       eventLabel: `slot_${item.slot_key ?? 'none'}`,

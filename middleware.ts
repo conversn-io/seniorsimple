@@ -18,6 +18,18 @@ import { createSplitTestMiddleware } from '@/utils/ab-test-middleware';
 import { resolveFlags, applyFlagAssignments } from '@/utils/layered-flags';
 import { buildAdvertorialFlagsConfig } from '@/lib/advertorial-flags-config';
 
+/** W3 — sticky per-visitor seed for kit-native split-tests. */
+const KIT_SEED_COOKIE = 'ss_kit_seed';
+
+/** UUID-ish, edge-safe. crypto.randomUUID is available in the edge runtime. */
+function generateKitSeed(): string {
+  const uuid =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  return `kit_${uuid.replace(/-/g, '')}`;
+}
+
 // Create middleware with SeniorSimple-specific configuration
 const sharedMiddleware = createSplitTestMiddleware({
   entryPath: '/quiz',
@@ -57,15 +69,37 @@ export const middleware = async (request: NextRequest) => {
   //    NextResponse.next({ request }) so the SSR render for THIS request
   //    sees the newly allocated variant.
   if (pathname.startsWith('/lp/')) {
+    // W3 — kit split-test seed cookie. Stamped once per visitor across ALL
+    // kit-native slugs (per-slug bucketing happens at render via hash(seed +
+    // slug)). Legacy slugs are unaffected — they ignore this cookie.
+    // Mirroring onto request.cookies makes the seed visible to THIS request's
+    // SSR (matches the legacy first-visit correctness pattern below).
+    let kitSeed = request.cookies.get(KIT_SEED_COOKIE)?.value ?? null;
+    let stampKitSeed = false;
+    if (!kitSeed || kitSeed.length < 8) {
+      kitSeed = generateKitSeed();
+      stampKitSeed = true;
+      request.cookies.set(KIT_SEED_COOKIE, kitSeed);
+    }
+
     const assignments = resolveFlags(request, advertorialConfig);
     for (const a of Object.values(assignments)) {
       request.cookies.set(a.cookieName, a.variant);
     }
-    return applyFlagAssignments(
+    const response = applyFlagAssignments(
       NextResponse.next({ request }),
       assignments,
       'seniorsimple.org'
     );
+    if (stampKitSeed) {
+      response.cookies.set(KIT_SEED_COOKIE, kitSeed, {
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: false,
+        maxAge: 60 * 60 * 24 * 180, // 180d — long enough to keep the split-test cohort sticky.
+      });
+    }
+    return response;
   }
 
   // 2. Quiz-funnel entry-path split (existing behavior).
