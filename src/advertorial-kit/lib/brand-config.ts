@@ -17,8 +17,23 @@ export interface AdvertorialBrand {
   siteId: string
   masthead: string                // display name on the top bar / masthead
   publisherLegal: string          // shown in the footer (© <publisher>)
-  accent: string                  // CSS color used for CTAs / rules
-  accentText: string              // legible text on the accent background
+  accent: string                  // CTA button background + rule / position badge
+  accentText: string              // legible text on `accent` background
+  /**
+   * Doctrine (Order B, 2026-07-17): the masthead nameplate is a distinct
+   * brand color, NOT the CTA accent. On SeniorSimple that's the OG
+   * newsroom teal `#36596a` — reserved to the masthead per §advertorial
+   * style guide. If a brand only sets `accent`, `mastheadColor` falls
+   * back to `accent` (backward-compat for pre-Order-B brands).
+   */
+  mastheadColor?: string
+  /**
+   * Inline body-link color. Doctrine: news blue `#1a5089`, underlined.
+   * Applies to anchors inside `intro_md`, `body_md`, `component_props`
+   * strings — anywhere content flows through renderMarkdown. Fallback:
+   * `accent` (backward-compat).
+   */
+  linkColor?: string
   bodyFontClass: string           // Tailwind class for body copy
   headlineFontClass: string       // Tailwind class for headlines
   defaultDisclosureMd: string     // fallback when advertorial.disclosure_md is empty
@@ -46,8 +61,16 @@ export const ADVERTORIAL_BRANDS: Record<string, AdvertorialBrand> = {
     siteId: 'seniorsimple',
     masthead: 'SeniorSimple',
     publisherLegal: 'Simple Media Network',
-    accent: '#0F766E',           // muted teal — editorial, not neon
+    // OG SeniorSimple palette (matches shared advertorial.module.css tokens
+    // used by the legacy senior-discounts / things-retirees-cut pages).
+    // Teal (--teal #36596a) is reserved to the masthead. Green (--cta
+    // #1a7f37) is the sanctioned CTA button. News blue (--link #1a5089) is
+    // reserved to inline body links (underlined). Split intentionally so a
+    // change to the CTA palette can't accidentally repaint the masthead.
+    accent: '#1a7f37',           // sanctioned CTA green
     accentText: '#FFFFFF',
+    mastheadColor: '#36596a',    // OG editorial teal, masthead only
+    linkColor: '#1a5089',        // news blue for inline body links
     bodyFontClass: 'font-serif',
     headlineFontClass: 'font-serif',
     defaultDisclosureMd: DEFAULT_DISCLOSURE_MD + REVERSE_MORTGAGE_ADDENDUM,

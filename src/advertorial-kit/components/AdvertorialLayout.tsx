@@ -37,18 +37,29 @@ export function AdvertorialLayout({
     day: 'numeric',
   })
 
+  // OG SS chrome uses a heavier 2px underline on the masthead (news-paper
+  // feel); the light `border-slate-200` on the outer header preserves the
+  // section separation. mastheadColor falls back to accent for brands that
+  // haven't opted into the split-palette scheme yet.
+  const mastheadColor = brand.mastheadColor ?? brand.accent
+  const linkColor = brand.linkColor ?? brand.accent
+
   return (
     <article
       data-advertorial={brand.siteId}
       className={`bg-white text-slate-900 ${brand.bodyFontClass}`}
-      style={{ ['--advertorial-accent' as any]: brand.accent }}
+      style={{
+        ['--advertorial-accent' as any]: brand.accent,
+        ['--advertorial-link' as any]: linkColor,
+        ['--advertorial-masthead' as any]: mastheadColor,
+      }}
     >
-      {/* Masthead */}
-      <header className="border-b border-slate-200">
+      {/* Masthead — teal nameplate on a 2px ink underline. */}
+      <header className="border-b-2" style={{ borderColor: '#1a1a1a' }}>
         <div className="mx-auto max-w-3xl px-5 py-4 flex items-baseline justify-between">
           <div
             className={`text-2xl tracking-tight ${brand.headlineFontClass}`}
-            style={{ color: brand.accent }}
+            style={{ color: mastheadColor }}
           >
             <span className="font-semibold">{brand.masthead}</span>
           </div>

@@ -244,7 +244,7 @@ async function renderKitAdvertorial(
       >
         {introHtml ? (
           <div
-            className="advertorial-prose text-lg leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-accent)]"
+            className="advertorial-prose text-lg leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-link)]"
             dangerouslySetInnerHTML={{ __html: introHtml }}
           />
         ) : null}
