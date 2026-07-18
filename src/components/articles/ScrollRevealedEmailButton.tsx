@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Mail, X } from 'lucide-react'
 import { useScrollPosition } from '@/hooks/useScrollPosition'
 
@@ -21,6 +21,7 @@ export default function ScrollRevealedEmailButton({
   const { hasReachedThreshold } = useScrollPosition({ threshold: 0.3 })
   const [isDismissed, setIsDismissed] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const barRef = useRef<HTMLDivElement>(null)
   const [email, setEmail] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
@@ -100,6 +101,25 @@ export default function ScrollRevealedEmailButton({
     }
   }
 
+  useEffect(() => {
+    const el = barRef.current
+    if (!el || isDismissed || !hasReachedThreshold) return
+
+    const publish = () => {
+      document.documentElement.style.setProperty(
+        '--article-email-cta-h',
+        `${el.offsetHeight}px`,
+      )
+    }
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      document.documentElement.style.setProperty('--article-email-cta-h', '0px')
+    }
+  }, [isDismissed, hasReachedThreshold, expanded, status])
+
   if (isDismissed || !hasReachedThreshold) return null
 
   const variantClasses = {
@@ -110,6 +130,7 @@ export default function ScrollRevealedEmailButton({
 
   return (
     <div
+      ref={barRef}
       className={`fixed bottom-0 left-0 right-0 z-50 bg-gray-100 border-t border-gray-300 shadow-lg transition-transform duration-300 ${
         hasReachedThreshold ? 'translate-y-0' : 'translate-y-full'
       }`}

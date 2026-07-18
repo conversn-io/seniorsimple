@@ -1,8 +1,6 @@
 'use client'
 
-'use client'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Phone, X } from 'lucide-react'
 import { useScrollPosition } from '@/hooks/useScrollPosition'
 import QRCode from 'qrcode'
@@ -14,6 +12,37 @@ interface ScrollRevealedCallButtonProps {
   state?: string
   variant?: 'default' | 'compact' | 'expanded'
   showQRCode?: boolean
+  slug?: string
+  isMoneyPage?: boolean
+}
+
+function getCtaSessionId(): string {
+  if (typeof window === 'undefined') return ''
+  const key = 'article_cta_sid'
+  let sid = localStorage.getItem(key)
+  if (!sid) {
+    sid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+    localStorage.setItem(key, sid)
+  }
+  return sid
+}
+
+function sendCtaBeacon(payload: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return
+  try {
+    const body = new Blob([JSON.stringify(payload)], { type: 'application/json' })
+    if (navigator.sendBeacon && navigator.sendBeacon('/api/telemetry/cta', body)) return
+    fetch('/api/telemetry/cta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    /* swallow — beacon is fire-and-forget */
+  }
 }
 
 export default function ScrollRevealedCallButton({
@@ -22,12 +51,15 @@ export default function ScrollRevealedCallButton({
   city,
   state,
   variant = 'default',
-  showQRCode = true
+  showQRCode = true,
+  slug,
+  isMoneyPage = true,
 }: ScrollRevealedCallButtonProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
   const { hasReachedThreshold } = useScrollPosition({ threshold: 0.3 })
+  const revealBeaconSent = useRef(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -91,6 +123,16 @@ export default function ScrollRevealedCallButton({
       })
     }
 
+    sendCtaBeacon({
+      event: 'click',
+      cta_type: 'phone',
+      cta_position: 'sticky',
+      slug: slug ?? null,
+      is_money_page: isMoneyPage,
+      session_id: getCtaSessionId(),
+      device: isMobile ? 'mobile' : 'desktop',
+    })
+
     // On desktop, show QR code modal
     if (!isMobile && showQRCode) {
       setShowQRModal(true)
@@ -99,14 +141,29 @@ export default function ScrollRevealedCallButton({
 
   // Track when button is revealed
   useEffect(() => {
-    if (hasReachedThreshold && typeof window !== 'undefined' && (window as any).gtag) {
+    if (!hasReachedThreshold || typeof window === 'undefined') return
+
+    if ((window as any).gtag) {
       (window as any).gtag('event', 'call_button_revealed', {
         scroll_depth: 0.3,
         device_type: isMobile ? 'mobile' : 'desktop',
         button_type: 'scroll_revealed'
       })
     }
-  }, [hasReachedThreshold, isMobile])
+
+    if (!revealBeaconSent.current) {
+      revealBeaconSent.current = true
+      sendCtaBeacon({
+        event: 'reveal',
+        cta_type: 'phone',
+        cta_position: 'sticky',
+        slug: slug ?? null,
+        is_money_page: isMoneyPage,
+        session_id: getCtaSessionId(),
+        device: isMobile ? 'mobile' : 'desktop',
+      })
+    }
+  }, [hasReachedThreshold, isMobile, slug, isMoneyPage])
 
   if (!hasReachedThreshold) {
     return null
@@ -120,11 +177,12 @@ export default function ScrollRevealedCallButton({
 
   return (
     <>
-      {/* Sticky Bottom Button */}
+      {/* Sticky Bottom Button — stacks above the sticky email CTA when both are on */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-gray-100 border-t border-gray-300 shadow-lg transform transition-transform duration-300 ${
+        className={`fixed left-0 right-0 z-50 bg-gray-100 border-t border-gray-300 shadow-lg transform transition-transform duration-300 ${
           hasReachedThreshold ? 'translate-y-0' : 'translate-y-full'
         }`}
+        style={{ bottom: 'var(--article-email-cta-h, 0px)' }}
       >
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">

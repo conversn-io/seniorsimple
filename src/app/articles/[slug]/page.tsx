@@ -259,6 +259,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <ScrollRevealedCallButton
           phoneNumber={phoneNumber}
           serviceName={article.category_details?.name || 'Medicare Services'}
+          slug={slug}
+          isMoneyPage
         />
       )}
       {articleCtaFlags.emailCtasEnabled && (
