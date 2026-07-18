@@ -10,6 +10,13 @@ interface AdvertorialLayoutProps {
   headline: string
   subhead?: string | null
   heroImageUrl?: string | null
+  /**
+   * Optional override — when the page composer wants a client-side hero
+   * (e.g. HeroClickable that fires lp_cta_click and routes to /out), pass
+   * it here and it renders in place of the plain <img>. If null/undefined,
+   * `heroImageUrl` is used as-is.
+   */
+  heroImageNode?: React.ReactNode | null
   disclosureHtml: string
   children: React.ReactNode
 }
@@ -19,6 +26,7 @@ export function AdvertorialLayout({
   headline,
   subhead,
   heroImageUrl,
+  heroImageNode,
   disclosureHtml,
   children,
 }: AdvertorialLayoutProps) {
@@ -69,7 +77,9 @@ export function AdvertorialLayout({
           <p className="mt-4 text-lg text-slate-600 leading-relaxed">{subhead}</p>
         ) : null}
 
-        {heroImageUrl ? (
+        {heroImageNode ? (
+          <figure className="mt-6">{heroImageNode}</figure>
+        ) : heroImageUrl ? (
           <figure className="mt-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

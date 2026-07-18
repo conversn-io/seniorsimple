@@ -52,6 +52,7 @@ import {
   type ComponentItem,
 } from '@/advertorial-kit/components/ComponentSwitch';
 import KitCtaShell from '@/advertorial-kit/components/KitCtaShell';
+import { HeroClickable } from '@/advertorial-kit/components/HeroClickable';
 
 /** W3 — kept in sync with middleware.ts (KIT_SEED_COOKIE). */
 const KIT_SEED_COOKIE = 'ss_kit_seed';
@@ -153,6 +154,16 @@ async function renderKitAdvertorial(
 
   const itemsRaw = ((rawItems ?? []) as unknown) as ItemRow[];
 
+  // Handoff §"Change 2" — is slot 1 active? Only then does the hero become
+  // an /out link. One-row read; page is force-dynamic so no cache concern.
+  const { data: heroSlot } = await supabase
+    .from('advertorial_slots')
+    .select('slot_key, is_active')
+    .eq('advertorial_id', advertorial.id)
+    .eq('slot_key', 1)
+    .maybeSingle<{ slot_key: number; is_active: boolean }>();
+  const heroSlotActive = Boolean(heroSlot?.is_active);
+
   const brand = getAdvertorialBrand(advertorial.site_id);
   const disclosureMd = advertorial.disclosure_md?.trim()
     ? advertorial.disclosure_md
@@ -202,6 +213,25 @@ async function renderKitAdvertorial(
   //
   // The legacy AdvertorialItem render is intentionally dead code and can be
   // removed after a green-light window on prod.
+  // Handoff §"Change 2" — hero click surface. If the advertorial has a hero
+  // image AND slot 1 is active, render a client HeroClickable that fires
+  // lp_cta_click + routes to /out/<slug>/1?component=hero&variant=<v>. Falls
+  // through to the passive <img> otherwise.
+  const heroImageNode =
+    advertorial.hero_image_url && heroSlotActive
+      ? (
+        <HeroClickable
+          src={advertorial.hero_image_url}
+          alt=""
+          outHref={buildHeroOutHref(slug, variantContext.chosen)}
+          brand={brand.siteId}
+          slug={slug}
+          variant={variantContext.chosen}
+          slotKey={1}
+        />
+      )
+      : null;
+
   return (
     <KitCtaShell slug={slug} siteId={advertorial.site_id} variant={variantContext.chosen}>
       <AdvertorialLayout
@@ -209,6 +239,7 @@ async function renderKitAdvertorial(
         headline={localizedHeadline}
         subhead={localizedSubhead}
         heroImageUrl={advertorial.hero_image_url}
+        heroImageNode={heroImageNode}
         disclosureHtml={disclosureHtml}
       >
         {introHtml ? (
@@ -229,6 +260,19 @@ async function renderKitAdvertorial(
       </AdvertorialLayout>
     </KitCtaShell>
   );
+}
+
+/**
+ * Handoff §"Change 2" — the /out URL for the hero image. Kept next to the
+ * dispatcher so the taxonomy stays in one place. component=hero flows into
+ * s3 and the /out click row so PS-01 reports can slice "hero tap vs button
+ * tap vs image tap" without inspecting a mixed s3='listicle_entry' bucket.
+ */
+function buildHeroOutHref(slug: string, variant: string | null): string {
+  const params = new URLSearchParams();
+  params.set('component', 'hero');
+  if (variant) params.set('variant', variant);
+  return `/out/${encodeURIComponent(slug)}/1?${params.toString()}`;
 }
 
 // ---------------------------------------------------------------------------
