@@ -11,9 +11,22 @@ interface MedicareLeadFormProps {
     [key: string]: any
   }
   onSuccess?: () => void
+  // P0.6 attribution — article slug (e.g. 'best-medicare-advantage-plans-2026').
+  // Stamped into CRM lead's landing_page + Publishare source_detail as
+  // `quote:<slug>` so quote submissions attribute to the money page instead
+  // of piling into the null-site bucket.
+  slug?: string
+  // Compact single-column layout (for MidScrollMedicareQuote inline use).
+  // Default false = 2-col grid layout used at the article foot in the calculator.
+  compact?: boolean
 }
 
-export default function MedicareLeadForm({ calculatorResults, onSuccess }: MedicareLeadFormProps) {
+export default function MedicareLeadForm({
+  calculatorResults,
+  onSuccess,
+  slug,
+  compact = false,
+}: MedicareLeadFormProps) {
   const router = useRouter()
   const [formData, setFormData] = useState({
     firstName: '',
@@ -70,11 +83,17 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
       const utmStorage = sessionStorage.getItem('seniorsimple_utm')
       const utmParams = utmStorage ? JSON.parse(utmStorage) : {}
 
+      // P0.6 attribution: stamp site_key + landing_page + referrer explicitly
+      // so CRM leads attribute to the money page instead of the null-site
+      // bucket. slug identifies WHICH article this came from.
       const payload = {
         ...formData,
         calculatorResults,
-        source: 'medicare_calculator',
+        source: slug ? 'article_quote' : 'medicare_calculator',
+        siteKey: 'seniorsimple',
+        articleSlug: slug ?? null,
         landingPage: window.location.href,
+        referrer: typeof document !== 'undefined' ? document.referrer || null : null,
         ...utmParams
       }
 
@@ -98,12 +117,16 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'medicare_calculator_lead_submitted', {
           event_category: 'lead_generation',
-          event_label: 'medicare_calculator',
+          event_label: slug ? `article_quote:${slug}` : 'medicare_calculator',
           value: calculatorResults?.totalAnnualCost || 0
         })
       }
 
-      // Subscribe to Publishare newsletter
+      // Subscribe to Publishare newsletter. P0.6 fix: when submitted from an
+      // article page (slug present), tag source='article' + source_detail=
+      // `quote:<slug>` so v_page_captures + v_money_in_motion_queue attribute
+      // captures to the right money page. Standalone calculator (no slug)
+      // keeps the legacy 'quiz' / 'medicare-calculator' tagging.
       try {
         await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
           method: 'POST',
@@ -114,10 +137,10 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
             first_name: formData.firstName,
             last_name: formData.lastName,
             zip_code: formData.zipCode,
-            source: 'quiz',
-            source_detail: 'medicare-calculator',
+            source: slug ? 'article' : 'quiz',
+            source_detail: slug ? `quote:${slug}` : 'medicare-calculator',
             quiz_context: calculatorResults ?? null,
-            tags: ['quiz_completed'],
+            tags: slug ? ['article_quote'] : ['quiz_completed'],
           }),
         });
       } catch (_) {}
@@ -158,7 +181,7 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={compact ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
               <User className="w-4 h-4 inline mr-1" />

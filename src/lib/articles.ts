@@ -67,6 +67,24 @@ export async function getPublishedArticles(limit?: number): Promise<{ articles: 
   }
 }
 
+// P1.6 cross-site orphan resolver. Delegates to the CMS resolve_orphan_slug
+// RPC (migration 20260710_010829). Returns the canonical URL of the slug's
+// true home if it lives on a different site (e.g. parentsimple, moneysimple,
+// rateroots, nutrasimple); null when there's nothing to redirect to.
+// Mirrors parentsimple's implementation with host = 'seniorsimple'.
+export async function resolveOrphanSlug(slug: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.rpc('resolve_orphan_slug', {
+      p_host_site: 'seniorsimple',
+      p_slug: slug,
+    })
+    if (error || !data || typeof data !== 'string') return null
+    return data
+  } catch {
+    return null
+  }
+}
+
 // Get a single article by slug
 export async function getArticle(slug: string): Promise<{ article: ArticleWithCategory | null, error: Error | null }> {
   try {

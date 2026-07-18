@@ -15,7 +15,13 @@ interface MedicareResults {
   totalAnnualCost: number;
 }
 
-export default function MedicareCostCalculator() {
+interface MedicareCostCalculatorProps {
+  // P0.6 attribution — article slug when embedded on an article page.
+  // Passes through to MedicareLeadForm so submissions attribute correctly.
+  slug?: string;
+}
+
+export default function MedicareCostCalculator({ slug }: MedicareCostCalculatorProps = {}) {
   const [formData, setFormData] = useState({
     age: 65,
     income: 50000,
@@ -394,7 +400,7 @@ export default function MedicareCostCalculator() {
       {/* Lead Generation Form - Appears after results */}
       {results && (
         <div className="mb-8">
-          <MedicareLeadForm calculatorResults={results} />
+          <MedicareLeadForm calculatorResults={results} slug={slug} />
         </div>
       )}
 

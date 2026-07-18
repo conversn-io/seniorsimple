@@ -1,5 +1,5 @@
-import { getArticle, getRelatedArticles } from '../../../lib/articles'
-import { notFound } from 'next/navigation'
+import { getArticle, resolveOrphanSlug, getRelatedArticles } from '../../../lib/articles'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
@@ -8,6 +8,7 @@ import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallBu
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import MidScrollMedicareQuote from '@/components/articles/MidScrollMedicareQuote'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
@@ -24,7 +25,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { article, error } = await getArticle(slug)
 
   if (error || !article) {
-    console.error('Error fetching article:', error)
+    // P1.6 self-healing orphan redirect: if this slug belongs to another site
+    // (Bing still ranks pre-fix orphans), 308 to its canonical URL instead of
+    // 404-ing. Covers seniorsimple → parentsimple / moneysimple / rateroots /
+    // nutrasimple / homesimple orphans (~374 clicks/28d recoverable).
+    const canonicalUrl = await resolveOrphanSlug(slug)
+    if (canonicalUrl) permanentRedirect(canonicalUrl)
+    if (error) console.error('Error fetching article:', error)
     notFound()
   }
 
@@ -187,10 +194,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   lineHeight: '1.8',
                 }}
               />
-              {/* Mid-content CTA — phone renders on money-in-motion pages only
-                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
-                  renders on all pages when the email flag is on. */}
-              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
+              {/* Mid-content CTAs (P0.6):
+                  - Medicare articles get the elevated quote form (captures
+                    phone + email + zip → real lead). Replaces the phone-only
+                    InterstitialCTABanner here to eliminate the redundant
+                    phone touchpoint stack (form has its own phone field +
+                    "Call {phone}" line above).
+                  - Non-Medicare money pages keep the phone-only banner —
+                    phone is still the highest-value action on those pages.
+                  - Email banner renders on all pages when the flag is on. */}
+              {isMedicareArticle ? (
+                <MidScrollMedicareQuote slug={slug} phoneNumber={phoneNumber} />
+              ) : articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber ? (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -199,7 +214,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   variant="friendly"
                   dismissible={true}
                 />
-              )}
+              ) : null}
               {articleCtaFlags.emailCtasEnabled && (
                 <InterstitialEmailBanner
                   slug={slug}
@@ -220,10 +235,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   }}
                 />
               </div>
-              {/* Mid-content CTA — phone renders on money-in-motion pages only
-                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
-                  renders on all pages when the email flag is on. */}
-              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
+              {/* Mid-content CTAs (P0.6):
+                  - Medicare articles get the elevated quote form (captures
+                    phone + email + zip → real lead). Replaces the phone-only
+                    InterstitialCTABanner here to eliminate the redundant
+                    phone touchpoint stack (form has its own phone field +
+                    "Call {phone}" line above).
+                  - Non-Medicare money pages keep the phone-only banner —
+                    phone is still the highest-value action on those pages.
+                  - Email banner renders on all pages when the flag is on. */}
+              {isMedicareArticle ? (
+                <MidScrollMedicareQuote slug={slug} phoneNumber={phoneNumber} />
+              ) : articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber ? (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -232,7 +255,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   variant="friendly"
                   dismissible={true}
                 />
-              )}
+              ) : null}
               {articleCtaFlags.emailCtasEnabled && (
                 <InterstitialEmailBanner
                   slug={slug}
@@ -242,20 +265,23 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </>
           )}
 
-          {/* Medicare Calculator - Show for Medicare-related articles */}
+          {/* Medicare Calculator - Show for Medicare-related articles.
+              slug passed for P0.6 attribution — foot-of-article lead form
+              submissions land as source='article_quote' + source_detail='quote:<slug>'. */}
           {isMedicareArticle && (
             <div className="mt-12 mb-8">
-              <MedicareCostCalculator />
+              <MedicareCostCalculator slug={slug} />
             </div>
           )}
         </div>
       </section>
 
       {/* Sticky scroll CTAs:
-          - phone: money-in-motion pages only (Medicare/Medigap/annuity/final-expense/life-insurance)
-          - email: all pages, once NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
-          Both can coexist — email supplements the phone CTA on money-in-motion pages. */}
-      {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
+          - phone: money-in-motion pages EXCEPT Medicare (P0.6 de-dup — Medicare
+            pages already have the quote form with its own phone field + call
+            CTA, so the sticky is a redundant third phone touchpoint).
+          - email: all pages, once NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on. */}
+      {articleCtaFlags.phoneCtasEnabled && isMoneyPage && !isMedicareArticle && phoneNumber && (
         <ScrollRevealedCallButton
           phoneNumber={phoneNumber}
           serviceName={article.category_details?.name || 'Medicare Services'}

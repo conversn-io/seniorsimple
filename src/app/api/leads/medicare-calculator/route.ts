@@ -98,13 +98,20 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
 }
 
 // Helper function to upsert lead
+// P0.6: siteKey / landingPage / referrer are now first-class columns on
+// public.leads and MUST be stamped here — omitting them was the root cause
+// of the ~1,650 null-site CRM leads that couldn't attribute to any
+// seniorsimple money page.
 async function upsertLead(
   contactId: string,
   sessionId: string | null,
   quizAnswers: any,
   calculatorResults: any,
   utmParams: any,
-  zipCode: string | null
+  zipCode: string | null,
+  siteKey: string | null,
+  landingPage: string | null,
+  referrer: string | null,
 ) {
   // Generate session ID if not provided
   const finalSessionId = sessionId || crypto.randomUUID();
@@ -139,6 +146,11 @@ async function upsertLead(
       calculator_results: calculatorResults
     },
     zip_code: zipCode,
+    // P0.6 attribution — stamps every Medicare lead with its owning site +
+    // article URL so it stops feeding the null-site pile.
+    site_key: siteKey,
+    landing_page: landingPage,
+    referrer: referrer,
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
@@ -178,17 +190,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📥 Request Body:', JSON.stringify({ ...body, phone: '***' }, null, 2));
     
-    const { 
-      firstName, 
-      lastName, 
-      email, 
-      phone, 
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
       zipCode,
       preferredContact,
       calculatorResults,
       source,
       landingPage,
+      referrer,
       sessionId,
+      siteKey,
+      articleSlug,
       ...utmParams
     } = body;
 
@@ -201,7 +216,9 @@ export async function POST(request: NextRequest) {
     const contact = await upsertContact(email, firstName, lastName, phone);
     console.log('✅ Contact upserted:', contact.id);
 
-    // Find or create lead
+    // Find or create lead — P0.6: pass site_key + landing_page + referrer so
+    // Medicare quote submissions attribute correctly (previously all landed
+    // in the null-site bucket).
     console.log('📋 Upserting lead...');
     const lead = await upsertLead(
       contact.id,
@@ -212,11 +229,15 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         zipCode,
-        preferredContact
+        preferredContact,
+        articleSlug: articleSlug || null,
       },
       calculatorResults,
       utmParams,
-      zipCode || null
+      zipCode || null,
+      siteKey || 'seniorsimple',
+      landingPage || null,
+      referrer || null,
     );
     console.log('✅ Lead upserted:', lead.id);
 
