@@ -448,8 +448,9 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
 
           {item.image_url ? (
             <figure className="mt-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.image_url} alt="" className="w-full rounded-md border border-slate-200" loading="lazy" />
+              {renderItemImage({
+                item, slug, brand, effectiveVariant, componentType, outHref,
+              })}
             </figure>
           ) : null}
 
@@ -485,6 +486,7 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
                         position: item.position,
                         item_type: item.item_type,
                         cta_text: item.cta_text,
+                        cta_target: 'button',
                       },
                     },
                   )
@@ -529,6 +531,136 @@ interface RenderInteractiveArgs {
   outHref: string
   componentType: string
   children: React.ReactNode
+}
+
+// ---------------------------------------------------------------------------
+// Item-image tap surface (Handoff §"Change 2").
+// ---------------------------------------------------------------------------
+
+interface RenderItemImageArgs {
+  item: ComponentItem
+  slug: string
+  brand: AdvertorialBrand
+  effectiveVariant: string | null
+  componentType: string
+  outHref: string | null
+}
+
+/**
+ * Render a listicle_entry item's image. Wrap in an `/out` anchor when the
+ * click has somewhere real to go:
+ *
+ *   • MONETIZED items with a slot_key → wrap in outHref (same URL the button
+ *     uses). onClick fires lp_cta_click with `cta_target='image'` so PS-01
+ *     reports can slice image-tap vs button-tap.
+ *   • FILLER items with `component_props.link_slot_key` (positive integer)
+ *     → wrap in a filler-specific outHref pointing at the referenced slot.
+ *     PS-00 is expected to only set link_slot_key when that slot is active
+ *     (server-side `is_active` guard would require an extra fetch per item —
+ *     out of scope for a dispatch-only change).
+ *   • Otherwise → bare `<img>` (no click surface).
+ */
+function renderItemImage({
+  item, slug, brand, effectiveVariant, componentType, outHref,
+}: RenderItemImageArgs): React.ReactNode {
+  const src = item.image_url
+  if (!src) return null
+
+  const imgEl = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      className="w-full rounded-md border border-slate-200"
+      loading="lazy"
+    />
+  )
+
+  // Monetized items reuse the button's outHref exactly — same slot, same
+  // taxonomy — so an image tap and a button tap are equivalent /out clicks
+  // (distinguishable only by cta_target on the analytics event).
+  if (item.item_type === 'monetized' && outHref) {
+    return renderImageAnchor({
+      href: outHref, brand, slug, effectiveVariant,
+      slotKey: item.slot_key, position: item.position, itemType: item.item_type,
+      componentType, ctaText: item.cta_text, imgEl,
+    })
+  }
+
+  // Filler items opt in per-row via component_props.link_slot_key.
+  const linkSlotKey =
+    item.item_type !== 'monetized' && item.component_props
+      ? readLinkSlotKey(item.component_props)
+      : null
+  if (linkSlotKey !== null) {
+    const params = new URLSearchParams()
+    params.set('component', 'filler_image')
+    if (effectiveVariant) params.set('variant', effectiveVariant)
+    const fillerHref = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
+    return renderImageAnchor({
+      href: fillerHref, brand, slug, effectiveVariant,
+      slotKey: linkSlotKey, position: item.position, itemType: item.item_type,
+      componentType: 'filler_image', ctaText: item.cta_text, imgEl,
+    })
+  }
+
+  return imgEl
+}
+
+function readLinkSlotKey(props: Record<string, unknown>): number | null {
+  const raw = (props as { link_slot_key?: unknown }).link_slot_key
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) return null
+  return n
+}
+
+interface RenderImageAnchorArgs {
+  href: string
+  brand: AdvertorialBrand
+  slug: string
+  effectiveVariant: string | null
+  slotKey: number | null
+  position: number
+  itemType: string
+  componentType: string
+  ctaText: string | null
+  imgEl: React.ReactNode
+}
+
+function renderImageAnchor(args: RenderImageAnchorArgs) {
+  return (
+    <a
+      href={args.href}
+      rel="nofollow sponsored"
+      target="_blank"
+      className="block"
+      data-cta-target="image"
+      onClick={() => {
+        fireKitEvent(
+          'lp_cta_click',
+          {
+            site_key: SITE_KEY,
+            brand: args.brand.siteId,
+            slug: args.slug,
+            component_type: args.componentType,
+            variant: args.effectiveVariant,
+          },
+          {
+            eventLabel: `slot_${args.slotKey ?? 'none'}`,
+            extraProps: {
+              slot_key: args.slotKey,
+              position: args.position,
+              item_type: args.itemType,
+              cta_text: args.ctaText,
+              cta_target: 'image',
+            },
+          },
+        )
+      }}
+    >
+      {args.imgEl}
+    </a>
+  )
 }
 
 /**
