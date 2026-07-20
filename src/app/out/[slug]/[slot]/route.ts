@@ -188,7 +188,11 @@ export async function GET(
 
   // Fire outbound conversion signal to the originating ad network (Taboola, NewsBreak, etc.)
   // via CRM's native-postback-ingest → dispatcher → per-network adapter. This is the
-  // upper-funnel conversion event (event=accepted) — user click-through on advertorial CTA.
+  // upper-funnel signal — user clicked an advertorial CTA and is being sent to an affiliate.
+  //
+  // event=initiate_checkout maps to NB `initiate_checkout` (and comparable upper-funnel events
+  // on other networks). This is distinct from the lead-accept `submit_form` NB event that
+  // fires when the AFFILIATE later postbacks their Base/accepted conversion.
   //
   // Non-blocking: dispatched asynchronously so it doesn't add latency to the 302 redirect.
   // We reference the ad network's ORIGINAL click_id (tracking.s8) so the network can attribute
@@ -201,7 +205,7 @@ export async function GET(
     dispatchUrl.searchParams.set('source', 'own_checkout')
     dispatchUrl.searchParams.set('secret', ownCheckoutSecret)
     dispatchUrl.searchParams.set('click_id', tracking.s8)
-    dispatchUrl.searchParams.set('event', 'accepted')
+    dispatchUrl.searchParams.set('event', 'initiate_checkout')
     dispatchUrl.searchParams.set('s2_network', tracking.source)
     if (tracking.s1) dispatchUrl.searchParams.set('s1_brand', tracking.s1)
     if (tracking.s3) dispatchUrl.searchParams.set('s3_offer', tracking.s3)
