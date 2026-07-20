@@ -80,6 +80,9 @@ const NETWORK_CLICK_ID_KEYS: Array<{ key: string; source: string }> = [
   { key: 'tblci',            source: 'taboola'    },
   { key: 'rcid',             source: 'revcontent' },
   { key: 'realize_click_id', source: 'realize'    },
+  { key: 'newsbreak_cid',    source: 'newsbreak'  },
+  { key: 'nb_click_id',      source: 'newsbreak'  },
+  { key: 'nbclid',           source: 'newsbreak'  },
 ]
 
 // A native macro that never got substituted (e.g. `$ob_click_id$`) is worthless

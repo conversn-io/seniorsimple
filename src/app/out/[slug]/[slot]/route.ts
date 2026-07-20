@@ -102,8 +102,23 @@ export async function GET(
   //    s7 = variant (CTA-provided via ?variant=<id>)
   //    slug + slot_key = reconciliation-only, encoded into sub_id
   const url = new URL(req.url)
-  const query = captureQueryTracking(url.searchParams)
   const referrer = req.headers.get('referer')
+
+  // Merge Referer params BEFORE captureQueryTracking so click-id macros the LP
+  // received (e.g. newsbreak_cid=nvss_…) survive into /out when the CTA link
+  // itself doesn't carry them. LP → /out link generation often drops query
+  // params; the Referer header still has them.
+  const mergedParams = new URLSearchParams(url.searchParams.toString())
+  if (referrer) {
+    try {
+      const refUrl = new URL(referrer)
+      refUrl.searchParams.forEach((value, key) => {
+        if (!mergedParams.has(key)) mergedParams.set(key, value)
+      })
+    } catch { /* invalid referer — ignore */ }
+  }
+
+  const query = captureQueryTracking(mergedParams)
   const componentType = url.searchParams.get('component') || null
   const tracking = assembleTracking({
     brand: advertorial.site_id,
