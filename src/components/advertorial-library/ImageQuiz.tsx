@@ -1,20 +1,25 @@
 'use client';
 
 /**
- * D1 · ImageQuiz — image/icon-tile single-select qualifier.
+ * D1 · ImageQuiz — image/icon-tile single-tap qualifier (tap-to-navigate).
  *
- * User's selection reports via CtaContext as a sub-param on the outbound
- * offer URL (sub6 by default, then sub7/... in insertion order per
- * CtaProvider). Every option always routes to the offer regardless of
- * selection — this is a micro-commitment qualifier, not a real gate.
+ * TAP-TO-NAVIGATE: as of the state_map/tap-to-nav update, tapping any tile
+ * navigates immediately to the offer with the choice threaded through
+ * CtaContext (sub-slot per `selectionKey`) — no separate submit button. One
+ * tap = next page.
+ *
+ * Legacy `submitLabel` / `submitVariant` props remain accepted for backward
+ * compatibility with existing DB rows and PS-00's dispatch layer but are no
+ * longer rendered as a separate button. They're preserved on the type so a
+ * later revert (should we ever want to reintroduce a submit gate) doesn't
+ * require a DB schema change.
  *
  * COMPLIANCE: honest CTAs only. "See My Discounts," never "See If I Qualify
  * For Free."
  */
 
-import { useState } from 'react';
 import styles from './advertorial.module.css';
-import { useCtaHref, useSetCtaSelection } from './CtaContext';
+import { useBuildCtaHref, useSetCtaSelection } from './CtaContext';
 
 export interface ImageQuizOption {
   /** Machine value (routed to Prismique as sub-param). */
@@ -34,9 +39,9 @@ interface ImageQuizProps {
    */
   selectionKey: string;
   options: ImageQuizOption[];
-  /** Submit button label ("See My Discounts →"). */
-  submitLabel: React.ReactNode;
-  /** Submit button variant. Default blue (matches reference). */
+  /** Retained for prop backward-compat; no longer rendered. */
+  submitLabel?: React.ReactNode;
+  /** Retained for prop backward-compat; no longer rendered. */
   submitVariant?: 'green' | 'blue';
 }
 
@@ -44,61 +49,32 @@ export default function ImageQuiz({
   question,
   selectionKey,
   options,
-  submitLabel,
-  submitVariant = 'blue',
 }: ImageQuizProps) {
+  const buildHref = useBuildCtaHref();
   const setSelection = useSetCtaSelection();
-  const ctaHref = useCtaHref();
-  const [selected, setSelected] = useState<string | null>(null);
-
-  const submitClassName = [
-    styles.cta,
-    submitVariant === 'blue' ? styles.ctaBlue : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
 
   return (
     <div style={{ margin: '20px 0' }}>
       <h2 className={styles.h2} style={{ textAlign: 'center' }}>
         {question}
       </h2>
-      <div className={styles.tiles} role="radiogroup">
-        {options.map((opt) => {
-          const isSelected = selected === opt.value;
-          const tileClassName = [
-            styles.tile,
-            isSelected ? styles.tileSelected : '',
-          ]
-            .filter(Boolean)
-            .join(' ');
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              className={tileClassName}
-              onClick={() => {
-                setSelected(opt.value);
-                setSelection(selectionKey, opt.value);
-              }}
-            >
-              <div className={styles.tileIcon}>{opt.icon}</div>
-              <div className={styles.tileLabel}>{opt.label}</div>
-            </button>
-          );
-        })}
-      </div>
-      <div className={styles.center}>
-        <a
-          className={submitClassName}
-          href={ctaHref}
-          rel="sponsored nofollow noopener"
-          target="_blank"
-        >
-          {submitLabel}
-        </a>
+      <div className={styles.tiles} role="list">
+        {options.map((opt) => (
+          <a
+            key={opt.value}
+            role="listitem"
+            href={buildHref({ [selectionKey]: opt.value })}
+            onClick={() => setSelection(selectionKey, opt.value)}
+            rel="sponsored nofollow noopener"
+            target="_blank"
+            aria-label={typeof opt.label === 'string' ? opt.label : opt.value}
+            data-quiz-choice={opt.value}
+            className={styles.tile}
+          >
+            <div className={styles.tileIcon}>{opt.icon}</div>
+            <div className={styles.tileLabel}>{opt.label}</div>
+          </a>
+        ))}
       </div>
     </div>
   );

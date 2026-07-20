@@ -44,6 +44,7 @@ import {
   Rating,
   SavingsCalculator,
   Section,
+  StateMap,
   StateSelector,
   TrustBar,
   type CtaSubs,
@@ -325,6 +326,40 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
             selectionKey={p.selectionKey ?? 'state'}
             options={options}
             ctaLabel={p.ctaLabel ?? item.cta_text ?? 'See Plans in My State »'}
+          />
+        ),
+      })
+    }
+
+    case 'state_map': {
+      // D4 · StateMap — tap-to-navigate US map. Props mirror state_selector
+      // MINUS `options` (all 51 states are intrinsic to the map). Swapping a
+      // live `state_selector` row → `state_map` is a component_type change
+      // with the existing props already compatible; PS-00 can drop `options`
+      // when converting.
+      const p = (item.component_props ?? {}) as {
+        prompt?: string
+        selectionKey?: string
+        ctaLabel?: string
+        stepLabel?: string
+        step2Label?: string
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} state_map has no slot_key — skipped.`,
+        )
+        return null
+      }
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'state_map',
+        children: (
+          <StateMap
+            prompt={p.prompt ?? item.heading ?? undefined}
+            selectionKey={p.selectionKey ?? 'state'}
+            ctaLabel={p.ctaLabel ?? item.cta_text ?? 'Select Your State'}
+            stepLabel={p.stepLabel}
+            step2Label={p.step2Label}
           />
         ),
       })

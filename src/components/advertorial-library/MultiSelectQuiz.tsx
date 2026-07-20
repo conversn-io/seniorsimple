@@ -1,19 +1,19 @@
 'use client';
 
 /**
- * D2 · MultiSelectQuiz — pill-row single-answer micro-commitment.
+ * D2 · MultiSelectQuiz — pill-row single-tap qualifier (tap-to-navigate).
  *
- * Despite the name, this is a single-answer quiz (matches "How often do you
- * eat out?"). The name mirrors the reference; if we later add true
- * multi-select we can accept it via a `mode` prop.
+ * Despite the name (kept for continuity with earlier drafts), this is a
+ * single-answer quiz that now navigates on the FIRST tap — a user picking
+ * "A few times a month" is immediately routed to the offer with that answer
+ * threaded through CtaContext. No submit button.
  *
- * Reports the picked option to CtaContext (sub-param). All options route
- * to the offer regardless of pick — micro-commitment only.
+ * `submitLabel` / `submitVariant` retained on the prop shape for backward
+ * compatibility with existing DB rows; no longer rendered.
  */
 
-import { useState } from 'react';
 import styles from './advertorial.module.css';
-import { useCtaHref, useSetCtaSelection } from './CtaContext';
+import { useBuildCtaHref, useSetCtaSelection } from './CtaContext';
 
 export interface QuizOption {
   value: string;
@@ -24,7 +24,9 @@ interface MultiSelectQuizProps {
   question: React.ReactNode;
   selectionKey: string;
   options: QuizOption[];
-  submitLabel: React.ReactNode;
+  /** Retained for prop backward-compat; no longer rendered. */
+  submitLabel?: React.ReactNode;
+  /** Retained for prop backward-compat; no longer rendered. */
   submitVariant?: 'green' | 'blue';
 }
 
@@ -32,57 +34,31 @@ export default function MultiSelectQuiz({
   question,
   selectionKey,
   options,
-  submitLabel,
-  submitVariant = 'green',
 }: MultiSelectQuizProps) {
+  const buildHref = useBuildCtaHref();
   const setSelection = useSetCtaSelection();
-  const ctaHref = useCtaHref();
-  const [selected, setSelected] = useState<string | null>(null);
-
-  const submitClassName = [
-    styles.cta,
-    submitVariant === 'blue' ? styles.ctaBlue : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
 
   return (
     <div style={{ margin: '16px 0' }}>
       <p className={styles.p}>
         <b>{question}</b>
       </p>
-      <div className={styles.ms} role="radiogroup">
-        {options.map((opt) => {
-          const isSelected = selected === opt.value;
-          const optClassName = [styles.opt, isSelected ? styles.optSelected : '']
-            .filter(Boolean)
-            .join(' ');
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              className={optClassName}
-              onClick={() => {
-                setSelected(opt.value);
-                setSelection(selectionKey, opt.value);
-              }}
-            >
-              {opt.label} ➤
-            </button>
-          );
-        })}
-      </div>
-      <div className={styles.ctaWrap}>
-        <a
-          className={submitClassName}
-          href={ctaHref}
-          rel="sponsored nofollow noopener"
-          target="_blank"
-        >
-          {submitLabel}
-        </a>
+      <div className={styles.ms} role="list">
+        {options.map((opt) => (
+          <a
+            key={opt.value}
+            role="listitem"
+            href={buildHref({ [selectionKey]: opt.value })}
+            onClick={() => setSelection(selectionKey, opt.value)}
+            rel="sponsored nofollow noopener"
+            target="_blank"
+            aria-label={typeof opt.label === 'string' ? opt.label : opt.value}
+            data-quiz-choice={opt.value}
+            className={styles.opt}
+          >
+            {opt.label} ➤
+          </a>
+        ))}
       </div>
     </div>
   );

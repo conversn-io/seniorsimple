@@ -441,6 +441,94 @@
   color: var(--ink);
 }
 
+/* D4 · Clickable state map — real geographic SVG (Wikimedia Commons PD map)
+   with tap-to-navigate. Each state is an <a> so a single tap routes to the
+   offer with the state code threaded via CtaContext. Small states are
+   guaranteed a tap-friendly target by the chip strip below the map. */
+.stateMap {
+  margin: 20px 0;
+}
+.stateMapLabel {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  text-align: center;
+  margin: 6px 0 10px;
+}
+.stateMapFrame {
+  border: 2px solid var(--blue);
+  background: var(--band);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 0 auto;
+  max-width: 640px;
+}
+.stateMapSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Preserve aspect ratio while filling the frame. */
+  aspect-ratio: 959 / 593;
+}
+/* Each state <a> wraps 1+ shapes. Default = neutral tint; hover/focus =
+   brand-primary fill so tap affordance is obvious. */
+.stateMapState {
+  cursor: pointer;
+  outline: none;
+}
+.stateMapState path,
+.stateMapState circle {
+  fill: #ffffff;
+  stroke: var(--blue);
+  stroke-width: 1;
+  transition: fill 0.12s;
+}
+.stateMapState:hover path,
+.stateMapState:hover circle,
+.stateMapState:focus path,
+.stateMapState:focus circle,
+.stateMapStateFocused path,
+.stateMapStateFocused circle {
+  fill: var(--cta);
+}
+/* Chip strip — 51 abbreviation pills, guaranteed 44×32+ tap target for
+   every state. Solves the small-state (RI/DE/DC/CT/NJ/MD/MA/NH/VT)
+   mobile-tap problem without giving up the geographic map above. */
+.stateMapChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 14px 0 4px;
+}
+.stateMapChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 34px;
+  padding: 0 10px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  background: var(--band);
+  border: 2px solid var(--blue);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.stateMapChip:hover,
+.stateMapChip:focus-visible {
+  background: var(--cta);
+  border-color: var(--cta);
+  color: #fff;
+  text-decoration: none;
+  outline: none;
+}
+
 /* D3 · State select + step indicator. */
 .stateSelect {
   font-family: Arial, sans-serif;

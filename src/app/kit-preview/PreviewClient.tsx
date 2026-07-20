@@ -1,24 +1,24 @@
 'use client';
 
+/**
+ * Dev-only preview of every interactive advertorial-kit primitive.
+ *
+ * Wrapped in KitCtaShell so the primitives resolve `advertorial_root` CSS
+ * variables (--cta / --blue / --band / --rule / --sel) exactly as they do
+ * on a live /lp/[slug] render.
+ *
+ * Handy for CSS-scope regressions, component API changes, and verifying
+ * tap-to-navigate hrefs. Not linked anywhere in the app.
+ */
+
 import {
-  CtaProvider,
   ImageQuiz,
   MultiSelectQuiz,
-  StateSelector,
   SavingsCalculator,
-  type CtaSubs,
+  StateMap,
+  StateSelector,
 } from '@/components/advertorial-library';
 import KitCtaShell from '@/advertorial-kit/components/KitCtaShell';
-import libStyles from '@/components/advertorial-library/advertorial.module.css';
-
-const SUBS: CtaSubs = {
-  source_id: 'kit-preview',
-  sub1: '',
-  sub2: '',
-  sub3: '',
-  sub4: '',
-  sub5: 'preview',
-};
 
 const IMAGE_QUIZ_OPTIONS = [
   { value: 'dining', label: 'Dining', icon: '🍽️' },
@@ -41,12 +41,39 @@ const STATE_OPTIONS = [
   { value: 'NY', label: 'New York' },
 ];
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section style={{ marginBottom: 40 }}>
-      <h2 style={{ fontFamily: 'Arial, sans-serif', fontSize: 18, marginBottom: 8, color: '#111' }}>
+      <h2
+        style={{
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 18,
+          margin: '0 0 4px',
+          color: '#111',
+        }}
+      >
         {title}
       </h2>
+      {hint ? (
+        <p
+          style={{
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 12,
+            color: '#64748b',
+            margin: '0 0 12px',
+          }}
+        >
+          {hint}
+        </p>
+      ) : null}
       <div style={{ border: '1px dashed #cbd5e1', padding: 16, background: '#fff' }}>
         {children}
       </div>
@@ -54,75 +81,78 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function AllFour({ label }: { label: string }) {
-  return (
-    <>
-      <Panel title={`${label} — ImageQuiz (submitVariant blue)`}>
-        <ImageQuiz
-          question="What do you spend the most on?"
-          selectionKey="spend_focus"
-          options={IMAGE_QUIZ_OPTIONS}
-          submitLabel="See My Discounts →"
-          submitVariant="blue"
-        />
-      </Panel>
-      <Panel title={`${label} — MultiSelectQuiz (submitVariant green)`}>
-        <MultiSelectQuiz
-          question="How often do you eat out?"
-          selectionKey="dine_frequency"
-          options={MULTI_OPTIONS}
-          submitLabel="See My Savings →"
-          submitVariant="green"
-        />
-      </Panel>
-      <Panel title={`${label} — StateSelector`}>
-        <StateSelector
-          selectionKey="state"
-          options={STATE_OPTIONS}
-          prompt="Which state are you in?"
-          ctaLabel="See the Discounts in My State »"
-        />
-      </Panel>
-      <Panel title={`${label} — SavingsCalculator`}>
-        <SavingsCalculator />
-      </Panel>
-    </>
-  );
-}
-
 export default function PreviewClient() {
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: 24, fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ fontSize: 24, marginBottom: 4 }}>Advertorial-kit interactives — CSS scope preview</h1>
+    <main
+      style={{
+        maxWidth: 720,
+        margin: '0 auto',
+        padding: 24,
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <h1 style={{ fontSize: 24, marginBottom: 4 }}>
+        Advertorial-kit interactives
+      </h1>
       <p style={{ color: '#475569', marginBottom: 24 }}>
-        Left column matches the current kit render (no <code>.root</code> wrapper). Right column
-        matches the legacy LpPage wrap (<code>.root</code> wrapper active, CSS variables resolve).
+        Rendered inside <code>KitCtaShell</code> so CSS variables cascade
+        and the interactive components resolve their brand palette. Tap any
+        tile / pill / state to see the outbound URL Vercel would open (a
+        new tab will open pointed at <code>/lp/preview?…</code>).
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-        <div>
-          <h2 style={{ fontSize: 16, marginBottom: 12, color: '#dc2626' }}>
-            RAW kit (no .root — pre-fix)
-          </h2>
-          <CtaProvider base="/lp/preview" subs={SUBS}>
-            <AllFour label="Raw" />
-          </CtaProvider>
-        </div>
-        <div>
-          <h2 style={{ fontSize: 16, marginBottom: 12, color: '#2563eb' }}>
-            KitCtaShell (post-fix)
-          </h2>
-          <KitCtaShell slug="preview" siteId="seniorsimple.org" variant={null}>
-            <AllFour label="Shell" />
-          </KitCtaShell>
-        </div>
-        <div className={libStyles.root}>
-          <h2 style={{ fontSize: 16, marginBottom: 12, color: '#059669' }}>LEGACY (.root ref)</h2>
-          <CtaProvider base="/lp/preview" subs={SUBS}>
-            <AllFour label="Legacy" />
-          </CtaProvider>
-        </div>
-      </div>
+      <KitCtaShell slug="preview" siteId="seniorsimple.org" variant={null}>
+        <Section
+          title="D4 · StateMap (NEW — tap-to-navigate)"
+          hint="Real geographic US map. Tap any state OR chip → /out with sub7=<state>."
+        >
+          <StateMap
+            selectionKey="state"
+            ctaLabel="Select Your State"
+            prompt="Tap your state to see what you qualify for."
+            stepLabel="Step 1 · Your state"
+            step2Label="Step 2 · See what you qualify for"
+          />
+        </Section>
+
+        <Section
+          title="D1 · ImageQuiz (tap-to-navigate)"
+          hint="Tapping a tile navigates on the first click. No submit button."
+        >
+          <ImageQuiz
+            question="What do you spend the most on?"
+            selectionKey="spend_focus"
+            options={IMAGE_QUIZ_OPTIONS}
+          />
+        </Section>
+
+        <Section
+          title="D2 · MultiSelectQuiz (tap-to-navigate)"
+          hint="Tapping a pill navigates on the first click. No submit button."
+        >
+          <MultiSelectQuiz
+            question="How often do you eat out?"
+            selectionKey="spend_focus"
+            options={MULTI_OPTIONS}
+          />
+        </Section>
+
+        <Section
+          title="D3 · StateSelector (legacy dropdown — retained for existing rows)"
+          hint="Kept until PS-00 swaps live state_selector rows to state_map."
+        >
+          <StateSelector
+            selectionKey="state"
+            options={STATE_OPTIONS}
+            prompt="Which state are you in?"
+            ctaLabel="See the Discounts in My State »"
+          />
+        </Section>
+
+        <Section title="H1 · SavingsCalculator" hint="Numeric-only inputs; single submit CTA.">
+          <SavingsCalculator />
+        </Section>
+      </KitCtaShell>
     </main>
   );
 }
