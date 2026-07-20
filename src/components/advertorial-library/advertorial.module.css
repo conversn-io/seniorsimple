@@ -190,10 +190,30 @@
   font-size: 17px;
   padding: 14px 26px;
   border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s, opacity 0.15s;
 }
 
 .cta:hover {
   background: var(--cta2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  opacity: 0.98;
+}
+
+.cta:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transition-property: background, opacity;
+  }
+  .cta:hover,
+  .cta:active {
+    transform: none;
+  }
 }
 
 .pick {
@@ -391,10 +411,25 @@
   cursor: pointer;
   background: var(--band);
   color: var(--ink);
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, color 0.15s,
+    transform 0.15s;
 }
 .tile:hover {
   border-color: var(--cta);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+.tile:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile:hover,
+  .tile:active {
+    transform: none;
+    transition-property: border-color, background, color;
+  }
 }
 .tileSelected {
   border-color: var(--cta);
@@ -430,10 +465,25 @@
   border-radius: 8px;
   padding: 12px 18px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s,
+    box-shadow 0.15s;
 }
 .opt:hover {
   border-color: var(--cta);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+.opt:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .opt,
+  .opt:hover,
+  .opt:active {
+    transform: none;
+    transition-property: border-color, background, color;
+  }
 }
 .optSelected {
   border-color: var(--cta);
@@ -518,7 +568,8 @@
   border: 2px solid var(--blue);
   border-radius: 6px;
   text-decoration: none;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.12s,
+    box-shadow 0.12s;
 }
 .stateMapChip:hover,
 .stateMapChip:focus-visible {
@@ -527,6 +578,20 @@
   color: #fff;
   text-decoration: none;
   outline: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.stateMapChip:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stateMapChip,
+  .stateMapChip:hover,
+  .stateMapChip:active {
+    transform: none;
+    transition-property: background, color, border-color;
+  }
 }
 
 /* D3 · State select + step indicator. */
