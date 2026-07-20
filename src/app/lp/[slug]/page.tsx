@@ -248,15 +248,33 @@ async function renderKitAdvertorial(
             dangerouslySetInnerHTML={{ __html: introHtml }}
           />
         ) : null}
-        {componentItems.map((item) => (
-          <ComponentSwitch
-            key={`${item.position}-${item.item_type}-${item.variant_key ?? 'shared'}`}
-            item={item}
-            slug={slug}
-            brand={brand}
-            chosenVariant={variantContext.chosen}
-          />
-        ))}
+        {(() => {
+          // Reader-visible numbering: only numbered types (listicle_entry,
+          // section) consume a slot in the "#N" sequence. Interactive
+          // components (image_quiz, state_map, savings_calculator, etc.) and
+          // CTA components (editors_pick, primary_cta, ...) render between
+          // numbered items without incrementing the counter — so readers see
+          // a contiguous #1, #2, #3, ... regardless of how many interactive
+          // qualifiers are interspersed. Rows with a null component_type
+          // fall through to the default listicle_entry render and are
+          // counted here for consistency with that fall-through.
+          let running = 0
+          return componentItems.map((item) => {
+            const type = (item.component_type ?? 'listicle_entry').toLowerCase()
+            const isNumbered = type === 'listicle_entry' || type === 'section'
+            const listicleNumber = isNumbered ? ++running : null
+            return (
+              <ComponentSwitch
+                key={`${item.position}-${item.item_type}-${item.variant_key ?? 'shared'}`}
+                item={item}
+                slug={slug}
+                brand={brand}
+                chosenVariant={variantContext.chosen}
+                listicleNumber={listicleNumber}
+              />
+            )
+          })
+        })()}
       </AdvertorialLayout>
     </KitCtaShell>
   );

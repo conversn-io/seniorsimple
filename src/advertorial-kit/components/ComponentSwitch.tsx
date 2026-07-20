@@ -22,7 +22,6 @@
  * The component parameter feeds s3 (component). variant feeds s7.
  */
 
-import Link from 'next/link'
 
 import { checkTapOnly } from '@/advertorial-kit/lib/tap-only'
 import { checkItemStrings } from '@/advertorial-kit/lib/block-line'
@@ -78,13 +77,28 @@ interface ComponentSwitchProps {
    * every analytics event and every /out click emitted from this render.
    */
   chosenVariant?: string | null
+  /**
+   * Contiguous 1-indexed number to render in the "#N" badge on numbered
+   * component types (listicle_entry, section). Null / omitted for
+   * interactive + non-numbered types (image_quiz, state_map, editors_pick,
+   * etc.) so those items don't consume a slot in the reader-visible
+   * sequence. Computed by the caller (page.tsx) so a full pass over the
+   * items list yields the correct running total.
+   */
+  listicleNumber?: number | null
 }
 
 // ---------------------------------------------------------------------------
 // Public component
 // ---------------------------------------------------------------------------
 
-export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: ComponentSwitchProps) {
+export function ComponentSwitch({
+  item,
+  slug,
+  brand,
+  chosenVariant = null,
+  listicleNumber = null,
+}: ComponentSwitchProps) {
   // W3 — the effective variant for outbound URLs + analytics events. Prefer
   // the advertorial-level chosen variant (uniform across every CTA on this
   // render) and fall back to item.variant_key only for legacy items that
@@ -144,11 +158,38 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
     }
 
     case 'section': {
+      // Section is a "numbered content" item like listicle_entry — render the
+      // heading with the SAME brand-styled treatment so the visual hierarchy
+      // stays consistent across the reader-visible number sequence. The
+      // standalone Section primitive (small module .h2) is kept for authors
+      // rendering outside the kit, but the kit path renders inline here to
+      // gain access to `brand` + the contiguous listicleNumber.
       const bodyHtml = renderMarkdown(item.body_md)
+      const displayNumber = listicleNumber ?? item.position
       return (
-        <Section number={item.position} title={item.heading ?? ''}>
-          <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-        </Section>
+        <section
+          data-item-type={item.item_type}
+          data-position={item.position}
+          data-component="section"
+          className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+        >
+          {item.heading ? (
+            <h2 className={`${brand.headlineFontClass} text-2xl md:text-3xl font-bold text-slate-900 leading-snug`}>
+              <span
+                className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
+                style={{ background: brand.accent, color: brand.accentText }}
+              >
+                #{displayNumber}
+              </span>
+              {item.heading}
+            </h2>
+          ) : null}
+
+          <div
+            className="advertorial-prose mt-4 text-base leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-link)] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+        </section>
       )
     }
 
@@ -461,7 +502,23 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
     case 'listicle_entry':
     default: {
       const bodyHtml = renderMarkdown(item.body_md)
+      const link = resolveItemLinkHref({
+        item, slug, effectiveVariant, outHref,
+      })
       const showCta = item.item_type === 'monetized' && outHref
+      const clickableHeading = !!(item.heading && link)
+      const heading = item.heading ? (
+        <>
+          <span
+            className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
+            style={{ background: brand.accent, color: brand.accentText }}
+          >
+            #{listicleNumber ?? item.position}
+          </span>
+          {item.heading}
+        </>
+      ) : null
+
       return (
         <section
           data-item-type={item.item_type}
@@ -469,15 +526,44 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
           data-component={componentType}
           className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
         >
-          {item.heading ? (
+          {heading ? (
             <h2 className={`${brand.headlineFontClass} text-2xl md:text-3xl font-bold text-slate-900 leading-snug`}>
-              <span
-                className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
-                style={{ background: brand.accent, color: brand.accentText }}
-              >
-                #{item.position}
-              </span>
-              {item.heading}
+              {clickableHeading ? (
+                <a
+                  href={link!.href}
+                  rel="nofollow sponsored noopener"
+                  target="_blank"
+                  data-cta-target="heading"
+                  className="hover:underline decoration-2 underline-offset-4 transition-colors"
+                  style={{ color: 'inherit', textDecorationColor: brand.accent }}
+                  onClick={() => {
+                    fireKitEvent(
+                      'lp_cta_click',
+                      {
+                        site_key: SITE_KEY,
+                        brand: brand.siteId,
+                        slug,
+                        component_type: link!.componentType,
+                        variant: effectiveVariant,
+                      },
+                      {
+                        eventLabel: `slot_${link!.slotKey ?? 'none'}`,
+                        extraProps: {
+                          slot_key: link!.slotKey,
+                          position: item.position,
+                          item_type: item.item_type,
+                          cta_text: item.cta_text,
+                          cta_target: 'heading',
+                        },
+                      },
+                    )
+                  }}
+                >
+                  {heading}
+                </a>
+              ) : (
+                heading
+              )}
             </h2>
           ) : null}
 
@@ -496,15 +582,17 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
 
           {showCta ? (
             <div className="mt-5">
-              <Link
+              <a
                 href={outHref!}
-                className="inline-block px-6 py-3 rounded-md font-sans font-semibold text-base shadow-sm hover:opacity-90 transition"
+                target="_blank"
+                rel="nofollow sponsored noopener"
+                data-cta-target="button"
+                className="block w-full text-center px-6 py-3 rounded-md font-sans font-semibold text-base shadow-sm transition-all duration-150 hover:opacity-95 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
                 style={{ background: brand.accent, color: brand.accentText }}
-                rel="nofollow sponsored"
-                prefetch={false}
                 onClick={() => {
                   // W2 analytics: fire lp_cta_click BEFORE /out redirect.
-                  // keepalive:true on the fetch survives the navigation.
+                  // target="_blank" opens a new tab so the current page stays;
+                  // analytics fire synchronously either way.
                   fireKitEvent(
                     'lp_cta_click',
                     {
@@ -528,7 +616,7 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
                 }}
               >
                 {item.cta_text || 'See if you qualify »'}
-              </Link>
+              </a>
             </div>
           ) : null}
         </section>
@@ -552,6 +640,47 @@ function buildOutHref(input: {
   params.set('component', input.componentType)
   if (input.variantKey) params.set('variant', input.variantKey)
   return `/out/${encodeURIComponent(input.slug)}/${input.slotKey}?${params.toString()}`
+}
+
+/**
+ * Resolve the outbound URL for the reader-facing surfaces on a
+ * listicle_entry (heading link, image tap, CTA button). Mirrors what
+ * `renderItemImage` derives internally so a heading tap goes to the same
+ * `/out/…` as the CTA button on that row.
+ *
+ *   • Monetized items with a slot → use the row's own outHref
+ *     (`component=listicle_entry`).
+ *   • Filler items with `component_props.link_slot_key` → build an outHref
+ *     targeted at the referenced slot (`component=filler_headline` so
+ *     PS-01 can slice heading taps from image taps).
+ *   • Otherwise → null (heading renders as plain text).
+ */
+function resolveItemLinkHref({
+  item, slug, effectiveVariant, outHref,
+}: {
+  item: ComponentItem
+  slug: string
+  effectiveVariant: string | null
+  outHref: string | null
+}): { href: string; slotKey: number | null; componentType: string } | null {
+  if (item.item_type === 'monetized' && outHref) {
+    return { href: outHref, slotKey: item.slot_key, componentType: 'listicle_entry' }
+  }
+  const linkSlotKey =
+    item.item_type !== 'monetized' && item.component_props
+      ? readLinkSlotKey(item.component_props)
+      : null
+  if (linkSlotKey !== null) {
+    const params = new URLSearchParams()
+    params.set('component', 'filler_headline')
+    if (effectiveVariant) params.set('variant', effectiveVariant)
+    return {
+      href: `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`,
+      slotKey: linkSlotKey,
+      componentType: 'filler_headline',
+    }
+  }
+  return null
 }
 
 // ---------------------------------------------------------------------------
