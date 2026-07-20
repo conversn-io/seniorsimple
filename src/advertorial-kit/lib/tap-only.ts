@@ -48,6 +48,7 @@ export const ALLOWED_COMPONENT_TYPES = new Set<string>([
   'image_quiz',
   'multi_select_quiz',
   'state_selector',
+  'state_map',
   // Numeric-only interactive
   'savings_calculator',
   'savings_breakdown',

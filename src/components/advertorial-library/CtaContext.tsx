@@ -83,6 +83,14 @@ interface CtaContextValue {
   base: string;
   href: string;
   setSub: (key: CtaSubKey, value: string) => void;
+  /**
+   * Synchronously compute the outbound URL with a set of semantic-key
+   * overrides layered on top of the current runtime subs. Used by
+   * tap-to-navigate components (StateMap, single-tap ImageQuiz /
+   * MultiSelectQuiz) that need the final URL baked into an `<a href="…">`
+   * at render time — no React re-render race.
+   */
+  buildHref: (overrides?: Record<string, string>) => string;
 }
 
 const Ctx = createContext<CtaContextValue | null>(null);
@@ -128,37 +136,62 @@ export function CtaProvider({ base, subs, children }: CtaProviderProps) {
     dispatch({ key, value });
   }, []);
 
-  const href = useMemo(() => {
-    // Build the params in canonical order. Supports absolute URLs (offer
-    // tracking link on the bridge) AND relative paths (advertorial CTA →
-    // /bridge/perks) — no more `new URL('/bridge/perks')` throw.
-    const params = new URLSearchParams();
-    for (const key of ORDERED_KEYS) {
-      const value = runtimeSubs[key];
-      if (value !== undefined && value !== '') {
-        params.set(key, value);
+  const buildHref = useCallback(
+    (overrides?: Record<string, string>): string => {
+      // Merge runtime subs with any semantic-key overrides. Overrides are
+      // translated through SLOT_BY_KEY to sub-slots so a tap-to-navigate
+      // component can pass `{ state: 'CA', spend_focus: 'dining' }` and the
+      // resulting URL carries `sub7=CA&sub6=dining` without touching
+      // context state.
+      const merged: CtaSubs = { ...runtimeSubs };
+      if (overrides) {
+        for (const [key, value] of Object.entries(overrides)) {
+          if (!value) continue;
+          const slot = SLOT_BY_KEY[key];
+          if (!slot) {
+            console.warn(
+              `[CtaContext] Unknown selection key "${key}" — add it to SLOT_BY_KEY + ADVERTORIAL_STYLE_GUIDE.md §6.`
+            );
+            continue;
+          }
+          merged[slot] = value;
+        }
       }
-    }
-    const qs = params.toString();
-    if (!qs) return base;
-    // Absolute URL — round-trip through URL so pre-existing query params
-    // on `base` are preserved and de-duped by name.
-    if (/^https?:\/\//i.test(base)) {
-      try {
-        const url = new URL(base);
-        params.forEach((v, k) => url.searchParams.set(k, v));
-        return url.toString();
-      } catch {
-        return base + (base.includes('?') ? '&' : '?') + qs;
+
+      // Build the params in canonical order. Supports absolute URLs (offer
+      // tracking link on the bridge) AND relative paths (advertorial CTA →
+      // /bridge/perks) — no more `new URL('/bridge/perks')` throw.
+      const params = new URLSearchParams();
+      for (const key of ORDERED_KEYS) {
+        const value = merged[key];
+        if (value !== undefined && value !== '') {
+          params.set(key, value);
+        }
       }
-    }
-    // Relative path — plain string concat.
-    return base + (base.includes('?') ? '&' : '?') + qs;
-  }, [base, runtimeSubs]);
+      const qs = params.toString();
+      if (!qs) return base;
+      // Absolute URL — round-trip through URL so pre-existing query params
+      // on `base` are preserved and de-duped by name.
+      if (/^https?:\/\//i.test(base)) {
+        try {
+          const url = new URL(base);
+          params.forEach((v, k) => url.searchParams.set(k, v));
+          return url.toString();
+        } catch {
+          return base + (base.includes('?') ? '&' : '?') + qs;
+        }
+      }
+      // Relative path — plain string concat.
+      return base + (base.includes('?') ? '&' : '?') + qs;
+    },
+    [base, runtimeSubs]
+  );
+
+  const href = useMemo(() => buildHref(), [buildHref]);
 
   const value = useMemo<CtaContextValue>(
-    () => ({ base, href, setSub }),
-    [base, href, setSub]
+    () => ({ base, href, setSub, buildHref }),
+    [base, href, setSub, buildHref]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -206,4 +239,23 @@ export function useSetCtaSelection() {
 export function useSetCtaSub() {
   const ctx = useContext(Ctx);
   return ctx?.setSub ?? (() => {});
+}
+
+/**
+ * Synchronous URL builder — returns a fresh outbound href with optional
+ * semantic-key overrides layered on top of the current runtime subs.
+ *
+ * Used by tap-to-navigate components that need to bake a selection into
+ * an `<a href="…">` at render time (e.g. StateMap wraps each state in an
+ * <a> whose href already carries `?sub7=CA`). Because the URL is computed
+ * synchronously from React state, there is no re-render race between
+ * `setSub` and the navigation.
+ *
+ * Example:
+ *   const buildHref = useBuildCtaHref();
+ *   <a href={buildHref({ state: 'CA' })} …>California</a>
+ */
+export function useBuildCtaHref(): (overrides?: Record<string, string>) => string {
+  const ctx = useContext(Ctx);
+  return ctx?.buildHref ?? (() => '#');
 }
