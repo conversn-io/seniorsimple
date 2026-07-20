@@ -28,6 +28,10 @@ import { checkItemStrings } from '@/advertorial-kit/lib/block-line'
 import { renderMarkdown } from '@/advertorial-kit/lib/markdown'
 import type { AdvertorialBrand } from '@/advertorial-kit/lib/brand-config'
 import { SITE_KEY, fireKitEvent } from '@/advertorial-kit/lib/analytics'
+import {
+  appendInboundSubs,
+  type InboundSubsServer,
+} from '@/advertorial-kit/lib/inbound-subs'
 
 // Library primitives (moved to shared location in W1).
 import {
@@ -86,6 +90,15 @@ interface ComponentSwitchProps {
    * items list yields the correct running total.
    */
   listicleNumber?: number | null
+  /**
+   * Non-PII s-tokens captured from the LP request's `searchParams` (see
+   * inbound-subs.ts). Baked into every /out href this component emits so
+   * paid traffic's `?source=<network>&s4=<angle>…` lands in
+   * advertorial_clicks for per-network / per-angle ROAS — without waiting
+   * on JS to hydrate. Applied uniformly to the button, image anchor,
+   * heading link, and every interactive component's CtaProvider base.
+   */
+  inboundSubs?: InboundSubsServer | null
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +111,7 @@ export function ComponentSwitch({
   brand,
   chosenVariant = null,
   listicleNumber = null,
+  inboundSubs = null,
 }: ComponentSwitchProps) {
   // W3 — the effective variant for outbound URLs + analytics events. Prefer
   // the advertorial-level chosen variant (uniform across every CTA on this
@@ -136,6 +150,7 @@ export function ComponentSwitch({
     slotKey: item.slot_key,
     componentType,
     variantKey: effectiveVariant,
+    inboundSubs,
   })
 
   switch (componentType) {
@@ -503,7 +518,7 @@ export function ComponentSwitch({
     default: {
       const bodyHtml = renderMarkdown(item.body_md)
       const link = resolveItemLinkHref({
-        item, slug, effectiveVariant, outHref,
+        item, slug, effectiveVariant, outHref, inboundSubs,
       })
       const showCta = item.item_type === 'monetized' && outHref
       const clickableHeading = !!(item.heading && link)
@@ -570,7 +585,7 @@ export function ComponentSwitch({
           {item.image_url ? (
             <figure className="mt-4">
               {renderItemImage({
-                item, slug, brand, effectiveVariant, componentType, outHref,
+                item, slug, brand, effectiveVariant, componentType, outHref, inboundSubs,
               })}
             </figure>
           ) : null}
@@ -634,12 +649,14 @@ function buildOutHref(input: {
   slotKey: number | null
   componentType: string
   variantKey: string | null
+  inboundSubs?: InboundSubsServer | null
 }): string | null {
   if (input.slotKey === null || input.slotKey === undefined) return null
   const params = new URLSearchParams()
   params.set('component', input.componentType)
   if (input.variantKey) params.set('variant', input.variantKey)
-  return `/out/${encodeURIComponent(input.slug)}/${input.slotKey}?${params.toString()}`
+  const base = `/out/${encodeURIComponent(input.slug)}/${input.slotKey}?${params.toString()}`
+  return appendInboundSubs(base, input.inboundSubs ?? null)
 }
 
 /**
@@ -656,14 +673,16 @@ function buildOutHref(input: {
  *   • Otherwise → null (heading renders as plain text).
  */
 function resolveItemLinkHref({
-  item, slug, effectiveVariant, outHref,
+  item, slug, effectiveVariant, outHref, inboundSubs,
 }: {
   item: ComponentItem
   slug: string
   effectiveVariant: string | null
   outHref: string | null
+  inboundSubs?: InboundSubsServer | null
 }): { href: string; slotKey: number | null; componentType: string } | null {
   if (item.item_type === 'monetized' && outHref) {
+    // outHref already carries inbound subs from the top-level buildOutHref call.
     return { href: outHref, slotKey: item.slot_key, componentType: 'listicle_entry' }
   }
   const linkSlotKey =
@@ -674,8 +693,9 @@ function resolveItemLinkHref({
     const params = new URLSearchParams()
     params.set('component', 'filler_headline')
     if (effectiveVariant) params.set('variant', effectiveVariant)
+    const base = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
     return {
-      href: `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`,
+      href: appendInboundSubs(base, inboundSubs ?? null),
       slotKey: linkSlotKey,
       componentType: 'filler_headline',
     }
@@ -708,6 +728,7 @@ interface RenderItemImageArgs {
   effectiveVariant: string | null
   componentType: string
   outHref: string | null
+  inboundSubs?: InboundSubsServer | null
 }
 
 /**
@@ -725,7 +746,7 @@ interface RenderItemImageArgs {
  *   • Otherwise → bare `<img>` (no click surface).
  */
 function renderItemImage({
-  item, slug, brand, effectiveVariant, componentType, outHref,
+  item, slug, brand, effectiveVariant, componentType, outHref, inboundSubs,
 }: RenderItemImageArgs): React.ReactNode {
   const src = item.image_url
   if (!src) return null
@@ -760,7 +781,8 @@ function renderItemImage({
     const params = new URLSearchParams()
     params.set('component', 'filler_image')
     if (effectiveVariant) params.set('variant', effectiveVariant)
-    const fillerHref = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
+    const base = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
+    const fillerHref = appendInboundSubs(base, inboundSubs ?? null)
     return renderImageAnchor({
       href: fillerHref, brand, slug, effectiveVariant,
       slotKey: linkSlotKey, position: item.position, itemType: item.item_type,

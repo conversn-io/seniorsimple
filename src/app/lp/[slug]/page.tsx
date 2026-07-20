@@ -42,6 +42,11 @@ import {
   substituteLocationDeep,
   type KitLocation,
 } from '@/advertorial-kit/lib/location';
+import {
+  readInboundSubsFromSearchParams,
+  appendInboundSubs,
+  type InboundSubsServer,
+} from '@/advertorial-kit/lib/inbound-subs';
 import { AdvertorialLayout } from '@/advertorial-kit/components/AdvertorialLayout';
 import {
   AdvertorialItem,
@@ -140,6 +145,7 @@ async function renderKitAdvertorial(
   slug: string,
   variantContext: { chosen: string | null; source: string },
   location: KitLocation,
+  inboundSubs: InboundSubsServer,
 ) {
   const supabase = getAdvertorialSupabase();
   const { data: rawItems } = await supabase
@@ -223,7 +229,7 @@ async function renderKitAdvertorial(
         <HeroClickable
           src={advertorial.hero_image_url}
           alt=""
-          outHref={buildHeroOutHref(slug, variantContext.chosen)}
+          outHref={buildHeroOutHref(slug, variantContext.chosen, inboundSubs)}
           brand={brand.siteId}
           slug={slug}
           variant={variantContext.chosen}
@@ -271,6 +277,7 @@ async function renderKitAdvertorial(
                 brand={brand}
                 chosenVariant={variantContext.chosen}
                 listicleNumber={listicleNumber}
+                inboundSubs={inboundSubs}
               />
             )
           })
@@ -286,11 +293,16 @@ async function renderKitAdvertorial(
  * s3 and the /out click row so PS-01 reports can slice "hero tap vs button
  * tap vs image tap" without inspecting a mixed s3='listicle_entry' bucket.
  */
-function buildHeroOutHref(slug: string, variant: string | null): string {
+function buildHeroOutHref(
+  slug: string,
+  variant: string | null,
+  inboundSubs: InboundSubsServer | null,
+): string {
   const params = new URLSearchParams();
   params.set('component', 'hero');
   if (variant) params.set('variant', variant);
-  return `/out/${encodeURIComponent(slug)}/1?${params.toString()}`;
+  const base = `/out/${encodeURIComponent(slug)}/1?${params.toString()}`;
+  return appendInboundSubs(base, inboundSubs);
 }
 
 // ---------------------------------------------------------------------------
@@ -349,6 +361,14 @@ export default async function Page({ params, searchParams }: PageProps) {
   const requestHeaders = await headers();
   const location = resolveLocation(requestHeaders);
 
+  // Handoff (2026-07-21) — capture non-PII inbound s-tokens (s2 source /
+  // s4 hook / s5 creative / s6 placement / s8 network click-id) from the
+  // LP request URL so every /out href in the SSR HTML carries them. The
+  // /out router already reads these names — we just make sure they show up
+  // on the CTA URLs so paid traffic's network + angle land in
+  // advertorial_clicks for per-network / per-angle ROAS.
+  const inboundSubs = readInboundSubsFromSearchParams(query);
+
   // --- Dev-only preview mode (kit path) ---
   const previewSiteId = (() => {
     try { return getSiteId(); } catch { return 'seniorsimple'; }
@@ -377,7 +397,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     return renderKitAdvertorial(previewAdvertorial, slug, {
       chosen: previewPick.variant,
       source: previewPick.source,
-    }, location);
+    }, location, inboundSubs);
   }
 
   // --- DB-driven path (kit) ---
@@ -401,7 +421,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       return renderKitAdvertorial(advertorial, slug, {
         chosen: pick.variant,
         source: pick.source,
-      }, location);
+      }, location, inboundSubs);
     }
   } catch (err) {
     // Env not configured (e.g. ADVERTORIAL_SITE_ID missing) — fall through
