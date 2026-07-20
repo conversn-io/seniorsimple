@@ -12,7 +12,7 @@
  * Design: 00 - Reports/mega_listicle_backend_design_2026-07-15.md §2.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createHash } from 'crypto'
 import {
   assembleTracking,
@@ -226,9 +226,20 @@ export async function GET(
     if (tracking.s3) dispatchUrl.searchParams.set('s3_offer', tracking.s3)
     if (tracking.s4) dispatchUrl.searchParams.set('s4_angle', tracking.s4)
     if (subId) dispatchUrl.searchParams.set('lead_id', subId)
-    // Fire-and-forget; do not await — redirect must not wait on this.
-    void fetch(dispatchUrl.toString(), { method: 'GET', cache: 'no-store' }).catch((err) => {
-      console.error('[out] native-postback-ingest dispatch failed', err)
+    // Schedule dispatch AFTER the 302 response is sent. In Vercel's serverless
+    // Node runtime, a bare `void fetch(…)` gets cut off when the function returns —
+    // `after()` keeps the function alive until this callback resolves so the
+    // postback actually lands. Redirect latency is unaffected.
+    after(async () => {
+      try {
+        const res = await fetch(dispatchUrl.toString(), { method: 'GET', cache: 'no-store' })
+        if (!res.ok) {
+          const body = await res.text()
+          console.warn('[out] native-postback-ingest', res.status, body.slice(0, 300))
+        }
+      } catch (err) {
+        console.error('[out] native-postback-ingest dispatch failed', err)
+      }
     })
   }
 
