@@ -3,7 +3,6 @@ import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
 import { formatE164 } from '@/utils/phone-utils';
 import * as crypto from 'crypto';
-import { fireNbPostback } from '@/lib/nb-postback';
 
 export async function OPTIONS() {
   return handleCorsOptions();
@@ -381,12 +380,8 @@ export async function POST(request: NextRequest) {
       console.log('✅ Analytics event saved:', event.id);
     }
 
-    // Native-ad postback: fire submit_form to NB / other network via CRM edge fn.
-    // Fire-and-forget so the API response is never delayed.
-    fireNbPostback(request, 'submit_form', { order_id: lead?.id ?? contactId }).catch(() => {});
-
-    return createCorsResponse({
-      success: true,
+    return createCorsResponse({ 
+      success: true, 
       eventId: event?.id,
       contactId,
       leadId: lead?.id,

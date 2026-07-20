@@ -171,13 +171,6 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     return;
   }
 
-  // Persist the resolved click_id + network so server-side lead API routes
-  // (/api/leads/*) can read them from the incoming Request cookies and fire the
-  // native-postback-ingest event on submit_form / purchase. 90 days matches
-  // NewsBreak's default click-attribution window.
-  if (click_id) setCookie("cr_click_id", click_id, 90);
-  setCookie("cr_s2_network", s2_network, 90);
-
   // Session cookie (create if absent)
   const cookieName = config.sessionCookieName ?? DEFAULT_COOKIE;
   let session_id = getCookie(cookieName);

@@ -5,7 +5,6 @@ import { formatPhoneForGHL, formatE164, extractUSPhoneNumber } from '@/utils/pho
 import * as crypto from 'crypto';
 import { sendLeadEvent, getMetaPixelIdForFunnel } from '@/lib/meta-capi-service';
 import { validateAndRetainCertificate } from '@/lib/trustedform-api';
-import { fireNbPostback } from '@/lib/nb-postback';
 
 // Webhook URLs by funnel type
 const ANNUITY_GHL_WEBHOOK_URL = process.env.annuity_GHL_webhook || "https://services.leadconnectorhq.com/hooks/vTM82D7FNpIlnPgw6XNC/webhook-trigger/28ef726d-7ead-4cd2-aa85-dfc6192adfb6";
@@ -446,11 +445,6 @@ export async function POST(request: NextRequest) {
       jornayaId || null // Journaya Lead ID (stored in quiz_answers)
     );
     console.log('✅ Lead upserted:', lead.id);
-
-    // Native-ad postback: fire submit_form to NB (or other network) via CRM edge fn.
-    // Placed here — after lead is saved, before GHL delivery — so we still fire
-    // regardless of GHL webhook outcome downstream. Fire-and-forget.
-    fireNbPostback(request, 'submit_form', { order_id: lead.id }).catch(() => {});
 
     // Prepare GHL webhook payload - use normalized phone number
     const formattedPhone = formatPhoneForGHL(normalizedPhoneNumber);
