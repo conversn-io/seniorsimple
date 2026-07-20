@@ -78,13 +78,28 @@ interface ComponentSwitchProps {
    * every analytics event and every /out click emitted from this render.
    */
   chosenVariant?: string | null
+  /**
+   * Contiguous 1-indexed number to render in the "#N" badge on numbered
+   * component types (listicle_entry, section). Null / omitted for
+   * interactive + non-numbered types (image_quiz, state_map, editors_pick,
+   * etc.) so those items don't consume a slot in the reader-visible
+   * sequence. Computed by the caller (page.tsx) so a full pass over the
+   * items list yields the correct running total.
+   */
+  listicleNumber?: number | null
 }
 
 // ---------------------------------------------------------------------------
 // Public component
 // ---------------------------------------------------------------------------
 
-export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: ComponentSwitchProps) {
+export function ComponentSwitch({
+  item,
+  slug,
+  brand,
+  chosenVariant = null,
+  listicleNumber = null,
+}: ComponentSwitchProps) {
   // W3 — the effective variant for outbound URLs + analytics events. Prefer
   // the advertorial-level chosen variant (uniform across every CTA on this
   // render) and fall back to item.variant_key only for legacy items that
@@ -144,11 +159,38 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
     }
 
     case 'section': {
+      // Section is a "numbered content" item like listicle_entry — render the
+      // heading with the SAME brand-styled treatment so the visual hierarchy
+      // stays consistent across the reader-visible number sequence. The
+      // standalone Section primitive (small module .h2) is kept for authors
+      // rendering outside the kit, but the kit path renders inline here to
+      // gain access to `brand` + the contiguous listicleNumber.
       const bodyHtml = renderMarkdown(item.body_md)
+      const displayNumber = listicleNumber ?? item.position
       return (
-        <Section number={item.position} title={item.heading ?? ''}>
-          <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-        </Section>
+        <section
+          data-item-type={item.item_type}
+          data-position={item.position}
+          data-component="section"
+          className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+        >
+          {item.heading ? (
+            <h2 className={`${brand.headlineFontClass} text-2xl md:text-3xl font-bold text-slate-900 leading-snug`}>
+              <span
+                className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
+                style={{ background: brand.accent, color: brand.accentText }}
+              >
+                #{displayNumber}
+              </span>
+              {item.heading}
+            </h2>
+          ) : null}
+
+          <div
+            className="advertorial-prose mt-4 text-base leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-link)] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+        </section>
       )
     }
 
@@ -475,7 +517,7 @@ export function ComponentSwitch({ item, slug, brand, chosenVariant = null }: Com
                 className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
                 style={{ background: brand.accent, color: brand.accentText }}
               >
-                #{item.position}
+                #{listicleNumber ?? item.position}
               </span>
               {item.heading}
             </h2>
