@@ -95,37 +95,39 @@ test('null / empty subs → URL unchanged', () => {
   assert.equal(appendInboundSubs('/out/x/1?component=listicle_entry', { s2: null, s4: null, s5: null, s6: null, s8: null }), '/out/x/1?component=listicle_entry')
 })
 
-test('appends non-empty subs, skips nulls', () => {
+test('appends non-empty subs, skips nulls; s2 is written as `source=`', () => {
   const out = appendInboundSubs('/out/x/1?component=listicle_entry', {
     s2: 'newsbreak', s4: 'home_equity', s5: null, s6: null, s8: null,
   })
   const qs = new URLSearchParams(out.split('?')[1])
   assert.equal(qs.get('component'), 'listicle_entry')
-  assert.equal(qs.get('s2'), 'newsbreak')
+  // Router's captureQueryTracking reads `source` (NOT `s2`) as the s2
+  // alias — writing `s2=` here would be silently dropped when it hits /out.
+  assert.equal(qs.get('source'), 'newsbreak')
+  assert.equal(qs.get('s2'), null)
   assert.equal(qs.get('s4'), 'home_equity')
   assert.equal(qs.get('s5'), null)
 })
 
-test('does not clobber params already set on the URL', () => {
-  // If somebody passed ?s2=preset already, we keep it.
-  const out = appendInboundSubs('/out/x/1?component=listicle_entry&s2=preset', {
+test('does not clobber `source` already set on the URL', () => {
+  const out = appendInboundSubs('/out/x/1?component=listicle_entry&source=preset', {
     s2: 'newsbreak', s4: null, s5: null, s6: null, s8: null,
   })
   const qs = new URLSearchParams(out.split('?')[1])
-  assert.equal(qs.get('s2'), 'preset')
+  assert.equal(qs.get('source'), 'preset')
 })
 
-test('bare-path URL (no query) still gets subs', () => {
+test('bare-path URL (no query) still gets subs (source= from s2)', () => {
   const out = appendInboundSubs('/out/x/1', { s2: 'newsbreak', s4: null, s5: null, s6: null, s8: null })
-  assert.equal(out, '/out/x/1?s2=newsbreak')
+  assert.equal(out, '/out/x/1?source=newsbreak')
 })
 
-test('all 5 subs at once', () => {
+test('all 5 subs at once — s2 as source, rest canonical', () => {
   const out = appendInboundSubs('/out/x/1?component=hero', {
     s2: 'newsbreak', s4: 'home_equity', s5: 'creative_A', s6: 'ios', s8: 'tab-xyz',
   })
   const qs = new URLSearchParams(out.split('?')[1])
-  assert.equal(qs.get('s2'), 'newsbreak')
+  assert.equal(qs.get('source'), 'newsbreak')
   assert.equal(qs.get('s4'), 'home_equity')
   assert.equal(qs.get('s5'), 'creative_A')
   assert.equal(qs.get('s6'), 'ios')

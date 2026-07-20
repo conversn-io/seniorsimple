@@ -80,8 +80,13 @@ export function appendInboundSubs(
   inbound: InboundSubsServer | null | undefined,
 ): string {
   if (!inbound) return url
+  // Param names MUST match what the /out router's `captureQueryTracking`
+  // reads. The router recognizes `source` (NOT `s2`) as the s2 alias — see
+  // router.ts §captureQueryTracking. s4/s5/s6/s8 use canonical names.
+  // Writing `s2=` here would land on the URL but be ignored by the router
+  // → advertorial_clicks.s2 stays null. Verified against prod behavior.
   const nonEmpty: [string, string][] = []
-  if (inbound.s2) nonEmpty.push(['s2', inbound.s2])
+  if (inbound.s2) nonEmpty.push(['source', inbound.s2])
   if (inbound.s4) nonEmpty.push(['s4', inbound.s4])
   if (inbound.s5) nonEmpty.push(['s5', inbound.s5])
   if (inbound.s6) nonEmpty.push(['s6', inbound.s6])
