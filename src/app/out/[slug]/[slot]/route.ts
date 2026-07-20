@@ -186,5 +186,32 @@ export async function GET(
       .eq('id', clickId)
   }
 
+  // Fire outbound conversion signal to the originating ad network (Taboola, NewsBreak, etc.)
+  // via CRM's native-postback-ingest → dispatcher → per-network adapter. This is the
+  // upper-funnel conversion event (event=accepted) — user click-through on advertorial CTA.
+  //
+  // Non-blocking: dispatched asynchronously so it doesn't add latency to the 302 redirect.
+  // We reference the ad network's ORIGINAL click_id (tracking.s8) so the network can attribute
+  // the conversion; source=own_checkout tags this row as an internal-fired conversion.
+  const ownCheckoutSecret = process.env.NATIVE_POSTBACK_SECRET_OWN_CHECKOUT
+  if (tracking.s8 && tracking.source && ownCheckoutSecret) {
+    const dispatchUrl = new URL(
+      'https://jqjftrlnyysqcwbbigpw.supabase.co/functions/v1/native-postback-ingest',
+    )
+    dispatchUrl.searchParams.set('source', 'own_checkout')
+    dispatchUrl.searchParams.set('secret', ownCheckoutSecret)
+    dispatchUrl.searchParams.set('click_id', tracking.s8)
+    dispatchUrl.searchParams.set('event', 'accepted')
+    dispatchUrl.searchParams.set('s2_network', tracking.source)
+    if (tracking.s1) dispatchUrl.searchParams.set('s1_brand', tracking.s1)
+    if (tracking.s3) dispatchUrl.searchParams.set('s3_offer', tracking.s3)
+    if (tracking.s4) dispatchUrl.searchParams.set('s4_angle', tracking.s4)
+    if (subId) dispatchUrl.searchParams.set('lead_id', subId)
+    // Fire-and-forget; do not await — redirect must not wait on this.
+    void fetch(dispatchUrl.toString(), { method: 'GET', cache: 'no-store' }).catch((err) => {
+      console.error('[out] native-postback-ingest dispatch failed', err)
+    })
+  }
+
   return NextResponse.redirect(destUrl, 302)
 }

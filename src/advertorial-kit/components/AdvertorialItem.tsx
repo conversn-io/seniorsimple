@@ -10,8 +10,8 @@
  *   • recap     — closing summary. Same render as filler.
  */
 
-import Link from 'next/link'
 import type { AdvertorialBrand } from '@/lib/advertorials/brand-config'
+import { AdvertorialCta } from './AdvertorialCta'
 
 export interface AdvertorialItemData {
   position: number
@@ -69,15 +69,11 @@ export function AdvertorialItem({ item, slug, brand }: Props) {
 
       {showCta ? (
         <div className="mt-5">
-          <Link
+          <AdvertorialCta
             href={`/out/${encodeURIComponent(slug)}/${item.slot_key}`}
-            className="inline-block px-6 py-3 rounded-md font-sans font-semibold text-base shadow-sm hover:opacity-90 transition"
-            style={{ background: brand.accent, color: brand.accentText }}
-            rel="nofollow sponsored"
-            prefetch={false}
-          >
-            {item.cta_text || 'See if you qualify »'}
-          </Link>
+            ctaText={item.cta_text || 'See if you qualify »'}
+            brand={brand}
+          />
         </div>
       ) : null}
     </section>
