@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import { createCorsResponse, handleCorsOptions } from '@/lib/cors-headers';
+import { fireNbPostback } from '@/lib/nb-postback';
 
 /**
  * POST /api/leads/deliver-lynqflux
@@ -231,6 +232,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`🟢 LYNQFLUX ACCEPTED — lead=${lead.id} email=${contact.email}`);
+
+    // Native-ad postback: LynqFlux accepted = we get paid for this lead. Fire
+    // purchase to NB (and other native networks) as the revenue-confirmation event.
+    // Payout omitted for now — will wire per-funnel buyer fee in a follow-up.
+    fireNbPostback(request, 'purchase', { order_id: lead.id }).catch(() => {});
+
     return createCorsResponse({
       success: true,
       leadId: lead.id,
