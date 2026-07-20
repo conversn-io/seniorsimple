@@ -18,6 +18,7 @@
  */
 
 import { CtaProvider, type CtaSubs } from '@/components/advertorial-library'
+import libStyles from '@/components/advertorial-library/advertorial.module.css'
 import { KitTracker } from './KitTracker'
 
 interface KitCtaShellProps {
@@ -40,7 +41,13 @@ export default function KitCtaShell({ slug, siteId, variant, children }: KitCtaS
     <CtaProvider base={`/lp/${encodeURIComponent(slug)}`} subs={subs}>
       {/* Fires lp_view + provides handles for CTA/tap events (W2 analytics). */}
       <KitTracker slug={slug} brand={siteId} variant={variant ?? null} />
-      {children}
+      {/* Scope the advertorial CSS variables (--cta, --blue, --rule, --sel, ...)
+          onto this subtree so every library primitive dispatched by
+          ComponentSwitch (ImageQuiz tiles, MultiSelectQuiz pills, SavingsCalculator,
+          PrimaryCTA button, etc.) resolves its var() references. Without this
+          wrapper, only the legacy LpPage.tsx code path (which applies .root
+          on its <article>) would render them correctly. */}
+      <div className={libStyles.root}>{children}</div>
     </CtaProvider>
   )
 }
