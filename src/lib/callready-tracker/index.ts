@@ -306,6 +306,40 @@ function buildLandingBeacon(s2_network: string, click_id: string): LandingBeacon
 }
 
 /**
+ * Delegated capture-phase click listener on /out CTAs. Fires the Taboola
+ * "clicked_link" event (Listicle Clickout conversion) before navigation.
+ *
+ * Runs on every /out click regardless of traffic origin — Taboola matches to
+ * its own audience via tfa.js cookies, so noise from non-Taboola visitors is
+ * ignored on their side. Base pixel (tfa.js + page_view) is loaded in
+ * app/layout.tsx; that must be present for _tfa.push() to have effect.
+ */
+function installOutClickListeners(): void {
+  if (typeof window === "undefined") return;
+  const w = window as Window & { __CR_OUT_LISTENER__?: boolean };
+  if (w.__CR_OUT_LISTENER__) return;
+  w.__CR_OUT_LISTENER__ = true;
+
+  document.addEventListener(
+    "click",
+    (e: Event) => {
+      const target = e.target as Element | null;
+      if (!target || typeof target.closest !== "function") return;
+      const link = target.closest('a[href^="/out/"]') as HTMLAnchorElement | null;
+      if (!link) return;
+      const tfa = (window as unknown as { _tfa?: unknown[] })._tfa;
+      if (!Array.isArray(tfa)) return;
+      tfa.push({
+        notify: "event",
+        name: "clicked_link",
+        id: 2006370,
+      });
+    },
+    { capture: true },
+  );
+}
+
+/**
  * Initialize the tracker. Idempotent — safe to call from multiple mount points;
  * the underlying fetch is idempotent on (s2_network, click_id) and this fn
  * guards against firing twice in the same page load via a window flag.
@@ -315,6 +349,9 @@ export function initTracker(config: TrackerConfig = {}): void {
   const w = window as Window & { __CR_TRACKER_FIRED__?: boolean };
   if (w.__CR_TRACKER_FIRED__) return;
   w.__CR_TRACKER_FIRED__ = true;
+
+  // Taboola clicked_link fires unconditionally on every /out click; not gated on click_id.
+  installOutClickListeners();
 
   if (document.readyState === "loading") {
     document.addEventListener(
