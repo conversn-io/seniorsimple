@@ -118,6 +118,18 @@ interface AdvertorialRow {
   status: string;
   /** W3 — weighted split-test config; NULL means single-variant render. */
   variants: Record<string, unknown> | null;
+  /**
+   * PS-00 free-form config bag. Used today for per-variant content overrides
+   * without a schema change:
+   *   • `headline_variants`: `{ [variant_key]: string }` — when the chosen
+   *     variant has an entry here, it renders in place of `headline`.
+   *   • `headline_variant_weights`: reference/staging, informational only —
+   *     the actual weights live on `variants` (W3 canonical). Kept so PS-00
+   *     can stage a test without flipping it on.
+   * Extension pattern: any future per-variant field goes here as
+   *   `<field>_variants[<variant_key>]` → falls back to the single column.
+   */
+  meta: Record<string, unknown> | null;
 }
 
 interface ItemRow {
@@ -181,7 +193,26 @@ async function renderKitAdvertorial(
   // the pipeline uniform and cheap.
   const disclosureHtml = renderMarkdown(substituteLocation(disclosureMd, location));
   const introHtml = renderMarkdown(substituteLocation(advertorial.intro_md, location));
-  const localizedHeadline = substituteLocation(advertorial.headline, location) ?? '';
+
+  // Headline split-test (2026-07-21): if the chosen variant has an entry in
+  // `meta.headline_variants`, render that headline; otherwise the base
+  // `headline` column. Fallback chain: variant headline → column → ''.
+  // Items still share `variant_key = NULL` so ONLY the headline changes
+  // between variants — clean isolation of the H1 as the sole variable.
+  // {{location}} substitution runs AFTER selection so v3 (no token) is fine.
+  const chosen = variantContext.chosen;
+  const headlineVariants =
+    advertorial.meta && typeof advertorial.meta === 'object'
+      ? ((advertorial.meta as Record<string, unknown>).headline_variants as
+          | Record<string, string>
+          | null
+          | undefined)
+      : null;
+  const rawHeadline =
+    chosen && headlineVariants && typeof headlineVariants[chosen] === 'string'
+      ? headlineVariants[chosen]
+      : advertorial.headline;
+  const localizedHeadline = substituteLocation(rawHeadline, location) ?? '';
   const localizedSubhead = substituteLocation(advertorial.subhead, location);
 
   // W3 — filter rows to the chosen variant. Items with variant_key IS NULL
@@ -387,6 +418,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       disclosure_md: preview.advertorial.disclosure_md,
       status: 'live',
       variants: null,
+      meta: null,
     };
     const previewPick = pickVariant({
       slug,
@@ -406,7 +438,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     const supabase = getAdvertorialSupabase();
     const { data: advertorial, error } = await supabase
       .from('advertorials')
-      .select('id, slug, site_id, title, headline, subhead, intro_md, hero_image_url, disclosure_md, status, variants')
+      .select('id, slug, site_id, title, headline, subhead, intro_md, hero_image_url, disclosure_md, status, variants, meta')
       .eq('slug', slug)
       .eq('status', 'live')
       .maybeSingle<AdvertorialRow>();
