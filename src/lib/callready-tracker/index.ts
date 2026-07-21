@@ -218,6 +218,33 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
     log(config, "sync error", err);
   }
 
+  // Inject the network click_id into all /out/* CTA links so the /out route can
+  // pick it up as its own query param. The advertorial LPs use
+  // <meta name="referrer" content="no-referrer"> to hide LP URLs from affiliates,
+  // which also strips Referer on /out clicks — so /out cannot recover the click_id
+  // from Referer. Injecting it into the href directly is the workaround.
+  // Runs at load AND on any subsequent DOM mutation (listicle CTAs render async).
+  if (click_id) {
+    const rewrite = () => {
+      const links = document.querySelectorAll<HTMLAnchorElement>('a[href^="/out/"]');
+      links.forEach((a) => {
+        try {
+          const url = new URL(a.href, window.location.origin);
+          if (!url.searchParams.has('s8')) {
+            url.searchParams.set('s8', click_id);
+            a.href = url.pathname + '?' + url.searchParams.toString();
+          }
+        } catch { /* ignore malformed hrefs */ }
+      });
+    };
+    rewrite();
+    // Watch for DOM changes (React re-renders, lazy listicles) and rewrite anything new.
+    try {
+      const mo = new MutationObserver(() => rewrite());
+      mo.observe(document.body, { childList: true, subtree: true });
+    } catch { /* older browsers */ }
+  }
+
   // Network-specific landing beacon: some ad networks need a client-side pixel fired
   // on landing (not just on conversion) to validate the postback integration. NewsBreak's
   // test flow requires their `view_content` event to fire from the browser on landing —
