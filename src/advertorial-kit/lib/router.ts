@@ -83,13 +83,25 @@ const NETWORK_CLICK_ID_KEYS: Array<{ key: string; source: string }> = [
   { key: 'newsbreak_cid',    source: 'newsbreak'  },
   { key: 'nb_click_id',      source: 'newsbreak'  },
   { key: 'nbclid',           source: 'newsbreak'  },
+  { key: 'mgid_click_id',    source: 'mgid'       },
+  { key: 'mgclid',           source: 'mgid'       },
 ]
 
-// A native macro that never got substituted (e.g. `$ob_click_id$`) is worthless
-// — treat it as absent so we don't log/send literal template strings.
+// A native macro that never got substituted is worthless — treat it as absent so
+// we don't log/send literal template strings. Covers:
+//   $foo$        (Outbrain / older Taboola)
+//   {foo}        (Taboola / RevContent / MGID)
+//   __FOO__      (NewsBreak / TikTok)
+//   [foo]        (some Everflow variants)
 function isPlaceholder(value: string | null | undefined): boolean {
   if (!value) return true
-  return /^\$.*\$$/.test(value.trim())
+  const v = value.trim()
+  return (
+    /^\$.*\$$/.test(v) ||       // $ob_click_id$
+    /^\{.*\}$/.test(v) ||       // {click_id}
+    /^__.*__$/.test(v) ||       // __CALLBACK_PARAM__
+    /^\[.*\]$/.test(v)          // [click_id]
+  )
 }
 
 function firstReal(...values: Array<string | null | undefined>): string | null {
