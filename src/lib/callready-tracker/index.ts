@@ -235,11 +235,12 @@ export function fireTrackClick(config: TrackerConfig = {}): void {
             url.searchParams.set('s8', click_id);
             changed = true;
           }
-          // /out's dispatch guard needs BOTH s8 AND source/s2. captureQueryTracking
-          // only infers source from network-macro keys when s8 is absent — if s8 is
-          // supplied directly, source stays null and the postback is silently skipped.
-          if (!url.searchParams.has('s2') && !url.searchParams.has('source')) {
-            url.searchParams.set('s2', s2_network);
+          // /out's dispatch guard needs BOTH s8 AND source. captureQueryTracking reads
+          // ?source= (not ?s2=). When s8 is supplied directly, captureQueryTracking
+          // skips its NETWORK_CLICK_ID_KEYS-based source inference, so source stays
+          // null and the postback is silently skipped. Inject `source=` explicitly.
+          if (!url.searchParams.has('source')) {
+            url.searchParams.set('source', s2_network);
             changed = true;
           }
           if (changed) a.href = url.pathname + '?' + url.searchParams.toString();
