@@ -6,7 +6,8 @@ import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 export type EbookFunnelKey =
   | 'annuity-dos-donts'
   | 'advanced-annuity-strategies'
-  | 'retirement-made-simple';
+  | 'retirement-made-simple'
+  | 'turning-65-medicare-checklist';
 
 type Bullet = { lead: string; text: string };
 type StackItem = { name: string; desc: string; value: string };
@@ -96,6 +97,37 @@ const FUNNELS: Record<EbookFunnelKey, Funnel> = {
     finalCta: 'Reveal the Strategies',
     finalMicro: 'Instant download — check your inbox.',
     ebookTitle: 'Advanced Annuity Strategies',
+  },
+  'turning-65-medicare-checklist': {
+    h1a: "Turning 65? Don't Miss Your ",
+    h1em: 'Medicare Window',
+    h1b: '.',
+    subA: 'The free, step-by-step checklist that walks you through ',
+    subHi: 'Medicare enrollment',
+    subB: ' — in plain English.',
+    heroSubtext:
+      "Turning 65 starts a 7-month enrollment clock most people don't see coming. This checklist shows you exactly what to do — and when — so you choose the right plan and can avoid a lifetime late penalty.",
+    bullets: [
+      { lead: '', text: 'The 7-month enrollment window — and the deadline most people miss' },
+      { lead: '', text: 'Original Medicare vs. Advantage: the one decision everything hinges on' },
+      { lead: '', text: '5 costly mistakes that can follow you for life' },
+      { lead: '', text: 'A simple timeline: what to do 3 months before, at, and after 65' },
+    ],
+    heroCta: 'Send Me the Free Checklist',
+    coverFlat: '/images/ebook/cover-turning-65-flat.png',
+    coverAlt: 'Turning 65 Medicare Enrollment Checklist — free printable cover',
+    stack: [
+      { name: 'Turning 65 Medicare Enrollment Checklist (printable)', desc: 'the step-by-step, week-by-week timeline', value: '$29 value' },
+      { name: 'Original Medicare vs. Advantage comparison sheet', desc: 'the one decision most 65-year-olds get wrong', value: '$29 value' },
+      { name: '5 Costly Enrollment Mistakes card', desc: 'the pitfalls that can follow you for life', value: '$19 value' },
+      { name: '15-minute Medicare Strategy Call', desc: 'with a licensed professional — no obligation, ever', value: '$200 value' },
+    ],
+    stackTotal: '$277',
+    finalTitle: 'Get the Free Turning 65 Medicare Checklist',
+    finalSub: 'The enrollment timeline, the plan comparison, and the mistakes to avoid — in your inbox in the next two minutes.',
+    finalCta: 'Send Me the Free Checklist',
+    finalMicro: 'Instant download — check your inbox.',
+    ebookTitle: 'Turning 65 Medicare Enrollment Checklist',
   },
   'retirement-made-simple': {
     h1a: 'The Little-Known Annuity “',
