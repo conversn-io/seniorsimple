@@ -45,8 +45,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, first_name, zip_code, source, source_detail, tags } = body
+    const { email, first_name, zip_code, source, source_detail, tags, quiz_bucket } = body
     const site_id = body.site_id || SITE_ID
+
+    // §2 Medicare Bucket Quiz — validate quiz_bucket if present; DB CHECK is the
+    // authority, but reject invalid values here to return a 400 instead of 500.
+    const VALID_BUCKETS = ['advantage', 'medigap', 'dual', 'working'] as const
+    if (quiz_bucket && !VALID_BUCKETS.includes(quiz_bucket)) {
+      return NextResponse.json(
+        { success: false, error: `quiz_bucket must be one of ${VALID_BUCKETS.join(', ')}` },
+        { status: 400 }
+      )
+    }
 
     // Validation
     if (!email || !site_id) {
@@ -97,6 +107,10 @@ export async function POST(request: NextRequest) {
       if (zip_code) updatePayload.zip_code = zip_code
       if (source) updatePayload.source = source
       if (source_detail) updatePayload.source_detail = source_detail
+      // Only stamp quiz_bucket when this call carries one — never null out
+      // an existing bucket (a later non-quiz capture on the same email
+      // shouldn't erase the person's resolved lane).
+      if (quiz_bucket) updatePayload.quiz_bucket = quiz_bucket
 
       const { error: updateError } = await supabase
         .from('newsletter_subscribers')
@@ -124,6 +138,7 @@ export async function POST(request: NextRequest) {
           source: source || null,
           source_detail: source_detail || null,
           tags: tags || [],
+          quiz_bucket: quiz_bucket || null,
           status: 'active',
           subscribed_at: now,
           created_at: now,

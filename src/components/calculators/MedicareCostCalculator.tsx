@@ -4,8 +4,24 @@ import React, { useState, useEffect } from 'react';
 import { Calculator, Heart, DollarSign, MapPin, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import MedicareLeadForm from './MedicareLeadForm';
 import MedicareCaptureMount from '../capture/MedicareCaptureMount';
+import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz';
 
 const CAPTURE_SLUG = 'medicare-cost-calculator';
+
+function ageToBand(age: number): 'under_65' | '65_69' | '70_74' | '75_plus' | undefined {
+  if (!age || age < 60) return undefined;
+  if (age < 65) return 'under_65';
+  if (age < 70) return '65_69';
+  if (age < 75) return '70_74';
+  return '75_plus';
+}
+function incomeToTier(income: number): 'medicaid_eligible' | 'low' | 'middle' | 'high' | undefined {
+  if (income == null) return undefined;
+  if (income < 20000) return 'medicaid_eligible';
+  if (income < 50000) return 'low';
+  if (income < 100000) return 'middle';
+  return 'high';
+}
 
 interface MedicareResults {
   partAPremium: number;
@@ -394,7 +410,7 @@ export default function MedicareCostCalculator() {
         </div>
       )}
 
-      {/* Medicare email-capture: tool-gate appears with results, inline always */}
+      {/* Tool-archetype primary: email tool-gate on results. Ruling 1. */}
       {results && (
         <MedicareCaptureMount
           slug={CAPTURE_SLUG}
@@ -404,6 +420,20 @@ export default function MedicareCostCalculator() {
       )}
 
       <MedicareCaptureMount slug={CAPTURE_SLUG} only={['inline']} />
+
+      {results && (
+        <div className="mb-8">
+          <MedicareBucketQuiz
+            slug="calculator-bridge"
+            variant="bridge"
+            prefill={{
+              ageBand: ageToBand(formData.age),
+              incomeTier: incomeToTier(formData.income),
+            }}
+          />
+        </div>
+      )}
+
 
       {/* Lead Generation Form - Appears after results */}
       {results && (
