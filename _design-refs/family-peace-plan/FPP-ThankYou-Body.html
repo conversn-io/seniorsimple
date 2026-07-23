@@ -10,19 +10,22 @@
     the `.fpp` class scope — this file adds no <style> or <link> tags.
 
   BEFORE YOU PASTE — swap these tokens:
-    {{plan_access_url}}    → destination for "Open my Family Peace Plan"
-                              (member area / download / GHL contact link)
-    {{video_access_url}}   → the Sunday Afternoon Method walkthrough
-    {{early_access_url}}   → early-access reserve form (fake-door, honest)
-    {{shipping_flag}}      → optional; set truthy in GHL only if the customer
-                              added the printed edition OR the Protection Kit
-                              (drives the conditional "ships free" note).
-                              If GHL can't template this, delete lines 60-63.
+    {{plan_access_url}}     → destination for "Open my Family Peace Plan"
+                               (member area / download / GHL contact link)
+    {{video_access_url}}    → the Sunday Afternoon Method walkthrough
+    {{printed_binder_url}}  → GHL checkout URL for the printed 3-ring binder
+                               at FULL PRICE (this is the soft backend offer
+                               for customers who declined the $49 bump)
+    {{shipping_flag}}       → optional; set truthy in GHL only if the customer
+                               added the printed edition OR the Protection Kit
+                               (drives the conditional "ships free" note).
+                               If GHL can't template this, delete the callout.
 
-  COPY IS VERBATIM
-    From Family-Peace-Plan-Upsell-and-ThankYou-Copy.md §(B).
-    Do not paraphrase. The fake-door section MUST say "early access" — never
-    "available now" — this is a real list, not a live product.
+  WHAT CHANGED (2026-07-16, CoS handoff):
+    - Removed the "reserve early access to an online version" FAKE DOOR. We
+      ship the real thing now; no more fake-door.
+    - Replaced with a soft printed-edition full-price offer — the backend for
+      bump-decliners.
 
   COMPLIANCE — footer stays verbatim; no bare promises about legal outcomes.
   ============================================================================ -->
@@ -70,17 +73,18 @@
       Added the printed edition or the Protection Kit? It ships free &mdash; watch for a separate note when it&rsquo;s on its way.
     </div>
 
-    <h2>One more question &mdash; only if it&rsquo;s you</h2>
-    <p>Some people would rather <b>type their Family Peace Plan online and print it when it&rsquo;s finished</b>, instead of writing by hand. We&rsquo;re opening <b>early access</b> to an online version soon, and we&rsquo;re building the list now.</p>
+    <h2>Prefer a copy you can hold?</h2>
+    <p>Some people fill their Family Peace Plan on their computer. Others do it best at the kitchen table, with a pen, one page at a time. Both work &mdash; and if a professionally printed, large-print edition in a 3-ring binder would help you (or a family member) actually sit down and finish, you can add one to your order.</p>
+    <p>Shipped to your door. Same guided prompts as your digital copy &mdash; just easier to write in by hand and hand to someone you love.</p>
 
     <div class="fpp-cta-wrap">
-      <a class="fpp-cta" href="{{early_access_url}}" data-fpp-early-access>
-        Reserve my early-access spot
+      <a class="fpp-cta" href="{{printed_binder_url}}" data-fpp-printed-binder>
+        Add the printed edition
       </a>
     </div>
 
     <p class="fpp-micro">
-      No cost, no commitment &mdash; just tell us you&rsquo;re interested, and we&rsquo;ll let you know the moment it&rsquo;s ready.
+      Ships free &middot; one-time &middot; backed by the same 60-day Peace of Mind Promise.
     </p>
 
     <p style="margin-top:32px; text-align:center; font-family:var(--serif); font-size:18px; color:var(--teal-ink); font-style:italic;">

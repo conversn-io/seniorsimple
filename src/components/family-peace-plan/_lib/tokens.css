@@ -597,3 +597,86 @@
   animation: fpp-spin 0.9s linear infinite;
 }
 @keyframes fpp-spin { to { transform: rotate(360deg); } }
+
+/* ============================================================================
+   Sales letter v3.1 (Simple Estate Prep) additions.
+   ============================================================================ */
+
+/* Compliance disclaimer under the hero (v3.1 spec — must appear directly
+   below the hero image, never buried). */
+.fpp-letter .fpp-hero-disclaimer {
+  font-family: var(--fpp-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fpp-muted);
+  font-style: italic;
+  padding: 12px 16px;
+  border-left: 3px solid var(--fpp-line);
+  margin: 0 0 24px;
+}
+
+/* Placeholder frame for images Pod 2 hasn't supplied yet.
+   Renders in-place with a labelled brief so QA can see exactly what's needed. */
+.fpp-letter .fpp-photo-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 28px;
+  background: var(--fpp-cream-2);
+  border: 2px dashed var(--fpp-gold-ink);
+  border-radius: 14px;
+  text-align: center;
+  font-family: var(--fpp-sans);
+  color: var(--fpp-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.fpp-letter .fpp-photo-placeholder .k {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fpp-gold-ink);
+  font-weight: 700;
+  background: rgba(228, 205, 161, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.fpp-letter .fpp-photo-placeholder p { margin: 0; max-width: 460px; font-size: 14px; }
+
+/* Differentiation bullets — "what it's not" (❌) vs "what it is" (✓). */
+.fpp-letter .fpp-diff-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 20px;
+  font-family: var(--fpp-sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.fpp-letter .fpp-diff-list li {
+  position: relative;
+  padding: 10px 0 10px 34px;
+  border-bottom: 1px solid var(--fpp-line);
+  color: var(--fpp-ink);
+}
+.fpp-letter .fpp-diff-list li:last-child { border-bottom: none; }
+.fpp-letter .fpp-diff-not li::before {
+  content: "✕";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  color: #B15A3C;
+  font-weight: 700;
+  font-size: 15px;
+}
+.fpp-letter .fpp-diff-is li::before {
+  content: "✓";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  color: var(--fpp-good);
+  font-weight: 700;
+  font-size: 16px;
+}

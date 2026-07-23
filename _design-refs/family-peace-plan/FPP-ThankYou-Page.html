@@ -6,15 +6,23 @@
 
   Copy is verbatim from Family-Peace-Plan-Upsell-and-ThankYou-Copy.md §(B).
 
-  BEFORE YOU PASTE — swap three tokens:
-    {{plan_access_url}}     → "Open my Family Peace Plan" destination
-    {{video_access_url}}    → "Watch the Sunday Afternoon Method" destination
-    {{early_access_url}}    → early-access reserve form (fake-door)
+  BEFORE YOU PASTE — swap these tokens:
+    {{plan_access_url}}       → "Open my Family Peace Plan" destination
+    {{video_access_url}}      → "Watch the Sunday Afternoon Method" destination
+    {{printed_binder_url}}    → GHL checkout URL for the printed 3-ring binder
+                                (full price — this is the soft backend offer for
+                                customers who declined the $49 bump)
 
   OPTIONAL: the "printed edition ships free" callout only fires when the
   customer added the printed bump or Protection Kit. GHL can wrap it in a
-  conditional using custom values. If you can't template it, delete lines
-  109-111 for a clean thank-you without that reference.
+  conditional using custom values. If you can't template it, delete the
+  callout div for a clean thank-you.
+
+  WHAT CHANGED (2026-07-16, CoS handoff):
+    - Removed the "reserve early access to an online version" FAKE DOOR. We
+      ship the real thing now; no more honest-fake-door.
+    - Replaced with the printed-edition full-price soft offer. Bump-decliners
+      get one more calm chance to pick up the physical copy.
 -->
 
 <!--
@@ -188,15 +196,16 @@
       Added the printed edition or the Protection Kit? It ships free &mdash; watch for a separate note when it&rsquo;s on its way.
     </div>
 
-    <h2>One more question &mdash; only if it&rsquo;s you</h2>
-    <p>Some people would rather <b>type their Family Peace Plan online and print it when it&rsquo;s finished</b>, instead of writing by hand. We&rsquo;re opening <b>early access</b> to an online version soon, and we&rsquo;re building the list now.</p>
+    <h2>Prefer a copy you can hold?</h2>
+    <p>Some people fill their Family Peace Plan on their computer. Others do it best at the kitchen table, with a pen, one page at a time. Both work &mdash; and if a professionally printed, large-print edition in a 3-ring binder would help you (or a family member) actually sit down and finish, you can add one to your order.</p>
+    <p>Shipped to your door. Same guided prompts as your digital copy &mdash; just easier to write in by hand and hand to someone you love.</p>
 
     <div class="cta-wrap">
-      <a class="cta" href="{{early_access_url}}">Reserve my early-access spot</a>
+      <a class="cta" href="{{printed_binder_url}}">Add the printed edition</a>
     </div>
 
     <p class="micro">
-      No cost, no commitment &mdash; just tell us you&rsquo;re interested, and we&rsquo;ll let you know the moment it&rsquo;s ready.
+      Ships free &middot; one-time &middot; backed by the same 60-day Peace of Mind Promise.
     </p>
 
     <p class="signoff">

@@ -3,14 +3,14 @@ import { SalesLetterPage } from '@/components/family-peace-plan/SalesLetterPage'
 import { gateFamilyPeacePlan } from '@/components/family-peace-plan/_lib/featureFlag';
 
 export const metadata: Metadata = {
-  title: 'The Family Peace Plan™ — End the Guessing · SeniorSimple',
+  title: 'Simple Estate Prep™ — Get organized before you hire a specialist · SeniorSimple',
   description:
-    'The greatest gift you may ever give your family isn’t more money. It’s the certainty they’ll never have to guess. A simple, guided plan for one quiet afternoon.',
+    'Simple Estate Prep™, featuring The Family Peace Plan™: gather the information your family, attorney, or advisor may one day need — in one calm Sunday afternoon.',
   robots: { index: false, follow: false },
   openGraph: {
-    title: 'The Family Peace Plan™ — one quiet afternoon',
+    title: 'Simple Estate Prep™ — one calm Sunday afternoon',
     description:
-      'A simple, guided way to gather everything your family would one day need to find, into one calm place.',
+      'Get your affairs in order the calm way. A guided path, not a pile of pages — built so finishing finally feels simple.',
     type: 'website',
   },
 };
