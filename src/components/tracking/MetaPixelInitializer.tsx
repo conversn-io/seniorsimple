@@ -2,15 +2,28 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { isFEXFunnel, META_PIXEL_IDS } from '@/lib/meta-pixel-config';
+import {
+  isFEXFunnel,
+  isReverseMortgageFunnel,
+  META_PIXEL_IDS,
+} from '@/lib/meta-pixel-config';
 
 /**
  * Client component to initialize Meta Pixel(s) based on current route
- * 
+ *
  * This component:
- * - Detects if we're on a FEX funnel page
- * - Initializes the appropriate pixel(s)
- * - Ensures both pixels can be tracked if needed for attribution
+ * - Always initializes the MAIN SeniorSimple pixel + fires PageView
+ * - On FEX funnel paths, also initializes the FEX pixel
+ * - On reverse-mortgage funnel paths, also initializes the reverse-mortgage
+ *   pixel (when NEXT_PUBLIC_META_PIXEL_ID_REVERSE_MORTGAGE is set) so browser
+ *   PageView + downstream Lead events land on the SAME pixel the server CAPI
+ *   uses. Without this, the RM pixel only ever sees server events → Meta has
+ *   no browser signal to triangulate attribution against → Ads Manager shows
+ *   zero conversions despite events being received.
+ *
+ * When the RM env var is not yet set in Vercel, the RM init is silently
+ * skipped (with a one-line warning so ops knows). PR is therefore safe to
+ * deploy before the env var lands.
  */
 export function MetaPixelInitializer() {
   const pathname = usePathname();
@@ -27,16 +40,19 @@ export function MetaPixelInitializer() {
       // Handle null pathname
       const currentPath = pathname || '/';
       const isFEX = isFEXFunnel(currentPath);
-      
+      const isRM = isReverseMortgageFunnel(currentPath);
+
       console.log('📊 Meta Pixel Initialization:', {
         pathname: currentPath,
         isFEXFunnel: isFEX,
+        isReverseMortgageFunnel: isRM,
         mainPixel: META_PIXEL_IDS.MAIN,
         fexPixel: META_PIXEL_IDS.FEX,
+        rmPixel: META_PIXEL_IDS.REVERSE_MORTGAGE || '(unset)',
       });
 
       // Bot detection
-      const isBot = typeof navigator !== 'undefined' && 
+      const isBot = typeof navigator !== 'undefined' &&
         /bot|crawler|spider|crawling|facebookexternalhit|Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|Exabot|facebot|ia_archiver/i.test(navigator.userAgent || '');
 
       if (isBot) {
@@ -61,6 +77,24 @@ export function MetaPixelInitializer() {
           console.log('✅ FEX Meta Pixel initialized:', META_PIXEL_IDS.FEX);
         } catch (error) {
           console.error('❌ Failed to initialize FEX Meta Pixel:', error);
+        }
+      }
+
+      // Initialize reverse-mortgage pixel if on RM funnel AND env var is set.
+      // Otherwise log a one-line warning so the missing env var is obvious.
+      if (isRM) {
+        if (META_PIXEL_IDS.REVERSE_MORTGAGE) {
+          try {
+            window.fbq('init', META_PIXEL_IDS.REVERSE_MORTGAGE);
+            window.fbq('track', 'PageView');
+            console.log('✅ Reverse Mortgage Meta Pixel initialized:', META_PIXEL_IDS.REVERSE_MORTGAGE);
+          } catch (error) {
+            console.error('❌ Failed to initialize Reverse Mortgage Meta Pixel:', error);
+          }
+        } else {
+          console.warn(
+            '⚠️ On reverse-mortgage funnel but NEXT_PUBLIC_META_PIXEL_ID_REVERSE_MORTGAGE is not set — browser pixel will not fire to the RM pixel. Set this env var in Vercel to enable.'
+          );
         }
       }
     };
