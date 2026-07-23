@@ -45,15 +45,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, first_name, zip_code, source, source_detail, tags, quiz_bucket } = body
+    const { email, first_name, zip_code, source, source_detail, tags, quiz_bucket, rx_level } = body
     const site_id = body.site_id || SITE_ID
 
-    // §2 Medicare Bucket Quiz — validate quiz_bucket if present; DB CHECK is the
-    // authority, but reject invalid values here to return a 400 instead of 500.
+    // §2 Medicare Bucket Quiz — validate quiz_bucket + rx_level if present.
+    // DB CHECK constraints are the authority; validate here so bad input
+    // returns a 400 instead of a downstream 500.
     const VALID_BUCKETS = ['advantage', 'medigap', 'dual', 'working'] as const
     if (quiz_bucket && !VALID_BUCKETS.includes(quiz_bucket)) {
       return NextResponse.json(
         { success: false, error: `quiz_bucket must be one of ${VALID_BUCKETS.join(', ')}` },
+        { status: 400 }
+      )
+    }
+    const VALID_RX_LEVELS = ['several', 'few', 'none'] as const
+    if (rx_level && !VALID_RX_LEVELS.includes(rx_level)) {
+      return NextResponse.json(
+        { success: false, error: `rx_level must be one of ${VALID_RX_LEVELS.join(', ')}` },
         { status: 400 }
       )
     }
@@ -107,10 +115,11 @@ export async function POST(request: NextRequest) {
       if (zip_code) updatePayload.zip_code = zip_code
       if (source) updatePayload.source = source
       if (source_detail) updatePayload.source_detail = source_detail
-      // Only stamp quiz_bucket when this call carries one — never null out
-      // an existing bucket (a later non-quiz capture on the same email
-      // shouldn't erase the person's resolved lane).
+      // Only stamp quiz_bucket / rx_level when this call carries one — never
+      // null out an existing value. A later non-quiz capture on the same
+      // email shouldn't erase the person's resolved lane or Part D signal.
       if (quiz_bucket) updatePayload.quiz_bucket = quiz_bucket
+      if (rx_level) updatePayload.rx_level = rx_level
 
       const { error: updateError } = await supabase
         .from('newsletter_subscribers')
@@ -139,6 +148,7 @@ export async function POST(request: NextRequest) {
           source_detail: source_detail || null,
           tags: tags || [],
           quiz_bucket: quiz_bucket || null,
+          rx_level: rx_level || null,
           status: 'active',
           subscribed_at: now,
           created_at: now,

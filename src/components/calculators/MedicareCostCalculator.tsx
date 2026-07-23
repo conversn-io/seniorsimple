@@ -22,6 +22,16 @@ function incomeToTier(income: number): 'medicaid_eligible' | 'low' | 'middle' | 
   if (income < 100000) return 'middle';
   return 'high';
 }
+// Map the calculator's int "prescriptions" field to the quiz's RxLevel enum.
+// Coarse buckets by design — the quiz only needs a Part D signal, not a count.
+// See MedicareBucketQuiz.tsx normRxLevel + BUCKET_META rxPersonalization for
+// downstream use.
+function prescriptionsToRxLevel(n: number): 'several' | 'few' | 'none' | undefined {
+  if (n == null || Number.isNaN(n)) return undefined;
+  if (n <= 0) return 'none';
+  if (n <= 3) return 'few';
+  return 'several';
+}
 
 interface MedicareResults {
   partAPremium: number;
@@ -423,6 +433,7 @@ export default function MedicareCostCalculator() {
             prefill={{
               ageBand: ageToBand(formData.age),
               incomeTier: incomeToTier(formData.income),
+              rxLevel: prescriptionsToRxLevel(formData.prescriptions),
             }}
           />
         </div>

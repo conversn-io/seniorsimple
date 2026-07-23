@@ -16,38 +16,14 @@
 'use client'
 
 import MedicareBucketQuiz, {
+  MEDICARE_BUCKET_META,
   MedicareBucket,
 } from '@/components/quiz/MedicareBucketQuiz'
 
 const COMPLIANCE_DISCLAIMER_PLACEHOLDER =
   '[PLACEHOLDER — awaiting compliance sign-off] We do not offer every plan available in your area. Any information we provide is limited to those plans we do offer in your area. Please contact Medicare.gov or 1-800-MEDICARE to get information on all your options.'
 
-const BUCKET_PREVIEW: Array<{ bucket: MedicareBucket; label: string; blurb: string }> = [
-  {
-    bucket: 'advantage',
-    label: 'Medicare Advantage',
-    blurb:
-      'All-in-one plans that often include dental, vision, and prescription coverage. Frequently $0-premium.',
-  },
-  {
-    bucket: 'medigap',
-    label: 'Medigap + Part D',
-    blurb:
-      'Original Medicare plus a supplement — see any doctor that accepts Medicare, predictable out-of-pocket costs.',
-  },
-  {
-    bucket: 'dual',
-    label: 'Dual-Eligible (Medicaid + Medicare)',
-    blurb:
-      'Special programs for people with limited income and resources. May cover premiums and reduce out-of-pocket costs.',
-  },
-  {
-    bucket: 'working',
-    label: 'Still Working, 65+',
-    blurb:
-      'You may be able to delay Part B without penalty if your employer coverage qualifies. Timing matters.',
-  },
-]
+const BUCKET_ORDER: MedicareBucket[] = ['advantage', 'medigap', 'dual', 'working']
 
 export default function MedicareQuizPreviewPage() {
   return (
@@ -75,7 +51,8 @@ export default function MedicareQuizPreviewPage() {
             1. Standalone variant (article mount)
           </h2>
           <p className="text-sm text-gray-600 mb-4">
-            No prefill — the user answers all four questions.
+            No prefill — user answers all five steps: ZIP → coverage situation → what matters
+            most → prescriptions → email.
           </p>
           <MedicareBucketQuiz slug="preview-standalone" variant="standalone" />
         </section>
@@ -85,8 +62,10 @@ export default function MedicareQuizPreviewPage() {
             2. Bridge variant (calculator mount)
           </h2>
           <p className="text-sm text-gray-600 mb-4">
-            Prefilled with a plausible calculator state — ageBand=65_69, incomeTier=middle. Zip
-            and current-coverage steps still ask (calculator doesn't collect either).
+            Prefilled with a plausible calculator state — ageBand=65_69, incomeTier=middle,
+            rxLevel=few (from calculator's prescriptions field). Bridge skips ZIP + prescriptions
+            because they're prefilled; user only sees coverage situation → what matters most →
+            email. Bridge target: 1–2 taps + email.
           </p>
           <MedicareBucketQuiz
             slug="preview-bridge"
@@ -94,6 +73,8 @@ export default function MedicareQuizPreviewPage() {
             prefill={{
               ageBand: '65_69',
               incomeTier: 'middle',
+              rxLevel: 'few',
+              zip: '90210',
             }}
           />
         </section>
@@ -103,31 +84,51 @@ export default function MedicareQuizPreviewPage() {
             3. Bucket result panel — all four
           </h2>
           <p className="text-sm text-gray-600 mb-4">
-            The label + blurb + follow-up copy each resolved bucket renders on
-            submit. Reviewing all four here so compliance and design don't have
-            to complete four flows to see them.
+            Label + blurb + "what to look for" bullets each resolved bucket renders on submit.
+            Reviewing all four here so compliance and design don't have to complete four flows
+            to see them. Rx-personalization paragraphs (which vary by <code>several</code> /
+            <code>few</code> / <code>none</code>) only render inside an actual result view —
+            complete the standalone flow above to see one.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            {BUCKET_PREVIEW.map(({ bucket, label, blurb }) => (
-              <div
-                key={bucket}
-                className="bg-white rounded-xl border-2 border-[#36596A] shadow p-6"
-              >
-                <div className="inline-block px-3 py-1 mb-3 rounded-full bg-[#36596A] text-white text-xs font-semibold uppercase tracking-wider">
-                  {bucket}
+            {BUCKET_ORDER.map((bucket) => {
+              const meta = MEDICARE_BUCKET_META[bucket]
+              return (
+                <div
+                  key={bucket}
+                  className="bg-white rounded-xl border-2 border-[#36596A] shadow p-6"
+                >
+                  <div className="inline-block px-3 py-1 mb-3 rounded-full bg-[#36596A] text-white text-xs font-semibold uppercase tracking-wider">
+                    {bucket}
+                  </div>
+                  <h3 className="text-xl font-bold text-[#36596A] mb-2">{meta.label}</h3>
+                  <p className="text-gray-700 mb-4">{meta.blurb}</p>
+
+                  <div className="bg-[#F3F6F8] rounded-lg p-3 mb-4">
+                    <h4 className="text-xs font-semibold text-[#36596A] uppercase tracking-wider mb-2">
+                      What to look for when you compare plans
+                    </h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      {meta.whatToLookFor.map((item, i) => (
+                        <li key={i} className="flex items-start">
+                          <span className="text-[#36596A] mr-2 mt-0.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <p className="text-sm text-gray-600 mb-6">
+                    A licensed advisor will follow up shortly with plan options in your area. In
+                    the meantime, we'll send you educational resources about {meta.label} to the
+                    email you provided.
+                  </p>
+                  <p className="text-xs text-gray-500 border-t border-gray-200 pt-3">
+                    {COMPLIANCE_DISCLAIMER_PLACEHOLDER}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-[#36596A] mb-2">{label}</h3>
-                <p className="text-gray-700 mb-4">{blurb}</p>
-                <p className="text-sm text-gray-600 mb-6">
-                  A licensed advisor will follow up shortly with plan options in your area. In the
-                  meantime, we'll send you educational resources about {label} to the email you
-                  provided.
-                </p>
-                <p className="text-xs text-gray-500 border-t border-gray-200 pt-3">
-                  {COMPLIANCE_DISCLAIMER_PLACEHOLDER}
-                </p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
