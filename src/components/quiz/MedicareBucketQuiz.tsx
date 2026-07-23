@@ -82,8 +82,8 @@ const Q_MATTERS_MOST = {
 
 const Q_ZIP = {
   id: 'zipCode',
-  title: 'What is your ZIP code?',
-  subtitle: 'Plan availability varies by area.',
+  title: "Let's start with your ZIP",
+  subtitle: 'Medicare plans and pricing vary by county — this narrows to what is actually available near you.',
   type: 'zip-only' as const,
   placeholder: 'Enter 5-digit ZIP',
   maxlength: 5,
@@ -210,10 +210,13 @@ export default function MedicareBucketQuiz({
   const skipZip    = variant === 'bridge' && !!(prefill.zip && /^\d{5}$/.test(prefill.zip))
 
   // Build the effective question list dynamically.
+  // ZIP goes FIRST — it narrows the search window ("plans in your area") and
+  // sets a concrete-not-abstract opening step, which lifts the completion
+  // rate on the softer preference questions that follow.
   const questions = [
+    ...(skipZip ? [] : [Q_ZIP]),
     ...(skipStatus ? [] : [Q_MEDICARE_STATUS]),
     Q_MATTERS_MOST,
-    ...(skipZip ? [] : [Q_ZIP]),
     Q_PERSONAL,
   ]
   const totalSteps = questions.length
