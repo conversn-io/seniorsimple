@@ -3,6 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Heart, DollarSign, MapPin, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import MedicareLeadForm from './MedicareLeadForm';
+import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz';
+
+// Map calculator inputs to the quiz's prefill shape. Kept here rather than in
+// the quiz so the quiz stays generic across article-standalone and bridge
+// mounts. Any mapping change lives with the calculator that owns the values.
+function ageToBand(age: number): 'under_65' | '65_69' | '70_74' | '75_plus' | undefined {
+  if (!age || age < 60) return undefined;
+  if (age < 65) return 'under_65';
+  if (age < 70) return '65_69';
+  if (age < 75) return '70_74';
+  return '75_plus';
+}
+function incomeToTier(income: number): 'medicaid_eligible' | 'low' | 'middle' | 'high' | undefined {
+  if (income == null) return undefined;
+  if (income < 20000) return 'medicaid_eligible';
+  if (income < 50000) return 'low';
+  if (income < 100000) return 'middle';
+  return 'high';
+}
 
 interface MedicareResults {
   partAPremium: number;
@@ -388,6 +407,24 @@ export default function MedicareCostCalculator() {
               </ul>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* §2 Medicare Bucket Quiz — calculator bridge.
+          The calculator itself stays ungated (see packet §11: "do NOT gate the
+          calculator utility"). This is an optional plan-fit follow-up that
+          prefills what the user already told the calculator, so email → bucket
+          takes 2-3 taps instead of restarting the intake. */}
+      {results && (
+        <div className="mb-8">
+          <MedicareBucketQuiz
+            slug="calculator-bridge"
+            variant="bridge"
+            prefill={{
+              ageBand: ageToBand(formData.age),
+              incomeTier: incomeToTier(formData.income),
+            }}
+          />
         </div>
       )}
 
