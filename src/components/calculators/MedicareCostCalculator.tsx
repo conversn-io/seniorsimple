@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Heart, DollarSign, MapPin, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import MedicareLeadForm from './MedicareLeadForm';
+import MedicareCaptureMount from '../capture/MedicareCaptureMount';
+
+const CAPTURE_SLUG = 'medicare-cost-calculator';
 
 interface MedicareResults {
   partAPremium: number;
@@ -390,6 +393,17 @@ export default function MedicareCostCalculator() {
           </div>
         </div>
       )}
+
+      {/* Medicare email-capture: tool-gate appears with results, inline always */}
+      {results && (
+        <MedicareCaptureMount
+          slug={CAPTURE_SLUG}
+          only={['tool-gate']}
+          resultPayload={results}
+        />
+      )}
+
+      <MedicareCaptureMount slug={CAPTURE_SLUG} only={['inline']} />
 
       {/* Lead Generation Form - Appears after results */}
       {results && (

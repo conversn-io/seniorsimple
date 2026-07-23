@@ -5,6 +5,7 @@ import CalculatorWrapper from '@/components/calculators/CalculatorWrapper';
 import InteractiveTool from '@/components/tools/InteractiveTool';
 import InteractiveChecklist from '@/components/checklists/InteractiveChecklist';
 import ContentSearch from '@/components/search/ContentSearch';
+import MedicareCaptureMount from '@/components/capture/MedicareCaptureMount';
 import { processMarkdownToHTML, extractTableOfContents, calculateReadingTime } from '@/lib/markdown';
 import { Metadata } from 'next';
 
@@ -231,11 +232,17 @@ export default async function ContentPage({ params }: ContentPageProps) {
         notFound();
       }
       return (
-        <InteractiveTool
-          config={content.tool_config}
-          title={content.title}
-          description={content.excerpt}
-        />
+        <>
+          <InteractiveTool
+            config={content.tool_config}
+            title={content.title}
+            description={content.excerpt}
+            postCompletionSlot={
+              <MedicareCaptureMount slug={slug} only={['tool-gate']} />
+            }
+          />
+          <MedicareCaptureMount slug={slug} only={['inline']} />
+        </>
       );
     case 'checklist':
       if (!content.checklist_config) {
