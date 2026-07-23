@@ -40,6 +40,15 @@ function normalizeQuizBucket(v: unknown): QuizBucket | null {
   return (VALID_QUIZ_BUCKETS as readonly string[]).includes(v) ? (v as QuizBucket) : null;
 }
 
+// §2 Medicare Bucket Quiz — Rx level (Part D signal). Enforced by CHECK on
+// newsletter_subscribers.rx_level; validate here for a 400 instead of 500.
+const VALID_RX_LEVELS = ['several', 'few', 'none'] as const;
+type RxLevel = typeof VALID_RX_LEVELS[number];
+function normalizeRxLevel(v: unknown): RxLevel | null {
+  if (typeof v !== 'string') return null;
+  return (VALID_RX_LEVELS as readonly string[]).includes(v) ? (v as RxLevel) : null;
+}
+
 // Helper function to upsert contact
 async function upsertContact(email: string, firstName: string | null, lastName: string | null, phone: string | null) {
   const emailLower = email?.toLowerCase();
@@ -229,6 +238,7 @@ export async function POST(request: NextRequest) {
       // through MedicareBucketQuiz (standalone or calculator bridge) rather
       // than the plain calculator form.
       quizBucket: rawQuizBucket,
+      rxLevel: rawRxLevel,
       articleSlug,
       quizAnswers: incomingQuizAnswers,
       siteKey,
@@ -254,6 +264,13 @@ export async function POST(request: NextRequest) {
         400
       );
     }
+    const rxLevel = normalizeRxLevel(rawRxLevel);
+    if (rawRxLevel && !rxLevel) {
+      return createCorsResponse(
+        { error: `rxLevel must be one of ${VALID_RX_LEVELS.join(', ')}` },
+        400
+      );
+    }
 
     // Find or create contact
     console.log('👤 Upserting contact...');
@@ -274,9 +291,12 @@ export async function POST(request: NextRequest) {
         preferredContact,
         // Preserve quiz-side answers if they were supplied (MedicareBucketQuiz
         // sends a compact object; the calculator form path leaves this empty).
+        // rx_level is included here for CRM-side visibility even though it's
+        // primarily a newsletter_subscribers column.
         ...(incomingQuizAnswers && typeof incomingQuizAnswers === 'object'
           ? { medicare_bucket_quiz: incomingQuizAnswers }
           : {}),
+        ...(rxLevel ? { rx_level: rxLevel } : {}),
       },
       calculatorResults,
       utmParams,
@@ -312,6 +332,7 @@ export async function POST(request: NextRequest) {
           source_detail: subscribeDetail,
           tags: quizBucket ? ['medicare', `bucket:${quizBucket}`] : ['medicare'],
           quiz_bucket: quizBucket || null,
+          rx_level: rxLevel || null,
         }),
       });
       if (!subscribeRes.ok) {
