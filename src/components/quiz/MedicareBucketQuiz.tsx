@@ -25,14 +25,16 @@
 //   working   — employer coverage / delaying enrollment
 //
 // Compliance: framing is educational + agent-match ONLY. Never "enroll in X."
-// TPMO-style disclaimer renders below the form (COPY PLACEHOLDER pending
-// compliance sign-off — see COMPLIANCE_DISCLAIMER_PLACEHOLDER below; do NOT
-// change to final text without approval).
+// TPMO-style disclaimer renders below the form and result — text pulled from
+// lib/compliance.getMedicareComplianceDisclaimer() (env-gated so the
+// placeholder can never ship). Falls back to a neutral educational notice
+// when compliance copy is unset.
 
 import { useState, useEffect } from 'react'
 import { QuizProgress } from './QuizProgress'
 import { QuizQuestion } from './QuizQuestion'
 import { ProcessingState } from './ProcessingState'
+import { getMedicareComplianceDisclaimer, getMedicareEducationalNotice } from '@/lib/compliance'
 
 export type MedicareBucket = 'advantage' | 'medigap' | 'dual' | 'working'
 export type RxLevel = 'several' | 'few' | 'none'
@@ -47,20 +49,35 @@ export interface MedicareBucketQuizPrefill {
   rxLevel?: RxLevel         // when supplied, bridge skips the Rx question
 }
 
+// Calculator cost figures forwarded into the result view. Only supplied in
+// bridge mode — the standalone article mount has no numbers, so the result
+// renders bullet copy without dollar figures.
+export interface MedicareBucketQuizCalcResults {
+  totalAnnualCost?: number
+  monthlyPremiums?: number
+}
+
 export interface MedicareBucketQuizProps {
   slug: string
   variant?: 'standalone' | 'bridge'
   prefill?: MedicareBucketQuizPrefill
+  calculatorResults?: MedicareBucketQuizCalcResults
   compact?: boolean
   onComplete?: (bucket: MedicareBucket) => void
 }
 
 // ─────────────────────────────────────────────────────────────
-// COMPLIANCE — TPMO-style disclaimer. Placeholder pending sign-off.
-// DO NOT change this text without compliance approval.
+// COMPLIANCE — TPMO-style disclaimer.
+// Sourced via lib/compliance.ts from NEXT_PUBLIC_MEDICARE_COMPLIANCE_DISCLAIMER.
+// If unset, the accessor returns null and we render the neutral educational
+// notice instead. It is IMPOSSIBLE for a "[PLACEHOLDER…" string to reach the
+// UI — the accessor rejects it defensively even if the env var is misset.
 // ─────────────────────────────────────────────────────────────
-const COMPLIANCE_DISCLAIMER_PLACEHOLDER =
-  '[PLACEHOLDER — awaiting compliance sign-off] We do not offer every plan available in your area. Any information we provide is limited to those plans we do offer in your area. Please contact Medicare.gov or 1-800-MEDICARE to get information on all your options.'
+function DisclaimerLine({ className }: { className?: string }) {
+  const compliance = getMedicareComplianceDisclaimer()
+  const text = compliance ?? getMedicareEducationalNotice()
+  return <p className={className}>{text}</p>
+}
 
 // ─────────────────────────────────────────────────────────────
 // Question definitions. Options carry human copy; normalizers below map that
@@ -249,6 +266,84 @@ export const MEDICARE_BUCKET_META: Record<MedicareBucket, {
   },
 }
 
+// ─────────────────────────────────────────────────────────────
+// Plan-comparison cards. Lifted from the standalone Medicare Plan Comparison
+// widget that used to sit alongside the calculator on article pages (§7-B
+// removed it). These cards now render as the quiz's RESULT SURFACE, themed
+// to the resolved bucket:
+//   - `advantage` bucket → Medicare Advantage card is highlighted
+//   - `medigap` bucket   → Original Medicare + Medigap card is highlighted
+//   - `dual` / `working` → cards render as reference; the bucket's own
+//     card (Dual-Eligible / Still Working) shows above the comparison as
+//     the primary recommendation, since these buckets have no direct match
+//     among the 3 comparison-card categories.
+// Cost figures render only when calculatorResults is supplied (bridge mode);
+// standalone article mount shows the same cards without dollar amounts.
+// ─────────────────────────────────────────────────────────────
+
+type CardKey = 'medigap' | 'advantage' | 'advantage_supplement'
+const PLAN_COMPARISON_CARDS: Array<{
+  key: CardKey
+  title: string
+  costMultiplier: number   // multiplier against calculator totalAnnualCost
+  costCaption: string
+  bullets: Array<{ tone: 'good' | 'warn'; text: string }>
+}> = [
+  {
+    key: 'medigap',
+    title: 'Original Medicare + Medigap',
+    costMultiplier: 1.0,
+    costCaption: 'Your baseline estimate',
+    bullets: [
+      { tone: 'good', text: 'See any doctor that accepts Medicare' },
+      { tone: 'good', text: 'No referrals, no network to check' },
+      { tone: 'good', text: 'Predictable out-of-pocket costs' },
+    ],
+  },
+  {
+    key: 'advantage',
+    title: 'Medicare Advantage',
+    costMultiplier: 0.85,
+    costCaption: 'Typically ~15% less',
+    bullets: [
+      { tone: 'good', text: 'Lower or $0 monthly premium' },
+      { tone: 'good', text: 'Often includes dental / vision / drug coverage' },
+      { tone: 'warn', text: 'Network + prior-auth restrictions' },
+    ],
+  },
+  {
+    key: 'advantage_supplement',
+    title: 'Medicare Advantage + Supplement',
+    costMultiplier: 0.75,
+    costCaption: 'Best value when it fits',
+    bullets: [
+      { tone: 'good', text: 'Lowest total cost when eligible' },
+      { tone: 'good', text: 'Comprehensive coverage' },
+      { tone: 'good', text: 'Extra benefits included' },
+    ],
+  },
+]
+
+// Which comparison card should be highlighted for each resolved bucket.
+// Null means the bucket doesn't map to a comparison card (dual / working):
+// those buckets show their own bucket-specific recommendation above and use
+// the cards purely as reference.
+const BUCKET_HIGHLIGHTED_CARD: Record<MedicareBucket, CardKey | null> = {
+  advantage: 'advantage',
+  medigap: 'medigap',
+  dual: null,
+  working: null,
+}
+
+function formatCurrency(n: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n)
+}
+
 function rxPersonalization(bucket: MedicareBucket, rx: RxLevel | null): string | null {
   if (!rx) return null
   if (rx === 'several' || rx === 'few') {
@@ -323,6 +418,7 @@ export default function MedicareBucketQuiz({
   slug,
   variant = 'standalone',
   prefill = {},
+  calculatorResults,
   compact = false,
   onComplete,
 }: MedicareBucketQuizProps) {
@@ -442,8 +538,12 @@ export default function MedicareBucketQuiz({
     const meta = MEDICARE_BUCKET_META[showResult]
     const rx = normRxLevel(answers.rxLevel ?? prefill.rxLevel)
     const rxCopy = rxPersonalization(showResult, rx)
+    const highlightedCard = BUCKET_HIGHLIGHTED_CARD[showResult]
+    const totalAnnual = calculatorResults?.totalAnnualCost
+    // Bridge mode = we have calculator numbers. Standalone mode = show bullets only.
+    const showCosts = typeof totalAnnual === 'number' && totalAnnual > 0
     return (
-      <div className={compact ? 'max-w-xl mx-auto p-4' : 'max-w-2xl mx-auto p-6'}>
+      <div className={compact ? 'max-w-2xl mx-auto p-4' : 'max-w-4xl mx-auto p-6'}>
         <div className="bg-white rounded-xl border-2 border-[#36596A] shadow-lg p-6 sm:p-8">
           <div className="inline-block px-3 py-1 mb-3 rounded-full bg-[#36596A] text-white text-xs font-semibold uppercase tracking-wider">
             Your plan-type match
@@ -471,13 +571,79 @@ export default function MedicareBucketQuiz({
             </p>
           )}
 
-          <p className="text-sm text-gray-600 mb-6">
+          {/* Comparison cards — moved out of the legacy standalone widget in
+              §7-B; they now live here, themed to the resolved bucket. Bridge
+              mode fills in dollar figures; standalone mode shows bullets only. */}
+          <div className="border-t border-gray-200 pt-5 mb-5">
+            <h3 className="text-sm font-semibold text-[#36596A] uppercase tracking-wider mb-3">
+              How the plan types compare
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {PLAN_COMPARISON_CARDS.map((card) => {
+                const isHighlighted = card.key === highlightedCard
+                return (
+                  <div
+                    key={card.key}
+                    className={
+                      'rounded-lg p-4 border-2 ' +
+                      (isHighlighted
+                        ? 'bg-green-50 border-green-500'
+                        : 'bg-white border-gray-200')
+                    }
+                  >
+                    {isHighlighted && (
+                      <div className="inline-block bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 uppercase tracking-wider">
+                        Best fit for you
+                      </div>
+                    )}
+                    <h4 className="text-sm font-bold text-gray-800 mb-2 leading-tight">{card.title}</h4>
+                    {showCosts && (
+                      <>
+                        <div className={'text-xl font-bold mb-0.5 ' + (isHighlighted ? 'text-green-700' : 'text-gray-700')}>
+                          {formatCurrency(totalAnnual! * card.costMultiplier)}
+                        </div>
+                        <p className="text-[11px] text-gray-500 mb-2">{card.costCaption}</p>
+                      </>
+                    )}
+                    <ul className="space-y-1 text-xs text-gray-600">
+                      {card.bullets.map((b, i) => (
+                        <li key={i} className="flex items-start">
+                          <span className={'mr-1.5 mt-0.5 ' + (b.tone === 'warn' ? 'text-orange-600' : 'text-green-600')}>
+                            {b.tone === 'warn' ? '⚠' : '✓'}
+                          </span>
+                          <span>{b.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              })}
+            </div>
+            {!highlightedCard && (
+              <p className="text-xs text-gray-500 mt-3">
+                Your match ({meta.label}) has its own path outside these three categories. The
+                cards above are for reference — a licensed advisor can walk you through how they
+                interact with your situation.
+              </p>
+            )}
+          </div>
+
+          <p className="text-sm text-gray-600 mb-4">
             A licensed advisor will follow up shortly with plan options in your area. In the meantime,
             we'll send you educational resources about {meta.label} to the email you provided.
           </p>
-          <p className="text-xs text-gray-500 border-t border-gray-200 pt-3">
-            {COMPLIANCE_DISCLAIMER_PLACEHOLDER}
+          {/* High-intent path — packet §4: phone lives on /get-help/<vertical>,
+              not on article pages. Bucket + slug pass through as query params
+              so the get-help write path carries them into CRM lead / mirror. */}
+          <p className="text-sm mb-6">
+            <a
+              href={`/get-help/medicare?bucket=${encodeURIComponent(showResult)}&slug=${encodeURIComponent(slug)}`}
+              className="inline-flex items-center text-[#36596A] font-semibold underline hover:text-[#264657]"
+            >
+              Prefer to talk to an advisor now? Request a callback →
+            </a>
           </p>
+          <DisclaimerLine className="text-xs text-gray-500 border-t border-gray-200 pt-3" />
         </div>
       </div>
     )
@@ -499,9 +665,7 @@ export default function MedicareBucketQuiz({
             {errorMsg}
           </div>
         )}
-        <p className="mt-6 text-xs text-gray-500 text-center">
-          {COMPLIANCE_DISCLAIMER_PLACEHOLDER}
-        </p>
+        <DisclaimerLine className="mt-6 text-xs text-gray-500 text-center" />
       </div>
     </div>
   )

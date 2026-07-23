@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, Heart, DollarSign, MapPin, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
-import MedicareLeadForm from './MedicareLeadForm';
+import { Calculator, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
 import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz';
+// Per §7 directive (2026-07-23): removed the standalone "Medicare Plan Comparison"
+// 3-card block AND the MedicareLeadForm phone-required quote form. The
+// calculator now flows into the bucket quiz — the quiz owns the plan-type
+// direction + result surface (comparison cards themed by bucket render inside
+// the quiz's result view). Phone captures live at /get-help/medicare, not here.
 
 // Map calculator inputs to the quiz's prefill shape. Kept here rather than in
 // the quiz so the quiz stays generic across article-standalone and bridge
@@ -330,119 +334,26 @@ export default function MedicareCostCalculator() {
         </div>
       </div>
 
-      {/* Plan Comparison Section */}
-      {results && (
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800 flex items-center">
-            <Shield className="w-8 h-8 text-purple-600 mr-2" />
-            Medicare Plan Comparison
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-500 transition-all">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                <Heart className="w-6 h-6 text-blue-600 mr-2" />
-                Original Medicare + Medigap
-              </h3>
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {formatCurrency(results.totalAnnualCost)}
-              </div>
-              <p className="text-sm text-gray-600 mb-4">Your current estimate</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Wide provider network</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>No referrals needed</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Predictable costs</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 transition-all">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                <Shield className="w-6 h-6 text-green-600 mr-2" />
-                Medicare Advantage
-              </h3>
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {formatCurrency(results.totalAnnualCost * 0.85)}
-              </div>
-              <p className="text-sm text-gray-600 mb-4">Typically 15% less</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Lower premiums</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Additional benefits</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-orange-600 mt-1 mr-2">⚠</span>
-                  <span>Network restrictions</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white border-2 border-green-500 rounded-lg p-6 hover:border-green-600 transition-all bg-gradient-to-br from-green-50 to-green-100">
-              <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full inline-block mb-2">
-                RECOMMENDED
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
-                Medicare Advantage + Supplement
-              </h3>
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {formatCurrency(results.totalAnnualCost * 0.75)}
-              </div>
-              <p className="text-sm text-gray-600 mb-4">Best value option</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Lowest total cost</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Comprehensive coverage</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-600 mt-1 mr-2">✓</span>
-                  <span>Extra benefits included</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* §2 Medicare Bucket Quiz — calculator bridge.
-          The calculator itself stays ungated (see packet §11: "do NOT gate the
-          calculator utility"). This is an optional plan-fit follow-up that
-          prefills what the user already told the calculator, so email → bucket
-          takes 2-3 taps instead of restarting the intake. */}
+      {/* §7 directive (2026-07-23): calculator flows INTO the bucket quiz.
+          The quiz is the primary ask on Medicare pages. Prefill carries what
+          the user already told the calculator so bridge lands in 3 taps.
+          The bucket quiz's result view renders the comparison cards themed to
+          the resolved bucket (§7-C). Calculator utility stays ungated above. */}
       {results && (
         <div className="mb-8">
           <MedicareBucketQuiz
             slug="calculator-bridge"
             variant="bridge"
+            calculatorResults={{
+              totalAnnualCost: results.totalAnnualCost,
+              monthlyPremiums: results.monthlyPremiums,
+            }}
             prefill={{
               ageBand: ageToBand(formData.age),
               incomeTier: incomeToTier(formData.income),
               rxLevel: prescriptionsToRxLevel(formData.prescriptions),
             }}
           />
-        </div>
-      )}
-
-      {/* Lead Generation Form - Appears after results */}
-      {results && (
-        <div className="mb-8">
-          <MedicareLeadForm calculatorResults={results} />
         </div>
       )}
 
