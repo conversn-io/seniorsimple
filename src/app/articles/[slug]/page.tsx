@@ -8,6 +8,7 @@ import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallBu
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
@@ -48,12 +49,29 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     process.env.NEXT_PUBLIC_DEFAULT_PHONE_NUMBER || 
     null
 
-  // Check if this is a Medicare-related article (for calculator integration)
+  // Medicare cluster gate — coarse filter. Archetype (below) chooses which
+  // capture unit to mount within the cluster.
   const isMedicareArticle =
     article.title?.toLowerCase().includes('medicare') ||
     article.category_details?.name?.toLowerCase().includes('medicare') ||
     article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
     article.slug?.includes('medicare')
+
+  // §7-D directive (2026-07-23): archetype-driven insertion. Populated in the
+  // CMS by Cowork's audit engine (see articles.archetype). Values:
+  //   comparison → MedicareBucketQuiz (primary ask; NO calculator — the
+  //     quiz IS the ask and its result surface owns the comparison cards)
+  //   tool | data → MedicareCostCalculator (which flows into the bucket
+  //     quiz via calculator-bridge in its own result view)
+  //   guide → calculator for now (content-upgrade component is a separate
+  //     build). New articles inherit this routing without hand-placement.
+  //
+  // Non-Medicare archetypes are unchanged — this only fires when both the
+  // Medicare gate and a recognized archetype match.
+  const archetype = (article as any).archetype as string | null | undefined
+  const showBucketQuiz = isMedicareArticle && archetype === 'comparison'
+  const showCalculator =
+    isMedicareArticle && (archetype === 'tool' || archetype === 'data' || archetype === 'guide' || !archetype)
 
   // Money-in-motion pages (Medicare, Medigap, annuity, final expense, life
   // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
@@ -242,8 +260,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </>
           )}
 
-          {/* Medicare Calculator - Show for Medicare-related articles */}
-          {isMedicareArticle && (
+          {/* §7-D archetype-driven insertion.
+              comparison → bucket quiz owns the page's primary ask.
+              tool / data / guide → calculator (with bridge to quiz on result). */}
+          {showBucketQuiz && (
+            <div className="mt-12 mb-8">
+              <MedicareBucketQuiz slug={slug} variant="standalone" />
+            </div>
+          )}
+          {showCalculator && !showBucketQuiz && (
             <div className="mt-12 mb-8">
               <MedicareCostCalculator />
             </div>
@@ -353,17 +378,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   )
 }
 
-// Generate metadata for SEO.
-//
-// Canonical policy (WORKORDER-Sitemap-Live-Wiring-2026-07-28 §2b):
-//   /articles/<slug> is seniorsimple's ONE canonical served path. Every
-//   article page emits a SELF-REFERENCING canonical to its own served URL
-//   — never a constructed root URL, never the DB canonical_url field. The
-//   DB column is kept in sync separately (backfilled to mirror this) so
-//   the edge-fn sitemap and the page agree on one URL per article.
-//   /content/<slug> and root /<slug> 301 to this path (see companion routes).
-const SITE_ORIGIN = 'https://www.seniorsimple.org'
-
+// Generate metadata for SEO
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params
   const { article } = await getArticle(slug)
@@ -375,20 +390,14 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     }
   }
 
-  const canonical = `${SITE_ORIGIN}/articles/${slug}`
-
   return {
     title: article.meta_title || `${article.title} - SeniorSimple`,
     description: article.meta_description || article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
-    alternates: {
-      canonical,
-    },
     openGraph: {
       title: article.title,
       description: article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
       images: article.featured_image_url ? [article.featured_image_url] : [],
       type: 'article',
-      url: canonical,
     },
   }
 }

@@ -20,8 +20,11 @@ import MedicareBucketQuiz, {
   MedicareBucket,
 } from '@/components/quiz/MedicareBucketQuiz'
 
-const COMPLIANCE_DISCLAIMER_PLACEHOLDER =
-  '[PLACEHOLDER — awaiting compliance sign-off] We do not offer every plan available in your area. Any information we provide is limited to those plans we do offer in your area. Please contact Medicare.gov or 1-800-MEDICARE to get information on all your options.'
+// Pulled from lib/compliance — same accessor the live quiz uses. If the env
+// var is unset the accessor returns null and we fall back to the neutral
+// educational notice. The placeholder string is unreachable everywhere.
+import { getMedicareComplianceDisclaimer, getMedicareEducationalNotice } from '@/lib/compliance'
+const DISCLAIMER_LINE = getMedicareComplianceDisclaimer() ?? getMedicareEducationalNotice()
 
 const BUCKET_ORDER: MedicareBucket[] = ['advantage', 'medigap', 'dual', 'working']
 
@@ -124,7 +127,7 @@ export default function MedicareQuizPreviewPage() {
                     email you provided.
                   </p>
                   <p className="text-xs text-gray-500 border-t border-gray-200 pt-3">
-                    {COMPLIANCE_DISCLAIMER_PLACEHOLDER}
+                    {DISCLAIMER_LINE}
                   </p>
                 </div>
               )
