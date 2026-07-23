@@ -59,6 +59,38 @@ export function CheckoutModal({ open, warm = false, src, onClose }: CheckoutModa
     };
   }, [open, onClose]);
 
+  // Frame-escape handshake with the GHL post-purchase pages.
+  //
+  // Chrome blocks cross-origin iframes from writing `window.top.location` without
+  // fresh user activation, so a naive frame-buster inside the OTO page fails
+  // silently after the form-submit navigation. Instead the OTO / Order
+  // Confirmation pages postMessage us here, and we — the parent, alive since
+  // the CTA click — navigate our own top window to the OTO URL. That closes the
+  // modal (parent unloads) and lands the customer on the OTO in full-screen.
+  //
+  // We validate `event.origin` so nothing but go.seniorsimple.org can drive
+  // navigation. This listener stays mounted for the modal's whole lifetime and
+  // is idle until a message arrives.
+  useEffect(() => {
+    const ALLOWED_ORIGIN = 'https://go.seniorsimple.org';
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== ALLOWED_ORIGIN) return;
+      const data = e.data as { type?: string; url?: string } | null;
+      if (!data || typeof data.url !== 'string') return;
+      if (data.type !== 'fpp-oto-loaded' && data.type !== 'fpp-thankyou-loaded') return;
+      // Sanity: only accept URLs on the GHL domain we trust
+      try {
+        const target = new URL(data.url);
+        if (target.origin !== ALLOWED_ORIGIN) return;
+        window.location.href = target.toString();
+      } catch {
+        /* ignore malformed */
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
   // Nothing to render until warmed or opened.
   if (!shouldMount) return null;
 

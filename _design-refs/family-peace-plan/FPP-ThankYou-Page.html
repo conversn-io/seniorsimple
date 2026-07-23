@@ -1,0 +1,212 @@
+<!--
+  Family Peace Plan™ — Thank-You page · STANDALONE HTML+CSS block
+  ============================================================================
+  Self-contained: fonts + all styles + markup in one file. Paste the whole
+  thing into a single GHL Custom HTML/Code element on the Thank-You page.
+
+  Copy is verbatim from Family-Peace-Plan-Upsell-and-ThankYou-Copy.md §(B).
+
+  BEFORE YOU PASTE — swap three tokens:
+    {{plan_access_url}}     → "Open my Family Peace Plan" destination
+    {{video_access_url}}    → "Watch the Sunday Afternoon Method" destination
+    {{early_access_url}}    → early-access reserve form (fake-door)
+
+  OPTIONAL: the "printed edition ships free" callout only fires when the
+  customer added the printed bump or Protection Kit. GHL can wrap it in a
+  conditional using custom values. If you can't template it, delete lines
+  109-111 for a clean thank-you without that reference.
+-->
+
+<!--
+  Frame escape: belt-and-suspenders. In normal flow the OTO page above
+  already broke us out of the iframe; but if the customer somehow lands
+  here still framed (direct link, skip-OTO edge case), we self-eject
+  the same way — top-nav attempt + postMessage fallback.
+-->
+<script>
+  (function () {
+    if (window.top === window.self) return;
+    try { window.top.location.href = window.location.href; } catch (e) {}
+    try {
+      window.top.postMessage(
+        { type: 'fpp-thankyou-loaded', url: window.location.href },
+        '*'
+      );
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  .fpp-thanks{
+    --teal:#36596A; --teal-ink:#274655; --cream:#F7F5EF; --cream-2:#EFEBDF;
+    --gold:#E4CDA1; --gold-ink:#A98B4E; --ink:#26313A; --muted:#6E6A5F;
+    --line:#E7E1D2; --good:#1D7A5A; --page:#EDEAE0;
+    --serif:"Playfair Display", Georgia, "Times New Roman", serif;
+    --sans:"Geist", -apple-system, "system-ui", "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--page); color:var(--ink);
+    font-family:var(--sans); font-size:18px; line-height:1.7;
+    -webkit-font-smoothing:antialiased; margin:0; padding:0; width:100%;
+  }
+  .fpp-thanks *{box-sizing:border-box;}
+
+  .fpp-thanks .bar{
+    background:var(--teal); color:#fff; text-align:center;
+    font-family:var(--sans); font-size:12px; letter-spacing:.16em;
+    text-transform:uppercase; padding:8px;
+  }
+  .fpp-thanks .wrap{max-width:720px; margin:0 auto; background:#fff; padding:46px 34px 44px;}
+  @media(min-width:768px){ .fpp-thanks .wrap{padding:56px 56px 52px;} }
+
+  .fpp-thanks .eyebrow{
+    font-family:var(--sans); font-size:12px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--gold-ink); font-weight:700;
+    margin:0 0 10px;
+  }
+  .fpp-thanks h1{
+    font-family:var(--serif); font-weight:600; color:var(--teal);
+    font-size:clamp(30px,5vw,44px); line-height:1.14; margin:0 0 16px;
+  }
+  .fpp-thanks h2{
+    font-family:var(--serif); font-weight:600; color:var(--teal);
+    font-size:clamp(24px,4vw,30px); line-height:1.22; margin:34px 0 14px;
+  }
+  .fpp-thanks .dek{
+    font-size:clamp(17px,2.1vw,20px); color:#3d4a53;
+    line-height:1.55; margin:0 0 26px;
+  }
+  .fpp-thanks p{margin:0 0 20px; font-size:clamp(16px,2vw,18px);}
+  .fpp-thanks strong, .fpp-thanks b{color:var(--teal-ink);}
+
+  /* CTA row */
+  .fpp-thanks .cta-row{
+    display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+    margin:10px 0 8px;
+  }
+  .fpp-thanks a.cta{
+    display:inline-block; background:var(--gold); color:#3a2f12;
+    font-family:var(--sans); font-weight:700;
+    font-size:clamp(17px,2.2vw,20px); text-decoration:none;
+    padding:16px 32px; border-radius:12px;
+    box-shadow:0 6px 18px rgba(54,89,106,.14);
+  }
+  .fpp-thanks a.cta:hover{filter:brightness(.97);}
+  .fpp-thanks a.cta-ghost{
+    display:inline-block; background:#fff; color:var(--teal);
+    font-family:var(--sans); font-weight:700;
+    font-size:clamp(16px,2.1vw,19px); text-decoration:none;
+    padding:14px 30px; border-radius:12px; border:2px solid var(--teal);
+  }
+  .fpp-thanks a.cta-ghost:hover{background:var(--cream); color:var(--teal-ink);}
+  @media(max-width:560px){
+    .fpp-thanks a.cta, .fpp-thanks a.cta-ghost{display:block; width:100%;}
+  }
+
+  /* Numbered steps */
+  .fpp-thanks .steps{
+    list-style:none; padding:0; margin:20px 0 26px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .fpp-thanks .steps li{
+    display:flex; gap:16px; align-items:flex-start;
+    background:var(--cream); border:1px solid var(--line); border-radius:12px;
+    padding:16px 20px;
+    font-family:var(--sans); font-size:16px; line-height:1.55; color:var(--ink);
+  }
+  .fpp-thanks .n{
+    background:var(--teal); color:#fff;
+    min-width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--sans); font-weight:700; font-size:15px; flex-shrink:0;
+  }
+
+  /* Conditional callout */
+  .fpp-thanks .callout{
+    background:var(--cream); border-left:3px solid var(--gold);
+    border-radius:0 8px 8px 0;
+    padding:12px 18px; margin:22px 0;
+    font-family:var(--serif); font-style:italic;
+    font-size:16px; line-height:1.55; color:var(--teal-ink);
+  }
+
+  /* Fake-door reserve micro */
+  .fpp-thanks .cta-wrap{text-align:center; margin:12px 0 8px;}
+  .fpp-thanks .micro{
+    font-family:var(--sans); font-size:13.5px; color:var(--muted);
+    text-align:center; margin:14px 0 20px; line-height:1.55;
+  }
+  .fpp-thanks .signoff{
+    margin-top:32px; text-align:center; font-family:var(--serif);
+    font-size:18px; color:var(--teal-ink); font-style:italic;
+  }
+
+  .fpp-thanks .foot{
+    max-width:720px; margin:0 auto; background:#fff;
+    border-top:1px solid var(--line);
+    padding:22px 34px 44px;
+    font-family:var(--sans); font-size:12.5px; line-height:1.6; color:#8a857a;
+  }
+  @media(min-width:768px){ .fpp-thanks .foot{padding:24px 56px 52px;} }
+</style>
+
+<div class="fpp-thanks">
+
+  <div class="bar">SeniorSimple · The Simple Life</div>
+
+  <div class="wrap">
+
+    <p class="eyebrow">Order confirmed</p>
+    <h1>You&rsquo;re all set. Your Family Peace Plan is ready.</h1>
+    <p class="dek">Thank you &mdash; truly. You just did the thing so many people mean to do for years. A receipt and your access details are on their way to your email right now.</p>
+
+    <div class="cta-row">
+      <a class="cta" href="{{plan_access_url}}">Open my Family Peace Plan</a>
+      <a class="cta-ghost" href="{{video_access_url}}">Watch the Sunday Afternoon Method</a>
+    </div>
+
+    <h2>What happens next</h2>
+    <ol class="steps">
+      <li>
+        <span class="n" aria-hidden="true">1</span>
+        <span><b>Check your email.</b> Your workbook and the Sunday Afternoon Method walkthrough are inside &mdash; you can also open them right here, whenever you&rsquo;re ready.</span>
+      </li>
+      <li>
+        <span class="n" aria-hidden="true">2</span>
+        <span><b>Begin whenever it suits you.</b> There&rsquo;s no wrong way and no schedule. One page at a time, at your own pace &mdash; you can complete it by hand, or type it online and print it.</span>
+      </li>
+      <li>
+        <span class="n" aria-hidden="true">3</span>
+        <span><b>A few warm notes are coming.</b> Over the next couple of weeks we&rsquo;ll send a short letter or two to help you finish, gently &mdash; that&rsquo;s The Simple Life. Unsubscribe anytime in one click.</span>
+      </li>
+    </ol>
+
+    <!-- CONDITIONAL — only if the printed edition or Protection Kit was added -->
+    <div class="callout">
+      Added the printed edition or the Protection Kit? It ships free &mdash; watch for a separate note when it&rsquo;s on its way.
+    </div>
+
+    <h2>One more question &mdash; only if it&rsquo;s you</h2>
+    <p>Some people would rather <b>type their Family Peace Plan online and print it when it&rsquo;s finished</b>, instead of writing by hand. We&rsquo;re opening <b>early access</b> to an online version soon, and we&rsquo;re building the list now.</p>
+
+    <div class="cta-wrap">
+      <a class="cta" href="{{early_access_url}}">Reserve my early-access spot</a>
+    </div>
+
+    <p class="micro">
+      No cost, no commitment &mdash; just tell us you&rsquo;re interested, and we&rsquo;ll let you know the moment it&rsquo;s ready.
+    </p>
+
+    <p class="signoff">
+      However you fill it in, you&rsquo;ve done something your family will feel for years. Welcome to The Simple Life.
+    </p>
+
+  </div>
+
+  <div class="foot">
+    The Family Peace Plan is an organizational tool &mdash; not legal, financial, tax, or medical advice, and not a will or a substitute for one; consult the appropriate licensed professional for those. It never asks for full account numbers, PINs, or passwords &mdash; only where they&rsquo;re kept (for example, where the Medicare card is, not the number). Stories shown are illustrative of the experience it&rsquo;s designed to create. &copy; SeniorSimple &middot; The Simple Life&trade;
+  </div>
+
+</div>

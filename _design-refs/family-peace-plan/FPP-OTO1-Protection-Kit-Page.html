@@ -1,0 +1,288 @@
+<!--
+  Family Peace Plan™ — OTO 1 · Protection Kit  ·  GHL full-width HTML section
+  ============================================================================
+  WHAT THIS IS
+    Paste-ready HTML/CSS for the post-purchase OTO 1 page on go.seniorsimple.org.
+    Replace whatever the GHL default upsell template renders. Copy is verbatim
+    from `Family-Peace-Plan-Upsell-and-ThankYou-Copy.md` §(A).
+
+  DESIGN MATCH
+    Same visual language as the sales letter + postform block:
+      - Playfair Display headline, Geist body
+      - .fpp-*  scoped tokens (teal #36596A · cream #F7F5EF · gold #E4CDA1)
+      - 720px column, warm cream page bg, calm/dignified — no urgency, no fear
+    Scoped under `.fpp-oto1` so it can't touch anything else GHL renders.
+
+  BEFORE YOU PASTE
+    1. Swap {{accept_url}} → the 1-click accept URL from your GHL OTO product
+       (card-on-file, no re-entry). Confirm this is genuinely 1-click.
+    2. Swap {{decline_url}} → the "skip" URL that routes to the Thank-You step.
+    3. Swap {{protection_kit_image_url}} → the Protection Kit product photo
+       (Pod 2 owes a straight-on shot of the box + printed plan; until then a
+       placeholder frame renders).
+    4. Do NOT let GHL layer its default template CSS around this — set the
+       page/step to a blank custom-HTML section and paste the whole file.
+    5. Compliance footer stays verbatim.
+-->
+
+<!--
+  Frame escape: this page can load as the destination of the GHL 2-step
+  order form which we embed as an iframe in the sales-letter modal on
+  www.seniorsimple.org. Two mechanisms so we win in every browser:
+
+    1. try top.location.href = window.location.href — works when user
+       activation is present (some browsers propagate it across the
+       form-submit navigation).
+
+    2. postMessage the parent — works cross-origin without user
+       activation. The parent (www.seniorsimple.org) listens and
+       navigates itself to this URL, taking over the whole browser.
+
+  This must be the very first <script> on the page so it runs before any
+  GHL scripts try to relocate us.
+-->
+<script>
+  (function () {
+    if (window.top === window.self) return;   // not framed, nothing to do
+    try { window.top.location.href = window.location.href; } catch (e) {}
+    try {
+      window.top.postMessage(
+        { type: 'fpp-oto-loaded', url: window.location.href },
+        '*'
+      );
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  .fpp-oto1{
+    --teal:#36596A; --teal-ink:#274655; --cream:#F7F5EF; --cream-2:#EFEBDF;
+    --gold:#E4CDA1; --gold-ink:#A98B4E; --ink:#26313A; --muted:#6E6A5F;
+    --line:#E7E1D2; --good:#1D7A5A; --page:#EDEAE0;
+    --serif:"Playfair Display", Georgia, "Times New Roman", serif;
+    --sans:"Geist", -apple-system, "system-ui", "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--page); color:var(--ink);
+    font-family:var(--sans); font-size:18px; line-height:1.7;
+    -webkit-font-smoothing:antialiased; margin:0; padding:0; width:100%;
+  }
+  .fpp-oto1 *{box-sizing:border-box;}
+
+  /* Thin teal top bar — matches every other FPP page */
+  .fpp-oto1 .bar{
+    background:var(--teal); color:#fff; text-align:center;
+    font-family:var(--sans); font-size:12px; letter-spacing:.16em;
+    text-transform:uppercase; padding:8px;
+  }
+
+  /* Centered 720px white column */
+  .fpp-oto1 .wrap{max-width:720px; margin:0 auto; background:#fff; padding:38px 34px 42px;}
+  @media(min-width:768px){ .fpp-oto1 .wrap{padding:48px 56px 52px;} }
+
+  /* Top confirmation micro — small, calm, cream-tinted so it reads as
+     reassurance not a warning banner */
+  .fpp-oto1 .confirm{
+    background:#EEF3F0; border:1px solid #BFE0D0; color:#1D5C44;
+    border-radius:10px; padding:12px 16px; font-size:14px;
+    text-align:center; margin:0 0 26px; line-height:1.5;
+  }
+  .fpp-oto1 .confirm strong{color:#1D5C44; font-weight:600;}
+
+  /* Gold eyebrow — same treatment as sales letter */
+  .fpp-oto1 .eyebrow{
+    font-family:var(--sans); font-size:12px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--gold-ink); font-weight:700;
+    margin:0 0 10px;
+  }
+
+  /* Headline */
+  .fpp-oto1 h1{
+    font-family:var(--serif); font-weight:600; color:var(--teal);
+    font-size:clamp(28px,4.6vw,40px); line-height:1.16;
+    margin:0 0 16px;
+  }
+
+  /* Subhead / deck */
+  .fpp-oto1 .dek{
+    font-size:clamp(17px,2.1vw,20px); color:#3d4a53;
+    line-height:1.55; margin:0 0 26px;
+  }
+
+  /* Body copy */
+  .fpp-oto1 p{margin:0 0 20px; font-size:clamp(16px,2vw,18px);}
+  .fpp-oto1 strong{color:var(--teal-ink);}
+
+  /* Product photo frame */
+  .fpp-oto1 figure{margin:26px 0 30px;}
+  .fpp-oto1 figure.photo{
+    border-radius:14px; overflow:hidden;
+    background:var(--cream-2); line-height:0;
+  }
+  .fpp-oto1 figure.photo img{width:100%; height:auto; display:block;}
+  .fpp-oto1 figure.photo .placeholder{
+    display:flex; align-items:center; justify-content:center;
+    min-height:280px; padding:40px 24px;
+    font-family:var(--sans); font-size:13px; color:#9aa7a0;
+    text-align:center; line-height:1.5;
+  }
+
+  /* What's inside — cream box with checkmark bullets */
+  .fpp-oto1 .kit-box{
+    background:var(--cream); border:1px solid var(--line);
+    border-radius:14px; padding:22px 24px; margin:26px 0;
+  }
+  .fpp-oto1 .kit-box h3{
+    font-family:var(--serif); color:var(--teal); font-size:20px;
+    font-weight:600; margin:0 0 14px;
+  }
+  .fpp-oto1 .kit-list{list-style:none; padding:0; margin:0;}
+  .fpp-oto1 .kit-list li{
+    position:relative; padding:10px 0 10px 30px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--sans); font-size:16px; line-height:1.55; color:var(--ink);
+  }
+  .fpp-oto1 .kit-list li:last-child{border-bottom:none;}
+  .fpp-oto1 .kit-list li::before{
+    content:"\2713"; position:absolute; left:4px; top:10px;
+    color:var(--good); font-weight:700; font-size:16px;
+  }
+  .fpp-oto1 .kit-list b{color:var(--teal-ink);}
+
+  /* Cream pull-quote / anchor line (calm — no strikethrough tote-board) */
+  .fpp-oto1 .anchor{
+    background:var(--cream); border-left:4px solid var(--gold);
+    border-radius:0 12px 12px 0; padding:18px 22px; margin:24px 0;
+    font-family:var(--serif); font-size:19px; line-height:1.55;
+    color:var(--teal-ink);
+  }
+  .fpp-oto1 .anchor b{color:var(--teal-ink);}
+
+  /* Price display — $99 dominant, small caption underneath. NO strikethrough. */
+  .fpp-oto1 .price{
+    text-align:center; margin:28px 0 8px; font-family:var(--sans);
+  }
+  .fpp-oto1 .price .big{
+    font-family:var(--serif); font-weight:700; color:var(--teal);
+    font-size:clamp(44px,8vw,58px); line-height:1; display:block;
+  }
+  .fpp-oto1 .price .note{
+    display:block; color:var(--muted); font-size:14px; margin-top:10px;
+  }
+
+  /* Primary CTA — gold button, matches letter */
+  .fpp-oto1 .cta-wrap{text-align:center; margin:10px 0 6px;}
+  .fpp-oto1 a.cta{
+    display:inline-block; background:var(--gold); color:#3a2f12;
+    font-family:var(--sans); font-weight:700;
+    font-size:clamp(18px,2.4vw,21px); text-decoration:none;
+    padding:18px 44px; border-radius:12px;
+    box-shadow:0 6px 18px rgba(54,89,106,.14);
+  }
+  .fpp-oto1 a.cta:hover{filter:brightness(.97);}
+  .fpp-oto1 a.cta:focus{outline:3px solid var(--teal); outline-offset:3px;}
+  @media(max-width:560px){
+    .fpp-oto1 a.cta{display:block; width:100%; padding:18px 20px;}
+  }
+
+  /* Micro line under buttons */
+  .fpp-oto1 .micro{
+    font-family:var(--sans); font-size:13.5px; color:var(--muted);
+    text-align:center; margin:14px 0 20px; line-height:1.55;
+  }
+
+  /* Dignified decline link — small, muted, underlined */
+  .fpp-oto1 .decline-wrap{text-align:center; margin:0 0 6px;}
+  .fpp-oto1 a.decline{
+    font-family:var(--sans); font-size:15px; color:var(--muted);
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .fpp-oto1 a.decline:hover{color:var(--teal); text-decoration-color:var(--teal);}
+
+  /* Compliance footer */
+  .fpp-oto1 .foot{
+    max-width:720px; margin:0 auto; background:#fff;
+    border-top:1px solid var(--line);
+    padding:22px 34px 44px;
+    font-family:var(--sans); font-size:12.5px; line-height:1.6; color:#8a857a;
+  }
+  @media(min-width:768px){ .fpp-oto1 .foot{padding:24px 56px 52px;} }
+</style>
+
+<div class="fpp-oto1">
+
+  <div class="bar">SeniorSimple · The Simple Life</div>
+
+  <div class="wrap">
+
+    <div class="confirm">
+      <strong>Your Family Peace Plan is secured.</strong> Here's one last thing — no rush, and only if it's right for you.
+    </div>
+
+    <p class="eyebrow">An optional add-on</p>
+    <h1>Give your finished plan a home that protects it.</h1>
+    <p class="dek">You've just done the part most families never get to. Now the plan you're about to fill in — and the documents that go with it — deserve one safe, findable place to live.</p>
+
+    <figure class="photo">
+      <!-- Swap {{protection_kit_image_url}} for the Pod 2 Protection Kit photo.
+           Keep the placeholder wrapper for accessibility + graceful fallback. -->
+      <div class="placeholder" role="img" aria-label="The Family Peace Protection Kit — fireproof, water-resistant keepsake box with the printed Family Peace Plan inside">
+        [ Photo: the Protection Kit box with the printed Family Peace Plan resting on top — Pod 2 to supply. Swap {{protection_kit_image_url}} in the &lt;img&gt; below and delete this placeholder div. ]
+      </div>
+      <!--
+      <img src="{{protection_kit_image_url}}"
+           alt="The Family Peace Protection Kit — fireproof, water-resistant keepsake box holding the printed Family Peace Plan"
+           width="1472" height="981" loading="eager" />
+      -->
+    </figure>
+
+    <p>The <strong>Family Peace Protection Kit</strong> is a fireproof, water-resistant keepsake box, built to hold your printed Family Peace Plan and the papers that matter most — so everything your family might need is together, protected, and easy to find. Not scattered across drawers. Not tucked in a closet no one thinks to check. One place, on the shelf, ready.</p>
+
+    <div class="kit-box">
+      <h3>What's in the kit</h3>
+      <ul class="kit-list">
+        <li>A <b>fireproof, water-resistant keepsake box</b> — sized to hold your plan and key documents</li>
+        <li>Your <b>printed Family Peace Plan</b> (large print), ready to fill in by hand</li>
+        <li>An <b>&ldquo;Open First&rdquo; envelope</b> — the one thing your family sees first</li>
+        <li>A <b>family access card</b> — so a loved one knows this exists and where it lives</li>
+        <li>An <b>Annual Peace Review card</b> — a gentle yearly reminder to keep it current</li>
+      </ul>
+    </div>
+
+    <div class="anchor">
+      A quality fireproof, water-resistant document box runs <b>$60&ndash;$120 on its own.</b> The complete kit — the box, your printed plan, and the cards that make it easy for your family to use — is <b>$99.</b> And because your details are already saved, adding it is a single tap. No forms. Nothing to re-enter.
+    </div>
+
+    <p>It ships free, and your digital plan is ready to start right now either way. This isn't one more thing to manage — it's the calm, protected home for the one thing you'll be glad you finished.</p>
+
+    <div class="price">
+      <span class="big">$99</span>
+      <span class="note">One-time · ships free · card on file · single tap</span>
+    </div>
+
+    <div class="cta-wrap">
+      <a class="cta" href="{{accept_url}}" data-fpp-oto-accept>
+        Yes — add my Protection Kit ($99)
+      </a>
+    </div>
+
+    <p class="micro">
+      One-time · ships free · backed by the same 60-day Peace of Mind Promise.<br>
+      Decline and your Family Peace Plan is completely unaffected — it&rsquo;s already yours.
+    </p>
+
+    <div class="decline-wrap">
+      <a class="decline" href="{{decline_url}}" data-fpp-oto-decline>
+        No thanks &mdash; my plan is enough for now
+      </a>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    The Family Peace Plan is an organizational tool &mdash; not legal, financial, tax, or medical advice, and not a will or a substitute for one; consult the appropriate licensed professional for those. It never asks for full account numbers, PINs, or passwords &mdash; only where they&rsquo;re kept (for example, where the Medicare card is, not the number). Stories shown are illustrative of the experience it&rsquo;s designed to create. &copy; SeniorSimple &middot; The Simple Life&trade;
+  </div>
+
+</div>
