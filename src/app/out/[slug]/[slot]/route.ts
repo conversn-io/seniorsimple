@@ -25,6 +25,7 @@ import {
 } from '@/advertorial-kit/lib/router'
 import { getAdvertorialSupabase } from '@/advertorial-kit/lib/supabase-admin'
 import { getSiteId } from '@/advertorial-kit/lib/get-site-id'
+import { parseSsAttrCookie, SS_ATTR_COOKIE } from '@/advertorial-kit/lib/inbound-subs'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -117,6 +118,25 @@ export async function GET(
       })
     } catch { /* invalid referer — ignore */ }
   }
+
+  // Cookie fallback (attribution-leak mitigation). LP's <meta name="referrer"
+  // content="no-referrer"> strips the Referer header, and mobile in-app browsers
+  // often strip URL params between the initial landing and the /out click. The
+  // ss_attr cookie is stamped by middleware on the first LP visit that carried
+  // subs, so we can recover s2/s4/s5/s6/s7/s8 here as a last resort before
+  // falling back to defaults.
+  const ssAttrRaw = req.cookies.get(SS_ATTR_COOKIE)?.value ?? null
+  const fromCookie = parseSsAttrCookie(ssAttrRaw)
+  const setIfMissing = (key: string, value: string | null) => {
+    if (value && !mergedParams.has(key)) mergedParams.set(key, value)
+  }
+  // Router reads `source` (not `s2`) as the s2 alias — see router.ts §captureQueryTracking.
+  setIfMissing('source', fromCookie.s2)
+  setIfMissing('s4', fromCookie.s4)
+  setIfMissing('s5', fromCookie.s5)
+  setIfMissing('s6', fromCookie.s6)
+  setIfMissing('s7', fromCookie.s7)
+  setIfMissing('s8', fromCookie.s8)
 
   const query = captureQueryTracking(mergedParams)
   const componentType = url.searchParams.get('component') || null

@@ -45,6 +45,9 @@ import {
 import {
   readInboundSubsFromSearchParams,
   appendInboundSubs,
+  parseSsAttrCookie,
+  mergeInboundSubs,
+  SS_ATTR_COOKIE,
   type InboundSubsServer,
 } from '@/advertorial-kit/lib/inbound-subs';
 import { AdvertorialLayout } from '@/advertorial-kit/components/AdvertorialLayout';
@@ -398,7 +401,15 @@ export default async function Page({ params, searchParams }: PageProps) {
   // /out router already reads these names — we just make sure they show up
   // on the CTA URLs so paid traffic's network + angle land in
   // advertorial_clicks for per-network / per-angle ROAS.
-  const inboundSubs = readInboundSubsFromSearchParams(query);
+  //
+  // Mobile in-app browsers sometimes strip query params between first landing
+  // and subsequent nav (measured 13% leak in prod). Middleware stamps ss_attr
+  // cookie whenever a request carries subs; we now read that cookie as a
+  // fallback so params-stripped re-visits still SSR the correct /out hrefs.
+  const inboundFromUrl = readInboundSubsFromSearchParams(query);
+  const ssAttrCookie = (await cookies()).get(SS_ATTR_COOKIE)?.value ?? null;
+  const inboundFromCookie = parseSsAttrCookie(ssAttrCookie);
+  const inboundSubs = mergeInboundSubs(inboundFromUrl, inboundFromCookie);
 
   // --- Dev-only preview mode (kit path) ---
   const previewSiteId = (() => {

@@ -17,6 +17,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSplitTestMiddleware } from '@/utils/ab-test-middleware';
 import { resolveFlags, applyFlagAssignments } from '@/utils/layered-flags';
 import { buildAdvertorialFlagsConfig } from '@/lib/advertorial-flags-config';
+import {
+  readInboundSubsFromSearchParams,
+  buildSsAttrValue,
+  SS_ATTR_COOKIE,
+  SS_ATTR_TTL_DAYS,
+} from '@/advertorial-kit/lib/inbound-subs';
 
 /** W3 — sticky per-visitor seed for kit-native split-tests. */
 const KIT_SEED_COOKIE = 'ss_kit_seed';
@@ -82,6 +88,17 @@ export const middleware = async (request: NextRequest) => {
       request.cookies.set(KIT_SEED_COOKIE, kitSeed);
     }
 
+    // Attribution-leak mitigation. If this LP request carries inbound subs in
+    // its query string, stamp ss_attr so the NEXT request (which in-app browsers
+    // often strip params on) can recover the attribution from cookie. First-write
+    // wins per-slot when the URL has more info than the existing cookie; empty
+    // slots stay untouched from the prior visit.
+    const inbound = readInboundSubsFromSearchParams(
+      Object.fromEntries(request.nextUrl.searchParams.entries())
+    );
+    const s7FromUrl = request.nextUrl.searchParams.get('s7') || null;
+    const ssAttrValue = buildSsAttrValue(inbound, s7FromUrl);
+
     const assignments = resolveFlags(request, advertorialConfig);
     for (const a of Object.values(assignments)) {
       request.cookies.set(a.cookieName, a.variant);
@@ -98,6 +115,20 @@ export const middleware = async (request: NextRequest) => {
         httpOnly: false,
         maxAge: 60 * 60 * 24 * 180, // 180d — long enough to keep the split-test cohort sticky.
       });
+    }
+    // Only stamp ss_attr when the URL actually has subs. Never clobber an existing
+    // (richer) cookie with an emptier URL — that would undo prior attribution.
+    if (ssAttrValue) {
+      response.cookies.set(SS_ATTR_COOKIE, ssAttrValue, {
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: false, // /out reads server-side; leaving false so client analytics can inspect too.
+        secure: true,
+        maxAge: 60 * 60 * 24 * SS_ATTR_TTL_DAYS,
+      });
+      // Also mirror onto request.cookies so THIS request's SSR reads the fresh cookie
+      // (matches the KIT_SEED_COOKIE first-visit correctness pattern above).
+      request.cookies.set(SS_ATTR_COOKIE, ssAttrValue);
     }
     return response;
   }

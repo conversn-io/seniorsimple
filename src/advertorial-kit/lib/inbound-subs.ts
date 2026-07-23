@@ -103,3 +103,91 @@ export function appendInboundSubs(
   const qs = existing.toString()
   return qs ? `${path}?${qs}` : path
 }
+
+/**
+ * Attribution-leak mitigation for in-app browsers that strip query params
+ * between first landing and subsequent nav. Middleware stamps this cookie on
+ * every /lp/* request that carries at least one inbound sub, so the NEXT
+ * request (which may have lost its params) can recover from the cookie.
+ *
+ * Format: URL-encoded query string containing only the s-slots we care about.
+ *   source=taboola&s4=cost_savings&s5=cs_steakgrocery&s7=interrupt&s8=...
+ *
+ * s7 is included here because it's a legitimate inbound signal from the ad
+ * URL (angle-family variant token like "interrupt" or "curiosity"). Once the
+ * page hydrates and the split-test picker runs, the picker may write a
+ * different s7 onto specific /out hrefs — that per-slot override is fine,
+ * the cookie is the fallback when the URL is empty.
+ */
+export const SS_ATTR_COOKIE = 'ss_attr'
+export const SS_ATTR_TTL_DAYS = 30
+
+/**
+ * Parse the ss_attr cookie value back into the InboundSubsServer shape
+ * (plus s7). Returns EMPTY on any error / malformed value. Never throws.
+ */
+export function parseSsAttrCookie(
+  raw: string | null | undefined,
+): InboundSubsServer & { s7: string | null } {
+  const empty = { ...EMPTY, s7: null }
+  if (!raw) return empty
+  try {
+    const p = new URLSearchParams(raw)
+    const clean = (v: string | null) => {
+      if (!v) return null
+      const t = v.trim()
+      if (!t) return null
+      // Same placeholder-guard family as router.ts isPlaceholder().
+      if (/^\$.*\$$/.test(t) || /^\{.*\}$/.test(t) || /^__.*__$/.test(t) || /^\[.*\]$/.test(t)) return null
+      return t
+    }
+    return {
+      s2: clean(p.get('source')),
+      s4: clean(p.get('s4')),
+      s5: clean(p.get('s5')),
+      s6: clean(p.get('s6')),
+      s7: clean(p.get('s7')),
+      s8: clean(p.get('s8')),
+    }
+  } catch {
+    return empty
+  }
+}
+
+/**
+ * Build the ss_attr cookie value from the current inbound subs (+ optional s7).
+ * Returns null when there's nothing worth persisting.
+ */
+export function buildSsAttrValue(
+  inbound: InboundSubsServer,
+  s7: string | null = null,
+): string | null {
+  const p = new URLSearchParams()
+  if (inbound.s2) p.set('source', inbound.s2)
+  if (inbound.s4) p.set('s4', inbound.s4)
+  if (inbound.s5) p.set('s5', inbound.s5)
+  if (inbound.s6) p.set('s6', inbound.s6)
+  if (s7)         p.set('s7', s7)
+  if (inbound.s8) p.set('s8', inbound.s8)
+  const qs = p.toString()
+  return qs.length > 0 ? qs : null
+}
+
+/**
+ * Merge searchParams first-touch subs with a cookie fallback. URL wins per
+ * slot when present; cookie fills gaps. This is what page.tsx should call
+ * so the SSR /out hrefs get subs even on a params-stripped second nav.
+ */
+export function mergeInboundSubs(
+  fromUrl: InboundSubsServer,
+  fromCookie: (InboundSubsServer & { s7: string | null }) | null,
+): InboundSubsServer {
+  if (!fromCookie) return fromUrl
+  return {
+    s2: fromUrl.s2 ?? fromCookie.s2,
+    s4: fromUrl.s4 ?? fromCookie.s4,
+    s5: fromUrl.s5 ?? fromCookie.s5,
+    s6: fromUrl.s6 ?? fromCookie.s6,
+    s8: fromUrl.s8 ?? fromCookie.s8,
+  }
+}
