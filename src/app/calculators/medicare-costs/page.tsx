@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator';
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton';
+import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts';
 
 // §8-C directive (2026-07-23): phone CTAs removed from the calculator page.
 // The InterstitialCTABanner (inline phone) and ScrollRevealedCallButton
@@ -25,6 +26,11 @@ export default function MedicareCostCalculatorPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <MedicareCostCalculator />
+        {/* §8-E educational body content — was inside the calculator until it
+            was extracted so guide-archetype articles (quiz-mounted) don't
+            lose it. Mounted here explicitly since this route doesn't go
+            through the article template. */}
+        <MedicareEducationalFacts />
       </div>
       <ScrollRevealedEmailButton slug="calculators/medicare-costs" category="Medicare" />
     </div>

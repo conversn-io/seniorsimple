@@ -10,6 +10,7 @@ import Image from 'next/image'
 // only two capture surfaces on content pages besides the archetype-mounted unit.
 import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
+import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
 import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz'
@@ -259,6 +260,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <MedicareCostCalculator />
             </div>
           )}
+
+          {/* §8-E educational body content — enrollment periods + late
+              enrollment penalties. Renders on ALL Medicare articles regardless
+              of archetype (was previously coupled to the calculator, which
+              meant guide articles lost it after §8-B routed them to the quiz). */}
+          {isMedicareArticle && <MedicareEducationalFacts />}
         </div>
       </section>
 
