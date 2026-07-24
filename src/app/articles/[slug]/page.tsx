@@ -17,6 +17,39 @@ import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
+// §6b R1 — decision-moment injection helper. Comparison articles need the
+// quiz to appear inline at the point the reader is actively weighing options
+// (typically a "How to choose", "Which is right for you", or "Best for"
+// heading), not appended as a full-width block below the article. Returns
+// [beforeHtml, afterHtml] split immediately after the closing tag of the
+// first matching h2/h3, or null if no heading matches — caller falls back to
+// bottom-of-article mount in that case.
+//
+// Pattern list is deliberately narrow: matching the article-body headings we
+// actually author in the Medicare cluster. Regex + string split (no HTML
+// parser) — html_body is server-rendered trusted CMS output; we're not
+// executing it, only splitting.
+const DECISION_HEADING_PATTERNS: RegExp[] = [
+  /how to choose/i,
+  /how do (?:i|you) choose/i,
+  /which .* (?:is )?right (?:for you|for your)/i,
+  /best for you/i,
+  /best for your/i,
+  /choosing (?:the |a )?right/i,
+]
+function splitAtChoiceHeading(html: string): [string, string] | null {
+  const headingRegex = /<h([234])\b[^>]*>([\s\S]*?)<\/h\1>/gi
+  let match: RegExpExecArray | null
+  while ((match = headingRegex.exec(html)) !== null) {
+    const headingText = match[2].replace(/<[^>]+>/g, '').trim()
+    if (DECISION_HEADING_PATTERNS.some((p) => p.test(headingText))) {
+      const splitPoint = match.index + match[0].length
+      return [html.slice(0, splitPoint), html.slice(splitPoint)]
+    }
+  }
+  return null
+}
+
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
 }
@@ -62,22 +95,44 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
     article.slug?.includes('medicare')
 
-  // §8-B directive (2026-07-23) — revised archetype routing. Populated in the
-  // CMS by Cowork's audit engine (see articles.archetype). Values:
-  //   guide       → MedicareBucketQuiz (the plan-fit quiz is the primary ask
-  //                 on guide articles per user directive)
-  //   tool | data → MedicareCostCalculator (which itself bridges into the
-  //                 quiz via calculator-bridge on its own result view)
-  //   comparison  → closable Planning Guide ad-slot injected mid-page (see
-  //                 §8-D). No calculator, no quiz — the ad is the sole
-  //                 primary ask until a proper content-upgrade component
-  //                 ships. Same treatment when archetype is null/unknown.
+  // §6b directive (2026-07-23) — Keenan rulings, binding revision to §8-B.
+  //   guide      → BucketQuiz (unchanged from §8-B)
+  //   comparison → BucketQuiz (reversed §8-B — quiz belongs on the highest-
+  //                comparison-burden pages; injected mid-body at the "decision
+  //                moment", i.e. immediately after the first "How to choose /
+  //                Best for" heading. Falls back to bottom mount if no heading
+  //                matches.)
+  //   tool | data → Calculator (bridges to quiz on result; unchanged)
+  //   null / other → no archetype-mounted primary; the lead-magnet
+  //                  Planning-Guide interstitial covers those.
   //
-  // Non-Medicare archetypes are unchanged — this only fires when both the
-  // Medicare gate and a recognized archetype match.
+  // Compliance gate (§6b hold-for-sign-off): even when routing says mount, the
+  // quiz stays dark unless NEXT_PUBLIC_MEDICARE_QUIZ_ENABLED === 'true'. Lets
+  // us merge to main without shipping regulated content unreviewed. Flip the
+  // env var + rebuild once compliance signs off the TPMO copy.
   const archetype = (article as any).archetype as string | null | undefined
-  const showBucketQuiz = isMedicareArticle && archetype === 'guide'
+  const isQuizArchetype = archetype === 'guide' || archetype === 'comparison'
+  const quizEnabled = process.env.NEXT_PUBLIC_MEDICARE_QUIZ_ENABLED === 'true'
+  const showBucketQuiz = isMedicareArticle && isQuizArchetype && quizEnabled
   const showCalculator = isMedicareArticle && (archetype === 'tool' || archetype === 'data')
+
+  // §6b R2 — lead-magnet interstitial only where no archetype-mounted primary
+  // exists. On quiz/calculator pages the interstitial would collide mid-stream
+  // with the primary ask; suppress it there. Non-Medicare articles keep the
+  // interstitial (they have no primary to compete with).
+  const hasArchetypePrimary = showBucketQuiz || showCalculator
+  const showLeadMagnetInterstitial =
+    articleCtaFlags.emailCtasEnabled && !(isMedicareArticle && hasArchetypePrimary)
+
+  // §6b R1 — for comparison articles specifically, inject the quiz at the
+  // decision-moment heading rather than appending it below the article body.
+  // splitAtChoiceHeading returns [before, after] or null (fall back to bottom
+  // mount when no heading matches). Guide archetype always uses bottom mount.
+  const bodyHtml = article.html_body ?? null
+  const comparisonInjection =
+    showBucketQuiz && archetype === 'comparison' && bodyHtml
+      ? splitAtChoiceHeading(bodyHtml)
+      : null
 
   // Money-in-motion pages (Medicare, Medigap, annuity, final expense, life
   // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
@@ -201,41 +256,57 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <section className="bg-white">
         <div className="max-w-4xl mx-auto px-6 pb-16">
           {article.html_body ? (
-            // html_body already includes <div class="prose"> wrapper, so render it directly
-            <>
-              <div 
-                className="text-gray-800 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: article.html_body }}
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.8',
-                }}
-              />
-              {/* Mid-content CTA — §8-C: phone CTAs removed. The InterstitialEmailBanner
-                  is the ONE mid-page insertion (closable, scroll-triggered,
-                  Simple Life / Planning Guide subscribe). */}
-              {articleCtaFlags.emailCtasEnabled && (
-                <InterstitialEmailBanner
-                  slug={slug}
-                  category={article.category_details?.name ?? null}
+            // html_body already includes <div class="prose"> wrapper, so render it directly.
+            // §6b R1: on comparison + quiz-enabled paths, split the body at the
+            // decision-moment heading and inject the quiz inline. Otherwise
+            // render the body whole and (only for archetypes without a
+            // primary) show the lead-magnet interstitial mid-flow.
+            comparisonInjection ? (
+              <>
+                <div
+                  className="text-gray-800 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: comparisonInjection[0] }}
+                  style={{ fontSize: '18px', lineHeight: '1.8' }}
                 />
-              )}
-            </>
+                <div className="my-10">
+                  <MedicareBucketQuiz slug={slug} variant="standalone" />
+                </div>
+                <div
+                  className="text-gray-800 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: comparisonInjection[1] }}
+                  style={{ fontSize: '18px', lineHeight: '1.8' }}
+                />
+              </>
+            ) : (
+              <>
+                <div
+                  className="text-gray-800 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: article.html_body }}
+                  style={{ fontSize: '18px', lineHeight: '1.8' }}
+                />
+                {/* §6b R2: lead-magnet interstitial only when no archetype-mounted
+                    primary is present on this page — never render both. */}
+                {showLeadMagnetInterstitial && (
+                  <InterstitialEmailBanner
+                    slug={slug}
+                    category={article.category_details?.name ?? null}
+                  />
+                )}
+              </>
+            )
           ) : (
-            // Fallback to markdown content with prose wrapper
+            // Fallback to markdown content with prose wrapper. Comparison
+            // injection uses html_body only; markdown-only articles fall back
+            // to bottom-mount below.
             <>
               <div className="prose prose-lg max-w-none">
                 <div
                   className="text-gray-800 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: article.content }}
-                  style={{
-                    fontSize: '18px',
-                    lineHeight: '1.8',
-                  }}
+                  style={{ fontSize: '18px', lineHeight: '1.8' }}
                 />
               </div>
-              {/* Mid-content CTA — §8-C: phone CTAs removed. */}
-              {articleCtaFlags.emailCtasEnabled && (
+              {showLeadMagnetInterstitial && (
                 <InterstitialEmailBanner
                   slug={slug}
                   category={article.category_details?.name ?? null}
@@ -244,13 +315,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </>
           )}
 
-          {/* §8-B archetype-driven insertion (revised 2026-07-23).
-              guide       → bucket quiz owns the page's primary ask.
-              tool / data → calculator (which itself bridges to the quiz).
-              comparison  → no extra unit here; InterstitialEmailBanner above is
-                            the sole primary ask (closable Planning-Guide ad-slot)
-                            until a content-upgrade component ships. */}
-          {showBucketQuiz && (
+          {/* §6b archetype-mounted primary — bottom mount fallback.
+              guide      → BucketQuiz below the article body.
+              comparison → BucketQuiz below IF the injection helper found no
+                           decision-moment heading to split on (fallback path).
+                           Otherwise the quiz already rendered inline above.
+              tool | data → Calculator.
+              Compliance gate: showBucketQuiz is false unless
+              NEXT_PUBLIC_MEDICARE_QUIZ_ENABLED === 'true'. */}
+          {showBucketQuiz && !comparisonInjection && (
             <div className="mt-12 mb-8">
               <MedicareBucketQuiz slug={slug} variant="standalone" />
             </div>
