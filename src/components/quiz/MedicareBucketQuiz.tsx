@@ -650,6 +650,22 @@ export default function MedicareBucketQuiz({
   }
 
   const q = questions[currentStep]
+
+  // §8-A directive (2026-07-23): step 1 = content-embed cover. Outcome-first
+  // headline + ZIP + single CTA. No progress bar, no "Question 1 of X"
+  // counter — those come back on step 2 once the user is committed to the
+  // flow. Cover only applies when the first question is ZIP (typical for
+  // standalone; bridge with prefilled ZIP skips the cover and starts on the
+  // situation question).
+  if (currentStep === 0 && q.id === 'zipCode') {
+    return (
+      <CoverStep
+        onContinue={(zip) => handleAnswer(zip)}
+        errorMsg={errorMsg}
+      />
+    )
+  }
+
   return (
     <div className={compact ? 'max-w-xl mx-auto p-4' : 'max-w-2xl mx-auto p-6'}>
       <QuizProgress currentStep={currentStep} totalSteps={totalSteps} />
@@ -666,6 +682,72 @@ export default function MedicareBucketQuiz({
           </div>
         )}
         <DisclaimerLine className="mt-6 text-xs text-gray-500 text-center" />
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cover step (content-embed style). See §8-A doctrine above. Deliberately
+// minimal — one input, one CTA, no progress signals. The disclaimer line
+// still renders so compliance framing is present from step 1.
+// ─────────────────────────────────────────────────────────────
+function CoverStep({
+  onContinue,
+  errorMsg,
+}: {
+  onContinue: (zip: string) => void
+  errorMsg: string | null
+}) {
+  const [zip, setZip] = useState('')
+  const [localErr, setLocalErr] = useState<string | null>(null)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLocalErr(null)
+    if (!/^\d{5}$/.test(zip)) {
+      setLocalErr('Please enter a valid 5-digit ZIP.')
+      return
+    }
+    onContinue(zip)
+  }
+  const showError = localErr ?? errorMsg
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="bg-white rounded-xl border-2 border-[#36596A] shadow-lg p-6 sm:p-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#36596A] mb-2">
+          Which Medicare Plan is Right for You?
+        </h2>
+        <p className="text-gray-700 mb-5">
+          Get a personalized recommendation of which Medicare plan is right for your unique
+          situation.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700 mb-1 block">ZIP code</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              placeholder="5-digit ZIP"
+              value={zip}
+              maxLength={5}
+              onChange={(e) => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#36596A] focus:border-[#36596A] text-lg"
+            />
+          </label>
+          {showError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {showError}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-[#36596A] text-white font-semibold py-3 rounded-lg hover:bg-[#264657] transition-colors text-lg"
+          >
+            Get Your Medicare Plan
+          </button>
+        </form>
+        <DisclaimerLine className="mt-6 text-xs text-gray-500" />
       </div>
     </div>
   )

@@ -2,9 +2,13 @@ import { getArticle, getRelatedArticles } from '../../../lib/articles'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
+// §8-C directive (2026-07-23): phone CTAs off content routes.
+// InterstitialCTABanner (inline phone) and ScrollRevealedCallButton (sticky
+// phone) are no longer imported — phone lives exclusively at /get-help/<vertical>.
+// The Simple Life Newsletter subscribe (ScrollRevealedEmailButton) and the
+// closable Planning-Guide interstitial (InterstitialEmailBanner) remain — the
+// only two capture surfaces on content pages besides the archetype-mounted unit.
 import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
-import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
@@ -57,21 +61,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
     article.slug?.includes('medicare')
 
-  // §7-D directive (2026-07-23): archetype-driven insertion. Populated in the
+  // §8-B directive (2026-07-23) — revised archetype routing. Populated in the
   // CMS by Cowork's audit engine (see articles.archetype). Values:
-  //   comparison → MedicareBucketQuiz (primary ask; NO calculator — the
-  //     quiz IS the ask and its result surface owns the comparison cards)
-  //   tool | data → MedicareCostCalculator (which flows into the bucket
-  //     quiz via calculator-bridge in its own result view)
-  //   guide → calculator for now (content-upgrade component is a separate
-  //     build). New articles inherit this routing without hand-placement.
+  //   guide       → MedicareBucketQuiz (the plan-fit quiz is the primary ask
+  //                 on guide articles per user directive)
+  //   tool | data → MedicareCostCalculator (which itself bridges into the
+  //                 quiz via calculator-bridge on its own result view)
+  //   comparison  → closable Planning Guide ad-slot injected mid-page (see
+  //                 §8-D). No calculator, no quiz — the ad is the sole
+  //                 primary ask until a proper content-upgrade component
+  //                 ships. Same treatment when archetype is null/unknown.
   //
   // Non-Medicare archetypes are unchanged — this only fires when both the
   // Medicare gate and a recognized archetype match.
   const archetype = (article as any).archetype as string | null | undefined
-  const showBucketQuiz = isMedicareArticle && archetype === 'comparison'
-  const showCalculator =
-    isMedicareArticle && (archetype === 'tool' || archetype === 'data' || archetype === 'guide' || !archetype)
+  const showBucketQuiz = isMedicareArticle && archetype === 'guide'
+  const showCalculator = isMedicareArticle && (archetype === 'tool' || archetype === 'data')
 
   // Money-in-motion pages (Medicare, Medigap, annuity, final expense, life
   // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
@@ -205,19 +210,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   lineHeight: '1.8',
                 }}
               />
-              {/* Mid-content CTA — phone renders on money-in-motion pages only
-                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
-                  renders on all pages when the email flag is on. */}
-              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
-                <InterstitialCTABanner
-                  phoneNumber={phoneNumber}
-                  serviceName={article.category_details?.name || 'Medicare Services'}
-                  headline={`Need Help with ${article.category_details?.name || 'Medicare'}?`}
-                  subheadline="Speak with a licensed Medicare advisor today"
-                  variant="friendly"
-                  dismissible={true}
-                />
-              )}
+              {/* Mid-content CTA — §8-C: phone CTAs removed. The InterstitialEmailBanner
+                  is the ONE mid-page insertion (closable, scroll-triggered,
+                  Simple Life / Planning Guide subscribe). */}
               {articleCtaFlags.emailCtasEnabled && (
                 <InterstitialEmailBanner
                   slug={slug}
@@ -238,19 +233,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   }}
                 />
               </div>
-              {/* Mid-content CTA — phone renders on money-in-motion pages only
-                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
-                  renders on all pages when the email flag is on. */}
-              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
-                <InterstitialCTABanner
-                  phoneNumber={phoneNumber}
-                  serviceName={article.category_details?.name || 'Medicare Services'}
-                  headline={`Need Help with ${article.category_details?.name || 'Medicare'}?`}
-                  subheadline="Speak with a licensed Medicare advisor today"
-                  variant="friendly"
-                  dismissible={true}
-                />
-              )}
+              {/* Mid-content CTA — §8-C: phone CTAs removed. */}
               {articleCtaFlags.emailCtasEnabled && (
                 <InterstitialEmailBanner
                   slug={slug}
@@ -260,9 +243,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </>
           )}
 
-          {/* §7-D archetype-driven insertion.
-              comparison → bucket quiz owns the page's primary ask.
-              tool / data / guide → calculator (with bridge to quiz on result). */}
+          {/* §8-B archetype-driven insertion (revised 2026-07-23).
+              guide       → bucket quiz owns the page's primary ask.
+              tool / data → calculator (which itself bridges to the quiz).
+              comparison  → no extra unit here; InterstitialEmailBanner above is
+                            the sole primary ask (closable Planning-Guide ad-slot)
+                            until a content-upgrade component ships. */}
           {showBucketQuiz && (
             <div className="mt-12 mb-8">
               <MedicareBucketQuiz slug={slug} variant="standalone" />
@@ -276,16 +262,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Sticky scroll CTAs:
-          - phone: money-in-motion pages only (Medicare/Medigap/annuity/final-expense/life-insurance)
-          - email: all pages, once NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
-          Both can coexist — email supplements the phone CTA on money-in-motion pages. */}
-      {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
-        <ScrollRevealedCallButton
-          phoneNumber={phoneNumber}
-          serviceName={article.category_details?.name || 'Medicare Services'}
-        />
-      )}
+      {/* Sticky scroll CTA — §8-C: bottom-locked phone removed. The only
+          bottom-locked surface on content pages is the Simple Life Newsletter
+          subscribe (rebranded from the old Medicare-guide CTA). */}
       {articleCtaFlags.emailCtasEnabled && (
         <ScrollRevealedEmailButton
           slug={slug}
