@@ -680,3 +680,68 @@
   font-weight: 700;
   font-size: 16px;
 }
+
+/* ============================================================================
+   v3.1 hero + body-copy revisions (2026-07-16)
+   ============================================================================ */
+
+/* Body copy = sans (Geist) for editorial cleanliness. Headlines, pull-quotes,
+   drop-caps, and the italic question-list stay serif for the DR-editorial pair.
+   This override lives INSIDE `.fpp-letter` only so the other FPP routes
+   (advertorial, quiz, offer) keep their serif body untouched. */
+.fpp-letter p { font-family: var(--fpp-sans); }
+.fpp-letter .fpp-dek { font-family: var(--fpp-sans); }
+
+/* Pre-headline (H2, sits above the H1 "Grabber" — the promise line that leads
+   into the product mark). Editorial italic serif in teal-ink, sized between
+   deck and H1. Tight leading so it feels like a running lead-in, not a block. */
+.fpp-letter .fpp-pre-headline {
+  font-family: var(--fpp-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(20px, 2.8vw, 26px);
+  line-height: 1.28;
+  color: var(--fpp-teal-ink);
+  margin: 0 0 8px;
+  letter-spacing: 0.005em;
+}
+
+/* Grabber (H1 — the product mark itself, big brand anchor). Larger than the
+   v3.1 headline was, tighter tracking, no bottom margin so it hugs the deck. */
+.fpp-letter .fpp-grabber {
+  font-family: var(--fpp-serif);
+  font-weight: 700;
+  color: var(--fpp-teal);
+  font-size: clamp(44px, 7vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 4px 0 18px;
+}
+
+/* Cost-list bullets — clean, non-overlapping. Replaces the mangled
+   `.fpp-checklist` + inline `listStyle:disc` hack that had two bullet systems
+   fighting each other. Simple square-dot bullet, generous spacing. */
+.fpp-letter .fpp-cost-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 22px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-cost-list li {
+  position: relative;
+  padding: 4px 0 12px 24px;
+  font-size: clamp(16px, 2vw, 18px);
+  line-height: 1.6;
+  color: var(--fpp-ink);
+}
+.fpp-letter .fpp-cost-list li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--fpp-gold);
+  border-radius: 2px;
+}
+.fpp-letter .fpp-cost-list b { color: var(--fpp-teal-ink); }

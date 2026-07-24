@@ -112,10 +112,16 @@ export function SalesLetterPage() {
         <div className="fpp-page">
           <div className="fpp-inner">
             {/* ============ HERO ============ */}
-            <div className="fpp-eyebrow">
-              {PRODUCT_DOORWAY}&trade; · SeniorSimple · The Simple Life
-            </div>
-            <h1>Before you hire an estate specialist, get organized first.</h1>
+            {/* No eyebrow — SeniorSimple · The Simple Life lives in the teal bar above.
+                Hierarchy: pre-headline H2 (promise) → H1 grabber (product mark) → deck → hero
+                photo → hero disclaimer. Opening CTA removed 2026-07-16 — reader earns the
+                first ask after the story. */}
+            <h2 className="fpp-pre-headline">
+              Before you hire an estate specialist, get organized first.
+            </h2>
+            <h1 className="fpp-grabber">
+              {PRODUCT_DOORWAY}&trade;
+            </h1>
             <p className="fpp-dek">
               The {ARTIFACT}&trade; helps you gather the information your family, attorney, or
               advisor may one day need &mdash; in one calm Sunday afternoon, without legal jargon,
@@ -141,20 +147,6 @@ export function SalesLetterPage() {
               helps you organize the information that makes those conversations easier &mdash;
               and helps your family know where to begin.
             </p>
-
-            <div className="fpp-cta-block">
-              <CtaButton href={checkoutHref} size="lg" {...ctaProps}>
-                Start My Simple Estate Prep
-              </CtaButton>
-              <p className="fpp-cta-note">
-                $47 one-time &middot; instant access &middot; 60-day Peace of Mind Promise
-              </p>
-              {!IS_CHECKOUT_CONFIGURED && (
-                <p className="fpp-cta-note" style={{ color: '#B15A3C' }}>
-                  NEXT_PUBLIC_FPP_CHECKOUT_URL not set &mdash; CTA is a placeholder.
-                </p>
-              )}
-            </div>
 
             {/* ============ STATUS-QUO AGITATION (NEW in v3.1) ============ */}
             <h2>You already know you need to do this. That&rsquo;s not the problem.</h2>
@@ -186,21 +178,21 @@ export function SalesLetterPage() {
               This is the part most people never add up. Leaving it scattered isn&rsquo;t free
               &mdash; it just sends the bill to the people you love, later:
             </p>
-            <ul className="fpp-checklist" style={{ listStyle: 'disc', paddingLeft: 26 }}>
-              <li style={{ paddingLeft: 0 }}>
+            <ul className="fpp-cost-list">
+              <li>
                 <b>Days, sometimes weeks</b> of their time &mdash; searching drawers, calling
                 companies, guessing passwords, waiting on hold &mdash; during a stretch when they
                 have the least energy to spare.
               </li>
-              <li style={{ paddingLeft: 0 }}>
+              <li>
                 <b>Money that didn&rsquo;t need to be spent</b> &mdash; paying a professional by
                 the hour to help find what a simple list could have shown them in minutes.
               </li>
-              <li style={{ paddingLeft: 0 }}>
+              <li>
                 <b>Tension between people who love each other</b> &mdash; not because they don&rsquo;t
                 care, but because uncertainty does that to good families.
               </li>
-              <li style={{ paddingLeft: 0 }}>
+              <li>
                 <b>The weight you keep carrying</b> &mdash; that low hum of &ldquo;I really should,&rdquo;
                 every time you open the drawer and close it again.
               </li>
