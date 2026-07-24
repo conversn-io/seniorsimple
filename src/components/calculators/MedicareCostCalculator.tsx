@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calculator, DollarSign } from 'lucide-react';
 import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz';
 // Per §7 directive (2026-07-23): removed the standalone "Medicare Plan Comparison"
 // 3-card block AND the MedicareLeadForm phone-required quote form. The
@@ -357,39 +357,11 @@ export default function MedicareCostCalculator() {
         </div>
       )}
 
-      {/* Important Medicare Facts */}
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800 flex items-center">
-          <AlertTriangle className="w-8 h-8 text-yellow-600 mr-2" />
-          Important Medicare Facts
-        </h2>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-700 flex items-center">
-              <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
-              Enrollment Periods
-            </h3>
-            <ul className="space-y-2 text-gray-600">
-              <li><strong>Initial Enrollment:</strong> 3 months before to 3 months after your 65th birthday</li>
-              <li><strong>General Enrollment:</strong> January 1 - March 31 (coverage starts July 1)</li>
-              <li><strong>Open Enrollment:</strong> October 15 - December 7 (coverage starts January 1)</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-700 flex items-center">
-              <AlertTriangle className="w-5 h-5 text-orange-600 mr-2" />
-              Late Enrollment Penalties
-            </h3>
-            <ul className="space-y-2 text-gray-600">
-              <li><strong>Part B:</strong> 10% penalty for each 12-month period you delay enrollment</li>
-              <li><strong>Part D:</strong> 1% penalty for each month you delay enrollment</li>
-              <li><strong>Lifetime penalties:</strong> These penalties continue as long as you have Medicare</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      {/* §8-E: "Important Medicare Facts" panel extracted to
+          MedicareEducationalFacts and now mounted by the article template on
+          all Medicare articles (independent of archetype), and by the calculator
+          page directly. Kept out of this component so guide articles — which
+          mount the quiz, not the calculator — still see the panel. */}
     </div>
   );
 }
