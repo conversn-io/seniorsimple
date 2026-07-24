@@ -67,11 +67,11 @@ export default function ScrollRevealedEmailButton({
           email: trimmed,
           site_id: 'seniorsimple',
           source: 'article',
-          source_detail: `sticky-cta:${slug}`,
+          source_detail: `simple-life:${slug}`,
           tags: [
             'article_cta',
             'sticky_scroll',
-            'medicare_planning_guide',
+            'simple_life_newsletter',
             ...(category ? [`category:${category.toLowerCase().replace(/\s+/g, '_')}`] : []),
           ],
           website: honeypot,
@@ -133,7 +133,7 @@ export default function ScrollRevealedEmailButton({
             noValidate
           >
             <p className="hidden sm:block text-sm font-semibold text-gray-900 whitespace-nowrap">
-              Free Medicare Guide:
+              Simple Life Newsletter:
             </p>
             <input
               type="email"
@@ -184,19 +184,19 @@ export default function ScrollRevealedEmailButton({
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-gray-900 truncate">
-                Free 2026 Medicare Planning Guide
+                Join the Simple Life Newsletter
               </p>
               <p className="text-xs text-gray-700 font-medium truncate">
-                One email. No spam. Unsubscribe anytime.
+                Plain-English money + healthcare updates. No spam.
               </p>
             </div>
             <button
               onClick={() => setExpanded(true)}
               className="inline-flex items-center justify-center gap-2 bg-[#36596A] hover:bg-[#2a4a5a] text-white font-bold rounded-lg px-6 py-3 text-base min-h-[48px] shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#36596A] focus:ring-offset-2"
-              aria-label="Subscribe to Medicare Planning Guide"
+              aria-label="Subscribe to Simple Life Newsletter"
             >
               <Mail className="w-5 h-5" aria-hidden="true" />
-              <span>Get the Guide</span>
+              <span>Subscribe</span>
             </button>
             <button
               onClick={handleDismiss}
