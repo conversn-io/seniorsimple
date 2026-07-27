@@ -9,10 +9,13 @@ const ConditionalHeader = () => {
   const { headerType } = useHeader();
   const pathname = usePathname();
 
-  // Editorial-native advertorials AND their /bridge/* funnel targets
-  // render with only their own Masthead — no site chrome. See
-  // shared-utils/ADVERTORIAL_SPLIT_TESTING.md.
-  if (pathname?.startsWith('/lp/') || pathname?.startsWith('/bridge/')) {
+  // Editorial-native advertorials render with only their own Masthead — no
+  // site chrome. See shared-utils/ADVERTORIAL_SPLIT_TESTING.md.
+  //
+  // The `/bridge/*` funnel target was retired 2026-07-27; stale links now
+  // redirect to `/lp/senior-benefits-2026` via vercel.json, so the /lp/
+  // prefix guard covers post-redirect too.
+  if (pathname?.startsWith('/lp/')) {
     return null;
   }
   if (headerType === 'none') return null;

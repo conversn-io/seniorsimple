@@ -159,8 +159,9 @@ export function CtaProvider({ base, subs, children }: CtaProviderProps) {
       }
 
       // Build the params in canonical order. Supports absolute URLs (offer
-      // tracking link on the bridge) AND relative paths (advertorial CTA →
-      // /bridge/perks) — no more `new URL('/bridge/perks')` throw.
+      // tracking link) AND relative paths (advertorial CTA → `/out/<slug>/
+      // <slot>` for kit-native and `/out/senior-benefits-2026/1?component=
+      // legacy_bridge` for the legacy angle-body slugs post-bridge-kill).
       const params = new URLSearchParams();
       for (const key of ORDERED_KEYS) {
         const value = merged[key];

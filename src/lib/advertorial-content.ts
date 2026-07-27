@@ -37,21 +37,36 @@ const HEADER_VARIANTS: HeaderVariant[] = [
 ];
 
 /**
- * Funnel targets:
- *   Advertorial LP (/lp/[slug])   →  Bridge (/bridge/perks)   →  Offer
+ * Legacy-CTA target (2026-07-27, "kill calculator bridge" WO).
  *
- * Advertorial CTAs point at the bridge page, not the offer directly.
- * The bridge hosts the SavingsCalculator + SavingsBreakdown + full logo
- * TrustBar and is the conversion vehicle. Sub params flow through the
- * whole chain via CtaContext (see components/CtaContext.tsx and
- * ADVERTORIAL_STYLE_GUIDE.md §6 for the locked parameter scheme).
+ * The /bridge/perks page was retired. Legacy angle-body slugs
+ * (`senior-discounts`, `things-retirees-cut`) still route through the
+ * old LpPage client shell and reference this constant for their CTA
+ * anchor. Repointing to the kit's `/out` router (slot 1 of
+ * senior-benefits-2026, which owns the same Prismique offer the bridge
+ * used) gets those legacy clicks:
+ *   1. Full click-row logging in `advertorial_clicks` (id + s1..s8 taxonomy).
+ *   2. Per-network / per-angle / per-variant sub fan-out to the destination.
+ *   3. Consistent postback reconciliation with kit-native clicks.
+ *
+ * `component=legacy_bridge` tags s3 on the click row so PS-01 can
+ * distinguish LegacyLpPage-sourced clicks from kit-native `listicle_entry`
+ * clicks in reporting.
  */
-export const BRIDGE_TRACKING_URL = '/bridge/perks';
+export const BRIDGE_TRACKING_URL = '/out/senior-benefits-2026/1?component=legacy_bridge';
 
 /**
- * Offer tracking URL — final funnel target. Used by BridgePage (not by
- * advertorial LPs directly). Every sub-param slot documented in the
- * LOCKED parameter scheme (ADVERTORIAL_STYLE_GUIDE.md §6) + CtaContext.tsx:
+ * Legacy offer tracking URL. Historically used by BridgePage (retired
+ * 2026-07-27). Kept as an export because:
+ *   1. The kit's canonical live Prismique offers (slots on
+ *      senior-benefits-2026) point at `xe54ghj.com/352QZN8/J5TXB2D/` (and
+ *      similar landing IDs) — NOT this URL. This one is `J7HQGBF`, the
+ *      original bridge target.
+ *   2. Nothing in the active codebase references this constant post-
+ *      bridge-kill — safe to remove in a followup once we're certain no
+ *      external tooling depends on it.
+ *
+ * Sub-param scheme docs (kept for future BridgePage-style consumers):
  *   source_id — publisher id (see SOURCE_ID export below)
  *   sub1={click_id}  sub2={widget_id}  sub3={ad_header_variant}
  *   sub4={ad_headline_variant}  sub5={slug}  sub6={spend_focus}

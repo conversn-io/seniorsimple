@@ -55,6 +55,7 @@ export const ALLOWED_COMPONENT_TYPES = new Set<string>([
   // Curated data
   'deal_card',
   'deals_showcase',
+  'social_proof',
   // Recap
   'wrap_up_list',
 ])

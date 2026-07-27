@@ -16,5 +16,12 @@
       "source": "/llms-full.txt",
       "destination": "/api/llms?full=1"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/bridge/:path*",
+      "destination": "/lp/senior-benefits-2026",
+      "permanent": true
+    }
   ]
 }

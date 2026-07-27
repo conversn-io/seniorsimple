@@ -108,9 +108,14 @@ export default function AngleABody({
       </div>
 
       {/* P1.1 — micro-commitment above the fold. Selection persists as
-          sub6 on the outbound URL, which points at /bridge/perks where
-          the SavingsCalculator + full APC TrustBar live. Advertorial =
-          editorial framing + click-through; bridge = conversion vehicle. */}
+          sub6 on the outbound URL. Post-bridge-kill (2026-07-27) the CTA
+          routes through /out/senior-benefits-2026/1?component=legacy_bridge
+          → Prismique offer directly. Note: the kit's /out router captures
+          s1..s8 canonical taxonomy, not the sub1..sub10 CtaContext scheme,
+          so sub6=spend_focus does NOT round-trip into advertorial_clicks.
+          Migration path for these legacy slugs is decision (d) in the
+          bridge-kill WO — port them onto the kit DB path where the
+          selection would flow through as s6. */}
       <ImageQuiz
         question="Which discounts matter most to you?"
         selectionKey="spend_focus"

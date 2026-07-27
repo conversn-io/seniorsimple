@@ -85,9 +85,10 @@ export default function AngleBBody({ headline, headerSrc }: AngleBodyProps) {
       </div>
 
       {/* P1.1 — micro-commitment above the fold. Selection persists as
-          sub6 on the outbound URL, which points at /bridge/perks where
-          the SavingsCalculator + full APC TrustBar live. Advertorial =
-          editorial framing + click-through; bridge = conversion vehicle. */}
+          sub6 on the outbound URL. Post-bridge-kill (2026-07-27) the CTA
+          routes through /out/senior-benefits-2026/1?component=legacy_bridge
+          → Prismique offer directly. See AngleABody's identical comment for
+          the sub6→s6 round-trip caveat and migration path. */}
       <MultiSelectQuiz
         question="What do you spend the most on?"
         selectionKey="spend_focus"
