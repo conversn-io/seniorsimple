@@ -38,6 +38,8 @@ import {
   BlueAnchor,
   ClickableImage,
   CtaProvider,
+  DealsShowcase,
+  DEFAULT_DEALS,
   EditorsPick,
   ImageQuiz,
   LeadIn,
@@ -51,11 +53,13 @@ import {
   StateSelector,
   TrustBar,
   type CtaSubs,
+  type Deal,
   type ImageQuizOption,
   type QuizOption,
   type SavingsInput,
   type StateOption,
 } from '@/components/advertorial-library'
+import { APC_BRANDS } from '@/lib/advertorial-content'
 
 export interface ComponentItem {
   position: number
@@ -426,6 +430,12 @@ export function ComponentSwitch({
         inputs?: SavingsInput[]
         ctaLabel?: string
         monthlyCost?: number
+        // Social-proof block bundled after the calculator card. Ported from
+        // the retired /bridge/perks page — DealsShowcase + TrustBar carry
+        // the same trust the bridge was building, now on-page so we don't
+        // spend a click to get to it. Opt-out with `social_proof: false`;
+        // customize via `social_proof: { deals?, brands?, label? ... }`.
+        social_proof?: boolean | SocialProofProps
       }
       if (!outHref) {
         console.warn(
@@ -438,13 +448,26 @@ export function ComponentSwitch({
         item, slug, brand, effectiveVariant, outHref,
         componentType: 'savings_calculator',
         children: (
-          <SavingsCalculator
-            inputs={inputs}
-            ctaLabel={p.ctaLabel ?? item.cta_text}
-            monthlyCost={p.monthlyCost}
-          />
+          <>
+            <SavingsCalculator
+              inputs={inputs}
+              ctaLabel={p.ctaLabel ?? item.cta_text}
+              monthlyCost={p.monthlyCost}
+            />
+            {renderBundledSocialProof(p.social_proof)}
+          </>
         ),
       })
+    }
+
+    case 'social_proof': {
+      // Standalone social-proof block. PS-00 drops this on any money-zone
+      // item (RM slot 9, Auto slot 12, ClickBank slots 14–19, etc.) to
+      // re-use the same DealsShowcase + TrustBar composition without
+      // needing to also own a calculator. `component_props` accepts every
+      // customization the bundled render does.
+      const p = (item.component_props ?? {}) as SocialProofProps
+      return renderSocialProof(p)
     }
 
     case 'clickable_image': {
@@ -706,6 +729,78 @@ function resolveItemLinkHref({
 // ---------------------------------------------------------------------------
 // Interactive helper (WO: Wire Interactive Tap Components).
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Social-proof block (ported from /bridge/perks, 2026-07-27).
+// ---------------------------------------------------------------------------
+
+/**
+ * Shape of `component_props` for the standalone `social_proof` component AND
+ * the `social_proof` sub-prop bundled on `savings_calculator`. Every field is
+ * optional — defaults come from DealsShowcase.DEFAULT_DEALS + APC_BRANDS.
+ *
+ * `brands` accepts the same ApcBrand shape TrustBar consumes. Passing an
+ * empty array renders the label alone; omitting the field falls back to the
+ * curated APC set that lived on the retired bridge page.
+ */
+interface SocialProofProps {
+  /** DealsShowcase heading (defaults to "A sample of what members see inside"). */
+  dealsHeading?: string
+  /** DealsShowcase sub-line under the heading. */
+  dealsSubline?: string
+  /** Override the default 6-card deal grid. Empty array skips the grid. */
+  deals?: Deal[]
+  /** TrustBar label (defaults to "Member pricing at brands including:"). */
+  trustLabel?: string
+  /** Override the default APC brand strip. Empty array skips the strip. */
+  brands?: unknown[]
+}
+
+/**
+ * Renders the full social-proof composition: DealsShowcase grid + TrustBar
+ * strip. This is the block the bridge page carried below the calculator —
+ * porting it inline preserves the trust signal without the extra hop.
+ */
+function renderSocialProof(props: SocialProofProps): React.ReactNode {
+  const deals = Array.isArray(props.deals) ? (props.deals as Deal[]) : DEFAULT_DEALS
+  const brands = Array.isArray(props.brands)
+    ? (props.brands as unknown as never)
+    : (APC_BRANDS as unknown as never)
+  return (
+    <>
+      {deals.length > 0 ? (
+        <DealsShowcase
+          deals={deals}
+          heading={props.dealsHeading ?? 'A sample of what members see inside'}
+          subline={
+            props.dealsSubline ??
+            'Current member deals — offers change. Verify at the merchant before checkout.'
+          }
+        />
+      ) : null}
+      <TrustBar
+        label={props.trustLabel ?? 'Member pricing at brands including:'}
+        brands={brands}
+      />
+    </>
+  )
+}
+
+/**
+ * Bundle wrapper for `savings_calculator.component_props.social_proof`.
+ * Accepts `true` (default composition), `false` (skip), or a props object
+ * (customized composition). `undefined` treated as `true` — carrying the
+ * trust signal is the safer default per WO ("build the same trust before
+ * the click, on-page").
+ */
+function renderBundledSocialProof(
+  flag: boolean | SocialProofProps | undefined,
+): React.ReactNode {
+  if (flag === false) return null
+  const props: SocialProofProps =
+    typeof flag === 'object' && flag !== null ? flag : {}
+  return renderSocialProof(props)
+}
 
 interface RenderInteractiveArgs {
   item: ComponentItem
