@@ -39,8 +39,12 @@ export default function MedicareCaptureMount({
 
   if (!config || !resolved) return null
 
-  const variantsToRender = (only ?? config.variants).filter((v) =>
-    config.variants.includes(v),
+  const requested = only ?? config.variants
+  // MedicareCaptureUnit only supports the two panel variants; sidebar-ad /
+  // inline-ad are rendered elsewhere (ArticleSidebar) and 'exit' is gone.
+  const variantsToRender = requested.filter(
+    (v): v is 'inline' | 'tool-gate' =>
+      (v === 'inline' || v === 'tool-gate') && config.variants.includes(v),
   )
 
   return (
