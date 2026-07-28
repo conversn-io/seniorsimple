@@ -5,11 +5,12 @@ import Image from 'next/image'
 // §8-C directive (2026-07-23): phone CTAs off content routes.
 // InterstitialCTABanner (inline phone) and ScrollRevealedCallButton (sticky
 // phone) are no longer imported — phone lives exclusively at /get-help/<vertical>.
-// The Simple Life Newsletter subscribe (ScrollRevealedEmailButton) and the
-// closable Planning-Guide interstitial (InterstitialEmailBanner) remain — the
-// only two capture surfaces on content pages besides the archetype-mounted unit.
+// The Simple Life Newsletter subscribe (SimpleLifeStickyBar, per Ruling 3
+// consolidation) and the closable Planning-Guide interstitial
+// (InterstitialEmailBanner) remain — the only two capture surfaces on content
+// pages besides the archetype-mounted unit.
 import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
-import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
+import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
 import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
@@ -344,12 +345,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
       {/* Sticky scroll CTA — §8-C: bottom-locked phone removed. The only
           bottom-locked surface on content pages is the Simple Life Newsletter
-          subscribe (rebranded from the old Medicare-guide CTA). */}
+          subscribe (SimpleLifeStickyBar). */}
       {articleCtaFlags.emailCtasEnabled && (
-        <ScrollRevealedEmailButton
-          slug={slug}
-          category={article.category_details?.name ?? null}
-        />
+        <SimpleLifeStickyBar pageSlug={slug} />
       )}
 
       {/* Tags */}

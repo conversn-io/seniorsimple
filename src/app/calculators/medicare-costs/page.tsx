@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator';
-import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton';
+import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar';
 import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts';
 
 // §8-C directive (2026-07-23): phone CTAs removed from the calculator page.
@@ -32,7 +32,7 @@ export default function MedicareCostCalculatorPage() {
             through the article template. */}
         <MedicareEducationalFacts />
       </div>
-      <ScrollRevealedEmailButton slug="calculators/medicare-costs" category="Medicare" />
+      <SimpleLifeStickyBar pageSlug="calculators/medicare-costs" />
     </div>
   );
 }
