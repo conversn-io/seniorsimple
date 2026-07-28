@@ -221,6 +221,52 @@ export function encodeSubId(
 }
 
 // ---------------------------------------------------------------------------
+// Compact tracking id for lossy-attribution networks (ClickBank tid, etc.)
+// ---------------------------------------------------------------------------
+
+/**
+ * Two-letter network codes for the tid prefix. Kept short so the creative +
+ * ad tokens have room in the 24-char budget. Unknown/absent sources fall to
+ * `xx` so the tid is never empty.
+ */
+const TID_NET_CODES: Record<string, string> = {
+  taboola: 'tb',
+  newsbreak: 'nb',
+  revcontent: 'rc',
+  outbrain: 'ob',
+  mgid: 'mg',
+  realize: 'rz',
+  maxbounty: 'mb',
+  clik: 'ck',
+  clickbank: 'cb',
+  prismique: 'pq',
+  direct_affiliate: 'da',
+  own_checkout: 'oc',
+}
+
+/**
+ * Mint a ClickBank-safe tracking id: alphanumeric only, ≤24 chars.
+ *
+ * ClickBank passes exactly one attribution param — `tid` — and rejects
+ * anything containing punctuation. Scheme: `<net2><creative><ad>` where net2
+ * is the source's 2-char code, creative = s5 with non-alphanumerics stripped,
+ * ad = s7 with non-alphanumerics stripped, hard-truncated to 24 chars.
+ *
+ * Example: source=taboola, s5=rm_qualify62, s7=interrupt → `tbrmqualify62interru`.
+ *
+ * Uniqueness is NOT guaranteed — two clicks from the same (network, creative,
+ * variant) triple mint the same tid. That is intentional: reconciliation is
+ * per-creative, not per-click (INS returns the tid on a sale → we credit the
+ * most-recent producing click via `advertorial_clicks.tid` lookup).
+ */
+export function mintCbTid(tracking: CapturedTracking): string {
+  const net = TID_NET_CODES[(tracking.source ?? '').toLowerCase()] ?? 'xx'
+  const clean = (s: string | null | undefined): string =>
+    (s ?? '').replace(/[^a-zA-Z0-9]/g, '')
+  return `${net}${clean(tracking.s5)}${clean(tracking.s7)}`.slice(0, 24)
+}
+
+// ---------------------------------------------------------------------------
 // Template substitution
 // ---------------------------------------------------------------------------
 
@@ -230,22 +276,26 @@ export interface SubstituteInput {
   subId: string
   siteId: string        // becomes {S1}
   tracking: CapturedTracking
+  /** Optional pre-minted tid for {CB_TID} placeholder. Non-CB offers can omit. */
+  cbTid?: string | null
 }
 
 /**
- * Substitute {CLICK_ID}, {SUB_ID}, {S1}..{S8} placeholders in the template.
- * Case-insensitive on the placeholder name; empty values become empty strings.
+ * Substitute {CLICK_ID}, {SUB_ID}, {S1}..{S8}, {CB_TID} placeholders in the
+ * template. Case-insensitive on the placeholder name; empty values become
+ * empty strings.
  *
  * If the template has no {S1} placeholder AND no existing s1 query param,
  * append `s1=<siteId>` so the network still receives the brand tag even when
  * the offer's tracking template was authored before this convention landed.
  */
 export function substituteTemplate(input: SubstituteInput): string {
-  const { template, clickId, subId, siteId, tracking } = input
+  const { template, clickId, subId, siteId, tracking, cbTid } = input
 
   const values: Record<string, string> = {
     CLICK_ID: clickId,
     SUB_ID:   subId,
+    CB_TID:   cbTid ?? '',
     S1: tracking.s1 ?? '',
     S2: tracking.s2 ?? '',
     S3: tracking.s3 ?? '',

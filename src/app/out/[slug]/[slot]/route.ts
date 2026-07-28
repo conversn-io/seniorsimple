@@ -13,12 +13,13 @@
  */
 
 import { NextRequest, NextResponse, after } from 'next/server'
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import {
   assembleTracking,
   captureQueryTracking,
   encodeSubId,
   inferSourceFromReferrer,
+  mintCbTid,
   pickRotationOffer,
   substituteTemplate,
   type RotationEntry,
@@ -191,12 +192,14 @@ export async function GET(
   const subId = encodeSubId(tracking, { slug, slotKey })
 
   // 4. Load offer template (metadata.tracking_template preferred over offer_url).
+  //    Also grab `source` so we know when to mint a compact ClickBank tid.
   let offerTemplate: string | null = null
   let resolvedOfferId: string | null = null
+  let offerSource: string | null = null
   if (pickedOfferId) {
     const { data: offer } = await supabase
       .from('affiliate_offers')
-      .select('id, offer_url, metadata, is_active')
+      .select('id, offer_url, metadata, is_active, source')
       .eq('id', pickedOfferId)
       .maybeSingle()
 
@@ -211,6 +214,7 @@ export async function GET(
       if (template) {
         offerTemplate = template
         resolvedOfferId = offer.id
+        offerSource = typeof offer.source === 'string' ? offer.source : null
       }
     }
   }
@@ -245,7 +249,40 @@ export async function GET(
 
   const clickQuality = deriveQuality({ isBot, isPrefetch, isUnique })
 
+  // 6. Resolve destination BEFORE insert so the row can persist dest_url + tid
+  //    in a single write. Prior version fire-and-forget-updated dest_url after
+  //    the 302, which Vercel's serverless runtime cut off — 100% of last-7d
+  //    rows had dest_url NULL.
+  //
+  //    Client-side UUID = advertorial_clicks.id = {CLICK_ID} macro. Postgres
+  //    would generate one on insert; generating it here first is equally safe
+  //    and lets the substituted URL include it.
+  const clickId = randomUUID()
+
+  // ClickBank passes exactly one attribution param — tid — and rejects
+  // anything with punctuation. Mint a compact alphanumeric id encoding
+  // network+creative+variant; persist it on the row so the INS postback
+  // (which returns tid) joins back to the exact creative.
+  const cbTid = offerSource === 'clickbank' ? mintCbTid(tracking) : null
+
+  let destUrl: string
+  if (offerTemplate) {
+    destUrl = substituteTemplate({
+      template: offerTemplate,
+      clickId,
+      subId,
+      siteId: advertorial.site_id,
+      tracking,
+      cbTid,
+    })
+  } else if (slotRow.fallback_url) {
+    destUrl = slotRow.fallback_url
+  } else {
+    destUrl = absoluteFallback(req, `/lp/${slug}`)
+  }
+
   const clickRow = {
+    id: clickId,
     advertorial_id: advertorial.id,
     slot_id: slotRow.id,
     offer_id: resolvedOfferId,
@@ -256,42 +293,19 @@ export async function GET(
     s5: tracking.s5, s6: tracking.s6, s7: tracking.s7, s8: tracking.s8,
     source: tracking.source,
     sub_id: subId,
-    dest_url: null as string | null,
+    dest_url: destUrl,
+    tid: cbTid,
     is_bot: isBot,
     is_prefetch: isPrefetch,
     is_unique: isUnique,
     click_quality: clickQuality,
   }
 
-  const { data: clickInsert, error: clickErr } = await supabase
+  const { error: clickErr } = await supabase
     .from('advertorial_clicks')
     .insert(clickRow)
-    .select('id')
-    .single()
-
-  const clickId = clickInsert?.id ?? null
-
-  // 6. Resolve destination + fire-and-forget dest_url audit.
-  let destUrl: string
-  if (offerTemplate && clickId) {
-    destUrl = substituteTemplate({
-      template: offerTemplate,
-      clickId,
-      subId,
-      siteId: advertorial.site_id,
-      tracking,
-    })
-  } else if (slotRow.fallback_url) {
-    destUrl = slotRow.fallback_url
-  } else {
-    destUrl = absoluteFallback(req, `/lp/${slug}`)
-  }
-
-  if (clickId && !clickErr) {
-    void supabase
-      .from('advertorial_clicks')
-      .update({ dest_url: destUrl })
-      .eq('id', clickId)
+  if (clickErr) {
+    console.error('[out] advertorial_clicks insert failed', clickErr)
   }
 
   // Fire outbound conversion signal to the originating ad network (Taboola, NewsBreak, etc.)
