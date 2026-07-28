@@ -23,6 +23,7 @@ import InteractiveTool from '../tools/InteractiveTool'
 import InteractiveChecklist from '../checklists/InteractiveChecklist'
 import ArticleSidebar from '../capture/ArticleSidebar'
 import ArticleInlineResourceAd from '../capture/ArticleInlineResourceAd'
+import SimpleLifeStickyBar from '../capture/SimpleLifeStickyBar'
 // Markdown processing is now handled on the server side
 
 interface EnhancedArticleDisplayProps {
@@ -563,6 +564,9 @@ export default function EnhancedArticleDisplay({
     </article>
 
       <ArticleSidebar slug={article.slug} />
+
+      {/* Simple Life sticky bar — persistent newsletter opt-in, sits outside the grid */}
+      <SimpleLifeStickyBar pageSlug={article.slug} />
     </div>
   )
 }
