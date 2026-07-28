@@ -1,7 +1,6 @@
 export type MagnetId = 'decision-kit' | 'tool-result' | 'starter-guide'
 export type CaptureVariant =
   | 'inline'
-  | 'exit'
   | 'tool-gate'
   | 'sidebar-ad'
   | 'inline-ad'
@@ -161,37 +160,37 @@ export const MEDICARE_CAPTURE_CONFIG: Record<string, PageCaptureConfig> = {
   },
   'glp1-drugs-covered-by-medicare-2026': {
     slug: 'glp1-drugs-covered-by-medicare-2026',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'decision-kit',
     topicTag: 'glp1',
   },
   'best-medicare-supplement-plans-medigap-2026': {
     slug: 'best-medicare-supplement-plans-medigap-2026',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'decision-kit',
     topicTag: 'medigap',
   },
   'best-medicare-advantage-plans-2026': {
     slug: 'best-medicare-advantage-plans-2026',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'decision-kit',
     topicTag: 'advantage',
   },
   'best-medicare-part-d-drug-plans-2026': {
     slug: 'best-medicare-part-d-drug-plans-2026',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'decision-kit',
     topicTag: 'part-d',
   },
   'medicaid-vs-medicare-differences': {
     slug: 'medicaid-vs-medicare-differences',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'starter-guide',
     topicTag: 'medicaid-vs-medicare',
   },
   'medicare-open-enrollment-2027-seniors-guide': {
     slug: 'medicare-open-enrollment-2027-seniors-guide',
-    variants: ['inline', 'exit'],
+    variants: ['inline'],
     magnetId: 'starter-guide',
     topicTag: 'open-enrollment',
   },
