@@ -39,7 +39,6 @@ import {
   ClickableImage,
   CtaProvider,
   DealsShowcase,
-  DEFAULT_DEALS,
   EditorsPick,
   ImageQuiz,
   LeadIn,
@@ -59,7 +58,6 @@ import {
   type SavingsInput,
   type StateOption,
 } from '@/components/advertorial-library'
-import { APC_BRANDS } from '@/lib/advertorial-content'
 
 export interface ComponentItem {
   position: number
@@ -430,12 +428,6 @@ export function ComponentSwitch({
         inputs?: SavingsInput[]
         ctaLabel?: string
         monthlyCost?: number
-        // Social-proof block bundled after the calculator card. Ported from
-        // the retired /bridge/perks page — DealsShowcase + TrustBar carry
-        // the same trust the bridge was building, now on-page so we don't
-        // spend a click to get to it. Opt-out with `social_proof: false`;
-        // customize via `social_proof: { deals?, brands?, label? ... }`.
-        social_proof?: boolean | SocialProofProps
       }
       if (!outHref) {
         console.warn(
@@ -444,30 +436,32 @@ export function ComponentSwitch({
         return null
       }
       const inputs = Array.isArray(p.inputs) ? p.inputs : undefined
+      // Note (2026-07-27, WO "social proof = editorial bullets by default"):
+      // the auto-embedded DealsShowcase + TrustBar was stripped from this
+      // card. Doctrine: editorial-native advertorials show editorial proof
+      // (bullets in body_md), not brand-logo showcases. PS-00 drops a
+      // separate `component_type: 'social_proof'` item after the calculator
+      // when proof belongs here — and it defaults to bullets, not logos.
       return renderInteractive({
         item, slug, brand, effectiveVariant, outHref,
         componentType: 'savings_calculator',
         children: (
-          <>
-            <SavingsCalculator
-              inputs={inputs}
-              ctaLabel={p.ctaLabel ?? item.cta_text}
-              monthlyCost={p.monthlyCost}
-            />
-            {renderBundledSocialProof(p.social_proof)}
-          </>
+          <SavingsCalculator
+            inputs={inputs}
+            ctaLabel={p.ctaLabel ?? item.cta_text}
+            monthlyCost={p.monthlyCost}
+          />
         ),
       })
     }
 
     case 'social_proof': {
-      // Standalone social-proof block. PS-00 drops this on any money-zone
-      // item (RM slot 9, Auto slot 12, ClickBank slots 14–19, etc.) to
-      // re-use the same DealsShowcase + TrustBar composition without
-      // needing to also own a calculator. `component_props` accepts every
-      // customization the bundled render does.
+      // Standalone social-proof block. Content is prop-driven — the
+      // component NEVER bakes in brand lists or deal cards. Defaults to
+      // editorial bullets (editorial-native doctrine); logo showcase is
+      // an explicit opt-in via `component_props.variant: 'logos'`.
       const p = (item.component_props ?? {}) as SocialProofProps
-      return renderSocialProof(p)
+      return renderSocialProof(p, item.position)
     }
 
     case 'clickable_image': {
@@ -735,71 +729,116 @@ function resolveItemLinkHref({
 // ---------------------------------------------------------------------------
 
 /**
- * Shape of `component_props` for the standalone `social_proof` component AND
- * the `social_proof` sub-prop bundled on `savings_calculator`. Every field is
- * optional — defaults come from DealsShowcase.DEFAULT_DEALS + APC_BRANDS.
+ * Shape of `component_props` for the standalone `social_proof` component.
  *
- * `brands` accepts the same ApcBrand shape TrustBar consumes. Passing an
- * empty array renders the label alone; omitting the field falls back to the
- * curated APC set that lived on the retired bridge page.
+ * Doctrine (2026-07-27): editorial-native pages carry proof as short
+ * editorial BULLETS, not brand-logo walls. The default variant is
+ * `bullets`. The logo showcase (DealsShowcase + TrustBar) is retained
+ * as an explicit opt-in via `variant: 'logos'` for use on non-editorial
+ * surfaces or when PS-00 authors a fully sourced logo grid — but it
+ * NEVER renders as the default, and no brand list is baked in: `deals`
+ * and `brands` must be supplied via props when opting into `logos`.
+ *
+ * Every field is prop-driven. Nothing in this component references APC,
+ * senior-benefits, or any offer-specific content.
  */
 interface SocialProofProps {
-  /** DealsShowcase heading (defaults to "A sample of what members see inside"). */
+  /** 'bullets' (default) | 'logos'. Unknown values fall back to 'bullets'. */
+  variant?: 'bullets' | 'logos'
+
+  // ---- bullets variant (default) --------------------------------------
+  /** Optional lead-in text above the bullet list (e.g. "What members say:"). */
+  intro?: string
+  /** Editorial bullet list — the primary content in the bullets variant. */
+  bullets?: string[]
+
+  // ---- logos variant (opt-in only) ------------------------------------
+  /** DealsShowcase heading (only used when variant='logos' + deals present). */
   dealsHeading?: string
   /** DealsShowcase sub-line under the heading. */
   dealsSubline?: string
-  /** Override the default 6-card deal grid. Empty array skips the grid. */
+  /** Deal cards for the grid. Required for the grid to render in `logos`. */
   deals?: Deal[]
-  /** TrustBar label (defaults to "Member pricing at brands including:"). */
+  /** TrustBar label. Only used when variant='logos' + brands present. */
   trustLabel?: string
-  /** Override the default APC brand strip. Empty array skips the strip. */
+  /** Brand strip entries. Required for the strip to render in `logos`. */
   brands?: unknown[]
 }
 
 /**
- * Renders the full social-proof composition: DealsShowcase grid + TrustBar
- * strip. This is the block the bridge page carried below the calculator —
- * porting it inline preserves the trust signal without the extra hop.
+ * Render the standalone `social_proof` component. Defaults to editorial
+ * bullets per doctrine; `variant: 'logos'` opts into the DealsShowcase +
+ * TrustBar composition. Content is 100% prop-driven — no hardcoded APC /
+ * deals / brands defaults.
+ *
+ * `position` is only used for the console.warn path so an author can
+ * find the offending item quickly if they mis-configure the props.
  */
-function renderSocialProof(props: SocialProofProps): React.ReactNode {
-  const deals = Array.isArray(props.deals) ? (props.deals as Deal[]) : DEFAULT_DEALS
-  const brands = Array.isArray(props.brands)
-    ? (props.brands as unknown as never)
-    : (APC_BRANDS as unknown as never)
+function renderSocialProof(
+  props: SocialProofProps,
+  position: number,
+): React.ReactNode {
+  const variant = props.variant === 'logos' ? 'logos' : 'bullets'
+
+  if (variant === 'bullets') {
+    const bullets = Array.isArray(props.bullets)
+      ? props.bullets.filter((b): b is string => typeof b === 'string' && b.trim().length > 0)
+      : []
+    if (bullets.length === 0) {
+      console.warn(
+        `[advertorial-kit] social_proof item #${position} has no bullets — skipped. Provide component_props.bullets: ["…","…"] or set component_props.variant: 'logos' with deals/brands.`,
+      )
+      return null
+    }
+    return (
+      <section
+        data-component="social_proof"
+        data-variant="bullets"
+        data-position={position}
+        className="mt-8 mb-4"
+        aria-label="Editorial notes"
+      >
+        {props.intro ? (
+          <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-3">
+            {props.intro}
+          </p>
+        ) : null}
+        <ul className="space-y-2 text-base leading-relaxed text-slate-800 list-disc pl-6 marker:text-slate-400">
+          {bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  // variant === 'logos' — opt-in only, requires props.
+  const deals = Array.isArray(props.deals) ? (props.deals as Deal[]) : []
+  const brands = Array.isArray(props.brands) ? (props.brands as unknown as never) : ([] as unknown as never)
+  if (deals.length === 0 && (!props.brands || (props.brands as unknown[]).length === 0)) {
+    console.warn(
+      `[advertorial-kit] social_proof item #${position} variant='logos' has no deals AND no brands — skipped. Supply component_props.deals or .brands.`,
+    )
+    return null
+  }
   return (
-    <>
+    <section
+      data-component="social_proof"
+      data-variant="logos"
+      data-position={position}
+    >
       {deals.length > 0 ? (
         <DealsShowcase
           deals={deals}
-          heading={props.dealsHeading ?? 'A sample of what members see inside'}
-          subline={
-            props.dealsSubline ??
-            'Current member deals — offers change. Verify at the merchant before checkout.'
-          }
+          heading={props.dealsHeading ?? 'Sample deals'}
+          subline={props.dealsSubline}
         />
       ) : null}
-      <TrustBar
-        label={props.trustLabel ?? 'Member pricing at brands including:'}
-        brands={brands}
-      />
-    </>
+      {(props.brands as unknown[] | undefined)?.length ? (
+        <TrustBar label={props.trustLabel ?? 'Trusted by:'} brands={brands} />
+      ) : null}
+    </section>
   )
-}
-
-/**
- * Bundle wrapper for `savings_calculator.component_props.social_proof`.
- * Accepts `true` (default composition), `false` (skip), or a props object
- * (customized composition). `undefined` treated as `true` — carrying the
- * trust signal is the safer default per WO ("build the same trust before
- * the click, on-page").
- */
-function renderBundledSocialProof(
-  flag: boolean | SocialProofProps | undefined,
-): React.ReactNode {
-  if (flag === false) return null
-  const props: SocialProofProps =
-    typeof flag === 'object' && flag !== null ? flag : {}
-  return renderSocialProof(props)
 }
 
 interface RenderInteractiveArgs {

@@ -542,6 +542,74 @@ VALUES
 
 ---
 
+### 14. `social_proof`
+
+**What it renders:** Editorial trust block. Two variants:
+- **`bullets` (default)** — short editorial bullet list. Optional intro line above.
+- **`logos` (opt-in only)** — DealsShowcase card grid + TrustBar brand strip.
+
+**Doctrine (2026-07-27):** editorial-native pages carry proof as editorial bullets, NOT brand-logo walls. The bullets variant is the default. The logo variant is only appropriate on non-editorial surfaces (bridge pages, dedicated offer pages) or when PS-00 has authored a fully sourced logo grid. Content is 100% prop-driven — the component NEVER bakes in APC brands, deals, or any offer-specific content.
+
+**Props schema:**
+| Key | Required | Type | Notes |
+|---|---|---|---|
+| `variant` | opt | `'bullets' \| 'logos'` | defaults to `'bullets'` |
+| `intro` | opt | string | lead-in above bullets (`bullets` variant) |
+| `bullets` | **REQ (bullets variant)** | string[] | skipped-with-warn if empty in bullets variant |
+| `dealsHeading` | opt | string | `logos` only — defaults `'Sample deals'` |
+| `dealsSubline` | opt | string | `logos` only |
+| `deals` | opt | `Deal[]` | `logos` only — required (with `brands`) for logos variant to render anything |
+| `trustLabel` | opt | string | `logos` only — defaults `'Trusted by:'` |
+| `brands` | opt | `ApcBrand[]` | `logos` only — required (with `deals`) for logos variant to render anything |
+
+**Example INSERT** (editorial bullets — default):
+```sql
+INSERT INTO public.advertorial_items
+  (advertorial_id, position, item_type, slot_id, heading, body_md,
+   component_type, component_props, variant_key)
+VALUES
+  ('<advertorial>', 12, 'filler', NULL, NULL, NULL,
+   'social_proof',
+   jsonb_build_object(
+     'intro','What members are saying',
+     'bullets', jsonb_build_array(
+       'Average member saves $340/yr on dining alone',
+       'Works at 1.5M+ locations across dining, travel, groceries',
+       'Cancel anytime — no long-term commitment'
+     )
+   ),
+   NULL);
+```
+
+**Example INSERT** (logos — explicit opt-in with sourced content):
+```sql
+INSERT INTO public.advertorial_items
+  (advertorial_id, position, item_type, slot_id, heading, body_md,
+   component_type, component_props, variant_key)
+VALUES
+  ('<advertorial>', 15, 'filler', NULL, NULL, NULL,
+   'social_proof',
+   jsonb_build_object(
+     'variant','logos',
+     'dealsHeading','A sample of what members see inside',
+     'deals', jsonb_build_array(
+       jsonb_build_object('brand','Bealls','domain','beallsflorida.com','discount','Up to 70% off','category','Retail')
+     ),
+     'trustLabel','Member pricing at brands including:',
+     'brands', jsonb_build_array(
+       jsonb_build_object('name','Costco','domain','costco.com','category','Retail')
+     )
+   ),
+   NULL);
+```
+
+**Attribution:** no `/out`. Passive trust block.
+**Doctrine:** bullets scanned by block-line; no fabricated urgency / guaranteed payouts / fake reviews. In `logos` variant, brand names must be real + sourced.
+
+**Note on `savings_calculator` cards:** `savings_calculator` **does NOT** auto-embed `social_proof` (as of 2026-07-27). If you want proof on a calculator card, drop a separate `social_proof` item (typically bullets variant) at the next position.
+
+---
+
 ## Hero image (page-level, not an item)
 
 - Rendered from `advertorials.hero_image_url` inside `AdvertorialLayout`.
