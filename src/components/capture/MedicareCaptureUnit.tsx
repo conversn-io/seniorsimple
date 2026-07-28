@@ -118,6 +118,7 @@ export default function MedicareCaptureUnit({
           resultPayload={resultPayload}
           abArm={abArm}
           theme="gradient"
+          sourceDetail={`magnet:${pageSlug}`}
         />
       </div>
     </section>

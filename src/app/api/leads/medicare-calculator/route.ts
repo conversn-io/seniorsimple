@@ -315,26 +315,38 @@ export async function POST(request: NextRequest) {
     // subscribe route is idempotent on (email, site_id) and already writes
     // hem_sha256 via the generated column, so retrying is safe.
     try {
-      const subscribeUrl = new URL('/api/subscribe', request.url).toString();
       const subscribeSource = quizBucket ? 'article_quiz' : 'form';
+      // Ruling 4: <surface>:<slug>. Quiz path uses medicare-quiz:<article>;
+      // form path uses magnet:<calculator-slug> (bare fallback removed).
       const subscribeDetail = quizBucket
         ? `medicare-quiz:${articleSlug || 'unknown'}`
-        : source || 'medicare-calculator';
-      const subscribeRes = await fetch(subscribeUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          first_name: firstName || null,
-          zip_code: zipCode || null,
-          site_id: siteKey || 'seniorsimple',
-          source: subscribeSource,
-          source_detail: subscribeDetail,
-          tags: quizBucket ? ['medicare', `bucket:${quizBucket}`] : ['medicare'],
-          quiz_bucket: quizBucket || null,
-          rx_level: rxLevel || null,
-        }),
-      });
+        : `magnet:${source || 'medicare-cost-calculator'}`;
+      const subscribeRes = await fetch(
+        'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            first_name: firstName || null,
+            zip_code: zipCode || null,
+            site_id: siteKey || 'seniorsimple',
+            source: subscribeSource,
+            source_detail: subscribeDetail,
+            tags: quizBucket ? ['medicare', `bucket:${quizBucket}`] : ['medicare'],
+            // quiz_context triggers `trigger_smart_tagger()` in the edge fn.
+            quiz_context:
+              quizBucket || rxLevel
+                ? {
+                    bucket: quizBucket || null,
+                    rx_level: rxLevel || null,
+                    answers: incomingQuizAnswers || null,
+                  }
+                : undefined,
+            website: '',
+          }),
+        },
+      );
       if (!subscribeRes.ok) {
         const body = await subscribeRes.text().catch(() => '');
         console.warn('⚠️ Publishare subscribe non-OK:', subscribeRes.status, body);

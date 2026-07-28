@@ -147,7 +147,7 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
             email: trimmed,
             site_id: 'seniorsimple',
             source: 'simple-life-sticky',
-            source_detail: pageSlug ?? undefined,
+            source_detail: pageSlug ? `simple-life:${pageSlug}` : undefined,
             tags: ['simple-life-newsletter'],
             website: honeypot,
           }),

@@ -145,10 +145,12 @@ export async function POST(request: NextRequest) {
 
     // Mirror to publishare newsletter_subscribers — only if email supplied.
     // Best-effort: a publishare failure must not fail the CRM write.
+    // Posts directly to the external Supabase edge function (canonical write
+    // path — trigger `trg_ghl_sync_on_subscribe` + `trigger_smart_tagger()`
+    // fire off it). source_detail follows Ruling 4 (`<surface>:<slug>`).
     if (email) {
       try {
-        const subscribeUrl = new URL('/api/subscribe', request.url).toString()
-        await fetch(subscribeUrl, {
+        await fetch('https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -157,9 +159,10 @@ export async function POST(request: NextRequest) {
             zip_code: zip,
             site_id: 'seniorsimple',
             source: 'get_help',
-            source_detail: vertical,
+            source_detail: `get-help:${vertical}`,
             tags: ['get_help', vertical, ...(quizBucket ? [`bucket:${quizBucket}`] : [])],
-            quiz_bucket: quizBucket,
+            quiz_context: quizBucket ? { bucket: quizBucket, vertical } : undefined,
+            website: '',
           }),
         })
       } catch (subErr) {

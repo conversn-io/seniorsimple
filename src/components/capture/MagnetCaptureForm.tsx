@@ -14,9 +14,9 @@ const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
 
 export interface MagnetCaptureFormProps {
-  /** Slug of the page hosting this form — used for source_detail + analytics. */
+  /** Slug of the page hosting this form — used for analytics events. */
   pageSlug: string
-  /** Variant that owns this form — informs analytics and source_detail. */
+  /** Variant that owns this form — informs analytics. */
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
@@ -24,6 +24,13 @@ export interface MagnetCaptureFormProps {
   abArm?: string
   /** Ties into the subscribe `source` field (default: 'capture'). */
   source?: string
+  /**
+   * Ruling 4 (`<surface>:<slug>`) — the value written to
+   * `newsletter_subscribers.source_detail`. Caller is responsible for the
+   * prefix. Defaults to `pageSlug` — callers that already pass a prefixed
+   * pageSlug (e.g. `resource:<lpSlug>` on LPs) can omit this.
+   */
+  sourceDetail?: string
   /** Visual mode: light background (LPs) or gradient hero (inline units). */
   theme?: 'light' | 'gradient'
   /** Optional title/subtitle rendered above the form. */
@@ -36,7 +43,7 @@ type Status = 'idle' | 'submitting' | 'success' | 'error'
 async function submitToSubscribe(args: {
   email: string
   firstName: string
-  pageSlug: string
+  sourceDetail: string
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
@@ -51,7 +58,7 @@ async function submitToSubscribe(args: {
       first_name: args.firstName || null,
       site_id: 'seniorsimple',
       source: args.source,
-      source_detail: `${args.pageSlug}|${args.variant}`,
+      source_detail: args.sourceDetail,
       tags: [
         'medicare',
         args.topicTag,
@@ -92,10 +99,12 @@ export default function MagnetCaptureForm({
   resultPayload,
   abArm,
   source = 'capture',
+  sourceDetail,
   theme = 'gradient',
   title,
   subtitle,
 }: MagnetCaptureFormProps) {
+  const resolvedSourceDetail = sourceDetail ?? pageSlug
   const magnet = MAGNETS[magnetId]
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -131,7 +140,7 @@ export default function MagnetCaptureForm({
         const res = await submitToSubscribe({
           email: trimmed,
           firstName: firstName.trim(),
-          pageSlug,
+          sourceDetail: resolvedSourceDetail,
           variant,
           magnetId,
           topicTag,
@@ -192,6 +201,7 @@ export default function MagnetCaptureForm({
       abArm,
       resultPayload,
       source,
+      resolvedSourceDetail,
     ],
   )
 
