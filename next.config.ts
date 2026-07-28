@@ -39,6 +39,15 @@ const nextConfig: NextConfig = {
         destination: '/ebook/advanced-annuity-strategies',
         permanent: true,
       },
+      // WORKORDER-Sitemap-Live-Wiring-2026-07-28 §2b: legacy-slug dupe of the
+      // 12-best-ways article (retired to status=private in DB). Forward any
+      // inbound backlinks to the clean-slug counterpart so link equity
+      // consolidates on the surviving canonical URL.
+      {
+        source: '/articles/the-12-best-ways-to-live-happy-healthy-and-wealthy-in-retirement-in-2026-and-beyond-918924',
+        destination: '/articles/the-12-best-ways-to-live-happy-healthy-and-wealthy-in-retirement-in-2026-and-beyond',
+        permanent: true,
+      },
     ];
   },
   // Rewrite rules for IndexNow key file

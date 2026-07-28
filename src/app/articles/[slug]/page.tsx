@@ -353,7 +353,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   )
 }
 
-// Generate metadata for SEO
+// Generate metadata for SEO.
+//
+// Canonical policy (WORKORDER-Sitemap-Live-Wiring-2026-07-28 §2b):
+//   /articles/<slug> is seniorsimple's ONE canonical served path. Every
+//   article page emits a SELF-REFERENCING canonical to its own served URL
+//   — never a constructed root URL, never the DB canonical_url field. The
+//   DB column is kept in sync separately (backfilled to mirror this) so
+//   the edge-fn sitemap and the page agree on one URL per article.
+//   /content/<slug> and root /<slug> 301 to this path (see companion routes).
+const SITE_ORIGIN = 'https://www.seniorsimple.org'
+
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params
   const { article } = await getArticle(slug)
@@ -365,14 +375,20 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     }
   }
 
+  const canonical = `${SITE_ORIGIN}/articles/${slug}`
+
   return {
     title: article.meta_title || `${article.title} - SeniorSimple`,
     description: article.meta_description || article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
       images: article.featured_image_url ? [article.featured_image_url] : [],
       type: 'article',
+      url: canonical,
     },
   }
 }
