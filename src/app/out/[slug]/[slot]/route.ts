@@ -48,6 +48,46 @@ function absoluteFallback(req: NextRequest, path: string): string {
   return new URL(path, req.url).toString()
 }
 
+// --- Click-quality classification ---------------------------------------
+// Matches the SQL backfill in migration `advertorial_clicks_measurement_flags`.
+// Keep the two in sync — divergence would produce backfilled rows that don't
+// match live inserts.
+
+const BOT_UA_RE =
+  /(curl|wget|python-requests|httpx|go-http|axios|node-fetch|headless|phantom|puppeteer|playwright|bot|crawler|spider|slurp|facebookexternalhit|bingpreview|google favicon|ahrefs|semrush|dataforseo)/i
+
+function classifyBot(userAgent: string | null): boolean {
+  if (!userAgent || !userAgent.trim()) return true
+  return BOT_UA_RE.test(userAgent)
+}
+
+function classifyPrefetch(req: NextRequest): boolean {
+  // Purpose:prefetch (Chrome/Safari legacy), Sec-Purpose:prefetch/prerender (spec),
+  // X-Moz:prefetch (Firefox), X-Purpose:preview (Safari Reader).
+  const purpose = req.headers.get('purpose')?.toLowerCase() ?? ''
+  const secPurpose = req.headers.get('sec-purpose')?.toLowerCase() ?? ''
+  const xMoz = req.headers.get('x-moz')?.toLowerCase() ?? ''
+  const xPurpose = req.headers.get('x-purpose')?.toLowerCase() ?? ''
+  return (
+    purpose.includes('prefetch') ||
+    secPurpose.includes('prefetch') ||
+    secPurpose.includes('prerender') ||
+    xMoz.includes('prefetch') ||
+    xPurpose.includes('preview')
+  )
+}
+
+function deriveQuality(args: {
+  isBot: boolean
+  isPrefetch: boolean
+  isUnique: boolean
+}): 'bot' | 'prefetch' | 'dup' | 'human' {
+  if (args.isBot) return 'bot'
+  if (args.isPrefetch) return 'prefetch'
+  if (!args.isUnique) return 'dup'
+  return 'human'
+}
+
 export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ slug: string; slot: string }> },
@@ -176,18 +216,51 @@ export async function GET(
   }
 
   // 5. Log click (id === click_id).
+  //    Classify measurement quality at insert time so the raw row IS the
+  //    reporting truth (v_advertorial_clicks_clean reads flags, not derives them).
+  //    Bots/prefetch always non-unique. Dedupe lookup only runs for real humans
+  //    to keep the redirect fast (partial index makes it a single index-only scan).
+  const userAgent = req.headers.get('user-agent')
+  const ipHash = hashIp(readClientIp(req))
+  const isBot = classifyBot(userAgent)
+  const isPrefetch = !isBot && classifyPrefetch(req)
+
+  let isUnique = true
+  if (!isBot && !isPrefetch) {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    const { data: priorHuman } = await supabase
+      .from('advertorial_clicks')
+      .select('id')
+      .eq('ip_hash', ipHash)
+      .eq('slot_id', slotRow.id)
+      .eq('is_bot', false)
+      .eq('is_prefetch', false)
+      .gte('ts', thirtyMinAgo)
+      .limit(1)
+      .maybeSingle()
+    if (priorHuman?.id) isUnique = false
+  } else {
+    isUnique = false
+  }
+
+  const clickQuality = deriveQuality({ isBot, isPrefetch, isUnique })
+
   const clickRow = {
     advertorial_id: advertorial.id,
     slot_id: slotRow.id,
     offer_id: resolvedOfferId,
-    ip_hash: hashIp(readClientIp(req)),
-    user_agent: req.headers.get('user-agent'),
+    ip_hash: ipHash,
+    user_agent: userAgent,
     referrer,
     s1: tracking.s1, s2: tracking.s2, s3: tracking.s3, s4: tracking.s4,
     s5: tracking.s5, s6: tracking.s6, s7: tracking.s7, s8: tracking.s8,
     source: tracking.source,
     sub_id: subId,
     dest_url: null as string | null,
+    is_bot: isBot,
+    is_prefetch: isPrefetch,
+    is_unique: isUnique,
+    click_quality: clickQuality,
   }
 
   const { data: clickInsert, error: clickErr } = await supabase
@@ -232,8 +305,11 @@ export async function GET(
   // Non-blocking: dispatched asynchronously so it doesn't add latency to the 302 redirect.
   // We reference the ad network's ORIGINAL click_id (tracking.s8) so the network can attribute
   // the conversion; source=own_checkout tags this row as an internal-fired conversion.
+  // Only fire for real human clicks — bots/prefetch/dups would poison
+  // Taboola's optimization signal (they'd think a bot or a rapid re-tap is a
+  // real initiate_checkout). See migration `advertorial_clicks_measurement_flags`.
   const ownCheckoutSecret = process.env.NATIVE_POSTBACK_SECRET_OWN_CHECKOUT
-  if (tracking.s8 && tracking.source && ownCheckoutSecret) {
+  if (clickQuality === 'human' && tracking.s8 && tracking.source && ownCheckoutSecret) {
     const dispatchUrl = new URL(
       'https://jqjftrlnyysqcwbbigpw.supabase.co/functions/v1/native-postback-ingest',
     )
