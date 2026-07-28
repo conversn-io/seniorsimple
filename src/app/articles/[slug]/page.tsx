@@ -11,10 +11,11 @@ import Image from 'next/image'
 // pages besides the archetype-mounted unit.
 import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
 import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
-import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts'
+import EducationalFacts from '@/components/articles/EducationalFacts'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
-import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
-import MedicareBucketQuiz from '@/components/quiz/MedicareBucketQuiz'
+import Calculator from '@/components/calculators/Calculator'
+import BucketQuiz from '@/components/quiz/BucketQuiz'
+import { medicareKit } from '@/lib/capture-kits/medicare'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
@@ -270,7 +271,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   style={{ fontSize: '18px', lineHeight: '1.8' }}
                 />
                 <div className="my-10">
-                  <MedicareBucketQuiz slug={slug} variant="standalone" />
+                  <BucketQuiz vertical="medicare" slug={slug} variant="standalone" />
                 </div>
                 <div
                   className="text-gray-800 leading-relaxed"
@@ -326,12 +327,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               NEXT_PUBLIC_MEDICARE_QUIZ_ENABLED === 'true'. */}
           {showBucketQuiz && !comparisonInjection && (
             <div className="mt-12 mb-8">
-              <MedicareBucketQuiz slug={slug} variant="standalone" />
+              <BucketQuiz vertical="medicare" slug={slug} variant="standalone" />
             </div>
           )}
           {showCalculator && !showBucketQuiz && (
             <div className="mt-12 mb-8">
-              <MedicareCostCalculator />
+              <Calculator vertical="medicare" />
             </div>
           )}
 
@@ -339,7 +340,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               enrollment penalties. Renders on ALL Medicare articles regardless
               of archetype (was previously coupled to the calculator, which
               meant guide articles lost it after §8-B routed them to the quiz). */}
-          {isMedicareArticle && <MedicareEducationalFacts />}
+          {isMedicareArticle && <EducationalFacts vertical="medicare" />}
         </div>
       </section>
 

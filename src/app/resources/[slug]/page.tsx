@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { getAllMagnets, getMagnetByLpSlug } from '@/lib/medicare-capture-config'
+import { getAllMagnetsAcrossKits, findMagnetByLpSlug } from '@/lib/capture-kits'
 import ResourceLandingPage from '@/components/resources/ResourceLandingPage'
 
 interface ResourcePageProps {
@@ -8,15 +8,16 @@ interface ResourcePageProps {
 }
 
 export async function generateStaticParams() {
-  return getAllMagnets().map((magnet) => ({ slug: magnet.lpSlug }))
+  return getAllMagnetsAcrossKits().map(({ magnet }) => ({ slug: magnet.lpSlug }))
 }
 
 export async function generateMetadata({
   params,
 }: ResourcePageProps): Promise<Metadata> {
   const { slug } = await params
-  const magnet = getMagnetByLpSlug(slug)
-  if (!magnet) return {}
+  const hit = findMagnetByLpSlug(slug)
+  if (!hit) return {}
+  const { magnet } = hit
   const canonical = `https://seniorsimple.org/resources/${magnet.lpSlug}`
   return {
     title: `${magnet.title} — SeniorSimple`,
@@ -34,7 +35,7 @@ export async function generateMetadata({
 
 export default async function ResourcePage({ params }: ResourcePageProps) {
   const { slug } = await params
-  const magnet = getMagnetByLpSlug(slug)
-  if (!magnet) notFound()
-  return <ResourceLandingPage magnet={magnet} />
+  const hit = findMagnetByLpSlug(slug)
+  if (!hit) notFound()
+  return <ResourceLandingPage vertical={hit.kit.vertical} magnet={hit.magnet} />
 }

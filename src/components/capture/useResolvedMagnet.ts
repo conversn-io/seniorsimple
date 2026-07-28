@@ -1,14 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  DEFAULT_SIDEBAR_MAGNET_ID,
-  DEFAULT_SIDEBAR_TOPIC_TAG,
-  getCaptureConfig,
-  resolveCaptureMagnet,
-  type MagnetId,
-  type TopicTag,
-} from '@/lib/medicare-capture-config'
+import type { CaptureKit, MagnetId, TopicTag } from '@/lib/capture-kits/types'
+import { getPageConfig, resolvePageMagnet } from '@/lib/capture-kits'
 
 export interface ResolvedMagnet {
   magnetId: MagnetId
@@ -19,27 +13,27 @@ export interface ResolvedMagnet {
 /**
  * Resolve a page slug to the magnet + A/B arm that should be shown in every
  * ad placement on that page (sidebar + mobile-inline). If the slug isn't in
- * the Medicare capture config, falls back to the site-wide default magnet.
+ * the kit's pageConfigs, falls back to the kit's defaultSidebar* values.
  *
- * Client-only (touches sessionStorage inside resolveCaptureMagnet). Returns
- * null on the first render, then the resolved value once the effect fires,
- * so consumers should conditionally render.
+ * Client-only (touches sessionStorage inside resolvePageMagnet). Returns null
+ * on the first render, then the resolved value once the effect fires, so
+ * consumers should conditionally render.
  */
-export function useResolvedMagnet(slug: string): ResolvedMagnet | null {
+export function useResolvedMagnet(kit: CaptureKit, slug: string): ResolvedMagnet | null {
   const [resolved, setResolved] = useState<ResolvedMagnet | null>(null)
 
   useEffect(() => {
-    const config = getCaptureConfig(slug)
+    const config = getPageConfig(kit, slug)
     if (!config) {
       setResolved({
-        magnetId: DEFAULT_SIDEBAR_MAGNET_ID,
-        topicTag: DEFAULT_SIDEBAR_TOPIC_TAG,
+        magnetId: kit.defaultSidebarMagnetId,
+        topicTag: kit.defaultSidebarTopicTag,
       })
       return
     }
-    const { magnetId, abArm } = resolveCaptureMagnet(config)
+    const { magnetId, abArm } = resolvePageMagnet(config)
     setResolved({ magnetId, topicTag: config.topicTag, abArm })
-  }, [slug])
+  }, [kit, slug])
 
   return resolved
 }

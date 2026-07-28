@@ -2,6 +2,8 @@
 
 import ResourceAdCard from './ResourceAdCard'
 import { useResolvedMagnet } from './useResolvedMagnet'
+import { resolveKitForPage } from '@/lib/capture-kits'
+import { medicareKit } from '@/lib/capture-kits/medicare'
 
 export interface ArticleInlineResourceAdProps {
   slug: string
@@ -22,7 +24,8 @@ export default function ArticleInlineResourceAd({
   slug,
   mobileOnly = true,
 }: ArticleInlineResourceAdProps) {
-  const resolved = useResolvedMagnet(slug)
+  const kit = resolveKitForPage(slug) ?? medicareKit
+  const resolved = useResolvedMagnet(kit, slug)
   if (!resolved) return null
 
   const wrapperClass = mobileOnly ? 'lg:hidden' : ''
@@ -30,8 +33,9 @@ export default function ArticleInlineResourceAd({
   return (
     <div className={wrapperClass}>
       <ResourceAdCard
+        kit={kit}
         magnetId={resolved.magnetId}
-        pageSlug={slug}
+        pageSlug={`inline-ad:${slug}`}
         topicTag={resolved.topicTag}
         abArm={resolved.abArm}
         layout="inline"

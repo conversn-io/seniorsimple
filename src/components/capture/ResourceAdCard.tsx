@@ -3,14 +3,12 @@
 import { useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import {
-  MAGNETS,
-  type MagnetId,
-  type TopicTag,
-} from '@/lib/medicare-capture-config'
-import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
+import type { CaptureKit, MagnetId, TopicTag } from '@/lib/capture-kits/types'
+import { getMagnet } from '@/lib/capture-kits'
+import { trackCaptureEvent } from '@/lib/capture-analytics'
 
 export interface ResourceAdCardProps {
+  kit: CaptureKit
   magnetId: MagnetId
   /** Slug of the page the card is placed on — for analytics. */
   pageSlug: string
@@ -30,6 +28,7 @@ export interface ResourceAdCardProps {
  * user lands on the LP and its form's `capture_impression` fires.
  */
 export default function ResourceAdCard({
+  kit,
   magnetId,
   pageSlug,
   topicTag,
@@ -38,7 +37,7 @@ export default function ResourceAdCard({
   showAdLabel = false,
   className = '',
 }: ResourceAdCardProps) {
-  const magnet = MAGNETS[magnetId]
+  const magnet = getMagnet(kit, magnetId)
   const rootRef = useRef<HTMLDivElement | null>(null)
 
   // Map layout → analytics variant so sidebar vs mobile-inline placements are
@@ -48,13 +47,14 @@ export default function ResourceAdCard({
   const fireImpression = useCallback(() => {
     trackCaptureEvent({
       eventName: 'capture_impression',
+      vertical: kit.vertical,
       pageSlug,
       variant: analyticsVariant,
       magnetId,
       topicTag,
       abArm,
     })
-  }, [pageSlug, magnetId, topicTag, abArm, analyticsVariant])
+  }, [kit.vertical, pageSlug, magnetId, topicTag, abArm, analyticsVariant])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -83,19 +83,21 @@ export default function ResourceAdCard({
     return () => io.disconnect()
   }, [fireImpression])
 
+  if (!magnet) return null
   const href = `/resources/${magnet.lpSlug}`
 
-  const trackClick = useCallback(() => {
+  const trackClick = () => {
     // Not a required event per the scoreboard spec, but useful for CTR.
     trackCaptureEvent({
       eventName: 'capture_submit',
+      vertical: kit.vertical,
       pageSlug,
       variant: analyticsVariant,
       magnetId,
       topicTag,
       abArm,
     })
-  }, [pageSlug, magnetId, topicTag, abArm, analyticsVariant])
+  }
 
   if (layout === 'inline') {
     // Horizontal ad card — cover on left, copy + CTA on right.

@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
-import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator';
+import Calculator from '@/components/calculators/Calculator';
 import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar';
-import MedicareEducationalFacts from '@/components/articles/MedicareEducationalFacts';
+import EducationalFacts from '@/components/articles/EducationalFacts';
+import { medicareKit } from '@/lib/capture-kits/medicare';
 
 // §8-C directive (2026-07-23): phone CTAs removed from the calculator page.
 // The InterstitialCTABanner (inline phone) and ScrollRevealedCallButton
@@ -25,12 +26,8 @@ export default function MedicareCostCalculatorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <MedicareCostCalculator />
-        {/* §8-E educational body content — was inside the calculator until it
-            was extracted so guide-archetype articles (quiz-mounted) don't
-            lose it. Mounted here explicitly since this route doesn't go
-            through the article template. */}
-        <MedicareEducationalFacts />
+        <Calculator vertical="medicare" title="Medicare Cost Calculator" subtitle="Estimate your Medicare costs and compare plan options" />
+        <EducationalFacts vertical="medicare" />
       </div>
       <SimpleLifeStickyBar pageSlug="calculators/medicare-costs" />
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import FullWidthCalculatorEmbed from './FullWidthCalculatorEmbed';
-import MedicareCostCalculator from '../calculators/MedicareCostCalculator';
+import Calculator from '../calculators/Calculator'
+import { medicareKit } from '@/lib/capture-kits/medicare';
 
 interface Article {
   id: string;
@@ -55,7 +56,7 @@ export default function MedicareCostStrategyGuide({ article }: MedicareCostStrat
         description="Calculate your Medicare costs including Part A, Part B, Part D premiums, and Medigap coverage based on your income and location."
         theme="blue"
       >
-        <MedicareCostCalculator />
+        <Calculator vertical="medicare" />
       </FullWidthCalculatorEmbed>
 
       {/* Additional Resources */}

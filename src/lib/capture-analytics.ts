@@ -1,4 +1,10 @@
-import type { CaptureVariant, MagnetId, TopicTag } from './medicare-capture-config'
+import type { CaptureVariant, MagnetId, TopicTag, Vertical } from './capture-kits/types'
+
+// Ruling 7: event_category is 'capture' (vertical-agnostic). Per-vertical
+// segmentation happens via properties.vertical, not via the category. Do NOT
+// re-introduce vertical-specific event_category values — the governance
+// capture-rate reads from newsletter_subscribers, not from analytics_events,
+// so this is a per-unit A/B scoreboard only (see brief Ruling 5).
 
 export type CaptureEventName =
   | 'capture_impression'
@@ -12,7 +18,7 @@ function getSessionId(): string {
   try {
     let id = window.sessionStorage.getItem(SESSION_KEY)
     if (!id) {
-      const cryptoRef = (window.crypto as unknown as { randomUUID?: () => string } | undefined)
+      const cryptoRef = window.crypto as unknown as { randomUUID?: () => string } | undefined
       id = cryptoRef?.randomUUID
         ? cryptoRef.randomUUID()
         : `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
@@ -26,6 +32,7 @@ function getSessionId(): string {
 
 export interface CaptureEventPayload {
   eventName: CaptureEventName
+  vertical: Vertical
   pageSlug: string
   variant: CaptureVariant
   magnetId: MagnetId
@@ -41,12 +48,13 @@ export async function trackCaptureEvent(payload: CaptureEventPayload): Promise<v
 
   const body = {
     event_name: payload.eventName,
-    event_category: 'medicare_capture',
+    event_category: 'capture',
     event_label: label,
     session_id,
     page_url: window.location.href,
     properties: {
       site_id: 'seniorsimple',
+      vertical: payload.vertical,
       magnetId: payload.magnetId,
       topicTag: payload.topicTag,
       variant: payload.variant,

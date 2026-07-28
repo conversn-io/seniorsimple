@@ -2,6 +2,8 @@
 
 import ResourceAdCard from './ResourceAdCard'
 import { useResolvedMagnet } from './useResolvedMagnet'
+import { resolveKitForPage } from '@/lib/capture-kits'
+import { medicareKit } from '@/lib/capture-kits/medicare'
 
 export interface ArticleSidebarProps {
   slug: string
@@ -19,7 +21,10 @@ export interface ArticleSidebarProps {
  * article body for mobile placement.
  */
 export default function ArticleSidebar({ slug, className = '' }: ArticleSidebarProps) {
-  const resolved = useResolvedMagnet(slug)
+  // Fall through to medicareKit for non-configured articles so the sidebar
+  // still shows the default Medicare magnet (parity with pre-refactor).
+  const kit = resolveKitForPage(slug) ?? medicareKit
+  const resolved = useResolvedMagnet(kit, slug)
 
   return (
     <aside
@@ -29,8 +34,9 @@ export default function ArticleSidebar({ slug, className = '' }: ArticleSidebarP
       <div className="sticky top-8 space-y-6">
         {resolved && (
           <ResourceAdCard
+            kit={kit}
             magnetId={resolved.magnetId}
-            pageSlug={slug}
+            pageSlug={`sidebar-ad:${slug}`}
             topicTag={resolved.topicTag}
             abArm={resolved.abArm}
             layout="sidebar"

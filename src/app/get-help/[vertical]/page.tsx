@@ -12,7 +12,7 @@
 
 import { notFound } from 'next/navigation'
 import GetHelpForm from './GetHelpForm'
-import { getMedicareComplianceDisclaimer, getMedicareEducationalNotice } from '@/lib/compliance'
+import { medicareKit } from '@/lib/capture-kits/medicare'
 
 interface GetHelpPageProps {
   params: Promise<{ vertical: string }>
@@ -62,7 +62,7 @@ export default async function GetHelpPage({ params, searchParams }: GetHelpPageP
   if (!config) notFound()
 
   const disclaimer = config.showMedicareDisclaimer
-    ? (getMedicareComplianceDisclaimer() ?? getMedicareEducationalNotice())
+    ? (medicareKit.compliance.disclaimer ?? medicareKit.compliance.educationalNotice)
     : null
 
   return (

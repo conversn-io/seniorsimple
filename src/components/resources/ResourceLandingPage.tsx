@@ -4,10 +4,12 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Check } from 'lucide-react'
 import MagnetCaptureForm from '../capture/MagnetCaptureForm'
-import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
-import type { MagnetSpec } from '@/lib/medicare-capture-config'
+import { trackCaptureEvent } from '@/lib/capture-analytics'
+import { getKit } from '@/lib/capture-kits'
+import type { Vertical, MagnetSpec } from '@/lib/capture-kits/types'
 
 interface ResourceLandingPageProps {
+  vertical: Vertical
   magnet: MagnetSpec
 }
 
@@ -16,21 +18,23 @@ interface ResourceLandingPageProps {
  * the LP appears in the scoreboard (variant='inline', source_detail carries the
  * LP slug so it's distinguishable from in-article impressions).
  */
-export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps) {
+export default function ResourceLandingPage({ vertical, magnet }: ResourceLandingPageProps) {
+  const kit = getKit(vertical)
   const pageSlug = `resource:${magnet.lpSlug}`
 
   useEffect(() => {
+    if (!kit) return
     trackCaptureEvent({
       eventName: 'capture_impression',
+      vertical: kit.vertical,
       pageSlug,
       variant: 'inline',
       magnetId: magnet.id,
-      topicTag: 'open-enrollment',
+      topicTag: kit.defaultSidebarTopicTag,
     })
-    // topicTag on LPs is a placeholder — LPs aren't scoped to a specific
-    // article topic. We could plumb through the referring page's topic later
-    // via querystring if we want per-source LP CTR.
-  }, [magnet.id, magnet.lpSlug, pageSlug])
+  }, [kit, magnet.id, magnet.lpSlug, pageSlug])
+
+  if (!kit) return null
 
   return (
     <div className="min-h-screen bg-white">
@@ -89,10 +93,11 @@ export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps
 
             <div className="mt-8 rounded-2xl bg-[#F5F5F0] p-6 shadow-md ring-1 ring-[#36596A]/10 md:p-8">
               <MagnetCaptureForm
+                kit={kit}
                 pageSlug={pageSlug}
                 variant="inline"
                 magnetId={magnet.id}
-                topicTag="open-enrollment"
+                topicTag={kit.defaultSidebarTopicTag}
                 source="lp"
                 theme="light"
               />

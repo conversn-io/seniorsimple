@@ -1,16 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-import {
-  MAGNETS,
-  type CaptureVariant,
-  type MagnetId,
-  type TopicTag,
-} from '@/lib/medicare-capture-config'
-import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
+import type { CaptureKit, CaptureVariant, MagnetId, TopicTag } from '@/lib/capture-kits/types'
+import { getMagnet } from '@/lib/capture-kits'
+import { trackCaptureEvent } from '@/lib/capture-analytics'
 import MagnetCaptureForm from './MagnetCaptureForm'
 
-export interface MedicareCaptureUnitProps {
+export interface CaptureUnitProps {
+  kit: CaptureKit
   pageSlug: string
   /** 'inline' — always-visible in-content panel. 'tool-gate' — post-result panel. */
   variant: Extract<CaptureVariant, 'inline' | 'tool-gate'>
@@ -22,17 +19,18 @@ export interface MedicareCaptureUnitProps {
 }
 
 /**
- * Full-form capture panel used inline on the two tool pages (calculator +
- * comparison tool). Article pages don't use this — they get the ResourceAdCard
- * → LP flow via ArticleSidebar. Only two variants survive here:
+ * Full-form capture panel used inline on tool pages (calculators, comparison
+ * tools). Article pages don't use this — they get the ResourceAdCard → LP
+ * flow via ArticleSidebar. Only two variants survive here:
  *   - 'inline'    → always-visible below the tool
  *   - 'tool-gate' → shown alongside the tool result (with resultPayload)
  *
  * Fires capture_impression when the panel scrolls into view. Everything below
- * that (form state, subscribe wiring, analytics for submit/confirm, magnet
- * delivery, success-with-download) is delegated to MagnetCaptureForm.
+ * (form state, subscribe wiring, submit/confirm analytics, magnet delivery,
+ * success-with-download) is delegated to MagnetCaptureForm.
  */
-export default function MedicareCaptureUnit({
+export default function CaptureUnit({
+  kit,
   pageSlug,
   variant,
   magnetId,
@@ -40,20 +38,21 @@ export default function MedicareCaptureUnit({
   resultPayload,
   abArm,
   className = '',
-}: MedicareCaptureUnitProps) {
-  const magnet = MAGNETS[magnetId]
+}: CaptureUnitProps) {
+  const magnet = getMagnet(kit, magnetId)
   const hostRef = useRef<HTMLElement | null>(null)
 
   const fireImpression = useCallback(() => {
     trackCaptureEvent({
       eventName: 'capture_impression',
+      vertical: kit.vertical,
       pageSlug,
       variant,
       magnetId,
       topicTag,
       abArm,
     })
-  }, [pageSlug, variant, magnetId, topicTag, abArm])
+  }, [kit.vertical, pageSlug, variant, magnetId, topicTag, abArm])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -82,14 +81,16 @@ export default function MedicareCaptureUnit({
     return () => io.disconnect()
   }, [fireImpression])
 
+  if (!magnet) return null
+
   const heading =
     magnetId === 'tool-result'
-      ? 'Email me my Medicare estimate'
+      ? 'Email me my estimate'
       : `Free ${magnet.title}`
   const subhead =
     magnetId === 'tool-result'
-      ? 'Get a copy of your estimate plus a plain-English Medicare planning guide. No agent, no sales calls.'
-      : 'A plain-English guide from SeniorSimple. No agent, no sales calls — just the information you asked for.'
+      ? 'Get a copy of your estimate plus a plain-English planning guide. No agent, no sales calls.'
+      : `A plain-English guide from ${kit.brand === 'seniorsimple' ? 'SeniorSimple' : kit.brand}. No agent, no sales calls — just the information you asked for.`
 
   return (
     <section
@@ -111,6 +112,7 @@ export default function MedicareCaptureUnit({
           <p className="text-lg text-white/90">{subhead}</p>
         </div>
         <MagnetCaptureForm
+          kit={kit}
           pageSlug={pageSlug}
           variant={variant}
           magnetId={magnetId}

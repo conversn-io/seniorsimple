@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MAGNETS, type MagnetId } from '@/lib/medicare-capture-config'
+import { findMagnetByLpSlug, getAllMagnetsAcrossKits } from '@/lib/capture-kits'
+import type { MagnetId, MagnetSpec } from '@/lib/capture-kits/types'
+
+// Lookup helper — magnet IDs are unique per kit but callers only pass the ID,
+// not the kit. Search across all kits (matches how deliver-magnet was used
+// before the kit split: one flat MAGNETS record).
+function findMagnetById(magnetId: MagnetId): MagnetSpec | null {
+  for (const { magnet } of getAllMagnetsAcrossKits()) {
+    if (magnet.id === magnetId) return magnet
+  }
+  return null
+}
 
 // SendGrid REST call — no package needed. Fill SENDGRID_API_KEY +
 // SENDGRID_FROM_EMAIL in env to enable. Without them the endpoint no-ops so the
@@ -27,7 +38,8 @@ function buildHtml(args: {
   downloadUrl: string
   resultPayload?: unknown
 }) {
-  const magnet = MAGNETS[args.magnetId]
+  const magnet = findMagnetById(args.magnetId)
+  if (!magnet) return ''
   const greeting = args.firstName ? `Hi ${escapeHtml(args.firstName)},` : 'Hi there,'
 
   const resultBlock =
@@ -85,7 +97,8 @@ function buildText(args: {
   magnetId: MagnetId
   downloadUrl: string
 }) {
-  const magnet = MAGNETS[args.magnetId]
+  const magnet = findMagnetById(args.magnetId)
+  if (!magnet) return ''
   const greeting = args.firstName ? `Hi ${args.firstName},` : 'Hi there,'
   return [
     magnet.title,
@@ -125,11 +138,10 @@ export async function POST(request: NextRequest) {
   if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ ok: false, error: 'invalid_email' }, { status: 400 })
   }
-  if (!magnetId || !(magnetId in MAGNETS)) {
+  const magnet = magnetId ? findMagnetById(magnetId) : null
+  if (!magnetId || !magnet) {
     return NextResponse.json({ ok: false, error: 'invalid_magnet' }, { status: 400 })
   }
-
-  const magnet = MAGNETS[magnetId]
   const downloadUrl = `${SITE_URL}${magnet.downloadPath}`
 
   const apiKey = process.env.SENDGRID_API_KEY

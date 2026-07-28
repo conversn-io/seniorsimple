@@ -2,18 +2,16 @@
 
 import { useCallback, useState } from 'react'
 import { Check, Download, Mail } from 'lucide-react'
-import {
-  MAGNETS,
-  type CaptureVariant,
-  type MagnetId,
-  type TopicTag,
-} from '@/lib/medicare-capture-config'
-import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
+import type { CaptureKit, CaptureVariant, MagnetId, TopicTag } from '@/lib/capture-kits/types'
+import { getMagnet } from '@/lib/capture-kits'
+import { trackCaptureEvent } from '@/lib/capture-analytics'
 
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
 
 export interface MagnetCaptureFormProps {
+  /** Kit that owns this magnet — provides vertical + brand + magnet spec. */
+  kit: CaptureKit
   /** Slug of the page hosting this form — used for analytics events. */
   pageSlug: string
   /** Variant that owns this form — informs analytics. */
@@ -49,6 +47,8 @@ async function submitToSubscribe(args: {
   topicTag: TopicTag
   honeypot: string
   source: string
+  vertical: string
+  brand: string
 }) {
   return fetch(SUBSCRIBE_ENDPOINT, {
     method: 'POST',
@@ -56,11 +56,11 @@ async function submitToSubscribe(args: {
     body: JSON.stringify({
       email: args.email,
       first_name: args.firstName || null,
-      site_id: 'seniorsimple',
+      site_id: args.brand,
       source: args.source,
       source_detail: args.sourceDetail,
       tags: [
-        'medicare',
+        args.vertical,
         args.topicTag,
         `unit:${args.variant}`,
         `magnet:${args.magnetId}`,
@@ -92,6 +92,7 @@ async function triggerMagnetDelivery(args: {
 }
 
 export default function MagnetCaptureForm({
+  kit,
   pageSlug,
   variant,
   magnetId,
@@ -105,7 +106,7 @@ export default function MagnetCaptureForm({
   subtitle,
 }: MagnetCaptureFormProps) {
   const resolvedSourceDetail = sourceDetail ?? pageSlug
-  const magnet = MAGNETS[magnetId]
+  const magnet = getMagnet(kit, magnetId)
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [honeypot, setHoneypot] = useState('')
@@ -129,6 +130,7 @@ export default function MagnetCaptureForm({
 
       trackCaptureEvent({
         eventName: 'capture_submit',
+        vertical: kit.vertical,
         pageSlug,
         variant,
         magnetId,
@@ -146,6 +148,8 @@ export default function MagnetCaptureForm({
           topicTag,
           honeypot,
           source,
+          vertical: kit.vertical,
+          brand: kit.brand,
         })
 
         if (res.status === 429) {
@@ -169,6 +173,7 @@ export default function MagnetCaptureForm({
 
         trackCaptureEvent({
           eventName: 'capture_confirm',
+          vertical: kit.vertical,
           pageSlug,
           variant,
           magnetId,
@@ -202,6 +207,7 @@ export default function MagnetCaptureForm({
       resultPayload,
       source,
       resolvedSourceDetail,
+      kit,
     ],
   )
 
@@ -218,6 +224,8 @@ export default function MagnetCaptureForm({
   const buttonClass = isLight
     ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#36596A] px-6 py-4 text-base font-medium text-white hover:bg-[#2a4a5a] transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
     : 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-6 py-4 text-base font-medium text-[#36596A] hover:bg-[#F5F5F0] transition-colors disabled:opacity-70 disabled:cursor-not-allowed'
+
+  if (!magnet) return null
 
   if (status === 'success') {
     const headingClass = isLight
