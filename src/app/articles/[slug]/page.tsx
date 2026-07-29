@@ -8,6 +8,9 @@ import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallBu
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import ArticleSidebar from '@/components/capture/ArticleSidebar'
+import ArticleInlineResourceAd from '@/components/capture/ArticleInlineResourceAd'
+import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
@@ -173,9 +176,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Article Content */}
+      {/* Article Content — two-column: main body + sticky right rail (lg+) */}
       <section className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 pb-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 pb-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
+        <div className="min-w-0">
           {article.html_body ? (
             // html_body already includes <div class="prose"> wrapper, so render it directly
             <>
@@ -248,6 +252,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <MedicareCostCalculator />
             </div>
           )}
+
+          {/* Mobile-only resource ad — sidebar is hidden on <lg, so surface here */}
+          <ArticleInlineResourceAd slug={slug} />
+        </div>
+
+        {/* Sticky right rail — resource ad + external ad slot */}
+        <ArticleSidebar slug={slug} />
         </div>
       </section>
 
@@ -349,6 +360,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       )}
 
       <NewsletterCaptureCTA slug={slug} category={article.category_details?.name ?? null} />
+
+      {/* Persistent bottom-fixed newsletter opt-in — Simple Life list */}
+      <SimpleLifeStickyBar pageSlug={slug} />
     </div>
   )
 }

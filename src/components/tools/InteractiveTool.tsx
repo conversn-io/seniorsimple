@@ -20,6 +20,8 @@ interface InteractiveToolProps {
   title: string
   description?: string
   className?: string
+  /** Rendered inside the completion state (below action buttons). */
+  postCompletionSlot?: React.ReactNode
 }
 
 interface ToolState {
@@ -31,11 +33,12 @@ interface ToolState {
   completionTime: Date | null
 }
 
-export default function InteractiveTool({ 
-  config, 
-  title, 
-  description, 
-  className = '' 
+export default function InteractiveTool({
+  config,
+  title,
+  description,
+  className = '',
+  postCompletionSlot,
 }: InteractiveToolProps) {
   const [state, setState] = useState<ToolState>({
     currentStep: 0,
@@ -359,6 +362,8 @@ export default function InteractiveTool({
             <span>Start Over</span>
           </button>
         </div>
+
+        {postCompletionSlot}
       </div>
     )
   }
