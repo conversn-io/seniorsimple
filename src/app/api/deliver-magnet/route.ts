@@ -130,7 +130,11 @@ export async function POST(request: NextRequest) {
   }
 
   const magnet = MAGNETS[magnetId]
-  const downloadUrl = `${SITE_URL}${magnet.downloadPath}`
+  // downloadPath may be absolute (Supabase Storage) or a relative /-path we
+  // host ourselves. Only prepend SITE_URL when it's relative.
+  const downloadUrl = /^https?:\/\//i.test(magnet.downloadPath)
+    ? magnet.downloadPath
+    : `${SITE_URL}${magnet.downloadPath}`
 
   const apiKey = process.env.SENDGRID_API_KEY
   const fromEmail = process.env.SENDGRID_FROM_EMAIL || DEFAULT_FROM_EMAIL

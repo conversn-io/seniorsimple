@@ -39,14 +39,19 @@ export interface MagnetSpec {
   lpBullets: string[]
 }
 
+// Hosted magnets + covers live in Supabase Storage (public bucket).
+// downloadPath / coverImagePath below are ABSOLUTE URLs — the deliver-magnet
+// route + the ad-card / LP <img> tags all accept absolute URLs unchanged.
+const ASSETS = 'https://vpysqshhafthuxvokwqj.supabase.co/storage/v1/object/public/lead-magnets/seniorsimple/medicare'
+
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
     id: 'decision-kit',
     lpSlug: 'medicare-decision-kit-2026',
     title: '2026 Medicare Decision Kit',
     fileName: 'seniorsimple-medicare-decision-kit-2026.pdf',
-    downloadPath: '/lead-magnets/medicare-decision-kit-2026.pdf',
-    coverImagePath: '/lead-magnets/covers/medicare-decision-kit-2026.svg',
+    downloadPath: `${ASSETS}/medicare-decision-kit-2026.pdf`,
+    coverImagePath: `${ASSETS}/covers/medicare-decision-kit-2026-cover.png`,
     emailSubject: 'Your 2026 Medicare Decision Kit is inside',
     successHeadline: 'Your Decision Kit is on the way.',
     successBody:
@@ -70,8 +75,8 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     lpSlug: 'medicare-estimate',
     title: 'Your Medicare Estimate',
     fileName: 'seniorsimple-medicare-estimate.pdf',
-    downloadPath: '/lead-magnets/medicare-estimate-template.pdf',
-    coverImagePath: '/lead-magnets/covers/medicare-estimate.svg',
+    downloadPath: `${ASSETS}/medicare-estimate-template.pdf`,
+    coverImagePath: `${ASSETS}/covers/medicare-estimate-template-cover.png`,
     emailSubject: 'Your Medicare estimate is inside',
     successHeadline: "Your estimate is on the way.",
     successBody:
@@ -95,8 +100,8 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     lpSlug: 'medicare-starter-guide',
     title: 'Medicare Starter Guide',
     fileName: 'seniorsimple-medicare-starter-guide.pdf',
-    downloadPath: '/lead-magnets/medicare-starter-guide.pdf',
-    coverImagePath: '/lead-magnets/covers/medicare-starter-guide.svg',
+    downloadPath: `${ASSETS}/medicare-starter-guide.pdf`,
+    coverImagePath: `${ASSETS}/covers/medicare-starter-guide-cover.png`,
     emailSubject: 'Your Medicare Starter Guide is inside',
     successHeadline: 'Your Starter Guide is on the way.',
     successBody:
