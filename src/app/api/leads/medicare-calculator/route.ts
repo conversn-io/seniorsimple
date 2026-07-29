@@ -19,6 +19,36 @@ function phoneHash(phone: string | null): string | null {
   return crypto.createHash('sha256').update(phone).digest('hex');
 }
 
+// §1 IDENTITY BRIDGE — canonical person key. Server-computed only; any
+// hem_sha256 sent by the client is ignored per packet §6 ("Compute hem_sha256
+// server-side in the API route (never trust a client hash)."). Matches the
+// generated column on newsletter_subscribers.hem_sha256 exactly.
+function hemSha256(email: string | null | undefined): string | null {
+  if (!email) return null;
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  return crypto.createHash('sha256').update(normalized).digest('hex');
+}
+
+// §2 Medicare Bucket Quiz — 4-bucket taxonomy. Enforced on the CRM side too
+// (public.leads.quiz_bucket CHECK constraint) so an invalid value would 500
+// on insert; catch it here instead.
+const VALID_QUIZ_BUCKETS = ['advantage', 'medigap', 'dual', 'working'] as const;
+type QuizBucket = typeof VALID_QUIZ_BUCKETS[number];
+function normalizeQuizBucket(v: unknown): QuizBucket | null {
+  if (typeof v !== 'string') return null;
+  return (VALID_QUIZ_BUCKETS as readonly string[]).includes(v) ? (v as QuizBucket) : null;
+}
+
+// §2 Medicare Bucket Quiz — Rx level (Part D signal). Enforced by CHECK on
+// newsletter_subscribers.rx_level; validate here for a 400 instead of 500.
+const VALID_RX_LEVELS = ['several', 'few', 'none'] as const;
+type RxLevel = typeof VALID_RX_LEVELS[number];
+function normalizeRxLevel(v: unknown): RxLevel | null {
+  if (typeof v !== 'string') return null;
+  return (VALID_RX_LEVELS as readonly string[]).includes(v) ? (v as RxLevel) : null;
+}
+
 // Helper function to upsert contact
 async function upsertContact(email: string, firstName: string | null, lastName: string | null, phone: string | null) {
   const emailLower = email?.toLowerCase();
@@ -104,7 +134,11 @@ async function upsertLead(
   quizAnswers: any,
   calculatorResults: any,
   utmParams: any,
-  zipCode: string | null
+  zipCode: string | null,
+  hemSha: string | null,
+  quizBucket: QuizBucket | null,
+  articleSlug: string | null,
+  source: string | null
 ) {
   // Generate session ID if not provided
   const finalSessionId = sessionId || crypto.randomUUID();
@@ -136,7 +170,11 @@ async function upsertLead(
     is_verified: true, // No OTP required for calculator leads
     quiz_answers: {
       ...quizAnswers,
-      calculator_results: calculatorResults
+      calculator_results: calculatorResults,
+      // Article-scoped context for the quiz variant. Kept inside quiz_answers
+      // so we don't sprawl new top-level columns for provenance.
+      ...(articleSlug ? { article_slug: articleSlug } : {}),
+      ...(source ? { lead_source: source } : {}),
     },
     zip_code: zipCode,
     utm_source: utmSource,
@@ -145,6 +183,13 @@ async function upsertLead(
     utm_term: utmTerm,
     utm_content: utmContent,
     verified_at: new Date().toISOString(),
+    // §1 IDENTITY BRIDGE — hem stamped from server-computed email hash so
+    // this CRM lead joins v_person_journey on the same key as its
+    // newsletter_subscribers counterpart. Column exists on CRM public.leads.
+    hem_sha256: hemSha,
+    // §2 Medicare Bucket Quiz — resolved lane. Null when this call came
+    // through the plain calculator (no quiz answered).
+    quiz_bucket: quizBucket,
   };
 
   if (existingLead?.id) {
@@ -178,22 +223,53 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📥 Request Body:', JSON.stringify({ ...body, phone: '***' }, null, 2));
     
-    const { 
-      firstName, 
-      lastName, 
-      email, 
-      phone, 
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
       zipCode,
       preferredContact,
       calculatorResults,
       source,
       landingPage,
       sessionId,
+      // §2 Medicare Bucket Quiz — optional. When present, this call came
+      // through MedicareBucketQuiz (standalone or calculator bridge) rather
+      // than the plain calculator form.
+      quizBucket: rawQuizBucket,
+      rxLevel: rawRxLevel,
+      articleSlug,
+      quizAnswers: incomingQuizAnswers,
+      siteKey,
+      // Any hem_sha256 in the payload is deliberately dropped — the packet
+      // requires server-side computation. Do NOT trust a client hash.
+      hemSha256: _ignoredClientHem,
       ...utmParams
     } = body;
 
     if (!email || !phone) {
       return createCorsResponse({ error: 'Email and phone number are required' }, 400);
+    }
+
+    // §1 IDENTITY BRIDGE — canonical person key, server-computed.
+    const hem = hemSha256(email);
+
+    // §2 Medicare Bucket Quiz — validate before writing so bad input returns
+    // a 400 rather than a downstream CHECK-constraint 500.
+    const quizBucket = normalizeQuizBucket(rawQuizBucket);
+    if (rawQuizBucket && !quizBucket) {
+      return createCorsResponse(
+        { error: `quizBucket must be one of ${VALID_QUIZ_BUCKETS.join(', ')}` },
+        400
+      );
+    }
+    const rxLevel = normalizeRxLevel(rawRxLevel);
+    if (rawRxLevel && !rxLevel) {
+      return createCorsResponse(
+        { error: `rxLevel must be one of ${VALID_RX_LEVELS.join(', ')}` },
+        400
+      );
     }
 
     // Find or create contact
@@ -212,13 +288,74 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         zipCode,
-        preferredContact
+        preferredContact,
+        // Preserve quiz-side answers if they were supplied (MedicareBucketQuiz
+        // sends a compact object; the calculator form path leaves this empty).
+        // rx_level is included here for CRM-side visibility even though it's
+        // primarily a newsletter_subscribers column.
+        ...(incomingQuizAnswers && typeof incomingQuizAnswers === 'object'
+          ? { medicare_bucket_quiz: incomingQuizAnswers }
+          : {}),
+        ...(rxLevel ? { rx_level: rxLevel } : {}),
       },
       calculatorResults,
       utmParams,
-      zipCode || null
+      zipCode || null,
+      hem,
+      quizBucket,
+      typeof articleSlug === 'string' ? articleSlug : null,
+      typeof source === 'string' ? source : null
     );
     console.log('✅ Lead upserted:', lead.id);
+
+    // §1 IDENTITY BRIDGE + §2 Bucket — mirror to publishare
+    // newsletter_subscribers so v_person_journey has both sides of the join.
+    // Best-effort: a Publishare failure must not fail the lead write itself,
+    // because the CRM lead is the primary source of truth for revenue. The
+    // subscribe route is idempotent on (email, site_id) and already writes
+    // hem_sha256 via the generated column, so retrying is safe.
+    try {
+      const subscribeSource = quizBucket ? 'article_quiz' : 'form';
+      // Ruling 4: <surface>:<slug>. Quiz path uses medicare-quiz:<article>;
+      // form path uses magnet:<calculator-slug> (bare fallback removed).
+      const subscribeDetail = quizBucket
+        ? `medicare-quiz:${articleSlug || 'unknown'}`
+        : `magnet:${source || 'medicare-cost-calculator'}`;
+      const subscribeRes = await fetch(
+        'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            first_name: firstName || null,
+            zip_code: zipCode || null,
+            site_id: siteKey || 'seniorsimple',
+            source: subscribeSource,
+            source_detail: subscribeDetail,
+            tags: quizBucket ? ['medicare', `bucket:${quizBucket}`] : ['medicare'],
+            // quiz_context triggers `trigger_smart_tagger()` in the edge fn.
+            quiz_context:
+              quizBucket || rxLevel
+                ? {
+                    bucket: quizBucket || null,
+                    rx_level: rxLevel || null,
+                    answers: incomingQuizAnswers || null,
+                  }
+                : undefined,
+            website: '',
+          }),
+        },
+      );
+      if (!subscribeRes.ok) {
+        const body = await subscribeRes.text().catch(() => '');
+        console.warn('⚠️ Publishare subscribe non-OK:', subscribeRes.status, body);
+      } else {
+        console.log('✅ Publishare subscribe mirrored');
+      }
+    } catch (subErr) {
+      console.error('❌ Publishare subscribe error (non-fatal):', subErr);
+    }
 
     // Prepare GHL webhook payload
     const formattedPhone = formatPhoneForGHL(phone);

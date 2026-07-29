@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator' // Using Medicare calculator as placeholder for LTC planning
+import Calculator from '@/components/calculators/Calculator'
+import { medicareKit } from '@/lib/capture-kits/medicare' // Using Medicare calculator as placeholder for LTC planning
 import FullWidthCalculatorEmbed from '@/components/content/FullWidthCalculatorEmbed'
 
 interface LongTermCarePlanningStrategyGuideProps {
@@ -37,7 +38,7 @@ const LongTermCarePlanningStrategyGuide: React.FC<LongTermCarePlanningStrategyGu
         description="Use our interactive calculator to estimate your long-term care costs, including in-home care, assisted living, and nursing home expenses. Plan for your future care needs and explore funding options."
         theme="purple"
       >
-        <MedicareCostCalculator /> {/* Placeholder for dedicated LTC calculator */}
+        <Calculator vertical="medicare" /> {/* Placeholder for dedicated LTC calculator */}
       </FullWidthCalculatorEmbed>
 
       {/* Article Content - Second Part */}

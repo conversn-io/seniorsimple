@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import Calculator from '@/components/calculators/Calculator'
+import { medicareKit } from '@/lib/capture-kits/medicare'
 import FullWidthCalculatorEmbed from '@/components/content/FullWidthCalculatorEmbed'
 
 interface MedicarePlanningStrategyGuideProps {
@@ -36,7 +37,7 @@ const MedicarePlanningStrategyGuide: React.FC<MedicarePlanningStrategyGuideProps
         title="Medicare Cost Calculator"
         description="Use our interactive calculator to estimate your Medicare costs and plan for healthcare expenses in retirement. Get personalized estimates based on your income, location, and coverage choices."
       >
-        <MedicareCostCalculator />
+        <Calculator vertical="medicare" />
       </FullWidthCalculatorEmbed>
 
       {/* Article Content - Second Part */}
