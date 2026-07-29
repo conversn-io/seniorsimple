@@ -1,0 +1,357 @@
+/**
+ * GET /out/[slug]/[slot]
+ *
+ * The mega-listicle click router. Resolves an advertorial + slot, picks the
+ * live offer (offer_id → weighted rotation → fallback_url → advertorial page),
+ * captures native tracking (s1..s8 + source), logs a click row (id === click_id),
+ * substitutes {CLICK_ID}/{SUB_ID}/{S1..S8} into the offer's tracking template,
+ * and 302 redirects to the network. Target < 50ms.
+ *
+ * Copy this file to: app/out/[slug]/[slot]/route.ts (in the property app)
+ *
+ * Design: 00 - Reports/mega_listicle_backend_design_2026-07-15.md §2.
+ */
+
+import { NextRequest, NextResponse, after } from 'next/server'
+import { createHash, randomUUID } from 'crypto'
+import {
+  assembleTracking,
+  captureQueryTracking,
+  encodeSubId,
+  inferSourceFromReferrer,
+  mintCbTid,
+  pickRotationOffer,
+  substituteTemplate,
+  type RotationEntry,
+} from '@/advertorial-kit/lib/router'
+import { getAdvertorialSupabase } from '@/advertorial-kit/lib/supabase-admin'
+import { getSiteId } from '@/advertorial-kit/lib/get-site-id'
+import { parseSsAttrCookie, SS_ATTR_COOKIE } from '@/advertorial-kit/lib/inbound-subs'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+function hashIp(ip: string): string {
+  return createHash('sha256')
+    .update(ip + (process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''))
+    .digest('hex')
+}
+
+function readClientIp(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'anonymous'
+  )
+}
+
+function absoluteFallback(req: NextRequest, path: string): string {
+  return new URL(path, req.url).toString()
+}
+
+// --- Click-quality classification ---------------------------------------
+// Matches the SQL backfill in migration `advertorial_clicks_measurement_flags`.
+// Keep the two in sync — divergence would produce backfilled rows that don't
+// match live inserts.
+
+const BOT_UA_RE =
+  /(curl|wget|python-requests|httpx|go-http|axios|node-fetch|headless|phantom|puppeteer|playwright|bot|crawler|spider|slurp|facebookexternalhit|bingpreview|google favicon|ahrefs|semrush|dataforseo)/i
+
+function classifyBot(userAgent: string | null): boolean {
+  if (!userAgent || !userAgent.trim()) return true
+  return BOT_UA_RE.test(userAgent)
+}
+
+function classifyPrefetch(req: NextRequest): boolean {
+  // Purpose:prefetch (Chrome/Safari legacy), Sec-Purpose:prefetch/prerender (spec),
+  // X-Moz:prefetch (Firefox), X-Purpose:preview (Safari Reader).
+  const purpose = req.headers.get('purpose')?.toLowerCase() ?? ''
+  const secPurpose = req.headers.get('sec-purpose')?.toLowerCase() ?? ''
+  const xMoz = req.headers.get('x-moz')?.toLowerCase() ?? ''
+  const xPurpose = req.headers.get('x-purpose')?.toLowerCase() ?? ''
+  return (
+    purpose.includes('prefetch') ||
+    secPurpose.includes('prefetch') ||
+    secPurpose.includes('prerender') ||
+    xMoz.includes('prefetch') ||
+    xPurpose.includes('preview')
+  )
+}
+
+function deriveQuality(args: {
+  isBot: boolean
+  isPrefetch: boolean
+  isUnique: boolean
+}): 'bot' | 'prefetch' | 'dup' | 'human' {
+  if (args.isBot) return 'bot'
+  if (args.isPrefetch) return 'prefetch'
+  if (!args.isUnique) return 'dup'
+  return 'human'
+}
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ slug: string; slot: string }> },
+) {
+  const { slug, slot: slotParam } = await ctx.params
+  const slotKey = Number.parseInt(slotParam, 10)
+  if (!slug || !Number.isFinite(slotKey)) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
+  const supabase = getAdvertorialSupabase()
+  const appSiteId = getSiteId()
+
+  // 1. Resolve advertorial (live-only) — must belong to this app's site.
+  //    In Architecture B each property app owns its site_id from env; a slug
+  //    from a different property just 404s.
+  const { data: advertorial, error: advertorialErr } = await supabase
+    .from('advertorials')
+    .select('id, site_id, status')
+    .eq('slug', slug)
+    .eq('status', 'live')
+    .maybeSingle()
+
+  if (advertorialErr || !advertorial) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+  if (advertorial.site_id !== appSiteId) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
+  const { data: slotRow, error: slotErr } = await supabase
+    .from('advertorial_slots')
+    .select('id, slot_key, offer_id, rotation, fallback_url, is_active')
+    .eq('advertorial_id', advertorial.id)
+    .eq('slot_key', slotKey)
+    .maybeSingle()
+
+  if (slotErr || !slotRow || !slotRow.is_active) {
+    return NextResponse.redirect(absoluteFallback(req, `/lp/${slug}`), 302)
+  }
+
+  // 2. Pick offer: rotation → offer_id → fallback → advertorial page.
+  const rotation = Array.isArray(slotRow.rotation)
+    ? (slotRow.rotation as RotationEntry[])
+    : []
+  const pickedOfferId = pickRotationOffer(rotation) ?? slotRow.offer_id ?? null
+
+  // 3. Capture tracking per the canonical taxonomy (see router.ts header).
+  //    s1 = brand (server state)
+  //    s2 = source (query or referrer inference)
+  //    s3 = component (CTA-provided via ?component=<type>)
+  //    s4..s6, s8 = query
+  //    s7 = variant (CTA-provided via ?variant=<id>)
+  //    slug + slot_key = reconciliation-only, encoded into sub_id
+  const url = new URL(req.url)
+  const referrer = req.headers.get('referer')
+
+  // Merge Referer params BEFORE captureQueryTracking so click-id macros the LP
+  // received (e.g. newsbreak_cid=nvss_…) survive into /out when the CTA link
+  // itself doesn't carry them. LP → /out link generation often drops query
+  // params; the Referer header still has them.
+  const mergedParams = new URLSearchParams(url.searchParams.toString())
+  if (referrer) {
+    try {
+      const refUrl = new URL(referrer)
+      refUrl.searchParams.forEach((value, key) => {
+        if (!mergedParams.has(key)) mergedParams.set(key, value)
+      })
+    } catch { /* invalid referer — ignore */ }
+  }
+
+  // Cookie fallback (attribution-leak mitigation). LP's <meta name="referrer"
+  // content="no-referrer"> strips the Referer header, and mobile in-app browsers
+  // often strip URL params between the initial landing and the /out click. The
+  // ss_attr cookie is stamped by middleware on the first LP visit that carried
+  // subs, so we can recover s2/s4/s5/s6/s7/s8 here as a last resort before
+  // falling back to defaults.
+  const ssAttrRaw = req.cookies.get(SS_ATTR_COOKIE)?.value ?? null
+  const fromCookie = parseSsAttrCookie(ssAttrRaw)
+  const setIfMissing = (key: string, value: string | null) => {
+    if (value && !mergedParams.has(key)) mergedParams.set(key, value)
+  }
+  // Router reads `source` (not `s2`) as the s2 alias — see router.ts §captureQueryTracking.
+  setIfMissing('source', fromCookie.s2)
+  setIfMissing('s4', fromCookie.s4)
+  setIfMissing('s5', fromCookie.s5)
+  setIfMissing('s6', fromCookie.s6)
+  setIfMissing('s7', fromCookie.s7)
+  setIfMissing('s8', fromCookie.s8)
+
+  const query = captureQueryTracking(mergedParams)
+  const componentType = url.searchParams.get('component') || null
+  const tracking = assembleTracking({
+    brand: advertorial.site_id,
+    component: componentType,
+    queryCapture: {
+      ...query,
+      source: query.source ?? inferSourceFromReferrer(referrer),
+    },
+  })
+  const subId = encodeSubId(tracking, { slug, slotKey })
+
+  // 4. Load offer template (metadata.tracking_template preferred over offer_url).
+  //    Also grab `source` so we know when to mint a compact ClickBank tid.
+  let offerTemplate: string | null = null
+  let resolvedOfferId: string | null = null
+  let offerSource: string | null = null
+  if (pickedOfferId) {
+    const { data: offer } = await supabase
+      .from('affiliate_offers')
+      .select('id, offer_url, metadata, is_active, source')
+      .eq('id', pickedOfferId)
+      .maybeSingle()
+
+    if (offer && offer.is_active !== false) {
+      const meta = (offer.metadata ?? {}) as Record<string, unknown>
+      const template =
+        typeof meta.tracking_template === 'string' && meta.tracking_template.length > 0
+          ? (meta.tracking_template as string)
+          : typeof offer.offer_url === 'string'
+            ? offer.offer_url
+            : null
+      if (template) {
+        offerTemplate = template
+        resolvedOfferId = offer.id
+        offerSource = typeof offer.source === 'string' ? offer.source : null
+      }
+    }
+  }
+
+  // 5. Log click (id === click_id).
+  //    Classify measurement quality at insert time so the raw row IS the
+  //    reporting truth (v_advertorial_clicks_clean reads flags, not derives them).
+  //    Bots/prefetch always non-unique. Dedupe lookup only runs for real humans
+  //    to keep the redirect fast (partial index makes it a single index-only scan).
+  const userAgent = req.headers.get('user-agent')
+  const ipHash = hashIp(readClientIp(req))
+  const isBot = classifyBot(userAgent)
+  const isPrefetch = !isBot && classifyPrefetch(req)
+
+  let isUnique = true
+  if (!isBot && !isPrefetch) {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    const { data: priorHuman } = await supabase
+      .from('advertorial_clicks')
+      .select('id')
+      .eq('ip_hash', ipHash)
+      .eq('slot_id', slotRow.id)
+      .eq('is_bot', false)
+      .eq('is_prefetch', false)
+      .gte('ts', thirtyMinAgo)
+      .limit(1)
+      .maybeSingle()
+    if (priorHuman?.id) isUnique = false
+  } else {
+    isUnique = false
+  }
+
+  const clickQuality = deriveQuality({ isBot, isPrefetch, isUnique })
+
+  // 6. Resolve destination BEFORE insert so the row can persist dest_url + tid
+  //    in a single write. Prior version fire-and-forget-updated dest_url after
+  //    the 302, which Vercel's serverless runtime cut off — 100% of last-7d
+  //    rows had dest_url NULL.
+  //
+  //    Client-side UUID = advertorial_clicks.id = {CLICK_ID} macro. Postgres
+  //    would generate one on insert; generating it here first is equally safe
+  //    and lets the substituted URL include it.
+  const clickId = randomUUID()
+
+  // ClickBank passes exactly one attribution param — tid — and rejects
+  // anything with punctuation. Mint a compact alphanumeric id encoding
+  // network+creative+variant; persist it on the row so the INS postback
+  // (which returns tid) joins back to the exact creative.
+  const cbTid = offerSource === 'clickbank' ? mintCbTid(tracking) : null
+
+  let destUrl: string
+  if (offerTemplate) {
+    destUrl = substituteTemplate({
+      template: offerTemplate,
+      clickId,
+      subId,
+      siteId: advertorial.site_id,
+      tracking,
+      cbTid,
+    })
+  } else if (slotRow.fallback_url) {
+    destUrl = slotRow.fallback_url
+  } else {
+    destUrl = absoluteFallback(req, `/lp/${slug}`)
+  }
+
+  const clickRow = {
+    id: clickId,
+    advertorial_id: advertorial.id,
+    slot_id: slotRow.id,
+    offer_id: resolvedOfferId,
+    ip_hash: ipHash,
+    user_agent: userAgent,
+    referrer,
+    s1: tracking.s1, s2: tracking.s2, s3: tracking.s3, s4: tracking.s4,
+    s5: tracking.s5, s6: tracking.s6, s7: tracking.s7, s8: tracking.s8,
+    source: tracking.source,
+    sub_id: subId,
+    dest_url: destUrl,
+    tid: cbTid,
+    is_bot: isBot,
+    is_prefetch: isPrefetch,
+    is_unique: isUnique,
+    click_quality: clickQuality,
+  }
+
+  const { error: clickErr } = await supabase
+    .from('advertorial_clicks')
+    .insert(clickRow)
+  if (clickErr) {
+    console.error('[out] advertorial_clicks insert failed', clickErr)
+  }
+
+  // Fire outbound conversion signal to the originating ad network (Taboola, NewsBreak, etc.)
+  // via CRM's native-postback-ingest → dispatcher → per-network adapter. This is the
+  // upper-funnel signal — user clicked an advertorial CTA and is being sent to an affiliate.
+  //
+  // event=initiate_checkout maps to NB `initiate_checkout` (and comparable upper-funnel events
+  // on other networks). This is distinct from the lead-accept `submit_form` NB event that
+  // fires when the AFFILIATE later postbacks their Base/accepted conversion.
+  //
+  // Non-blocking: dispatched asynchronously so it doesn't add latency to the 302 redirect.
+  // We reference the ad network's ORIGINAL click_id (tracking.s8) so the network can attribute
+  // the conversion; source=own_checkout tags this row as an internal-fired conversion.
+  // Only fire for real human clicks — bots/prefetch/dups would poison
+  // Taboola's optimization signal (they'd think a bot or a rapid re-tap is a
+  // real initiate_checkout). See migration `advertorial_clicks_measurement_flags`.
+  const ownCheckoutSecret = process.env.NATIVE_POSTBACK_SECRET_OWN_CHECKOUT
+  if (clickQuality === 'human' && tracking.s8 && tracking.source && ownCheckoutSecret) {
+    const dispatchUrl = new URL(
+      'https://jqjftrlnyysqcwbbigpw.supabase.co/functions/v1/native-postback-ingest',
+    )
+    dispatchUrl.searchParams.set('source', 'own_checkout')
+    dispatchUrl.searchParams.set('secret', ownCheckoutSecret)
+    dispatchUrl.searchParams.set('click_id', tracking.s8)
+    dispatchUrl.searchParams.set('event', 'initiate_checkout')
+    dispatchUrl.searchParams.set('s2_network', tracking.source)
+    if (tracking.s1) dispatchUrl.searchParams.set('s1_brand', tracking.s1)
+    if (tracking.s3) dispatchUrl.searchParams.set('s3_offer', tracking.s3)
+    if (tracking.s4) dispatchUrl.searchParams.set('s4_angle', tracking.s4)
+    if (subId) dispatchUrl.searchParams.set('lead_id', subId)
+    // Schedule dispatch AFTER the 302 response is sent. In Vercel's serverless
+    // Node runtime, a bare `void fetch(…)` gets cut off when the function returns —
+    // `after()` keeps the function alive until this callback resolves so the
+    // postback actually lands. Redirect latency is unaffected.
+    after(async () => {
+      try {
+        const res = await fetch(dispatchUrl.toString(), { method: 'GET', cache: 'no-store' })
+        if (!res.ok) {
+          const body = await res.text()
+          console.warn('[out] native-postback-ingest', res.status, body.slice(0, 300))
+        }
+      } catch (err) {
+        console.error('[out] native-postback-ingest dispatch failed', err)
+      }
+    })
+  }
+
+  return NextResponse.redirect(destUrl, 302)
+}

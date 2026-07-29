@@ -1,0 +1,747 @@
+/* Family Peace Plan funnel — scoped design tokens.
+   Applied via a `.fpp` root wrapper so we don't pollute the global theme. */
+.fpp {
+  --fpp-teal: #36596A;
+  --fpp-teal-ink: #274655;
+  --fpp-cream: #F7F5EF;
+  --fpp-cream-2: #EFEBDF;
+  --fpp-gold: #E4CDA1;
+  --fpp-gold-ink: #A98B4E;
+  --fpp-ink: #26313A;
+  --fpp-muted: #6E6A5F;
+  --fpp-line: #E7E1D2;
+  --fpp-good: #1D7A5A;
+  --fpp-page-bg: #EDEAE0;
+  /* Fonts: if the route wrapper injects `--font-playfair` / `--font-geist-sans`,
+     they take over as the DR-editorial pair; otherwise we fall back to the
+     safe stack from PR #35. */
+  --fpp-serif: var(--font-playfair, Georgia, "Times New Roman", serif);
+  --fpp-sans: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+
+  background: var(--fpp-page-bg);
+  color: var(--fpp-ink);
+  font-family: var(--fpp-serif);
+  font-size: 19px;
+  line-height: 1.62;
+}
+.fpp *, .fpp *::before, .fpp *::after { box-sizing: border-box; }
+.fpp-sans { font-family: var(--fpp-sans); }
+
+/* Shared page frame */
+.fpp-bar {
+  background: var(--fpp-teal);
+  color: #fff;
+  text-align: center;
+  font-family: var(--fpp-sans);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 8px;
+}
+.fpp-page { max-width: 720px; margin: 0 auto; background: #fff; }
+.fpp-page--narrow { max-width: 640px; }
+.fpp-inner { padding: 34px 40px 46px; }
+.fpp-inner--narrow { padding: 26px 34px 40px; }
+.fpp-eyebrow {
+  font-family: var(--fpp-sans);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fpp-gold-ink);
+  font-weight: 700;
+}
+.fpp h1 { font-size: 35px; line-height: 1.18; color: var(--fpp-teal); font-weight: 600; margin: 10px 0 12px; }
+.fpp h2 { font-size: 26px; color: var(--fpp-teal); font-weight: 600; margin: 30px 0 10px; }
+.fpp .fpp-dek { font-size: 20px; color: #3d4a53; margin: 0 0 22px; }
+.fpp p { margin: 0 0 18px; }
+.fpp .fpp-lead::first-letter {
+  font-size: 58px; float: left; line-height: 0.86; padding: 6px 10px 0 0;
+  color: var(--fpp-teal); font-weight: 700;
+}
+.fpp-byline {
+  font-family: var(--fpp-sans);
+  font-size: 13px;
+  color: var(--fpp-muted);
+  border-top: 1px solid var(--fpp-line);
+  border-bottom: 1px solid var(--fpp-line);
+  padding: 10px 0;
+  margin-bottom: 22px;
+}
+.fpp-hero {
+  width: 100%; height: 300px; border-radius: 12px;
+  background: linear-gradient(135deg, #EFEBDF, #DDE7E6);
+  display: flex; align-items: center; justify-content: center;
+  color: #9aa7a0; font-family: var(--fpp-sans); font-size: 13px;
+  margin-bottom: 26px; text-align: center;
+}
+.fpp-hero-photo {
+  width: 100%; border-radius: 12px; overflow: hidden;
+  margin: 0 0 26px; line-height: 0; background: #EFEBDF;
+}
+.fpp-hero-photo img {
+  width: 100%; height: auto; display: block;
+}
+.fpp-pull {
+  border-left: 4px solid var(--fpp-gold);
+  background: var(--fpp-cream);
+  padding: 14px 20px;
+  margin: 24px 0;
+  font-size: 21px;
+  color: var(--fpp-teal-ink);
+  border-radius: 0 8px 8px 0;
+}
+.fpp-inside {
+  background: var(--fpp-cream);
+  border: 1px solid var(--fpp-line);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin: 26px 0;
+  font-family: var(--fpp-sans);
+}
+.fpp-inside h3 { font-family: var(--fpp-serif); color: var(--fpp-teal); font-size: 20px; margin: 0 0 14px; }
+.fpp-inside-row { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--fpp-line); font-size: 15px; line-height: 1.45; }
+.fpp-inside-row:last-child { border-bottom: none; }
+.fpp-inside-ic { color: var(--fpp-teal); font-size: 20px; flex-shrink: 0; width: 24px; text-align: center; }
+.fpp-quote {
+  background: #fff; border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 18px 20px; margin: 20px 0;
+}
+.fpp-quote p { font-size: 18px; font-style: italic; color: #3d4a53; margin: 0 0 8px; }
+.fpp-quote-who { font-family: var(--fpp-sans); font-size: 13px; color: var(--fpp-muted); font-style: normal; }
+.fpp-stars { color: #E0B94A; letter-spacing: 2px; }
+
+/* CTA card (teal) */
+.fpp-cta-card {
+  background: var(--fpp-teal); color: #fff;
+  border-radius: 16px; padding: 30px 30px 28px;
+  margin: 32px 0 10px; font-family: var(--fpp-sans); text-align: center;
+}
+.fpp-cta-card .k { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fpp-gold); font-weight: 700; }
+.fpp-cta-card .ttl { font-family: var(--fpp-serif); font-size: 27px; font-weight: 600; margin: 6px 0 6px; line-height: 1.2; }
+.fpp-cta-card .sub { color: #CFE0E6; font-size: 16px; margin: 0 auto 20px; max-width: 460px; line-height: 1.5; }
+.fpp-cta-card .micro { font-size: 13px; color: #CFE0E6; }
+
+/* Gold CTA button */
+.fpp-cta {
+  display: inline-block;
+  background: var(--fpp-gold);
+  color: #3a2f12;
+  font-weight: 700;
+  font-size: 19px;
+  text-decoration: none;
+  padding: 16px 42px;
+  border-radius: 10px;
+  margin: 2px 0 12px;
+  letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
+  font-family: var(--fpp-sans);
+}
+.fpp-cta:hover { filter: brightness(0.97); }
+.fpp-cta:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* Compliance footer */
+.fpp-foot {
+  font-family: var(--fpp-sans);
+  font-size: 12px;
+  color: #8a857a;
+  line-height: 1.55;
+  border-top: 1px solid var(--fpp-line);
+  padding: 18px 40px 40px;
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fff;
+}
+.fpp-foot--narrow { max-width: 640px; padding: 18px 34px 40px; }
+
+/* Draft badge (feature-flag hint) */
+.fpp-draft-badge {
+  position: sticky; top: 0; z-index: 50;
+  background: #B15A3C; color: #fff;
+  font-family: var(--fpp-sans); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 6px 12px; text-align: center;
+}
+
+/* Quiz-specific */
+.fpp-quiz { font-family: var(--fpp-sans); font-size: 18px; line-height: 1.55; }
+.fpp-quiz h1 { font-family: var(--fpp-serif); font-size: 31px; line-height: 1.2; margin: 6px 0 12px; }
+.fpp-brandrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.fpp-brand { font-family: var(--fpp-sans); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fpp-gold-ink); font-weight: 700; }
+.fpp-count { font-size: 13px; color: var(--fpp-muted); }
+.fpp-progress { height: 8px; background: var(--fpp-cream-2); border-radius: 99px; overflow: hidden; margin-bottom: 30px; }
+.fpp-progress-fill { height: 100%; background: var(--fpp-teal); border-radius: 99px; transition: width 0.35s ease; }
+.fpp-q { font-family: var(--fpp-serif); font-size: 25px; line-height: 1.28; color: var(--fpp-teal); font-weight: 600; margin: 4px 0 8px; }
+.fpp-why {
+  font-size: 14px; color: var(--fpp-muted);
+  background: var(--fpp-cream); border-left: 3px solid var(--fpp-gold);
+  padding: 9px 14px; border-radius: 0 8px 8px 0; margin: 0 0 22px;
+}
+.fpp-opts { display: flex; flex-direction: column; gap: 12px; }
+.fpp-opt {
+  display: block; width: 100%; text-align: left;
+  background: #fff; border: 2px solid var(--fpp-line); border-radius: 12px;
+  padding: 17px 20px; font-size: 18px; color: var(--fpp-ink);
+  cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.fpp-opt:hover { border-color: var(--fpp-teal); background: var(--fpp-cream); }
+.fpp-opt:focus-visible { outline: 3px solid var(--fpp-gold); }
+.fpp-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+.fpp-back { background: none; border: none; color: var(--fpp-muted); font-size: 15px; cursor: pointer; font-family: inherit; padding: 8px; }
+.fpp-back:hover { color: var(--fpp-teal); }
+.fpp-field { margin: 0 0 16px; }
+.fpp-field label { display: block; font-size: 14px; font-weight: 700; color: var(--fpp-teal-ink); margin-bottom: 6px; }
+.fpp-field input { width: 100%; padding: 15px 16px; font-size: 18px; border: 2px solid var(--fpp-line); border-radius: 10px; font-family: inherit; }
+.fpp-field input:focus { outline: none; border-color: var(--fpp-teal); }
+.fpp-consent { font-size: 13px; color: var(--fpp-muted); margin: 14px 0 20px; line-height: 1.5; }
+.fpp-trust { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 22px; font-size: 13px; color: var(--fpp-muted); }
+.fpp-trust span { white-space: nowrap; }
+.fpp-capwrap { text-align: center; }
+.fpp-lock { font-size: 13px; color: var(--fpp-good); font-weight: 700; margin-bottom: 8px; }
+.fpp-scorecard {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line);
+  border-radius: 16px; padding: 26px 26px 22px; text-align: center; margin: 6px 0 22px;
+}
+.fpp-meter { height: 14px; background: #E3DECF; border-radius: 99px; overflow: hidden; margin: 16px 0 10px; }
+.fpp-meter-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+.fpp-band { font-family: var(--fpp-serif); font-size: 26px; font-weight: 600; margin: 4px 0 2px; }
+.fpp-scoreline { font-size: 15px; color: var(--fpp-muted); }
+.fpp-offer-card {
+  background: var(--fpp-teal); color: #fff; border-radius: 16px;
+  padding: 28px 28px 26px; text-align: center; margin: 22px 0 8px;
+  font-family: var(--fpp-sans);
+}
+.fpp-offer-card .k { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fpp-gold); font-weight: 700; }
+.fpp-offer-card .ttl { font-family: var(--fpp-serif); font-size: 25px; font-weight: 600; margin: 6px 0 8px; }
+.fpp-offer-card .sub { color: #CFE0E6; font-size: 16px; margin: 0 auto 20px; max-width: 440px; line-height: 1.5; }
+.fpp-checkmsg {
+  background: #E8F3EE; border: 1px solid #BFE0D0; color: #1D5C44;
+  border-radius: 10px; padding: 12px 16px; font-size: 14px;
+  margin: 0 0 18px; text-align: center;
+}
+
+/* Offer page-specific */
+.fpp-qlist {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line);
+  border-radius: 14px; padding: 20px 24px; margin: 24px 0;
+  font-family: var(--fpp-sans); font-size: 17px;
+}
+.fpp-qlist > div { padding: 6px 0 6px 26px; position: relative; }
+.fpp-qlist > div::before {
+  content: "\201C"; position: absolute; left: 6px; top: 6px;
+  color: var(--fpp-gold-ink); font-size: 22px; font-family: var(--fpp-serif);
+}
+.fpp-bullets { font-family: var(--fpp-sans); font-size: 17px; padding-left: 0; list-style: none; margin: 20px 0; }
+.fpp-bullets li { position: relative; padding: 8px 0 8px 30px; border-bottom: 1px solid var(--fpp-line); }
+.fpp-bullets li::before { content: "\2713"; position: absolute; left: 2px; top: 8px; color: var(--fpp-good); font-weight: 700; }
+.fpp-steps { background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 14px; padding: 20px 24px; margin: 24px 0; font-family: var(--fpp-sans); }
+.fpp-how { font-family: var(--fpp-serif); color: var(--fpp-teal); font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+.fpp-step { display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; font-size: 16px; }
+.fpp-step-n {
+  background: var(--fpp-teal); color: #fff; min-width: 26px; height: 26px;
+  border-radius: 50%; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 14px;
+}
+.fpp-friction { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--fpp-line); font-size: 14px; color: var(--fpp-gold-ink); font-weight: 700; }
+.fpp-offer {
+  background: var(--fpp-teal); color: #fff; border-radius: 16px;
+  padding: 30px 30px 26px; margin: 32px 0 10px;
+  font-family: var(--fpp-sans); text-align: center;
+}
+.fpp-offer .k { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fpp-gold); font-weight: 700; }
+.fpp-offer .ttl { font-family: var(--fpp-serif); font-size: 28px; font-weight: 600; margin: 6px 0 2px; }
+.fpp-offer .sub { color: #CFE0E6; font-size: 15px; margin-bottom: 18px; }
+.fpp-stack { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; text-align: left; margin: 0 auto 18px; max-width: 460px; }
+.fpp-stack-li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.16); font-size: 15px; }
+.fpp-stack-li:last-child { border-bottom: none; }
+.fpp-stack-li .val { color: #CFE0E6; white-space: nowrap; }
+.fpp-stack-li.free .val { color: var(--fpp-gold); font-weight: 700; }
+.fpp-tot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0 2px; font-weight: 700; font-size: 15px; }
+.fpp-price { margin: 10px 0 4px; }
+.fpp-price .old { color: #9fb4bd; text-decoration: line-through; font-size: 19px; margin-right: 10px; }
+.fpp-price .new { font-family: var(--fpp-serif); font-size: 46px; font-weight: 600; color: #fff; }
+.fpp-price .note { display: block; color: #CFE0E6; font-size: 13px; margin-top: 2px; }
+.fpp-cta-lg {
+  display: inline-block; background: var(--fpp-gold); color: #3a2f12;
+  font-weight: 700; font-size: 20px; text-decoration: none;
+  padding: 16px 46px; border-radius: 10px; margin: 14px 0 8px;
+  letter-spacing: 0.01em; border: none; cursor: pointer; font-family: var(--fpp-sans);
+}
+.fpp-cta-lg:hover { filter: brightness(0.97); }
+.fpp-guar-badge { font-size: 13px; color: #CFE0E6; }
+.fpp-bumps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; }
+.fpp-bump {
+  background: var(--fpp-cream); border: 1px dashed var(--fpp-gold-ink);
+  border-radius: 10px; padding: 14px 18px; font-family: var(--fpp-sans);
+  font-size: 14px; color: #5a5346; text-align: left;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.fpp-bump b { color: var(--fpp-teal-ink); }
+.fpp-bump .chk { color: var(--fpp-gold-ink); font-size: 18px; flex-shrink: 0; line-height: 1.35; }
+.fpp-guarantee {
+  background: #fff; border: 2px solid var(--fpp-gold);
+  border-radius: 14px; padding: 22px 26px; margin: 28px 0;
+}
+.fpp-guarantee h3 { font-family: var(--fpp-serif); color: var(--fpp-teal); font-size: 22px; margin: 0 0 8px; }
+.fpp-guarantee p { font-size: 17px; margin: 0; }
+
+/* Mobile refinements — keep large print for 55+ */
+@media (max-width: 600px) {
+  .fpp-inner { padding: 24px 22px 32px; }
+  .fpp-inner--narrow { padding: 22px 20px 28px; }
+  .fpp h1 { font-size: 28px; }
+  .fpp h2 { font-size: 22px; }
+  .fpp-q { font-size: 22px; }
+  .fpp-cta, .fpp-cta-lg { width: 100%; padding: 16px 20px; }
+  .fpp-foot, .fpp-foot--narrow { padding: 18px 22px 32px; }
+}
+
+/* ============================================================================
+   Sales-Letter route (`/the-simple-life/family-peace-plan-letter`) styles.
+   Everything below is scoped under `.fpp.fpp-letter` so it doesn't affect the
+   PR #35 advertorial / quiz / offer routes.
+   ============================================================================ */
+
+.fpp-letter { font-size: 18px; line-height: 1.7; }
+.fpp-letter .fpp-inner { padding: 46px 40px 46px; }
+.fpp-letter h1 { font-size: clamp(32px, 5.2vw, 46px); line-height: 1.15; margin: 6px 0 18px; letter-spacing: -0.005em; }
+.fpp-letter h2 { font-size: clamp(24px, 4vw, 30px); line-height: 1.22; margin: 34px 0 14px; }
+.fpp-letter h3 { font-family: var(--fpp-serif); font-size: clamp(20px, 3vw, 24px); color: var(--fpp-teal); font-weight: 600; margin: 28px 0 10px; }
+.fpp-letter .fpp-dek { font-size: clamp(17px, 2.1vw, 20px); line-height: 1.55; color: #3d4a53; margin: 0 0 26px; }
+.fpp-letter p { font-family: var(--fpp-serif); font-size: clamp(17px, 2vw, 19px); line-height: 1.7; margin: 0 0 20px; }
+
+/* Product photo frames — replace PR #35's `.fpp-hero-photo` with an unpadded
+   figure that lets the photo breathe end-to-end in the column. */
+.fpp-letter figure { margin: 26px 0 30px; }
+.fpp-letter figure.fpp-photo { border-radius: 14px; overflow: hidden; background: #EFEBDF; line-height: 0; }
+.fpp-letter figure.fpp-photo img { width: 100%; height: auto; display: block; }
+.fpp-letter figcaption { font-family: var(--fpp-sans); font-size: 13px; color: var(--fpp-muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+
+/* Drop-cap on the Bob lead paragraph. */
+.fpp-letter .fpp-lead::first-letter {
+  font-family: var(--fpp-serif);
+  font-size: 62px; float: left; line-height: 0.86;
+  padding: 8px 12px 0 0; color: var(--fpp-teal); font-weight: 700;
+}
+
+/* Guessing Gap™ 3-chip diagram — CSS only, no image. */
+.fpp-letter .fpp-gap-diagram {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center; gap: 10px;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 14px;
+  padding: 22px 20px; margin: 22px 0 24px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-gap-chip {
+  background: #fff; border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 14px 12px; text-align: center; font-size: 14px; line-height: 1.35;
+  color: var(--fpp-teal-ink); font-weight: 600;
+}
+.fpp-letter .fpp-gap-arrow {
+  color: var(--fpp-gold-ink); font-size: 22px; font-weight: 700; text-align: center;
+}
+@media (max-width: 640px) {
+  .fpp-letter .fpp-gap-diagram { grid-template-columns: 1fr; }
+  .fpp-letter .fpp-gap-arrow { transform: rotate(90deg); font-size: 18px; }
+}
+
+/* "Mistake almost every family makes" question block. */
+.fpp-letter .fpp-questions {
+  background: var(--fpp-cream); border-left: 4px solid var(--fpp-gold);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 24px; margin: 22px 0 24px;
+  font-family: var(--fpp-serif); font-style: italic; font-size: 18px;
+  color: var(--fpp-teal-ink); line-height: 1.6;
+}
+.fpp-letter .fpp-questions p { margin: 0 0 10px; font-style: italic; font-size: inherit; }
+.fpp-letter .fpp-questions p:last-child { margin: 0; }
+
+/* Numbered steps for the Sunday Afternoon Method. */
+.fpp-letter .fpp-method-steps {
+  list-style: none; padding: 0; margin: 20px 0 26px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.fpp-letter .fpp-method-steps li {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 16px 20px;
+  font-family: var(--fpp-sans); font-size: 16px; line-height: 1.55; color: var(--fpp-ink);
+}
+.fpp-letter .fpp-method-steps li b { color: var(--fpp-teal-ink); }
+.fpp-letter .fpp-method-num {
+  background: var(--fpp-teal); color: #fff;
+  min-width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fpp-sans); font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+
+/* What's-inside checklist. */
+.fpp-letter .fpp-checklist { list-style: none; padding: 0; margin: 18px 0 26px; }
+.fpp-letter .fpp-checklist li {
+  position: relative; padding: 10px 0 10px 32px;
+  border-bottom: 1px solid var(--fpp-line);
+  font-family: var(--fpp-sans); font-size: 16px; line-height: 1.55; color: var(--fpp-ink);
+}
+.fpp-letter .fpp-checklist li:last-child { border-bottom: none; }
+.fpp-letter .fpp-checklist li::before {
+  content: "✓"; position: absolute; left: 4px; top: 10px;
+  color: var(--fpp-good); font-weight: 700; font-size: 16px;
+}
+
+/* Value stack (publisher voice — no infomercial strikethrough). */
+.fpp-letter .fpp-value-table {
+  width: 100%; border-collapse: collapse; margin: 20px 0 22px;
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 14px;
+  overflow: hidden; font-family: var(--fpp-sans); font-size: 15px;
+}
+.fpp-letter .fpp-value-table td {
+  padding: 14px 20px; border-bottom: 1px solid var(--fpp-line); line-height: 1.45;
+}
+.fpp-letter .fpp-value-table tr:last-child td { border-bottom: none; }
+.fpp-letter .fpp-value-table td:last-child {
+  text-align: right; white-space: nowrap; color: var(--fpp-teal-ink); font-weight: 600;
+}
+.fpp-letter .fpp-value-total {
+  background: #fff;
+  font-family: var(--fpp-serif); font-weight: 600; font-size: 17px; color: var(--fpp-teal);
+}
+.fpp-letter .fpp-value-total td { padding-top: 16px; padding-bottom: 16px; }
+.fpp-letter .fpp-value-free td:last-child { color: var(--fpp-gold-ink); font-weight: 700; }
+
+/* Dominant $47 price row (no strikethrough tote-board — quiet). */
+.fpp-letter .fpp-price {
+  text-align: center; margin: 8px 0 18px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-price .fpp-price-anchor {
+  color: var(--fpp-muted); font-size: 15px;
+  display: block; margin-bottom: 6px;
+}
+.fpp-letter .fpp-price .fpp-price-anchor s { text-decoration-color: var(--fpp-muted); }
+.fpp-letter .fpp-price .fpp-price-big {
+  font-family: var(--fpp-serif); font-weight: 700; color: var(--fpp-teal);
+  font-size: clamp(44px, 8vw, 60px); line-height: 1; display: block;
+}
+.fpp-letter .fpp-price .fpp-price-note {
+  color: var(--fpp-muted); font-size: 14px; margin-top: 8px; display: block;
+}
+
+/* Cream pull-quote sitting directly above CTA #1 (emphasized antidote line). */
+.fpp-letter .fpp-antidote {
+  background: var(--fpp-cream); border-left: 4px solid var(--fpp-gold);
+  border-radius: 0 12px 12px 0;
+  padding: 20px 26px; margin: 26px 0 20px;
+  font-family: var(--fpp-serif); font-size: clamp(19px, 2.4vw, 23px);
+  color: var(--fpp-teal-ink); line-height: 1.4; font-weight: 600; text-align: center;
+}
+
+/* Big CTA blocks + reassurance line under button. */
+.fpp-letter .fpp-cta-block { text-align: center; margin: 22px 0 30px; }
+.fpp-letter .fpp-cta-block .fpp-cta-lg {
+  box-shadow: 0 6px 18px rgba(54, 89, 106, 0.14);
+  font-size: clamp(18px, 2.4vw, 21px);
+  padding: 18px 44px;
+}
+@media (max-width: 560px) {
+  .fpp-letter .fpp-cta-block .fpp-cta-lg { display: block; width: 100%; padding: 18px 20px; }
+}
+.fpp-letter .fpp-cta-note {
+  font-family: var(--fpp-sans); font-size: 13.5px; color: var(--fpp-muted);
+  margin: 12px 0 0;
+}
+
+/* Guarantee box — reused pattern, adjusted spacing for letter density. */
+.fpp-letter .fpp-guarantee { margin: 32px 0 28px; }
+
+/* ================= POST-FORM BLOCK ================= */
+/* Matches the letter body column: 720px, centered white surface. Without this
+   constraint the block used to span the full viewport, which felt off against
+   the tightly-columned letter above. */
+.fpp-postform {
+  background: #fff;
+  border-top: 1px solid var(--fpp-line);
+  max-width: 720px;
+  margin: 0 auto;
+}
+.fpp-postform .fpp-inner { padding: 40px 40px 36px; }
+.fpp-postform h2 {
+  font-family: var(--fpp-serif); font-weight: 600; color: var(--fpp-teal);
+  font-size: clamp(24px, 4vw, 30px); line-height: 1.22; margin: 0 0 14px; text-align: center;
+}
+
+/* Trust row (4-up on desktop, 2-up on mobile). */
+.fpp-postform .fpp-trust-row {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  margin: 8px 0 34px;
+}
+@media (min-width: 640px) {
+  .fpp-postform .fpp-trust-row { grid-template-columns: repeat(4, 1fr); }
+}
+.fpp-postform .fpp-trust-cell {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 16px 14px; text-align: center; font-family: var(--fpp-sans);
+}
+.fpp-postform .fpp-trust-icon {
+  font-size: 22px; line-height: 1; color: var(--fpp-teal);
+  display: block; margin-bottom: 7px;
+}
+.fpp-postform .fpp-trust-label {
+  font-weight: 600; color: var(--fpp-teal-ink); font-size: 13.5px; line-height: 1.35;
+}
+
+/* FAQ — native <details>/<summary>, no JS. */
+.fpp-postform .fpp-faq { margin: 0 0 32px; }
+.fpp-postform details {
+  background: var(--fpp-cream); border: 1px solid var(--fpp-line); border-radius: 12px;
+  padding: 2px 20px; margin: 0 0 12px;
+}
+.fpp-postform summary {
+  cursor: pointer; list-style: none; padding: 16px 30px 16px 0; position: relative;
+  font-family: var(--fpp-sans); font-weight: 600; color: var(--fpp-teal-ink);
+  font-size: clamp(15px, 2vw, 17px); line-height: 1.45;
+}
+.fpp-postform summary::-webkit-details-marker { display: none; }
+.fpp-postform summary::after {
+  content: "+"; position: absolute; right: 2px; top: 14px;
+  font-size: 24px; font-weight: 400; color: var(--fpp-gold-ink); line-height: 1;
+}
+.fpp-postform details[open] summary::after { content: "–"; }
+.fpp-postform details p {
+  margin: 0 0 16px; font-family: var(--fpp-sans);
+  font-size: clamp(15px, 1.9vw, 17px); color: var(--fpp-ink); line-height: 1.6;
+}
+
+/* ================= CheckoutModal (iframe overlay) ================= */
+.fpp-modal-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(38, 49, 58, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: fpp-fade-in 0.15s ease-out;
+}
+@keyframes fpp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.fpp-modal-body {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(90vh, 900px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.fpp-modal-close {
+  position: absolute; top: 6px; right: 10px; z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--fpp-line);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  font-family: var(--fpp-sans); font-size: 22px; line-height: 1;
+  color: var(--fpp-teal); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.fpp-modal-close:hover { background: var(--fpp-cream); color: var(--fpp-teal-ink); }
+.fpp-modal-close:focus-visible { outline: 3px solid var(--fpp-gold); outline-offset: 2px; }
+.fpp-modal-iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 560px;
+  border: 0;
+  background: #fff;
+}
+.fpp-modal-fallback {
+  margin: 0;
+  padding: 10px 16px 12px;
+  font-family: var(--fpp-sans);
+  font-size: 13px;
+  text-align: center;
+  color: var(--fpp-muted);
+  border-top: 1px solid var(--fpp-line);
+  background: var(--fpp-cream);
+}
+.fpp-modal-fallback a { color: var(--fpp-teal); font-weight: 600; }
+.fpp-modal-fallback a:hover { color: var(--fpp-teal-ink); }
+@media (max-width: 640px) {
+  .fpp-modal-backdrop { padding: 0; }
+  .fpp-modal-body {
+    max-width: 100%; max-height: 100vh; height: 100vh;
+    border-radius: 0;
+  }
+  .fpp-modal-close { top: 10px; right: 14px; }
+}
+
+/* Modal — hidden state (iframe persists in DOM for warm re-opens). */
+.fpp-modal-backdrop--hidden { display: none !important; }
+
+/* Skeleton overlay shown until the GHL iframe finishes loading. */
+.fpp-modal-skeleton {
+  position: absolute; inset: 0; z-index: 1;
+  background: var(--fpp-cream);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px; padding: 40px 24px;
+  pointer-events: none;
+  animation: fpp-fade-in 0.2s ease-out;
+}
+.fpp-modal-skeleton p {
+  margin: 0; font-family: var(--fpp-sans); font-size: 14px;
+  color: var(--fpp-muted);
+}
+.fpp-modal-skeleton-spinner {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 4px solid var(--fpp-cream-2);
+  border-top-color: var(--fpp-teal);
+  animation: fpp-spin 0.9s linear infinite;
+}
+@keyframes fpp-spin { to { transform: rotate(360deg); } }
+
+/* ============================================================================
+   Sales letter v3.1 (Simple Estate Prep) additions.
+   ============================================================================ */
+
+/* Compliance disclaimer under the hero (v3.1 spec — must appear directly
+   below the hero image, never buried). */
+.fpp-letter .fpp-hero-disclaimer {
+  font-family: var(--fpp-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fpp-muted);
+  font-style: italic;
+  padding: 12px 16px;
+  border-left: 3px solid var(--fpp-line);
+  margin: 0 0 24px;
+}
+
+/* Placeholder frame for images Pod 2 hasn't supplied yet.
+   Renders in-place with a labelled brief so QA can see exactly what's needed. */
+.fpp-letter .fpp-photo-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 28px;
+  background: var(--fpp-cream-2);
+  border: 2px dashed var(--fpp-gold-ink);
+  border-radius: 14px;
+  text-align: center;
+  font-family: var(--fpp-sans);
+  color: var(--fpp-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.fpp-letter .fpp-photo-placeholder .k {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fpp-gold-ink);
+  font-weight: 700;
+  background: rgba(228, 205, 161, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.fpp-letter .fpp-photo-placeholder p { margin: 0; max-width: 460px; font-size: 14px; }
+
+/* Differentiation bullets — "what it's not" (❌) vs "what it is" (✓). */
+.fpp-letter .fpp-diff-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 20px;
+  font-family: var(--fpp-sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.fpp-letter .fpp-diff-list li {
+  position: relative;
+  padding: 10px 0 10px 34px;
+  border-bottom: 1px solid var(--fpp-line);
+  color: var(--fpp-ink);
+}
+.fpp-letter .fpp-diff-list li:last-child { border-bottom: none; }
+.fpp-letter .fpp-diff-not li::before {
+  content: "✕";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  color: #B15A3C;
+  font-weight: 700;
+  font-size: 15px;
+}
+.fpp-letter .fpp-diff-is li::before {
+  content: "✓";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  color: var(--fpp-good);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ============================================================================
+   v3.1 hero + body-copy revisions (2026-07-16)
+   ============================================================================ */
+
+/* Body copy = sans (Geist) for editorial cleanliness. Headlines, pull-quotes,
+   drop-caps, and the italic question-list stay serif for the DR-editorial pair.
+   This override lives INSIDE `.fpp-letter` only so the other FPP routes
+   (advertorial, quiz, offer) keep their serif body untouched. */
+.fpp-letter p { font-family: var(--fpp-sans); }
+.fpp-letter .fpp-dek { font-family: var(--fpp-sans); }
+
+/* Pre-headline (H2, sits above the H1 "Grabber" — the promise line that leads
+   into the product mark). Editorial italic serif in teal-ink, sized between
+   deck and H1. Tight leading so it feels like a running lead-in, not a block. */
+.fpp-letter .fpp-pre-headline {
+  font-family: var(--fpp-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(20px, 2.8vw, 26px);
+  line-height: 1.28;
+  color: var(--fpp-teal-ink);
+  margin: 0 0 8px;
+  letter-spacing: 0.005em;
+}
+
+/* Grabber (H1 — the product mark itself, big brand anchor). Larger than the
+   v3.1 headline was, tighter tracking, no bottom margin so it hugs the deck. */
+.fpp-letter .fpp-grabber {
+  font-family: var(--fpp-serif);
+  font-weight: 700;
+  color: var(--fpp-teal);
+  font-size: clamp(44px, 7vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 4px 0 18px;
+}
+
+/* Cost-list bullets — clean, non-overlapping. Replaces the mangled
+   `.fpp-checklist` + inline `listStyle:disc` hack that had two bullet systems
+   fighting each other. Simple square-dot bullet, generous spacing. */
+.fpp-letter .fpp-cost-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 22px;
+  font-family: var(--fpp-sans);
+}
+.fpp-letter .fpp-cost-list li {
+  position: relative;
+  padding: 4px 0 12px 24px;
+  font-size: clamp(16px, 2vw, 18px);
+  line-height: 1.6;
+  color: var(--fpp-ink);
+}
+.fpp-letter .fpp-cost-list li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--fpp-gold);
+  border-radius: 2px;
+}
+.fpp-letter .fpp-cost-list b { color: var(--fpp-teal-ink); }

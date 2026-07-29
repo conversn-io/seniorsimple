@@ -16,11 +16,23 @@ export function MetaPixelInitializer() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Wait for fbq to be available (loaded from layout.tsx)
+    // Wait for fbq to be available (loaded from layout.tsx). We cap retries so
+    // ad-blocker / corporate-proxy visitors (very common for the 55+ audience)
+    // don't get stuck in an unbounded setTimeout loop that keeps the main
+    // thread + microtask queue busy forever — that loop was preventing
+    // `document_idle` from firing on the FPP letter and hurting INP.
+    let attempts = 0;
+    const MAX_ATTEMPTS = 30;   // ~3s total ceiling — enough for slow connections
+    const RETRY_MS = 100;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const initPixels = () => {
       if (typeof window === 'undefined' || typeof window.fbq !== 'function') {
-        // Retry after a short delay if fbq isn't ready
-        setTimeout(initPixels, 100);
+        if (attempts++ >= MAX_ATTEMPTS) {
+          console.warn('📊 Meta Pixel: fbq never became available (likely blocked); giving up');
+          return;
+        }
+        timeoutId = setTimeout(initPixels, RETRY_MS);
         return;
       }
 
@@ -67,6 +79,10 @@ export function MetaPixelInitializer() {
 
     // Start initialization
     initPixels();
+
+    return () => {
+      if (timeoutId !== null) clearTimeout(timeoutId);
+    };
   }, [pathname]);
 
   return null; // This component doesn't render anything

@@ -3,9 +3,16 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
+import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
 import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
+import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
 import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
+import ArticleSidebar from '@/components/capture/ArticleSidebar'
+import ArticleInlineResourceAd from '@/components/capture/ArticleInlineResourceAd'
+import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
+import { articleCtaFlags } from '@/lib/article-cta-flags'
+import { isMoneyInMotionArticle } from '@/lib/article-intent'
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -45,11 +52,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     null
 
   // Check if this is a Medicare-related article (for calculator integration)
-  const isMedicareArticle = 
+  const isMedicareArticle =
     article.title?.toLowerCase().includes('medicare') ||
     article.category_details?.name?.toLowerCase().includes('medicare') ||
     article.tags?.some(tag => tag.toLowerCase().includes('medicare')) ||
     article.slug?.includes('medicare')
+
+  // Money-in-motion pages (Medicare, Medigap, annuity, final expense, life
+  // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
+  // Editorial pages (Social Security, retirement basics) get email only.
+  const isMoneyPage = isMoneyInMotionArticle(article)
 
   // Generate structured data for SEO/AEO
   const structuredData = {
@@ -164,9 +176,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      {/* Article Content */}
+      {/* Article Content — two-column: main body + sticky right rail (lg+) */}
       <section className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 pb-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 pb-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
+        <div className="min-w-0">
           {article.html_body ? (
             // html_body already includes <div class="prose"> wrapper, so render it directly
             <>
@@ -178,8 +191,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   lineHeight: '1.8',
                 }}
               />
-              {/* Interstitial CTA Banner - appears mid-content */}
-              {phoneNumber && (
+              {/* Mid-content CTA — phone renders on money-in-motion pages only
+                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
+                  renders on all pages when the email flag is on. */}
+              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -189,12 +204,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   dismissible={true}
                 />
               )}
+              {articleCtaFlags.emailCtasEnabled && (
+                <InterstitialEmailBanner
+                  slug={slug}
+                  category={article.category_details?.name ?? null}
+                />
+              )}
             </>
           ) : (
             // Fallback to markdown content with prose wrapper
             <>
               <div className="prose prose-lg max-w-none">
-                <div 
+                <div
                   className="text-gray-800 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: article.content }}
                   style={{
@@ -203,8 +224,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   }}
                 />
               </div>
-              {/* Interstitial CTA Banner - appears mid-content */}
-              {phoneNumber && (
+              {/* Mid-content CTA — phone renders on money-in-motion pages only
+                  (Medicare/Medigap/annuity/final-expense/life-insurance); email
+                  renders on all pages when the email flag is on. */}
+              {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
                 <InterstitialCTABanner
                   phoneNumber={phoneNumber}
                   serviceName={article.category_details?.name || 'Medicare Services'}
@@ -212,6 +235,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   subheadline="Speak with a licensed Medicare advisor today"
                   variant="friendly"
                   dismissible={true}
+                />
+              )}
+              {articleCtaFlags.emailCtasEnabled && (
+                <InterstitialEmailBanner
+                  slug={slug}
+                  category={article.category_details?.name ?? null}
                 />
               )}
             </>
@@ -223,19 +252,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <MedicareCostCalculator />
             </div>
           )}
+
+          {/* Mobile-only resource ad — sidebar is hidden on <lg, so surface here */}
+          <ArticleInlineResourceAd slug={slug} />
+        </div>
+
+        {/* Sticky right rail — resource ad + external ad slot */}
+        <ArticleSidebar slug={slug} />
         </div>
       </section>
 
-      {/* Scroll-Revealed Call Button — Medicare articles only.
-          Kill switch: set NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON=false. */}
-      {process.env.NEXT_PUBLIC_ENABLE_SCROLL_CALL_BUTTON !== 'false' &&
-        isMedicareArticle &&
-        phoneNumber && (
-          <ScrollRevealedCallButton
-            phoneNumber={phoneNumber}
-            serviceName={article.category_details?.name || 'Medicare Services'}
-          />
-        )}
+      {/* Sticky scroll CTAs:
+          - phone: money-in-motion pages only (Medicare/Medigap/annuity/final-expense/life-insurance)
+          - email: all pages, once NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
+          Both can coexist — email supplements the phone CTA on money-in-motion pages. */}
+      {articleCtaFlags.phoneCtasEnabled && isMoneyPage && phoneNumber && (
+        <ScrollRevealedCallButton
+          phoneNumber={phoneNumber}
+          serviceName={article.category_details?.name || 'Medicare Services'}
+        />
+      )}
+      {articleCtaFlags.emailCtasEnabled && (
+        <ScrollRevealedEmailButton
+          slug={slug}
+          category={article.category_details?.name ?? null}
+        />
+      )}
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
@@ -318,11 +360,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       )}
 
       <NewsletterCaptureCTA slug={slug} category={article.category_details?.name ?? null} />
+
+      {/* Persistent bottom-fixed newsletter opt-in — Simple Life list */}
+      <SimpleLifeStickyBar pageSlug={slug} />
     </div>
   )
 }
 
-// Generate metadata for SEO
+// Generate metadata for SEO.
+//
+// Canonical policy (WORKORDER-Sitemap-Live-Wiring-2026-07-28 §2b):
+//   /articles/<slug> is seniorsimple's ONE canonical served path. Every
+//   article page emits a SELF-REFERENCING canonical to its own served URL
+//   — never a constructed root URL, never the DB canonical_url field. The
+//   DB column is kept in sync separately (backfilled to mirror this) so
+//   the edge-fn sitemap and the page agree on one URL per article.
+//   /content/<slug> and root /<slug> 301 to this path (see companion routes).
+const SITE_ORIGIN = 'https://www.seniorsimple.org'
+
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params
   const { article } = await getArticle(slug)
@@ -334,14 +389,20 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     }
   }
 
+  const canonical = `${SITE_ORIGIN}/articles/${slug}`
+
   return {
     title: article.meta_title || `${article.title} - SeniorSimple`,
     description: article.meta_description || article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt || 'Expert retirement planning advice from SeniorSimple.',
       images: article.featured_image_url ? [article.featured_image_url] : [],
       type: 'article',
+      url: canonical,
     },
   }
 }

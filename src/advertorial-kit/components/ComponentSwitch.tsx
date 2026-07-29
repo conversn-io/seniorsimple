@@ -1,0 +1,1072 @@
+'use client'
+
+/**
+ * ComponentSwitch — dispatches an advertorial_items row to the appropriate
+ * primitive from src/components/advertorial-library.
+ *
+ * Marked `'use client'` because several library primitives (EditorsPick,
+ * MultiSelectQuiz, ImageQuiz, PrimaryCTA, etc.) call `useCtaHref()` /
+ * `useSetCtaSelection()` from CtaContext. A CtaProvider must already wrap
+ * this tree (see KitCtaShell).
+ *
+ * Guardrails enforced HERE (fail-closed):
+ *   • checkTapOnly() — reject unknown component_type or free-text identifying
+ *     fields.
+ *   • checkItemStrings() — reject block-line violations in heading, body_md,
+ *     cta_text, or any nested props strings.
+ * A failure returns null (skipped render) with a console.warn so the operator
+ * sees the reason without hard-breaking the page.
+ *
+ * CTA URL convention (per router.ts §W6 taxonomy):
+ *   `/out/<slug>/<slot_key>?component=<type>&variant=<id>`
+ * The component parameter feeds s3 (component). variant feeds s7.
+ */
+
+
+import { checkTapOnly } from '@/advertorial-kit/lib/tap-only'
+import { checkItemStrings } from '@/advertorial-kit/lib/block-line'
+import { renderMarkdown } from '@/advertorial-kit/lib/markdown'
+import type { AdvertorialBrand } from '@/advertorial-kit/lib/brand-config'
+import { SITE_KEY, fireKitEvent } from '@/advertorial-kit/lib/analytics'
+import {
+  appendInboundSubs,
+  type InboundSubsServer,
+} from '@/advertorial-kit/lib/inbound-subs'
+
+// Library primitives (moved to shared location in W1).
+import {
+  BlueAnchor,
+  ClickableImage,
+  CtaProvider,
+  DealsShowcase,
+  EditorsPick,
+  ImageQuiz,
+  LeadIn,
+  MultiSelectQuiz,
+  QualifyChecklist,
+  Quote,
+  Rating,
+  SavingsCalculator,
+  Section,
+  StateMap,
+  StateSelector,
+  TrustBar,
+  type CtaSubs,
+  type Deal,
+  type ImageQuizOption,
+  type QuizOption,
+  type SavingsInput,
+  type StateOption,
+} from '@/components/advertorial-library'
+
+export interface ComponentItem {
+  position: number
+  item_type: 'monetized' | 'filler' | 'bonus' | 'recap'
+  heading: string | null
+  body_md: string | null
+  image_url: string | null
+  cta_text: string | null
+  slot_key: number | null
+  component_type: string | null
+  component_props: Record<string, unknown> | null
+  variant_key: string | null
+}
+
+interface ComponentSwitchProps {
+  item: ComponentItem
+  slug: string
+  brand: AdvertorialBrand
+  /**
+   * W3 — the advertorial-level chosen variant key, or null when no split-test
+   * is configured. Distinct from item.variant_key (which is a per-row filter
+   * applied upstream in page.tsx). This is the value that flows to s7 on
+   * every analytics event and every /out click emitted from this render.
+   */
+  chosenVariant?: string | null
+  /**
+   * Contiguous 1-indexed number to render in the "#N" badge on numbered
+   * component types (listicle_entry, section). Null / omitted for
+   * interactive + non-numbered types (image_quiz, state_map, editors_pick,
+   * etc.) so those items don't consume a slot in the reader-visible
+   * sequence. Computed by the caller (page.tsx) so a full pass over the
+   * items list yields the correct running total.
+   */
+  listicleNumber?: number | null
+  /**
+   * Non-PII s-tokens captured from the LP request's `searchParams` (see
+   * inbound-subs.ts). Baked into every /out href this component emits so
+   * paid traffic's `?source=<network>&s4=<angle>…` lands in
+   * advertorial_clicks for per-network / per-angle ROAS — without waiting
+   * on JS to hydrate. Applied uniformly to the button, image anchor,
+   * heading link, and every interactive component's CtaProvider base.
+   */
+  inboundSubs?: InboundSubsServer | null
+}
+
+// ---------------------------------------------------------------------------
+// Public component
+// ---------------------------------------------------------------------------
+
+export function ComponentSwitch({
+  item,
+  slug,
+  brand,
+  chosenVariant = null,
+  listicleNumber = null,
+  inboundSubs = null,
+}: ComponentSwitchProps) {
+  // W3 — the effective variant for outbound URLs + analytics events. Prefer
+  // the advertorial-level chosen variant (uniform across every CTA on this
+  // render) and fall back to item.variant_key only for legacy items that
+  // predate the W3 dispatcher plumbing.
+  const effectiveVariant = chosenVariant ?? item.variant_key ?? null
+  // 1. Tap-only guard
+  const tap = checkTapOnly({
+    component_type: item.component_type,
+    component_props: item.component_props,
+  })
+  if (!tap.ok) {
+    console.warn(
+      `[advertorial-kit] item #${item.position} rejected by tap-only guard: ${tap.reason} (${tap.offendingPath})`,
+    )
+    return null
+  }
+
+  // 2. Block-line guard
+  const bl = checkItemStrings({
+    heading: item.heading,
+    body_md: item.body_md,
+    cta_text: item.cta_text,
+    component_props: item.component_props,
+  })
+  if (!bl.ok) {
+    console.warn(
+      `[advertorial-kit] item #${item.position} rejected by block-line: ${bl.ruleId} — ${bl.reason} — matched: "${bl.matched}"`,
+    )
+    return null
+  }
+
+  const componentType = (item.component_type ?? 'listicle_entry').toLowerCase()
+  const outHref = buildOutHref({
+    slug,
+    slotKey: item.slot_key,
+    componentType,
+    variantKey: effectiveVariant,
+    inboundSubs,
+  })
+
+  switch (componentType) {
+    case 'lead_in': {
+      const p = (item.component_props ?? {}) as {
+        bylineText?: string
+        dek?: string
+        headerSrc?: string
+        caption?: string
+      }
+      return (
+        <LeadIn
+          headline={item.heading ?? ''}
+          bylineText={p.bylineText ?? 'By the Editorial Team · Updated this week'}
+          dek={p.dek}
+          headerSrc={p.headerSrc ?? item.image_url ?? undefined}
+          caption={p.caption}
+        />
+      )
+    }
+
+    case 'section': {
+      // Section is a "numbered content" item like listicle_entry — render the
+      // heading with the SAME brand-styled treatment so the visual hierarchy
+      // stays consistent across the reader-visible number sequence. The
+      // standalone Section primitive (small module .h2) is kept for authors
+      // rendering outside the kit, but the kit path renders inline here to
+      // gain access to `brand` + the contiguous listicleNumber.
+      const bodyHtml = renderMarkdown(item.body_md)
+      const displayNumber = listicleNumber ?? item.position
+      return (
+        <section
+          data-item-type={item.item_type}
+          data-position={item.position}
+          data-component="section"
+          className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+        >
+          {item.heading ? (
+            <h2 className={`${brand.headlineFontClass} text-2xl md:text-3xl font-bold text-slate-900 leading-snug`}>
+              <span
+                className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
+                style={{ background: brand.accent, color: brand.accentText }}
+              >
+                #{displayNumber}
+              </span>
+              {item.heading}
+            </h2>
+          ) : null}
+
+          <div
+            className="advertorial-prose mt-4 text-base leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-link)] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+        </section>
+      )
+    }
+
+    case 'editors_pick': {
+      const p = (item.component_props ?? {}) as {
+        tag?: string
+        disclosure?: string
+        ctaLabel?: string
+      }
+      const bodyHtml = renderMarkdown(item.body_md)
+      return (
+        <div
+          data-position={item.position}
+          data-component="editors_pick"
+          onClick={(e) => {
+            // Fire lp_cta_click when an anchor inside the pick is clicked.
+            // Event delegation lets us instrument EditorsPick without forking it.
+            const target = e.target as HTMLElement | null
+            if (target && target.closest('a[href]')) {
+              fireKitEvent(
+                'lp_cta_click',
+                {
+                  site_key: SITE_KEY,
+                  brand: brand.siteId,
+                  slug,
+                  component_type: 'editors_pick',
+                  variant: effectiveVariant,
+                },
+                {
+                  eventLabel: `slot_${item.slot_key ?? 'none'}`,
+                  extraProps: {
+                    slot_key: item.slot_key,
+                    position: item.position,
+                    item_type: item.item_type,
+                    cta_text: item.cta_text,
+                  },
+                },
+              )
+            }
+          }}
+        >
+          <EditorsPick
+            tag={p.tag ?? 'Editor’s Pick'}
+            ctaLabel={item.cta_text ?? p.ctaLabel ?? 'See if you qualify »'}
+            href={outHref}
+            disclosure={p.disclosure ?? 'Sponsored. See disclosure at the bottom.'}
+          >
+            <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          </EditorsPick>
+        </div>
+      )
+    }
+
+    case 'qualify_checklist': {
+      const p = (item.component_props ?? {}) as {
+        intro?: string
+        items?: unknown[]
+        pointLabel?: string
+      }
+      const items = Array.isArray(p.items) ? p.items.map(String) : []
+      return (
+        <QualifyChecklist
+          intro={p.intro ?? item.heading ?? ''}
+          items={items}
+          pointLabel={p.pointLabel}
+        />
+      )
+    }
+
+    case 'quote': {
+      const p = (item.component_props ?? {}) as { quote?: string; attribution?: string }
+      const quoteText = p.quote ?? item.body_md ?? ''
+      // Quote MUST have attribution per compliance §5.
+      if (!p.attribution) {
+        console.warn(
+          `[advertorial-kit] quote item #${item.position} missing required attribution — skipped.`,
+        )
+        return null
+      }
+      return <Quote quote={quoteText} attribution={p.attribution} />
+    }
+
+    // -----------------------------------------------------------------------
+    // Interactive tap components (WO: Wire Interactive Tap Components).
+    // Every one wraps its render in a per-slot CtaProvider so the primitive's
+    // useCtaHref() resolves to THIS item's outHref (not the shell's /lp/<slug>
+    // fallback). Analytics fire via event delegation on a wrapper div so we
+    // don't need to fork the shared primitives.
+    // -----------------------------------------------------------------------
+
+    case 'image_quiz': {
+      const p = (item.component_props ?? {}) as {
+        question?: string
+        selectionKey?: string
+        options?: ImageQuizOption[]
+        submitLabel?: string
+        submitVariant?: 'green' | 'blue'
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} image_quiz has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'image_quiz',
+        children: (
+          <ImageQuiz
+            question={p.question ?? item.heading ?? ''}
+            selectionKey={p.selectionKey ?? 'spend_focus'}
+            options={options}
+            submitLabel={p.submitLabel ?? item.cta_text ?? 'See My Results »'}
+            submitVariant={p.submitVariant}
+          />
+        ),
+      })
+    }
+
+    case 'multi_select_quiz': {
+      const p = (item.component_props ?? {}) as {
+        question?: string
+        selectionKey?: string
+        options?: QuizOption[]
+        submitLabel?: string
+        submitVariant?: 'green' | 'blue'
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} multi_select_quiz has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'multi_select_quiz',
+        children: (
+          <MultiSelectQuiz
+            question={p.question ?? item.heading ?? ''}
+            selectionKey={p.selectionKey ?? 'spend_focus'}
+            options={options}
+            submitLabel={p.submitLabel ?? item.cta_text ?? 'See My Results »'}
+            submitVariant={p.submitVariant}
+          />
+        ),
+      })
+    }
+
+    case 'state_selector': {
+      const p = (item.component_props ?? {}) as {
+        step1Label?: string
+        step2Label?: string
+        prompt?: string
+        selectionKey?: string
+        options?: StateOption[]
+        ctaLabel?: string
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} state_selector has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const options = Array.isArray(p.options) ? p.options : []
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'state_selector',
+        children: (
+          <StateSelector
+            step1Label={p.step1Label}
+            step2Label={p.step2Label}
+            prompt={p.prompt ?? item.heading ?? undefined}
+            selectionKey={p.selectionKey ?? 'state'}
+            options={options}
+            ctaLabel={p.ctaLabel ?? item.cta_text ?? 'See Plans in My State »'}
+          />
+        ),
+      })
+    }
+
+    case 'state_map': {
+      // D4 · StateMap — tap-to-navigate US map. Props mirror state_selector
+      // MINUS `options` (all 51 states are intrinsic to the map). Swapping a
+      // live `state_selector` row → `state_map` is a component_type change
+      // with the existing props already compatible; PS-00 can drop `options`
+      // when converting.
+      const p = (item.component_props ?? {}) as {
+        prompt?: string
+        selectionKey?: string
+        ctaLabel?: string
+        stepLabel?: string
+        step2Label?: string
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} state_map has no slot_key — skipped.`,
+        )
+        return null
+      }
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'state_map',
+        children: (
+          <StateMap
+            prompt={p.prompt ?? item.heading ?? undefined}
+            selectionKey={p.selectionKey ?? 'state'}
+            ctaLabel={p.ctaLabel ?? item.cta_text ?? 'Select Your State'}
+            stepLabel={p.stepLabel}
+            step2Label={p.step2Label}
+          />
+        ),
+      })
+    }
+
+    case 'savings_calculator': {
+      const p = (item.component_props ?? {}) as {
+        inputs?: SavingsInput[]
+        ctaLabel?: string
+        monthlyCost?: number
+      }
+      if (!outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} savings_calculator has no slot_key — skipped.`,
+        )
+        return null
+      }
+      const inputs = Array.isArray(p.inputs) ? p.inputs : undefined
+      // Note (2026-07-27, WO "social proof = editorial bullets by default"):
+      // the auto-embedded DealsShowcase + TrustBar was stripped from this
+      // card. Doctrine: editorial-native advertorials show editorial proof
+      // (bullets in body_md), not brand-logo showcases. PS-00 drops a
+      // separate `component_type: 'social_proof'` item after the calculator
+      // when proof belongs here — and it defaults to bullets, not logos.
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'savings_calculator',
+        children: (
+          <SavingsCalculator
+            inputs={inputs}
+            ctaLabel={p.ctaLabel ?? item.cta_text}
+            monthlyCost={p.monthlyCost}
+          />
+        ),
+      })
+    }
+
+    case 'social_proof': {
+      // Standalone social-proof block. Content is prop-driven — the
+      // component NEVER bakes in brand lists or deal cards. Defaults to
+      // editorial bullets (editorial-native doctrine); logo showcase is
+      // an explicit opt-in via `component_props.variant: 'logos'`.
+      const p = (item.component_props ?? {}) as SocialProofProps
+      return renderSocialProof(p, item.position)
+    }
+
+    case 'clickable_image': {
+      const p = (item.component_props ?? {}) as {
+        src?: string
+        alt?: string
+        caption?: string
+      }
+      const src = p.src ?? item.image_url
+      if (!src || !outHref) {
+        console.warn(
+          `[advertorial-kit] item #${item.position} clickable_image missing src or slot_key — skipped.`,
+        )
+        return null
+      }
+      // Don't pass explicit `href` — let ClickableImage read useCtaHref()
+      // from the per-slot CtaProvider so it participates in the same sub-
+      // scheme composition as the other interactive components (adds
+      // source_id + sub5=slug to the outbound URL).
+      return renderInteractive({
+        item, slug, brand, effectiveVariant, outHref,
+        componentType: 'clickable_image',
+        children: (
+          <ClickableImage
+            src={src}
+            alt={p.alt ?? item.heading ?? ''}
+            caption={p.caption}
+          />
+        ),
+      })
+    }
+
+    case 'rating': {
+      const p = (item.component_props ?? {}) as {
+        starsFilled?: number
+        attribution?: string
+      }
+      // Compliance mirror of the quote rule: bare star rating without a
+      // citation trips block-line intent (`fabricated_verification`), so we
+      // fail-closed with a warn.
+      if (!p.attribution) {
+        console.warn(
+          `[advertorial-kit] rating item #${item.position} missing required attribution — skipped.`,
+        )
+        return null
+      }
+      const stars = typeof p.starsFilled === 'number' ? p.starsFilled : 0
+      return <Rating starsFilled={stars} attribution={p.attribution} />
+    }
+
+    case 'trust_bar': {
+      const p = (item.component_props ?? {}) as {
+        label?: string
+        brands?: unknown[]
+      }
+      const brands = Array.isArray(p.brands)
+        ? (p.brands as { name?: string; category?: string; logoSrc?: string; source?: string }[])
+        : []
+      // TrustBar expects ApcBrand[] — pass through as-is when shape matches.
+      // We accept any array; downstream component handles empty gracefully.
+      return (
+        <TrustBar
+          label={p.label ?? item.heading ?? 'Trusted by:'}
+          brands={brands as never}
+        />
+      )
+    }
+
+    // ------ default: listicle entry (§B1 semantic) --------------------------
+    case 'listicle_entry':
+    default: {
+      const bodyHtml = renderMarkdown(item.body_md)
+      const link = resolveItemLinkHref({
+        item, slug, effectiveVariant, outHref, inboundSubs,
+      })
+      const showCta = item.item_type === 'monetized' && outHref
+      const clickableHeading = !!(item.heading && link)
+      const heading = item.heading ? (
+        <>
+          <span
+            className="inline-block mr-2 text-sm align-middle font-sans font-semibold px-2 py-0.5 rounded"
+            style={{ background: brand.accent, color: brand.accentText }}
+          >
+            #{listicleNumber ?? item.position}
+          </span>
+          {item.heading}
+        </>
+      ) : null
+
+      return (
+        <section
+          data-item-type={item.item_type}
+          data-position={item.position}
+          data-component={componentType}
+          className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+        >
+          {heading ? (
+            <h2 className={`${brand.headlineFontClass} text-2xl md:text-3xl font-bold text-slate-900 leading-snug`}>
+              {clickableHeading ? (
+                <a
+                  href={link!.href}
+                  rel="nofollow sponsored noopener"
+                  target="_blank"
+                  data-cta-target="heading"
+                  className="hover:underline decoration-2 underline-offset-4 transition-colors"
+                  style={{ color: 'inherit', textDecorationColor: brand.accent }}
+                  onClick={() => {
+                    fireKitEvent(
+                      'lp_cta_click',
+                      {
+                        site_key: SITE_KEY,
+                        brand: brand.siteId,
+                        slug,
+                        component_type: link!.componentType,
+                        variant: effectiveVariant,
+                      },
+                      {
+                        eventLabel: `slot_${link!.slotKey ?? 'none'}`,
+                        extraProps: {
+                          slot_key: link!.slotKey,
+                          position: item.position,
+                          item_type: item.item_type,
+                          cta_text: item.cta_text,
+                          cta_target: 'heading',
+                        },
+                      },
+                    )
+                  }}
+                >
+                  {heading}
+                </a>
+              ) : (
+                heading
+              )}
+            </h2>
+          ) : null}
+
+          {item.image_url ? (
+            <figure className="mt-4">
+              {renderItemImage({
+                item, slug, brand, effectiveVariant, componentType, outHref, inboundSubs,
+              })}
+            </figure>
+          ) : null}
+
+          <div
+            className="advertorial-prose mt-4 text-base leading-relaxed text-slate-800 space-y-4 [&_a]:underline [&_a]:text-[color:var(--advertorial-link)] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+
+          {showCta ? (
+            <div className="mt-5">
+              <a
+                href={outHref!}
+                target="_blank"
+                rel="nofollow sponsored noopener"
+                data-cta-target="button"
+                className="block w-full text-center px-6 py-3 rounded-md font-sans font-semibold text-base shadow-sm transition-all duration-150 hover:opacity-95 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
+                style={{ background: brand.accent, color: brand.accentText }}
+                onClick={() => {
+                  // W2 analytics: fire lp_cta_click BEFORE /out redirect.
+                  // target="_blank" opens a new tab so the current page stays;
+                  // analytics fire synchronously either way.
+                  fireKitEvent(
+                    'lp_cta_click',
+                    {
+                      site_key: SITE_KEY,
+                      brand: brand.siteId,
+                      slug,
+                      component_type: componentType,
+                      variant: effectiveVariant,
+                    },
+                    {
+                      eventLabel: `slot_${item.slot_key ?? 'none'}`,
+                      extraProps: {
+                        slot_key: item.slot_key,
+                        position: item.position,
+                        item_type: item.item_type,
+                        cta_text: item.cta_text,
+                        cta_target: 'button',
+                      },
+                    },
+                  )
+                }}
+              >
+                {item.cta_text || 'See if you qualify »'}
+              </a>
+            </div>
+          ) : null}
+        </section>
+      )
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+
+function buildOutHref(input: {
+  slug: string
+  slotKey: number | null
+  componentType: string
+  variantKey: string | null
+  inboundSubs?: InboundSubsServer | null
+}): string | null {
+  if (input.slotKey === null || input.slotKey === undefined) return null
+  const params = new URLSearchParams()
+  params.set('component', input.componentType)
+  if (input.variantKey) params.set('variant', input.variantKey)
+  const base = `/out/${encodeURIComponent(input.slug)}/${input.slotKey}?${params.toString()}`
+  return appendInboundSubs(base, input.inboundSubs ?? null)
+}
+
+/**
+ * Resolve the outbound URL for the reader-facing surfaces on a
+ * listicle_entry (heading link, image tap, CTA button). Mirrors what
+ * `renderItemImage` derives internally so a heading tap goes to the same
+ * `/out/…` as the CTA button on that row.
+ *
+ *   • Monetized items with a slot → use the row's own outHref
+ *     (`component=listicle_entry`).
+ *   • Filler items with `component_props.link_slot_key` → build an outHref
+ *     targeted at the referenced slot (`component=filler_headline` so
+ *     PS-01 can slice heading taps from image taps).
+ *   • Otherwise → null (heading renders as plain text).
+ */
+function resolveItemLinkHref({
+  item, slug, effectiveVariant, outHref, inboundSubs,
+}: {
+  item: ComponentItem
+  slug: string
+  effectiveVariant: string | null
+  outHref: string | null
+  inboundSubs?: InboundSubsServer | null
+}): { href: string; slotKey: number | null; componentType: string } | null {
+  if (item.item_type === 'monetized' && outHref) {
+    // outHref already carries inbound subs from the top-level buildOutHref call.
+    return { href: outHref, slotKey: item.slot_key, componentType: 'listicle_entry' }
+  }
+  const linkSlotKey =
+    item.item_type !== 'monetized' && item.component_props
+      ? readLinkSlotKey(item.component_props)
+      : null
+  if (linkSlotKey !== null) {
+    const params = new URLSearchParams()
+    params.set('component', 'filler_headline')
+    if (effectiveVariant) params.set('variant', effectiveVariant)
+    const base = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
+    return {
+      href: appendInboundSubs(base, inboundSubs ?? null),
+      slotKey: linkSlotKey,
+      componentType: 'filler_headline',
+    }
+  }
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// Interactive helper (WO: Wire Interactive Tap Components).
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Social-proof block (ported from /bridge/perks, 2026-07-27).
+// ---------------------------------------------------------------------------
+
+/**
+ * Shape of `component_props` for the standalone `social_proof` component.
+ *
+ * Doctrine (2026-07-27): editorial-native pages carry proof as short
+ * editorial BULLETS, not brand-logo walls. The default variant is
+ * `bullets`. The logo showcase (DealsShowcase + TrustBar) is retained
+ * as an explicit opt-in via `variant: 'logos'` for use on non-editorial
+ * surfaces or when PS-00 authors a fully sourced logo grid — but it
+ * NEVER renders as the default, and no brand list is baked in: `deals`
+ * and `brands` must be supplied via props when opting into `logos`.
+ *
+ * Every field is prop-driven. Nothing in this component references APC,
+ * senior-benefits, or any offer-specific content.
+ */
+interface SocialProofProps {
+  /** 'bullets' (default) | 'logos'. Unknown values fall back to 'bullets'. */
+  variant?: 'bullets' | 'logos'
+
+  // ---- bullets variant (default) --------------------------------------
+  /** Optional lead-in text above the bullet list (e.g. "What members say:"). */
+  intro?: string
+  /** Editorial bullet list — the primary content in the bullets variant. */
+  bullets?: string[]
+
+  // ---- logos variant (opt-in only) ------------------------------------
+  /** DealsShowcase heading (only used when variant='logos' + deals present). */
+  dealsHeading?: string
+  /** DealsShowcase sub-line under the heading. */
+  dealsSubline?: string
+  /** Deal cards for the grid. Required for the grid to render in `logos`. */
+  deals?: Deal[]
+  /** TrustBar label. Only used when variant='logos' + brands present. */
+  trustLabel?: string
+  /** Brand strip entries. Required for the strip to render in `logos`. */
+  brands?: unknown[]
+}
+
+/**
+ * Render the standalone `social_proof` component. Defaults to editorial
+ * bullets per doctrine; `variant: 'logos'` opts into the DealsShowcase +
+ * TrustBar composition. Content is 100% prop-driven — no hardcoded APC /
+ * deals / brands defaults.
+ *
+ * `position` is only used for the console.warn path so an author can
+ * find the offending item quickly if they mis-configure the props.
+ */
+function renderSocialProof(
+  props: SocialProofProps,
+  position: number,
+): React.ReactNode {
+  const variant = props.variant === 'logos' ? 'logos' : 'bullets'
+
+  if (variant === 'bullets') {
+    const bullets = Array.isArray(props.bullets)
+      ? props.bullets.filter((b): b is string => typeof b === 'string' && b.trim().length > 0)
+      : []
+    if (bullets.length === 0) {
+      console.warn(
+        `[advertorial-kit] social_proof item #${position} has no bullets — skipped. Provide component_props.bullets: ["…","…"] or set component_props.variant: 'logos' with deals/brands.`,
+      )
+      return null
+    }
+    return (
+      <section
+        data-component="social_proof"
+        data-variant="bullets"
+        data-position={position}
+        className="mt-8 mb-4"
+        aria-label="Editorial notes"
+      >
+        {props.intro ? (
+          <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-3">
+            {props.intro}
+          </p>
+        ) : null}
+        <ul className="space-y-2 text-base leading-relaxed text-slate-800 list-disc pl-6 marker:text-slate-400">
+          {bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  // variant === 'logos' — opt-in only, requires props.
+  const deals = Array.isArray(props.deals) ? (props.deals as Deal[]) : []
+  const brands = Array.isArray(props.brands) ? (props.brands as unknown as never) : ([] as unknown as never)
+  if (deals.length === 0 && (!props.brands || (props.brands as unknown[]).length === 0)) {
+    console.warn(
+      `[advertorial-kit] social_proof item #${position} variant='logos' has no deals AND no brands — skipped. Supply component_props.deals or .brands.`,
+    )
+    return null
+  }
+  return (
+    <section
+      data-component="social_proof"
+      data-variant="logos"
+      data-position={position}
+    >
+      {deals.length > 0 ? (
+        <DealsShowcase
+          deals={deals}
+          heading={props.dealsHeading ?? 'Sample deals'}
+          subline={props.dealsSubline}
+        />
+      ) : null}
+      {(props.brands as unknown[] | undefined)?.length ? (
+        <TrustBar label={props.trustLabel ?? 'Trusted by:'} brands={brands} />
+      ) : null}
+    </section>
+  )
+}
+
+interface RenderInteractiveArgs {
+  item: ComponentItem
+  slug: string
+  brand: AdvertorialBrand
+  effectiveVariant: string | null
+  outHref: string
+  componentType: string
+  children: React.ReactNode
+}
+
+// ---------------------------------------------------------------------------
+// Item-image tap surface (Handoff §"Change 2").
+// ---------------------------------------------------------------------------
+
+interface RenderItemImageArgs {
+  item: ComponentItem
+  slug: string
+  brand: AdvertorialBrand
+  effectiveVariant: string | null
+  componentType: string
+  outHref: string | null
+  inboundSubs?: InboundSubsServer | null
+}
+
+/**
+ * Render a listicle_entry item's image. Wrap in an `/out` anchor when the
+ * click has somewhere real to go:
+ *
+ *   • MONETIZED items with a slot_key → wrap in outHref (same URL the button
+ *     uses). onClick fires lp_cta_click with `cta_target='image'` so PS-01
+ *     reports can slice image-tap vs button-tap.
+ *   • FILLER items with `component_props.link_slot_key` (positive integer)
+ *     → wrap in a filler-specific outHref pointing at the referenced slot.
+ *     PS-00 is expected to only set link_slot_key when that slot is active
+ *     (server-side `is_active` guard would require an extra fetch per item —
+ *     out of scope for a dispatch-only change).
+ *   • Otherwise → bare `<img>` (no click surface).
+ */
+function renderItemImage({
+  item, slug, brand, effectiveVariant, componentType, outHref, inboundSubs,
+}: RenderItemImageArgs): React.ReactNode {
+  const src = item.image_url
+  if (!src) return null
+
+  const imgEl = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      className="w-full rounded-md border border-slate-200"
+      loading="lazy"
+    />
+  )
+
+  // Monetized items reuse the button's outHref exactly — same slot, same
+  // taxonomy — so an image tap and a button tap are equivalent /out clicks
+  // (distinguishable only by cta_target on the analytics event).
+  if (item.item_type === 'monetized' && outHref) {
+    return renderImageAnchor({
+      href: outHref, brand, slug, effectiveVariant,
+      slotKey: item.slot_key, position: item.position, itemType: item.item_type,
+      componentType, ctaText: item.cta_text, imgEl,
+    })
+  }
+
+  // Filler items opt in per-row via component_props.link_slot_key.
+  const linkSlotKey =
+    item.item_type !== 'monetized' && item.component_props
+      ? readLinkSlotKey(item.component_props)
+      : null
+  if (linkSlotKey !== null) {
+    const params = new URLSearchParams()
+    params.set('component', 'filler_image')
+    if (effectiveVariant) params.set('variant', effectiveVariant)
+    const base = `/out/${encodeURIComponent(slug)}/${linkSlotKey}?${params.toString()}`
+    const fillerHref = appendInboundSubs(base, inboundSubs ?? null)
+    return renderImageAnchor({
+      href: fillerHref, brand, slug, effectiveVariant,
+      slotKey: linkSlotKey, position: item.position, itemType: item.item_type,
+      componentType: 'filler_image', ctaText: item.cta_text, imgEl,
+    })
+  }
+
+  return imgEl
+}
+
+function readLinkSlotKey(props: Record<string, unknown>): number | null {
+  const raw = (props as { link_slot_key?: unknown }).link_slot_key
+  const n = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) return null
+  return n
+}
+
+interface RenderImageAnchorArgs {
+  href: string
+  brand: AdvertorialBrand
+  slug: string
+  effectiveVariant: string | null
+  slotKey: number | null
+  position: number
+  itemType: string
+  componentType: string
+  ctaText: string | null
+  imgEl: React.ReactNode
+}
+
+function renderImageAnchor(args: RenderImageAnchorArgs) {
+  return (
+    <a
+      href={args.href}
+      rel="nofollow sponsored"
+      target="_blank"
+      className="block"
+      data-cta-target="image"
+      onClick={() => {
+        fireKitEvent(
+          'lp_cta_click',
+          {
+            site_key: SITE_KEY,
+            brand: args.brand.siteId,
+            slug: args.slug,
+            component_type: args.componentType,
+            variant: args.effectiveVariant,
+          },
+          {
+            eventLabel: `slot_${args.slotKey ?? 'none'}`,
+            extraProps: {
+              slot_key: args.slotKey,
+              position: args.position,
+              item_type: args.itemType,
+              cta_text: args.ctaText,
+              cta_target: 'image',
+            },
+          },
+        )
+      }}
+    >
+      {args.imgEl}
+    </a>
+  )
+}
+
+/**
+ * Wrap an interactive primitive in a per-slot CtaProvider (so useCtaHref()
+ * inside resolves to this slot's outHref, not the shell's /lp fallback) plus
+ * an event-delegation wrapper that fires analytics events without forking
+ * the shared primitive.
+ *
+ * Wire (per WO §60–66):
+ *   • Any `a[href]` click inside → lp_cta_click (before /out navigation).
+ *   • Any `button[role="radio"]` / `input[type="checkbox"]` / `select` / any
+ *     element with `data-quiz-option` change or click → lp_step. First
+ *     lp_step per mount is fired only once so we don't spam a step for
+ *     every keypress on a calculator input.
+ */
+function renderInteractive({
+  item, slug, brand, effectiveVariant, outHref, componentType, children,
+}: RenderInteractiveArgs) {
+  const subs: CtaSubs = {
+    source_id: brand.siteId,
+    sub5: slug,
+  }
+
+  const commonEventProps = {
+    site_key: SITE_KEY,
+    brand: brand.siteId,
+    slug,
+    component_type: componentType,
+    variant: effectiveVariant,
+  }
+  const extraProps = {
+    slot_key: item.slot_key,
+    position: item.position,
+    item_type: item.item_type,
+    cta_text: item.cta_text,
+  }
+
+  return (
+    <div
+      data-position={item.position}
+      data-component={componentType}
+      className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
+      onClick={(e) => {
+        const target = e.target as HTMLElement | null
+        if (!target) return
+        // CTA link → lp_cta_click (matches EditorsPick + listicle_entry).
+        // The click continues to /out; keepalive fetch survives the nav.
+        if (target.closest('a[href]')) {
+          fireKitEvent('lp_cta_click', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}`,
+            extraProps,
+          })
+          return
+        }
+        // Interaction with a tap surface (quiz option / calculator toggle) →
+        // lp_step. Debounced-by-flag on the wrapping div so a rapid sequence
+        // of taps only fires one step per interaction burst.
+        const isTap =
+          target.closest('button[role="radio"]') ||
+          target.closest('button[data-quiz-option]') ||
+          target.closest('[data-tap-target]')
+        if (isTap) {
+          fireKitEvent('lp_step', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}_step`,
+            extraProps: { ...extraProps, step_source: 'tap' },
+          })
+        }
+      }}
+      onChange={(e) => {
+        // <select> (StateSelector) and <input type="checkbox"> (multi-select
+        // in quizzes that use native form controls) route through onChange.
+        const target = e.target as HTMLElement | null
+        if (!target) return
+        if (target instanceof HTMLSelectElement ||
+            (target instanceof HTMLInputElement &&
+             (target.type === 'checkbox' || target.type === 'number'))) {
+          fireKitEvent('lp_step', commonEventProps, {
+            eventLabel: `slot_${item.slot_key ?? 'none'}_step`,
+            extraProps: { ...extraProps, step_source: 'change' },
+          })
+        }
+      }}
+    >
+      <CtaProvider base={outHref} subs={subs}>
+        {children}
+      </CtaProvider>
+    </div>
+  )
+}

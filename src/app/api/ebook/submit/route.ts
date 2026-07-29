@@ -8,6 +8,7 @@ const EBOOK_FUNNELS = {
   'annuity-dos-donts': "Annuity Do's and Don'ts for Baby Boomers",
   'advanced-annuity-strategies': 'Advanced Annuity Strategies',
   'retirement-made-simple': 'Retirement Made Simple',
+  'turning-65-medicare-checklist': 'Turning 65 Medicare Enrollment Checklist',
 } as const;
 type EbookFunnelKey = keyof typeof EBOOK_FUNNELS;
 
@@ -29,7 +30,20 @@ type SubmitBody = {
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 function tagsFor(funnel: EbookFunnelKey): string[] {
+  if (funnel === 'turning-65-medicare-checklist') {
+    return [
+      'source:pinterest',
+      `ebook:${funnel}`,
+      'source:ebook-funnel',
+      'campaign:medicare-turning65',
+      'site:seniorsimple',
+    ];
+  }
   return ['reactivation', `ebook:${funnel}`, 'source:ebook-funnel', 'site:seniorsimple'];
+}
+
+function campaignFor(funnel: EbookFunnelKey): string {
+  return funnel === 'turning-65-medicare-checklist' ? 'pinterest-acquisition' : 'list-reactivation';
 }
 
 async function fireWebhook(url: string, body: unknown, label: string) {
@@ -69,6 +83,7 @@ export async function POST(req: NextRequest) {
 
   const ebook_title = EBOOK_FUNNELS[funnel];
   const tags = tagsFor(funnel);
+  const campaign = campaignFor(funnel);
   const now = new Date().toISOString();
   const page_url = body.page_url || '';
 
@@ -81,7 +96,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         ebook_funnel: funnel,
         ebook_title,
-        campaign: 'list-reactivation',
+        campaign,
         site_key: 'seniorsimple.org',
         tags,
       },
@@ -99,7 +114,7 @@ export async function POST(req: NextRequest) {
     properties: {
       funnel_type: funnel,
       ebook_title,
-      campaign: 'list-reactivation',
+      campaign,
       site_key: 'seniorsimple.org',
       email,
       first_name,
@@ -114,7 +129,7 @@ export async function POST(req: NextRequest) {
     tags,
     ebook_title,
     ebook_funnel: funnel,
-    campaign: 'list-reactivation',
+    campaign,
     site_key: 'seniorsimple.org',
     source: 'ebook-funnel',
     page_url,

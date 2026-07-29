@@ -3,7 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useStandaloneLayout } from '../../hooks/useFunnelFooter';
 
-type OfferKey = 'annuity-dos-donts' | 'advanced-annuity-strategies' | 'retirement-made-simple';
+type OfferKey =
+  | 'annuity-dos-donts'
+  | 'advanced-annuity-strategies'
+  | 'retirement-made-simple'
+  | 'turning-65-medicare-checklist';
 
 type DownloadFile = { name: string; href: string };
 type Offer = {
@@ -39,6 +43,13 @@ const OFFERS: Record<OfferKey, Offer> = {
     files: [
       { name: "Annuity Do's & Don'ts for Baby Boomers", href: `${EBOOK_ASSETS}/annuity-dos-donts.pdf` },
       { name: 'Advanced Annuity Strategies', href: `${EBOOK_ASSETS}/advanced-annuity-strategies.pdf` },
+    ],
+  },
+  'turning-65-medicare-checklist': {
+    title: 'Turning 65 Medicare Enrollment Checklist',
+    headlineTemplate: 'Your checklist is ready, {name}',
+    files: [
+      { name: 'Turning 65 Medicare Checklist', href: `${EBOOK_ASSETS}/turning-65-medicare-checklist.pdf` },
     ],
   },
 };

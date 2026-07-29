@@ -10,6 +10,11 @@ out/
 build/
 dist/
 
+# advertorial-kit: src/app/out is a Next.js App Router folder (the click
+# router), NOT the static-export build output. Un-ignore explicitly.
+!src/app/out/
+!src/app/out/**
+
 # Environment variables
 .env.local
 .env.development.local

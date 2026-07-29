@@ -6,6 +6,7 @@ import ConditionalHeader from "../components/navigation/ConditionalHeader";
 import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
 import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
+import { TrackerBoot } from "@/lib/callready-tracker/TrackerBoot";
 // TrustedForm removed from global layout - loaded per-page when forms exist
 // import { TrustedForm } from "../components/tracking/TrustedForm";
 
@@ -165,6 +166,52 @@ export default function RootLayout({
         {/* Client-side pixel initializer - handles route-based initialization */}
         <MetaPixelInitializer />
         
+        {/* MGID Sensor — client-side pixel for MGID pageview + attribution.
+            CID 984642. Loads mgsensor.js which auto-tracks the pageview event. */}
+        <Script
+          id="mgid-sensor-base"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var d = document, w = window;
+                w.MgSensorData = w.MgSensorData || [];
+                w.MgSensorData.push({ cid: 984642, project: "a.mgid.com" });
+                var l = "a.mgid.com";
+                var n = d.getElementsByTagName("script")[0];
+                var s = d.createElement("script");
+                s.type = "text/javascript";
+                s.async = true;
+                var dt = !Date.now ? new Date().valueOf() : Date.now();
+                s.src = "https://" + l + "/mgsensor.js?d=" + dt;
+                n.parentNode.insertBefore(s, n);
+              })();
+            `
+          }}
+        />
+
+        {/* Taboola / Realize base pixel — loads _tfa global for use by AdvertorialCta
+            and any other client-side event pushes. Account 2006370. */}
+        <Script
+          id="taboola-tfa-base"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function (t, f, a, x) {
+                if (!document.getElementById(x)) {
+                  t.async = 1; t.src = a; t.id = x;
+                  f.parentNode.insertBefore(t, f);
+                }
+              }(document.createElement("script"),
+                document.getElementsByTagName("script")[0],
+                "//cdn.taboola.com/libtrc/unip/2006370/tfa.js",
+                "tb_tfa_script");
+              window._tfa = window._tfa || [];
+              window._tfa.push({notify: 'event', name: 'page_view', id: 2006370});
+            `
+          }}
+        />
+
         {/* PageTest.ai - Lazy Load */}
         <Script
           id="pagetest-init"
@@ -236,6 +283,9 @@ export default function RootLayout({
           <main>{children}</main>
           <ConditionalFooter />
         </LayoutProvider>
+
+        {/* CallReady in-house tracker + network landing beacons (NewsBreak view_content, etc.) */}
+        <TrackerBoot brand="seniorsimple" />
       </body>
     </html>
   );
