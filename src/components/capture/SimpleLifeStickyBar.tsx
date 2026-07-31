@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, X, Mail } from 'lucide-react'
+import { hemSha256, fireGa4LeadCapture } from '@/lib/capture-identity'
 
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
+
+// Source-detail contract: `<pillar>-<assetKey>:<slug>`. Simple Life is its own
+// pillar+asset (not a magnet), so we hard-code the prefix.
+const SIMPLE_LIFE_SOURCE_PREFIX = 'seniorsimple-simple-life-newsletter'
+const SIMPLE_LIFE_QUIZ_BUCKET = 'simple-life-newsletter'
 const DISMISS_KEY = 'ss_simplelife_bar_dismissed_v1'
 const SUCCESS_KEY = 'ss_simplelife_bar_subscribed_v1'
 const SESSION_ID_KEY = 'ss_session_id'
@@ -140,6 +146,12 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
       void fireAnalytics('simple_life_submit', pageSlug)
 
       try {
+        const hem = await hemSha256(trimmed)
+        // source_detail per CallReady capture contract:
+        // `<pillar>-<assetKey>:<slug>`. Simple Life sits on the seniorsimple
+        // pillar with the `simple-life-newsletter` asset.
+        const source_detail = `${SIMPLE_LIFE_SOURCE_PREFIX}:${pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown')}`
+
         const res = await fetch(SUBSCRIBE_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -147,7 +159,9 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
             email: trimmed,
             site_id: 'seniorsimple',
             source: 'simple-life-sticky',
-            source_detail: pageSlug ?? undefined,
+            source_detail,
+            quiz_bucket: SIMPLE_LIFE_QUIZ_BUCKET,
+            ...(hem ? { hem_sha256: hem } : {}),
             tags: ['simple-life-newsletter'],
             website: honeypot,
           }),
@@ -173,6 +187,11 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
 
         setStatus('success')
         void fireAnalytics('simple_life_confirm', pageSlug)
+        fireGa4LeadCapture({
+          method: 'sticky_bar',
+          slug: pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown'),
+          list: 'simple-life-newsletter',
+        })
         try {
           window.localStorage.setItem(SUCCESS_KEY, '1')
         } catch {

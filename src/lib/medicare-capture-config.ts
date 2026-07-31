@@ -1,4 +1,15 @@
-export type MagnetId = 'decision-kit' | 'tool-result' | 'starter-guide'
+export type MagnetId =
+  | 'decision-kit'
+  | 'tool-result'
+  | 'starter-guide'
+  | 'fe-buyers-guide'
+
+/**
+ * Content pillar — determines source_detail prefix, LP category, and where in
+ * the site the magnet is offered. `medicare` covers Medicare/Medigap/Advantage/
+ * Part D; `final-expense` covers FE/burial/funeral/life-insurance.
+ */
+export type Pillar = 'medicare' | 'final-expense'
 export type CaptureVariant =
   | 'inline'
   | 'tool-gate'
@@ -17,9 +28,24 @@ export type TopicTag =
   | 'medicaid-vs-medicare'
   | 'open-enrollment'
   | 'cost-tool'
+  | 'final-expense'
+  | 'burial'
+  | 'life-insurance'
 
 export interface MagnetSpec {
   id: MagnetId
+  /**
+   * Content pillar the magnet belongs to. Combined with `assetKey` to form the
+   * `source_detail` prefix per the CallReady capture contract:
+   *   source_detail = `<pillar>-<assetKey>:<slug>`
+   */
+  pillar: Pillar
+  /**
+   * Short asset key — the second segment of the source_detail prefix. Kept
+   * distinct from `id` so we can rename magnets internally without breaking
+   * downstream newsletter routing / attribution.
+   */
+  assetKey: string
   /** URL slug for the landing page: /resources/[lpSlug] */
   lpSlug: string
   title: string
@@ -42,22 +68,27 @@ export interface MagnetSpec {
 // Hosted magnets + covers live in Supabase Storage (public bucket).
 // downloadPath / coverImagePath below are ABSOLUTE URLs — the deliver-magnet
 // route + the ad-card / LP <img> tags all accept absolute URLs unchanged.
-const ASSETS = 'https://vpysqshhafthuxvokwqj.supabase.co/storage/v1/object/public/lead-magnets/seniorsimple/medicare'
+const ASSETS_BUCKET =
+  'https://vpysqshhafthuxvokwqj.supabase.co/storage/v1/object/public/lead-magnets/seniorsimple'
+const ASSETS_MEDICARE = `${ASSETS_BUCKET}/medicare`
+const ASSETS_FE = `${ASSETS_BUCKET}/final-expense`
 
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
     id: 'decision-kit',
+    pillar: 'medicare',
+    assetKey: 'decision-kit',
     lpSlug: 'medicare-decision-kit-2026',
     title: '2026 Medicare Decision Kit',
     fileName: 'seniorsimple-medicare-decision-kit-2026.pdf',
-    downloadPath: `${ASSETS}/medicare-decision-kit-2026.pdf`,
-    coverImagePath: `${ASSETS}/covers/medicare-decision-kit-2026-cover.png`,
+    downloadPath: `${ASSETS_MEDICARE}/medicare-decision-kit-2026.pdf`,
+    coverImagePath: `${ASSETS_MEDICARE}/covers/medicare-decision-kit-2026-cover.png`,
     emailSubject: 'Your 2026 Medicare Decision Kit is inside',
     successHeadline: 'Your Decision Kit is on the way.',
     successBody:
       "Check your inbox — we've sent the 2026 Medicare Decision Kit. You can also download it now.",
     ctaLabel: 'Send Me the Decision Kit',
-    adHeadline: 'Free 2026 Medicare Decision Kit',
+    adHeadline: 'Original Medicare or Advantage? Decide With Confidence.',
     adSubhead:
       'Plain-English guide to Medicare, Medigap, Advantage, and Part D — 2026 rates included.',
     lpHeadline: 'Everything you need to pick a Medicare plan this year.',
@@ -72,17 +103,19 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   },
   'tool-result': {
     id: 'tool-result',
+    pillar: 'medicare',
+    assetKey: 'estimate-template',
     lpSlug: 'medicare-estimate',
     title: 'Your Medicare Estimate',
     fileName: 'seniorsimple-medicare-estimate.pdf',
-    downloadPath: `${ASSETS}/medicare-estimate-template.pdf`,
-    coverImagePath: `${ASSETS}/covers/medicare-estimate-template-cover.png`,
+    downloadPath: `${ASSETS_MEDICARE}/medicare-estimate-template.pdf`,
+    coverImagePath: `${ASSETS_MEDICARE}/covers/medicare-estimate-template-cover.png`,
     emailSubject: 'Your Medicare estimate is inside',
     successHeadline: "Your estimate is on the way.",
     successBody:
       "We've emailed your Medicare estimate. You can also download a copy now.",
     ctaLabel: 'Email Me My Estimate',
-    adHeadline: 'Get your Medicare estimate — by email',
+    adHeadline: 'See Your 2026 Medicare Costs — Free Worksheet',
     adSubhead:
       'A saved copy of your Medicare cost estimate, plus the SeniorSimple planning guide.',
     lpHeadline: 'Your Medicare estimate, on paper.',
@@ -97,17 +130,19 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   },
   'starter-guide': {
     id: 'starter-guide',
+    pillar: 'medicare',
+    assetKey: 'starter-guide',
     lpSlug: 'medicare-starter-guide',
     title: 'Medicare Starter Guide',
     fileName: 'seniorsimple-medicare-starter-guide.pdf',
-    downloadPath: `${ASSETS}/medicare-starter-guide.pdf`,
-    coverImagePath: `${ASSETS}/covers/medicare-starter-guide-cover.png`,
+    downloadPath: `${ASSETS_MEDICARE}/medicare-starter-guide.pdf`,
+    coverImagePath: `${ASSETS_MEDICARE}/covers/medicare-starter-guide-cover.png`,
     emailSubject: 'Your Medicare Starter Guide is inside',
     successHeadline: 'Your Starter Guide is on the way.',
     successBody:
       "Check your inbox — we've sent the plain-English Medicare Starter Guide. You can also download it now.",
     ctaLabel: 'Send Me the Starter Guide',
-    adHeadline: 'New to Medicare? Start here.',
+    adHeadline: 'New to Medicare? Start Here.',
     adSubhead:
       'A plain-English Medicare Starter Guide from SeniorSimple. No jargon, no sales calls.',
     lpHeadline: 'The plain-English Medicare Starter Guide.',
@@ -118,6 +153,33 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
       "Enrollment windows and how to avoid a lifetime penalty",
       "Medicaid vs. Medicare — who qualifies for what",
       "The 5 questions to ask before picking a plan",
+    ],
+  },
+  'fe-buyers-guide': {
+    id: 'fe-buyers-guide',
+    pillar: 'final-expense',
+    assetKey: 'fe-buyers-guide',
+    lpSlug: 'final-expense-buyers-guide',
+    title: 'Final Expense Buyer’s Guide',
+    fileName: 'seniorsimple-final-expense-buyers-guide.pdf',
+    downloadPath: `${ASSETS_FE}/final-expense-buyers-guide.pdf`,
+    coverImagePath: `${ASSETS_FE}/final-expense-buyers-guide-cover.png`,
+    emailSubject: 'Your Final Expense Buyer’s Guide is inside',
+    successHeadline: 'Your Buyer’s Guide is on the way.',
+    successBody:
+      "Check your inbox — we've sent the SeniorSimple Final Expense Buyer's Guide. You can also download it now.",
+    ctaLabel: 'Send Me the Buyer’s Guide',
+    adHeadline: 'Final Expense, Made Simple — Free Guide',
+    adSubhead:
+      'A plain-English guide to burial + final expense coverage. Educational, no agent CTA.',
+    lpHeadline: 'Final expense coverage, without the sales pitch.',
+    lpSubhead:
+      "A SeniorSimple guide to burial + final expense insurance. What each policy actually pays, how simplified issue differs from guaranteed issue, and how to avoid the graded-benefit trap.",
+    lpBullets: [
+      "5 top carriers compared — monthly premiums by age",
+      "Simplified issue vs. guaranteed issue — who each is right for",
+      "The graded-benefit period explained (and when it matters)",
+      "Current average U.S. funeral cost + what a $10K/$15K/$25K policy covers",
     ],
   },
 }
@@ -231,5 +293,44 @@ export function resolveCaptureMagnet(config: PageCaptureConfig): {
     return { magnetId, abArm: arm }
   } catch {
     return { magnetId: config.magnetId }
+  }
+}
+
+/**
+ * Build the source_detail string per the CallReady capture contract:
+ *   `<pillar>-<assetKey>:<slug>`
+ * Where slug is the page hosting the capture (article slug, LP slug, or tool
+ * slug — the semantic origin of the lead).
+ */
+export function buildSourceDetail(magnet: MagnetSpec, slug: string): string {
+  return `${magnet.pillar}-${magnet.assetKey}:${slug}`
+}
+
+/**
+ * Slug patterns that route to the Final Expense pillar's default magnet in the
+ * sidebar / mobile-inline ad. Anything else falls back to the site-wide
+ * Medicare default (decision-kit). Extend when new pillars come online.
+ */
+const FE_SLUG_PATTERNS: RegExp[] = [
+  /final-expense/i,
+  /burial/i,
+  /funeral/i,
+  /life-insurance/i,
+]
+
+/**
+ * Pillar routing for slugs without an explicit MEDICARE_CAPTURE_CONFIG entry.
+ * Returns the default magnet + topicTag to show in the sidebar/inline ad slot.
+ */
+export function resolveDefaultForSlug(slug: string): {
+  magnetId: MagnetId
+  topicTag: TopicTag
+} {
+  if (FE_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
+    return { magnetId: 'fe-buyers-guide', topicTag: 'final-expense' }
+  }
+  return {
+    magnetId: DEFAULT_SIDEBAR_MAGNET_ID,
+    topicTag: DEFAULT_SIDEBAR_TOPIC_TAG,
   }
 }

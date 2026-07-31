@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import {
-  DEFAULT_SIDEBAR_MAGNET_ID,
-  DEFAULT_SIDEBAR_TOPIC_TAG,
   getCaptureConfig,
   resolveCaptureMagnet,
+  resolveDefaultForSlug,
   type MagnetId,
   type TopicTag,
 } from '@/lib/medicare-capture-config'
@@ -18,8 +17,10 @@ export interface ResolvedMagnet {
 
 /**
  * Resolve a page slug to the magnet + A/B arm that should be shown in every
- * ad placement on that page (sidebar + mobile-inline). If the slug isn't in
- * the Medicare capture config, falls back to the site-wide default magnet.
+ * ad placement on that page (sidebar + mobile-inline). Resolution order:
+ *   1. Exact match in MEDICARE_CAPTURE_CONFIG → use configured magnet + A/B
+ *   2. Otherwise pattern-match via resolveDefaultForSlug → pillar-appropriate
+ *      default (FE-family slugs → fe-buyers-guide; everything else → decision-kit)
  *
  * Client-only (touches sessionStorage inside resolveCaptureMagnet). Returns
  * null on the first render, then the resolved value once the effect fires,
@@ -31,9 +32,10 @@ export function useResolvedMagnet(slug: string): ResolvedMagnet | null {
   useEffect(() => {
     const config = getCaptureConfig(slug)
     if (!config) {
+      const fallback = resolveDefaultForSlug(slug)
       setResolved({
-        magnetId: DEFAULT_SIDEBAR_MAGNET_ID,
-        topicTag: DEFAULT_SIDEBAR_TOPIC_TAG,
+        magnetId: fallback.magnetId,
+        topicTag: fallback.topicTag,
       })
       return
     }

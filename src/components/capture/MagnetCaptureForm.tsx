@@ -4,11 +4,36 @@ import { useCallback, useState } from 'react'
 import { Check, Download, Mail } from 'lucide-react'
 import {
   MAGNETS,
+  buildSourceDetail,
   type CaptureVariant,
   type MagnetId,
   type TopicTag,
 } from '@/lib/medicare-capture-config'
 import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
+import {
+  hemSha256,
+  fireGa4LeadCapture,
+  type CaptureMethod,
+} from '@/lib/capture-identity'
+
+/**
+ * Map internal variant → GA4 method label. Sidebar/inline ads don't submit
+ * this form directly (they click through to the LP), but leaving the mapping
+ * here so `variant` and `method` stay in one place.
+ */
+function methodForVariant(v: CaptureVariant): CaptureMethod {
+  switch (v) {
+    case 'tool-gate':
+      return 'tool_gate'
+    case 'sidebar-ad':
+      return 'sidebar_ad'
+    case 'inline-ad':
+      return 'inline_ad'
+    case 'inline':
+    default:
+      return 'inline_panel'
+  }
+}
 
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
@@ -42,7 +67,9 @@ async function submitToSubscribe(args: {
   topicTag: TopicTag
   honeypot: string
   source: string
+  hem: string | null
 }) {
+  const magnet = MAGNETS[args.magnetId]
   return fetch(SUBSCRIBE_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -51,9 +78,16 @@ async function submitToSubscribe(args: {
       first_name: args.firstName || null,
       site_id: 'seniorsimple',
       source: args.source,
-      source_detail: `${args.pageSlug}|${args.variant}`,
+      // CallReady capture contract v2: source_detail = <pillar>-<assetKey>:<slug>
+      source_detail: buildSourceDetail(magnet, args.pageSlug),
+      // quiz_bucket = the magnet-id the visitor is being routed to. For quiz
+      // funnels this is the quiz bucket; for direct captures it's the magnet.
+      quiz_bucket: args.magnetId,
+      // Hashed Email Marker (SHA-256 hex of trimmed lowercased email).
+      // Omitted on browsers without SubtleCrypto — server treats absence as null.
+      ...(args.hem ? { hem_sha256: args.hem } : {}),
       tags: [
-        'medicare',
+        magnet.pillar,
         args.topicTag,
         `unit:${args.variant}`,
         `magnet:${args.magnetId}`,
@@ -128,6 +162,7 @@ export default function MagnetCaptureForm({
       })
 
       try {
+        const hem = await hemSha256(trimmed)
         const res = await submitToSubscribe({
           email: trimmed,
           firstName: firstName.trim(),
@@ -137,6 +172,7 @@ export default function MagnetCaptureForm({
           topicTag,
           honeypot,
           source,
+          hem,
         })
 
         if (res.status === 429) {
@@ -164,6 +200,14 @@ export default function MagnetCaptureForm({
           variant,
           magnetId,
           topicTag,
+          abArm,
+        })
+        fireGa4LeadCapture({
+          method: methodForVariant(variant),
+          slug: pageSlug,
+          magnetId,
+          pillar: magnet.pillar,
+          assetKey: magnet.assetKey,
           abArm,
         })
         void triggerMagnetDelivery({
