@@ -307,6 +307,42 @@ export function buildSourceDetail(magnet: MagnetSpec, slug: string): string {
 }
 
 /**
+ * Persona bucket accepted by `newsletter_subscribers.quiz_bucket` — enforced
+ * by a CHECK constraint. Any value outside this set gets rejected at INSERT.
+ * Keep in sync with the constraint definition.
+ */
+export type QuizBucket =
+  | 'advantage'
+  | 'medigap'
+  | 'dual'
+  | 'working'
+  | 'college'
+  | 'life-insurance'
+
+/**
+ * Map article topic → persona bucket for direct captures (LP / sidebar / inline
+ * ad) that don't come from a quiz. Populates `quiz_bucket` on the subscribe
+ * payload when the topic aligns with an allowed persona; returns null otherwise
+ * so the field is omitted (NULL is allowed by the CHECK constraint).
+ *
+ * Only send quiz_bucket for quiz-funnel captures OR direct captures whose topic
+ * clearly maps to a persona. Don't invent buckets — the constraint will reject
+ * anything else.
+ */
+const TOPIC_TO_BUCKET: Partial<Record<TopicTag, QuizBucket>> = {
+  medigap: 'medigap',
+  advantage: 'advantage',
+  'medicaid-vs-medicare': 'dual',
+  'final-expense': 'life-insurance',
+  burial: 'life-insurance',
+  'life-insurance': 'life-insurance',
+}
+
+export function resolveBucketForTopic(topicTag: TopicTag): QuizBucket | null {
+  return TOPIC_TO_BUCKET[topicTag] ?? null
+}
+
+/**
  * Slug patterns that route to the Final Expense pillar's default magnet in the
  * sidebar / mobile-inline ad. Anything else falls back to the site-wide
  * Medicare default (decision-kit). Extend when new pillars come online.

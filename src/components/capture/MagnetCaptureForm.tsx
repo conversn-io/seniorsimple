@@ -5,13 +5,13 @@ import { Check, Download, Mail } from 'lucide-react'
 import {
   MAGNETS,
   buildSourceDetail,
+  resolveBucketForTopic,
   type CaptureVariant,
   type MagnetId,
   type TopicTag,
 } from '@/lib/medicare-capture-config'
 import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
 import {
-  hemSha256,
   fireGa4LeadCapture,
   type CaptureMethod,
 } from '@/lib/capture-identity'
@@ -67,9 +67,14 @@ async function submitToSubscribe(args: {
   topicTag: TopicTag
   honeypot: string
   source: string
-  hem: string | null
 }) {
   const magnet = MAGNETS[args.magnetId]
+  // quiz_bucket has a CHECK constraint (advantage/medigap/dual/working/college/
+  // life-insurance). Only send when the topic maps to an allowed persona;
+  // otherwise omit and the column stays NULL.
+  const bucket = resolveBucketForTopic(args.topicTag)
+  // hem_sha256 is computed by a BEFORE INSERT trigger from `email` server-side,
+  // so we don't send it — one less thing to maintain.
   return fetch(SUBSCRIBE_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -80,12 +85,7 @@ async function submitToSubscribe(args: {
       source: args.source,
       // CallReady capture contract v2: source_detail = <pillar>-<assetKey>:<slug>
       source_detail: buildSourceDetail(magnet, args.pageSlug),
-      // quiz_bucket = the magnet-id the visitor is being routed to. For quiz
-      // funnels this is the quiz bucket; for direct captures it's the magnet.
-      quiz_bucket: args.magnetId,
-      // Hashed Email Marker (SHA-256 hex of trimmed lowercased email).
-      // Omitted on browsers without SubtleCrypto — server treats absence as null.
-      ...(args.hem ? { hem_sha256: args.hem } : {}),
+      ...(bucket ? { quiz_bucket: bucket } : {}),
       tags: [
         magnet.pillar,
         args.topicTag,
@@ -162,7 +162,6 @@ export default function MagnetCaptureForm({
       })
 
       try {
-        const hem = await hemSha256(trimmed)
         const res = await submitToSubscribe({
           email: trimmed,
           firstName: firstName.trim(),
@@ -172,7 +171,6 @@ export default function MagnetCaptureForm({
           topicTag,
           honeypot,
           source,
-          hem,
         })
 
         if (res.status === 429) {

@@ -1,36 +1,15 @@
 /**
- * Identity + tracking helpers shared by every capture surface (LPs, sidebar
+ * Analytics + tracking helpers shared by every capture surface (LPs, sidebar
  * ads, inline units, tool-gate panels, Simple Life sticky bar).
  *
  * All functions are client-safe — they no-op or fall back cleanly when called
  * during SSR or when the browser APIs they depend on aren't present.
- */
-
-/**
- * Hashed Email Marker: lowercase SHA-256 hex digest of the trimmed lowercased
- * email. Used by the newsletter system for identity resolution without
- * exposing raw PII in analytics events / audit logs.
  *
- * Returns null when SubtleCrypto is unavailable (older mobile browsers, some
- * embedded contexts). Callers should just omit the field in that case rather
- * than blocking the submit.
+ * Note: hem_sha256 (Hashed Email Marker) used to live here as a client-side
+ * helper. Removed 2026-07-31 once we confirmed a BEFORE INSERT trigger on
+ * newsletter_subscribers computes it server-side from `email`. Client-side
+ * hashing was duplicating server work — the trigger is the single source.
  */
-export async function hemSha256(email: string): Promise<string | null> {
-  if (typeof window === 'undefined') return null
-  const subtle = window.crypto?.subtle
-  if (!subtle) return null
-
-  try {
-    const normalized = email.trim().toLowerCase()
-    const bytes = new TextEncoder().encode(normalized)
-    const digest = await subtle.digest('SHA-256', bytes)
-    return Array.from(new Uint8Array(digest))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-  } catch {
-    return null
-  }
-}
 
 /**
  * Method labels used on GA4 lead_capture events + as the sixth tag on the
