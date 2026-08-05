@@ -149,8 +149,13 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
         // quiz_bucket omitted — the DB CHECK constraint's persona vocabulary
         // (advantage/medigap/dual/…) doesn't cover newsletter opt-ins.
         // hem_sha256 omitted — BEFORE INSERT trigger computes it server-side.
+        // Fallback pulls the last path segment (e.g. `/articles/foo` → `foo`)
+        // so we never emit `/articles/...` which fails the compliance regex.
         const rawSlug =
-          pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown')
+          pageSlug ??
+          (typeof window !== 'undefined'
+            ? window.location.pathname.split('/').filter(Boolean).pop() ?? 'unknown'
+            : 'unknown')
         const source_detail = `${SIMPLE_LIFE_SURFACE}:${rawSlug}`
 
         const res = await fetch(SUBSCRIBE_ENDPOINT, {
@@ -161,6 +166,10 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
             site_id: 'seniorsimple',
             source: 'simple-life-sticky',
             source_detail,
+            quiz_context: {
+              surface: SIMPLE_LIFE_SURFACE,
+              list: 'simple-life-newsletter',
+            },
             tags: ['simple-life-newsletter'],
             website: honeypot,
           }),

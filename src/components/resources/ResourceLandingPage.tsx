@@ -9,16 +9,29 @@ import type { MagnetSpec } from '@/lib/medicare-capture-config'
 
 interface ResourceLandingPageProps {
   magnet: MagnetSpec
+  /**
+   * Article slug the visitor was on before clicking through to this LP —
+   * parsed from `?from=<slug>` in the parent route. Server sanitizes; if
+   * absent or malformed we fall back to `magnet.defaultArticleSlug`.
+   */
+  fromArticleSlug?: string | null
 }
 
 /**
  * Landing page for a resource magnet. Fires a capture_impression on mount so
- * the LP appears in the scoreboard (variant='inline', source_detail carries the
- * LP slug so it's distinguishable from in-article impressions).
+ * the LP appears in the scoreboard.
+ *
+ * source_detail contract: `resource:<article-slug>` — the tail MUST be a
+ * published article per `v_capture_contract_compliance`. When the LP is
+ * click-through from an article, `fromArticleSlug` carries that; on direct
+ * navigation we fall back to the magnet's canonical article.
  */
-export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps) {
-  // Raw slug — MagnetCaptureForm adds the `resource:` prefix per contract.
-  const pageSlug = magnet.lpSlug
+export default function ResourceLandingPage({
+  magnet,
+  fromArticleSlug,
+}: ResourceLandingPageProps) {
+  // Effective article slug — referrer if plumbed through, else magnet default.
+  const pageSlug = fromArticleSlug ?? magnet.defaultArticleSlug
 
   useEffect(() => {
     trackCaptureEvent({

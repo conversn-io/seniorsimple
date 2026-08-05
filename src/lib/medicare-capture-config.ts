@@ -35,19 +35,27 @@ export type TopicTag =
 export interface MagnetSpec {
   id: MagnetId
   /**
-   * Content pillar the magnet belongs to. Combined with `assetKey` to form the
-   * `source_detail` prefix per the CallReady capture contract:
-   *   source_detail = `<pillar>-<assetKey>:<slug>`
+   * Content pillar the magnet belongs to. Combined with `assetKey`, used for
+   * routing + internal segmentation. NOT emitted in source_detail — the
+   * capture contract uses canonical surface labels instead (see
+   * `buildSourceDetail`).
    */
   pillar: Pillar
   /**
-   * Short asset key — the second segment of the source_detail prefix. Kept
-   * distinct from `id` so we can rename magnets internally without breaking
-   * downstream newsletter routing / attribution.
+   * Short asset key. Kept distinct from `id` so we can rename magnets
+   * internally without breaking downstream tag-based segmentation.
    */
   assetKey: string
   /** URL slug for the landing page: /resources/[lpSlug] */
   lpSlug: string
+  /**
+   * Canonical published-article slug used when the LP is direct-navigated
+   * (no ?from=<article> query param). Must exist as `articles.slug` with
+   * status='published' on site_id='seniorsimple' — otherwise the resulting
+   * `source_detail` fails the `v_capture_contract_compliance` view's
+   * `slug_not_a_page` check.
+   */
+  defaultArticleSlug: string
   title: string
   fileName: string
   downloadPath: string
@@ -79,6 +87,7 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     pillar: 'medicare',
     assetKey: 'decision-kit',
     lpSlug: 'medicare-decision-kit-2026',
+    defaultArticleSlug: 'medicare-planning-guide',
     title: '2026 Medicare Decision Kit',
     fileName: 'seniorsimple-medicare-decision-kit-2026.pdf',
     downloadPath: `${ASSETS_MEDICARE}/medicare-decision-kit-2026.pdf`,
@@ -106,6 +115,7 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     pillar: 'medicare',
     assetKey: 'estimate-template',
     lpSlug: 'medicare-estimate',
+    defaultArticleSlug: 'medicare-cost-calculator',
     title: 'Your Medicare Estimate',
     fileName: 'seniorsimple-medicare-estimate.pdf',
     downloadPath: `${ASSETS_MEDICARE}/medicare-estimate-template.pdf`,
@@ -133,6 +143,7 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     pillar: 'medicare',
     assetKey: 'starter-guide',
     lpSlug: 'medicare-starter-guide',
+    defaultArticleSlug: 'medicare-planning-guide',
     title: 'Medicare Starter Guide',
     fileName: 'seniorsimple-medicare-starter-guide.pdf',
     downloadPath: `${ASSETS_MEDICARE}/medicare-starter-guide.pdf`,
@@ -160,6 +171,7 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
     pillar: 'final-expense',
     assetKey: 'fe-buyers-guide',
     lpSlug: 'final-expense-buyers-guide',
+    defaultArticleSlug: 'best-final-expense-insurance-companies-2026',
     title: 'Final Expense Buyer’s Guide',
     fileName: 'seniorsimple-final-expense-buyers-guide.pdf',
     downloadPath: `${ASSETS_FE}/final-expense-buyers-guide.pdf`,

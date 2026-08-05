@@ -96,6 +96,16 @@ async function submitToSubscribe(args: {
       // Capture contract per Ruling 4: source_detail = `<surface>:<slug>`.
       source_detail: buildSourceDetail(args.surface, args.pageSlug),
       ...(bucket ? { quiz_bucket: bucket } : {}),
+      // Magnet-id + variant land as first-class fields in quiz_context (JSONB)
+      // for downstream reporting — kept out of source_detail per contract.
+      quiz_context: {
+        surface: args.surface,
+        magnet_id: args.magnetId,
+        variant: args.variant,
+        pillar: magnet.pillar,
+        asset_key: magnet.assetKey,
+        topic_tag: args.topicTag,
+      },
       tags: [
         magnet.pillar,
         args.topicTag,
