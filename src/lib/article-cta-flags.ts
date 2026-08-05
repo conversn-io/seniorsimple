@@ -4,10 +4,16 @@
 //
 // Semantics:
 //
-// - `phoneCtasEnabled` (default: TRUE — kill-switch): phone CTAs render on
-//   money-in-motion pages (isMoneyInMotionArticle). Set NEXT_PUBLIC_ARTICLE_PHONE_CTAS=off
-//   to force all phone CTAs dark. Money-in-motion = Medicare/Medigap/annuity/
-//   final-expense/life-insurance pages, where a phone call = $8.75-$12.50/lead.
+// - `phoneCtasEnabled` (default: FALSE — opt-in per phone-off-content doctrine):
+//   phone CTAs render on money-in-motion pages (isMoneyInMotionArticle) ONLY
+//   when explicitly enabled. Doctrine: agent/phone CTAs belong on
+//   `/get-help/<vertical>` LPs, never mid-article — a Medicare-branded phone
+//   bar leaking onto a Final Expense article is a compliance defect
+//   (phone-off-content + wrong vertical). Set
+//   NEXT_PUBLIC_ARTICLE_PHONE_CTAS=on to opt any deploy back into in-article
+//   phone CTAs (won't happen on prod without a deliberate config change).
+//   Historical note: default flipped 2026-08-05 after a CoS P0 escalation —
+//   was TRUE (kill-switch), now FALSE (opt-in).
 //
 // - `emailCtasEnabled` (default: FALSE — opt-in): email CTAs render on ALL
 //   article pages regardless of intent. Set NEXT_PUBLIC_ARTICLE_EMAIL_CTAS=on
@@ -23,6 +29,7 @@ function readFlagBool(name: string, defaultValue: boolean): boolean {
 }
 
 export const articleCtaFlags = {
-  phoneCtasEnabled: readFlagBool('NEXT_PUBLIC_ARTICLE_PHONE_CTAS', true),
+  // Default FALSE — phone-off-content doctrine (see header comment).
+  phoneCtasEnabled: readFlagBool('NEXT_PUBLIC_ARTICLE_PHONE_CTAS', false),
   emailCtasEnabled: readFlagBool('NEXT_PUBLIC_ARTICLE_EMAIL_CTAS', false),
 } as const
