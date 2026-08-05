@@ -23,8 +23,6 @@ export default function ArticleInlineResourceAd({
   mobileOnly = true,
 }: ArticleInlineResourceAdProps) {
   const resolved = useResolvedMagnet(slug)
-  if (!resolved) return null
-
   const wrapperClass = mobileOnly ? 'lg:hidden' : ''
 
   return (
