@@ -233,6 +233,12 @@ async function renderKitAdvertorial(
   // to /out URLs. Never in image_url — that's already an absolute URL and a
   // token there would be a config bug PS-00 should see.
   const componentItems: ComponentItem[] = filteredItems.map((row) => ({
+    // Position-Optimization Phase 2 (SPEC 2026-07-29): thread canonical DB
+    // ids through so KitImpressionTracker's IntersectionObserver can
+    // attribute each impression to its source row + slot without a
+    // client-side refetch.
+    id: row.id,
+    slot_uuid: row.slot_id,
     position: row.position,
     item_type: row.item_type,
     heading: substituteLocation(row.heading, location),
@@ -273,7 +279,7 @@ async function renderKitAdvertorial(
       : null;
 
   return (
-    <KitCtaShell slug={slug} siteId={advertorial.site_id} variant={variantContext.chosen}>
+    <KitCtaShell slug={slug} siteId={advertorial.site_id} advertorialId={advertorial.id} variant={variantContext.chosen}>
       <AdvertorialLayout
         brand={brand}
         headline={localizedHeadline}
