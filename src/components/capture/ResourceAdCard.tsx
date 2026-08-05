@@ -83,7 +83,10 @@ export default function ResourceAdCard({
     return () => io.disconnect()
   }, [fireImpression])
 
-  const href = `/resources/${magnet.lpSlug}`
+  // Plumb the hosting article slug through as `?from=<pageSlug>` so the LP
+  // form emits source_detail = `resource:<article-slug>` per the capture
+  // contract (the tail must be a published article on the same site).
+  const href = `/resources/${magnet.lpSlug}?from=${encodeURIComponent(pageSlug)}`
 
   const trackClick = useCallback(() => {
     // Not a required event per the scoreboard spec, but useful for CTR.
