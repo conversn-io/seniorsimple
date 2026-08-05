@@ -27,15 +27,13 @@ export default function ArticleSidebar({ slug, className = '' }: ArticleSidebarP
       className={`hidden lg:block ${className}`}
     >
       <div className="sticky top-8 space-y-6">
-        {resolved && (
-          <ResourceAdCard
-            magnetId={resolved.magnetId}
-            pageSlug={slug}
-            topicTag={resolved.topicTag}
-            abArm={resolved.abArm}
-            layout="sidebar"
-          />
-        )}
+        <ResourceAdCard
+          magnetId={resolved.magnetId}
+          pageSlug={slug}
+          topicTag={resolved.topicTag}
+          abArm={resolved.abArm}
+          layout="sidebar"
+        />
 
         {/*
           External ad slot — AdSense integration TBD.

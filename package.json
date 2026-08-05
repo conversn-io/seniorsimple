@@ -12,7 +12,8 @@
     "migrate:rollback": "tsx src/scripts/migrate-database.ts rollback",
     "import:content": "tsx src/scripts/import-content.ts",
     "import:clear": "tsx src/scripts/import-content.ts clear",
-    "migrate:all": "npm run migrate:db && npm run import:content"
+    "migrate:all": "npm run migrate:db && npm run import:content",
+    "verify:magnet-slugs": "tsx src/scripts/verify-magnet-slugs.ts"
   },
   "dependencies": {
     "@fal-ai/client": "^1.6.2",
