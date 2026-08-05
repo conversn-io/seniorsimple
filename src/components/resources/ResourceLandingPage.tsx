@@ -17,7 +17,8 @@ interface ResourceLandingPageProps {
  * LP slug so it's distinguishable from in-article impressions).
  */
 export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps) {
-  const pageSlug = `resource:${magnet.lpSlug}`
+  // Raw slug — MagnetCaptureForm adds the `resource:` prefix per contract.
+  const pageSlug = magnet.lpSlug
 
   useEffect(() => {
     trackCaptureEvent({
@@ -30,7 +31,7 @@ export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps
     // topicTag on LPs is a placeholder — LPs aren't scoped to a specific
     // article topic. We could plumb through the referring page's topic later
     // via querystring if we want per-source LP CTR.
-  }, [magnet.id, magnet.lpSlug, pageSlug])
+  }, [magnet.id, pageSlug])
 
   return (
     <div className="min-h-screen bg-white">
@@ -90,6 +91,7 @@ export default function ResourceLandingPage({ magnet }: ResourceLandingPageProps
             <div className="mt-8 rounded-2xl bg-[#F5F5F0] p-6 shadow-md ring-1 ring-[#36596A]/10 md:p-8">
               <MagnetCaptureForm
                 pageSlug={pageSlug}
+                surface="resource"
                 variant="inline"
                 magnetId={magnet.id}
                 topicTag="open-enrollment"

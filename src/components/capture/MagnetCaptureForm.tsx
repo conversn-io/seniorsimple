@@ -4,19 +4,53 @@ import { useCallback, useState } from 'react'
 import { Check, Download, Mail } from 'lucide-react'
 import {
   MAGNETS,
+  buildSourceDetail,
+  resolveBucketForTopic,
+  type CaptureSurface,
   type CaptureVariant,
   type MagnetId,
   type TopicTag,
 } from '@/lib/medicare-capture-config'
 import { trackCaptureEvent } from '@/lib/medicare-capture-analytics'
+import {
+  fireGa4LeadCapture,
+  type CaptureMethod,
+} from '@/lib/capture-identity'
+
+/**
+ * Map internal variant → GA4 method label. Sidebar/inline ads don't submit
+ * this form directly (they click through to the LP), but leaving the mapping
+ * here so `variant` and `method` stay in one place.
+ */
+function methodForVariant(v: CaptureVariant): CaptureMethod {
+  switch (v) {
+    case 'tool-gate':
+      return 'tool_gate'
+    case 'sidebar-ad':
+      return 'sidebar_ad'
+    case 'inline-ad':
+      return 'inline_ad'
+    case 'inline':
+    default:
+      return 'inline_panel'
+  }
+}
 
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
 
 export interface MagnetCaptureFormProps {
-  /** Slug of the page hosting this form — used for source_detail + analytics. */
+  /**
+   * Raw page slug (no surface prefix — the form adds it). LP: `lpSlug`. Tool
+   * page: the tool's article slug. Article inline: the article slug.
+   */
   pageSlug: string
-  /** Variant that owns this form — informs analytics and source_detail. */
+  /**
+   * Canonical capture surface — first segment of `source_detail`. LPs pass
+   * 'resource'; article-embedded panels (tool-gate + inline) pass 'magnet'.
+   */
+  surface: CaptureSurface
+  /** Variant that owns this form — used for analytics + method label only. */
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
@@ -37,12 +71,20 @@ async function submitToSubscribe(args: {
   email: string
   firstName: string
   pageSlug: string
+  surface: CaptureSurface
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
   honeypot: string
   source: string
 }) {
+  const magnet = MAGNETS[args.magnetId]
+  // quiz_bucket has a CHECK constraint (advantage/medigap/dual/working/college/
+  // life-insurance). Only send when the topic maps to an allowed persona;
+  // otherwise omit and the column stays NULL.
+  const bucket = resolveBucketForTopic(args.topicTag)
+  // hem_sha256 is computed by a BEFORE INSERT trigger from `email` server-side,
+  // so we don't send it — one less thing to maintain.
   return fetch(SUBSCRIBE_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -51,9 +93,11 @@ async function submitToSubscribe(args: {
       first_name: args.firstName || null,
       site_id: 'seniorsimple',
       source: args.source,
-      source_detail: `${args.pageSlug}|${args.variant}`,
+      // Capture contract per Ruling 4: source_detail = `<surface>:<slug>`.
+      source_detail: buildSourceDetail(args.surface, args.pageSlug),
+      ...(bucket ? { quiz_bucket: bucket } : {}),
       tags: [
-        'medicare',
+        magnet.pillar,
         args.topicTag,
         `unit:${args.variant}`,
         `magnet:${args.magnetId}`,
@@ -86,6 +130,7 @@ async function triggerMagnetDelivery(args: {
 
 export default function MagnetCaptureForm({
   pageSlug,
+  surface,
   variant,
   magnetId,
   topicTag,
@@ -132,6 +177,7 @@ export default function MagnetCaptureForm({
           email: trimmed,
           firstName: firstName.trim(),
           pageSlug,
+          surface,
           variant,
           magnetId,
           topicTag,
@@ -166,6 +212,14 @@ export default function MagnetCaptureForm({
           topicTag,
           abArm,
         })
+        fireGa4LeadCapture({
+          method: methodForVariant(variant),
+          slug: pageSlug,
+          magnetId,
+          pillar: magnet.pillar,
+          assetKey: magnet.assetKey,
+          abArm,
+        })
         void triggerMagnetDelivery({
           email: trimmed,
           firstName: firstName.trim(),
@@ -186,12 +240,15 @@ export default function MagnetCaptureForm({
       firstName,
       honeypot,
       pageSlug,
+      surface,
       variant,
       magnetId,
       topicTag,
       abArm,
       resultPayload,
       source,
+      magnet.pillar,
+      magnet.assetKey,
     ],
   )
 

@@ -2,9 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, X, Mail } from 'lucide-react'
+import { fireGa4LeadCapture } from '@/lib/capture-identity'
 
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
+
+// Source-detail contract per Ruling 4: `<surface>:<slug>`. Simple Life is its
+// own canonical surface.
+const SIMPLE_LIFE_SURFACE = 'simple-life'
 const DISMISS_KEY = 'ss_simplelife_bar_dismissed_v1'
 const SUCCESS_KEY = 'ss_simplelife_bar_subscribed_v1'
 const SESSION_ID_KEY = 'ss_session_id'
@@ -140,6 +145,14 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
       void fireAnalytics('simple_life_submit', pageSlug)
 
       try {
+        // source_detail per capture contract Ruling 4: `<surface>:<slug>`.
+        // quiz_bucket omitted — the DB CHECK constraint's persona vocabulary
+        // (advantage/medigap/dual/…) doesn't cover newsletter opt-ins.
+        // hem_sha256 omitted — BEFORE INSERT trigger computes it server-side.
+        const rawSlug =
+          pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown')
+        const source_detail = `${SIMPLE_LIFE_SURFACE}:${rawSlug}`
+
         const res = await fetch(SUBSCRIBE_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -147,7 +160,7 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
             email: trimmed,
             site_id: 'seniorsimple',
             source: 'simple-life-sticky',
-            source_detail: pageSlug ?? undefined,
+            source_detail,
             tags: ['simple-life-newsletter'],
             website: honeypot,
           }),
@@ -173,6 +186,11 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
 
         setStatus('success')
         void fireAnalytics('simple_life_confirm', pageSlug)
+        fireGa4LeadCapture({
+          method: 'sticky_bar',
+          slug: pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown'),
+          list: 'simple-life-newsletter',
+        })
         try {
           window.localStorage.setItem(SUCCESS_KEY, '1')
         } catch {
