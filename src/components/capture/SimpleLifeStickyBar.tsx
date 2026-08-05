@@ -253,7 +253,7 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
             >
               <div className="min-w-0 sm:flex-1">
                 <p className="text-sm font-semibold text-white sm:text-base">
-                  Get the SeniorSimple newsletter
+                  Subscribe to The Simple Life
                 </p>
                 <p className="hidden text-xs text-white/75 sm:block">
                   Plain-English retirement insights — weekly, unsubscribe anytime.

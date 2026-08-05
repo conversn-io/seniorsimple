@@ -6,10 +6,10 @@ import InterstitialCTABanner from '@/components/articles/InterstitialCTABanner'
 import InterstitialEmailBanner from '@/components/articles/InterstitialEmailBanner'
 import ScrollRevealedCallButton from '@/components/articles/ScrollRevealedCallButton'
 import ScrollRevealedEmailButton from '@/components/articles/ScrollRevealedEmailButton'
-import NewsletterCaptureCTA from '@/components/articles/NewsletterCaptureCTA'
 import MedicareCostCalculator from '@/components/calculators/MedicareCostCalculator'
 import ArticleSidebar from '@/components/capture/ArticleSidebar'
 import ArticleInlineResourceAd from '@/components/capture/ArticleInlineResourceAd'
+import ArticlePreFooterResourceCTA from '@/components/capture/ArticlePreFooterResourceCTA'
 import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
@@ -180,6 +180,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <section className="bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 pb-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
         <div className="min-w-0">
+          {/* Mobile-only interstitial resource ad — sits between hero + body
+              so mobile visitors get a capture surface early. Desktop hides it
+              since the sticky sidebar rail already carries the ad. */}
+          <div className="lg:hidden mb-8">
+            <ArticleInlineResourceAd slug={slug} mobileOnly={false} />
+          </div>
           {article.html_body ? (
             // html_body already includes <div class="prose"> wrapper, so render it directly
             <>
@@ -359,7 +365,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </section>
       )}
 
-      <NewsletterCaptureCTA slug={slug} category={article.category_details?.name ?? null} />
+      {/* Pre-footer capture — vertical-aware. FE articles surface the FE
+          Buyer's Guide, Medicare articles surface the Decision Kit, etc.
+          Replaces the hardcoded Medicare NewsletterCaptureCTA per the
+          capture-flags WO polish item #3 (dynamic pre-footer CTA). */}
+      <ArticlePreFooterResourceCTA slug={slug} />
 
       {/* Persistent bottom-fixed newsletter opt-in — Simple Life list */}
       <SimpleLifeStickyBar pageSlug={slug} />
