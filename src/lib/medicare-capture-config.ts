@@ -297,13 +297,38 @@ export function resolveCaptureMagnet(config: PageCaptureConfig): {
 }
 
 /**
- * Build the source_detail string per the CallReady capture contract:
- *   `<pillar>-<assetKey>:<slug>`
- * Where slug is the page hosting the capture (article slug, LP slug, or tool
- * slug — the semantic origin of the lead).
+ * Canonical capture surface — first segment of source_detail per the audit
+ * contract (Ruling 4 of the 2026-07-28 branch-reconciliation brief).
+ *
+ * `v_capture_contract_compliance` classifies by `split_part(source_detail, ':', 1)`
+ * so the surface taxonomy needs to be small + stable — dashboards + weekly
+ * audit snapshots group on this exact set. Extend deliberately.
+ *
+ *  - `resource`    → magnet form on an LP under /resources/*
+ *  - `magnet`      → inline / tool-gate capture panel embedded in article body
+ *  - `simple-life` → SeniorSimple newsletter sticky bar
+ *  - `sidebar-ad`  → ResourceAdCard rendered in the article right rail
+ *  - `inline-ad`   → ResourceAdCard rendered inline on mobile
  */
-export function buildSourceDetail(magnet: MagnetSpec, slug: string): string {
-  return `${magnet.pillar}-${magnet.assetKey}:${slug}`
+export type CaptureSurface =
+  | 'resource'
+  | 'magnet'
+  | 'simple-life'
+  | 'sidebar-ad'
+  | 'inline-ad'
+
+/**
+ * Build the source_detail string per the CallReady capture contract:
+ *   `<surface>:<slug>`
+ * Where slug is the raw page slug (article slug, LP slug, or tool slug — the
+ * semantic origin of the lead). Never re-prefix a slug that already contains
+ * the surface; callers pass raw slugs, this helper adds the prefix.
+ */
+export function buildSourceDetail(
+  surface: CaptureSurface,
+  slug: string,
+): string {
+  return `${surface}:${slug}`
 }
 
 /**

@@ -7,9 +7,9 @@ import { fireGa4LeadCapture } from '@/lib/capture-identity'
 const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
 
-// Source-detail contract: `<pillar>-<assetKey>:<slug>`. Simple Life is its own
-// pillar+asset (not a magnet), so we hard-code the prefix.
-const SIMPLE_LIFE_SOURCE_PREFIX = 'seniorsimple-simple-life-newsletter'
+// Source-detail contract per Ruling 4: `<surface>:<slug>`. Simple Life is its
+// own canonical surface.
+const SIMPLE_LIFE_SURFACE = 'simple-life'
 const DISMISS_KEY = 'ss_simplelife_bar_dismissed_v1'
 const SUCCESS_KEY = 'ss_simplelife_bar_subscribed_v1'
 const SESSION_ID_KEY = 'ss_session_id'
@@ -145,13 +145,13 @@ export default function SimpleLifeStickyBar({ pageSlug }: SimpleLifeStickyBarPro
       void fireAnalytics('simple_life_submit', pageSlug)
 
       try {
-        // source_detail per CallReady capture contract:
-        // `<pillar>-<assetKey>:<slug>`. Simple Life sits on the seniorsimple
-        // pillar with the `simple-life-newsletter` asset.
+        // source_detail per capture contract Ruling 4: `<surface>:<slug>`.
         // quiz_bucket omitted — the DB CHECK constraint's persona vocabulary
         // (advantage/medigap/dual/…) doesn't cover newsletter opt-ins.
         // hem_sha256 omitted — BEFORE INSERT trigger computes it server-side.
-        const source_detail = `${SIMPLE_LIFE_SOURCE_PREFIX}:${pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown')}`
+        const rawSlug =
+          pageSlug ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown')
+        const source_detail = `${SIMPLE_LIFE_SURFACE}:${rawSlug}`
 
         const res = await fetch(SUBSCRIBE_ENDPOINT, {
           method: 'POST',

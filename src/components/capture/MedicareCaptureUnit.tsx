@@ -112,6 +112,7 @@ export default function MedicareCaptureUnit({
         </div>
         <MagnetCaptureForm
           pageSlug={pageSlug}
+          surface="magnet"
           variant={variant}
           magnetId={magnetId}
           topicTag={topicTag}

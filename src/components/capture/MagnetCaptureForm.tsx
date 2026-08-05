@@ -6,6 +6,7 @@ import {
   MAGNETS,
   buildSourceDetail,
   resolveBucketForTopic,
+  type CaptureSurface,
   type CaptureVariant,
   type MagnetId,
   type TopicTag,
@@ -39,9 +40,17 @@ const SUBSCRIBE_ENDPOINT =
   'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/subscribe'
 
 export interface MagnetCaptureFormProps {
-  /** Slug of the page hosting this form — used for source_detail + analytics. */
+  /**
+   * Raw page slug (no surface prefix — the form adds it). LP: `lpSlug`. Tool
+   * page: the tool's article slug. Article inline: the article slug.
+   */
   pageSlug: string
-  /** Variant that owns this form — informs analytics and source_detail. */
+  /**
+   * Canonical capture surface — first segment of `source_detail`. LPs pass
+   * 'resource'; article-embedded panels (tool-gate + inline) pass 'magnet'.
+   */
+  surface: CaptureSurface
+  /** Variant that owns this form — used for analytics + method label only. */
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
@@ -62,6 +71,7 @@ async function submitToSubscribe(args: {
   email: string
   firstName: string
   pageSlug: string
+  surface: CaptureSurface
   variant: CaptureVariant
   magnetId: MagnetId
   topicTag: TopicTag
@@ -83,8 +93,8 @@ async function submitToSubscribe(args: {
       first_name: args.firstName || null,
       site_id: 'seniorsimple',
       source: args.source,
-      // CallReady capture contract v2: source_detail = <pillar>-<assetKey>:<slug>
-      source_detail: buildSourceDetail(magnet, args.pageSlug),
+      // Capture contract per Ruling 4: source_detail = `<surface>:<slug>`.
+      source_detail: buildSourceDetail(args.surface, args.pageSlug),
       ...(bucket ? { quiz_bucket: bucket } : {}),
       tags: [
         magnet.pillar,
@@ -120,6 +130,7 @@ async function triggerMagnetDelivery(args: {
 
 export default function MagnetCaptureForm({
   pageSlug,
+  surface,
   variant,
   magnetId,
   topicTag,
@@ -166,6 +177,7 @@ export default function MagnetCaptureForm({
           email: trimmed,
           firstName: firstName.trim(),
           pageSlug,
+          surface,
           variant,
           magnetId,
           topicTag,
@@ -228,12 +240,15 @@ export default function MagnetCaptureForm({
       firstName,
       honeypot,
       pageSlug,
+      surface,
       variant,
       magnetId,
       topicTag,
       abArm,
       resultPayload,
       source,
+      magnet.pillar,
+      magnet.assetKey,
     ],
   )
 
