@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { Check, Mail } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Mail } from 'lucide-react'
 import { fireGa4LeadCapture } from '@/lib/capture-identity'
 
 const SUBSCRIBE_ENDPOINT =
@@ -14,15 +15,7 @@ const QUIZ_BUCKET = 'life-insurance'
 // Reuses the existing `resource` CaptureSurface — `<surface>:<slug>` per the
 // capture contract. See src/lib/medicare-capture-config.ts:326.
 const SOURCE_DETAIL = `resource:${PAGE_SLUG}`
-
-// Vimeo IDs from the ParentSimple 5-part series (spec §4). Order matters.
-const VIDEO_IDS = [
-  '1213427905',
-  '1213427907',
-  '1213427908',
-  '1213427906',
-  '1213427951',
-] as const
+const WATCH_PATH = '/life-insurance-webinar/watch'
 
 const HERO_BULLETS = [
   'Learn how final expense and burial coverage actually work',
@@ -56,6 +49,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
 export default function WebinarOptinPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [honeypot, setHoneypot] = useState('')
@@ -129,17 +123,13 @@ export default function WebinarOptinPage() {
           list: 'seniorsimple-newsletter',
         })
 
-        setTimeout(() => {
-          document
-            .getElementById('webinar-series')
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }, 80)
+        router.push(WATCH_PATH)
       } catch {
         setStatus('error')
         setErrorMsg('Network error. Please try again.')
       }
     },
-    [status, email, firstName, honeypot],
+    [status, email, firstName, honeypot, router],
   )
 
   return (
@@ -294,24 +284,13 @@ export default function WebinarOptinPage() {
                     </form>
                   </>
                 ) : (
-                  <div id="webinar-series">
-                    <div className="mb-6 flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E4CDA1]/50">
-                        <Check
-                          className="h-5 w-5 text-[#36596A]"
-                          aria-hidden
-                        />
-                      </div>
-                      <div>
-                        <h2 className="font-serif text-2xl font-semibold text-[#36596A]">
-                          You&rsquo;re in.
-                        </h2>
-                        <p className="mt-1 text-[15px] leading-relaxed text-gray-600">
-                          Watch the five-part series below — in order or jump
-                          around. No jargon, no pressure to buy anything.
-                        </p>
-                      </div>
-                    </div>
+                  <div className="py-4 text-center">
+                    <h2 className="font-serif text-2xl font-semibold text-[#36596A]">
+                      You&rsquo;re in.
+                    </h2>
+                    <p className="mt-2 text-[15px] leading-relaxed text-gray-600">
+                      Taking you to the webinar&hellip;
+                    </p>
                   </div>
                 )}
               </div>
@@ -319,44 +298,6 @@ export default function WebinarOptinPage() {
           </div>
         </div>
       </section>
-
-      {/* Video series (revealed after opt-in). Full-width band beneath the hero. */}
-      {status === 'success' && (
-        <section className="bg-[#F5F5F0]">
-          <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="mb-8 text-center">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B08E4E]">
-                The webinar series
-              </p>
-              <h2 className="font-serif text-3xl font-semibold text-[#36596A] md:text-4xl">
-                Five short videos, in plain language
-              </h2>
-            </div>
-            <div className="space-y-8">
-              {VIDEO_IDS.map((id, i) => (
-                <div key={id}>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#36596A]/70">
-                    Part {i + 1} of {VIDEO_IDS.length}
-                  </p>
-                  <div
-                    className="relative w-full overflow-hidden rounded-lg bg-black shadow-md"
-                    style={{ paddingTop: '56.25%' }}
-                  >
-                    <iframe
-                      src={`https://player.vimeo.com/video/${id}`}
-                      title={`Life insurance webinar — part ${i + 1}`}
-                      loading="lazy"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 h-full w-full border-0"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* What you'll learn */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
