@@ -15,7 +15,7 @@ const QUIZ_BUCKET = 'life-insurance'
 // Reuses the existing `resource` CaptureSurface — `<surface>:<slug>` per the
 // capture contract. See src/lib/medicare-capture-config.ts:326.
 const SOURCE_DETAIL = `resource:${PAGE_SLUG}`
-const WATCH_PATH = '/life-insurance-webinar/watch'
+const WATCH_PATH = '/life-insurance-webinar/1'
 
 const HERO_BULLETS = [
   'Learn how final expense and burial coverage actually work',
