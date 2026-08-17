@@ -273,6 +273,41 @@ export const MEDICARE_CAPTURE_CONFIG: Record<string, PageCaptureConfig> = {
     magnetId: 'starter-guide',
     topicTag: 'open-enrollment',
   },
+
+  // --- WO-666: top-5 high-engagement / 0-capture pages -------------------
+  // These carried only click-through ad surfaces (`sidebar-ad` / `inline-ad`),
+  // which hand off to the LP and credit `resource:<slug>`. They now also get
+  // an in-body magnet form (see MID_ARTICLE_MAGNET_SLUGS) crediting
+  // `magnet:<slug>`. Explicit entries so the magnet is intentional per page
+  // rather than falling through to the site-wide default.
+  'medicare-part-d-changes-2027-what-seniors-should-know': {
+    slug: 'medicare-part-d-changes-2027-what-seniors-should-know',
+    variants: ['inline'],
+    magnetId: 'decision-kit',
+    topicTag: 'part-d',
+  },
+  'medicare-part-d-drug-plans-ranked-2026': {
+    slug: 'medicare-part-d-drug-plans-ranked-2026',
+    variants: ['inline'],
+    magnetId: 'decision-kit',
+    topicTag: 'part-d',
+  },
+  'best-final-expense-insurance-companies-2026': {
+    slug: 'best-final-expense-insurance-companies-2026',
+    variants: ['inline'],
+    magnetId: 'fe-buyers-guide',
+    topicTag: 'final-expense',
+  },
+  // Asset gap: no retirement/Social-Security magnet exists yet (WO-667 builds
+  // it). Interim = the plain-English Medicare Starter Guide, the closest
+  // intent match for a reader working out their benefit math pre-65/at-65.
+  // Swap `magnetId` here once the SS/retirement guide ships.
+  'how-are-social-security-benefits-calculated-guide': {
+    slug: 'how-are-social-security-benefits-calculated-guide',
+    variants: ['inline'],
+    magnetId: 'starter-guide',
+    topicTag: 'open-enrollment',
+  },
 }
 
 export function getCaptureConfig(slug: string): PageCaptureConfig | null {
@@ -406,4 +441,46 @@ export function resolveDefaultForSlug(slug: string): {
     magnetId: DEFAULT_SIDEBAR_MAGNET_ID,
     topicTag: DEFAULT_SIDEBAR_TOPIC_TAG,
   }
+}
+
+/**
+ * Pure, synchronous magnet resolution for a page slug — the server-safe core
+ * shared by `useResolvedMagnet` (client) and the SSR-rendered in-body magnet
+ * CTA. No hooks, no browser APIs, so a server component can call it directly
+ * and emit complete markup in the initial HTML.
+ *
+ * Order: explicit MEDICARE_CAPTURE_CONFIG entry → pillar default for the slug.
+ * A/B arms are deliberately NOT resolved here (they need sessionStorage); the
+ * article pages that use this have no A/B configured.
+ */
+export function resolveMagnetForSlug(slug: string): {
+  magnetId: MagnetId
+  topicTag: TopicTag
+} {
+  const config = getCaptureConfig(slug)
+  if (config) return { magnetId: config.magnetId, topicTag: config.topicTag }
+  return resolveDefaultForSlug(slug)
+}
+
+/**
+ * WO-666 — pages that mount the in-body (mid-article) magnet capture form.
+ *
+ * These five are the network's highest-dwell owned articles and were capturing
+ * nothing: their only in-body surfaces were click-through ad cards, which
+ * credit `resource:<slug>` only if the reader follows through to the LP. The
+ * in-body form captures on the page itself and credits `magnet:<slug>`.
+ *
+ * Deliberately an allowlist rather than a site-wide default — this is a
+ * measured rollout; widen it once the 7-day capture read is in.
+ */
+export const MID_ARTICLE_MAGNET_SLUGS: readonly string[] = [
+  'glp1-drugs-covered-by-medicare-2026',
+  'how-are-social-security-benefits-calculated-guide',
+  'medicare-part-d-changes-2027-what-seniors-should-know',
+  'best-final-expense-insurance-companies-2026',
+  'medicare-part-d-drug-plans-ranked-2026',
+]
+
+export function hasMidArticleMagnet(slug: string): boolean {
+  return MID_ARTICLE_MAGNET_SLUGS.includes(slug)
 }

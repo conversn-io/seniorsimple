@@ -19,14 +19,24 @@ export interface MedicareCaptureUnitProps {
   resultPayload?: unknown
   abArm?: string
   className?: string
+  /**
+   * Override the panel copy. Defaults derive from the magnet (tool pages want
+   * "Email me my Medicare estimate"); article placements pass topic-matched
+   * copy so the offer reads as an upgrade of the piece being read.
+   */
+  heading?: string
+  subhead?: string
 }
 
 /**
- * Full-form capture panel used inline on the two tool pages (calculator +
- * comparison tool). Article pages don't use this — they get the ResourceAdCard
- * → LP flow via ArticleSidebar. Only two variants survive here:
- *   - 'inline'    → always-visible below the tool
+ * Full-form capture panel. Two variants survive here:
+ *   - 'inline'    → always-visible in-content panel
  *   - 'tool-gate' → shown alongside the tool result (with resultPayload)
+ *
+ * Used by the two tool pages (calculator + comparison tool) and, via
+ * `ArticleInlineMagnetCTA`, in-body on the high-dwell article pages (WO-666).
+ * Articles also keep the ResourceAdCard → LP flow in the sidebar; this panel is
+ * the on-page capture that credits `magnet:<slug>` directly.
  *
  * Fires capture_impression when the panel scrolls into view. Everything below
  * that (form state, subscribe wiring, analytics for submit/confirm, magnet
@@ -40,6 +50,8 @@ export default function MedicareCaptureUnit({
   resultPayload,
   abArm,
   className = '',
+  heading: headingOverride,
+  subhead: subheadOverride,
 }: MedicareCaptureUnitProps) {
   const magnet = MAGNETS[magnetId]
   const hostRef = useRef<HTMLElement | null>(null)
@@ -83,13 +95,15 @@ export default function MedicareCaptureUnit({
   }, [fireImpression])
 
   const heading =
-    magnetId === 'tool-result'
+    headingOverride ??
+    (magnetId === 'tool-result'
       ? 'Email me my Medicare estimate'
-      : `Free ${magnet.title}`
+      : `Free ${magnet.title}`)
   const subhead =
-    magnetId === 'tool-result'
+    subheadOverride ??
+    (magnetId === 'tool-result'
       ? 'Get a copy of your estimate plus a plain-English Medicare planning guide. No agent, no sales calls.'
-      : 'A plain-English guide from SeniorSimple. No agent, no sales calls — just the information you asked for.'
+      : 'A plain-English guide from SeniorSimple. No agent, no sales calls — just the information you asked for.')
 
   return (
     <section

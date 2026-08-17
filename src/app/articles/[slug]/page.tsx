@@ -10,9 +10,12 @@ import MedicareCostCalculator from '@/components/calculators/MedicareCostCalcula
 import ArticleSidebar from '@/components/capture/ArticleSidebar'
 import ArticleInlineResourceAd from '@/components/capture/ArticleInlineResourceAd'
 import ArticlePreFooterResourceCTA from '@/components/capture/ArticlePreFooterResourceCTA'
+import ArticleInlineMagnetCTA from '@/components/capture/ArticleInlineMagnetCTA'
 import SimpleLifeStickyBar from '@/components/capture/SimpleLifeStickyBar'
 import { articleCtaFlags } from '@/lib/article-cta-flags'
 import { isMoneyInMotionArticle } from '@/lib/article-intent'
+import { hasMidArticleMagnet } from '@/lib/medicare-capture-config'
+import { splitArticleBodyForCta } from '@/lib/article-body-split'
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -62,6 +65,48 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // insurance) keep phone CTAs — a phone call is worth $8.75-$12.50/lead.
   // Editorial pages (Social Security, retirement basics) get email only.
   const isMoneyPage = isMoneyInMotionArticle(article)
+
+  // WO-666 — in-body guide-upgrade capture on the high-dwell / 0-capture
+  // pages. The split happens here, on the server, so both halves of the body
+  // AND the capture panel between them land in the initial HTML.
+  const showInlineMagnet = hasMidArticleMagnet(slug)
+
+  const bodyStyle = { fontSize: '18px', lineHeight: '1.8' } as const
+
+  function renderBody(html: string) {
+    if (!showInlineMagnet) {
+      return (
+        <div
+          className="text-gray-800 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: html }}
+          style={bodyStyle}
+        />
+      )
+    }
+
+    const { before, after } = splitArticleBodyForCta(html)
+
+    return (
+      <>
+        <div
+          className="text-gray-800 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: before }}
+          style={bodyStyle}
+        />
+        <ArticleInlineMagnetCTA slug={slug} />
+        {/* `after` is null when the body has no safe mid-point to cut at (too
+            short, or every h2 sits inside a table/list) — the panel then reads
+            as an end-of-article CTA rather than a mid-article one. */}
+        {after && (
+          <div
+            className="text-gray-800 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: after }}
+            style={bodyStyle}
+          />
+        )}
+      </>
+    )
+  }
 
   // Generate structured data for SEO/AEO
   const structuredData = {
@@ -189,14 +234,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {article.html_body ? (
             // html_body already includes <div class="prose"> wrapper, so render it directly
             <>
-              <div 
-                className="text-gray-800 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: article.html_body }}
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.8',
-                }}
-              />
+              {renderBody(article.html_body)}
               {/* Mid-content CTA — phone renders on money-in-motion pages only
                   (Medicare/Medigap/annuity/final-expense/life-insurance); email
                   renders on all pages when the email flag is on. */}
@@ -221,14 +259,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             // Fallback to markdown content with prose wrapper
             <>
               <div className="prose prose-lg max-w-none">
-                <div
-                  className="text-gray-800 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
-                  style={{
-                    fontSize: '18px',
-                    lineHeight: '1.8',
-                  }}
-                />
+                {renderBody(article.content)}
               </div>
               {/* Mid-content CTA — phone renders on money-in-motion pages only
                   (Medicare/Medigap/annuity/final-expense/life-insurance); email
