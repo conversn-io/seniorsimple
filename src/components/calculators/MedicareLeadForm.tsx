@@ -3,6 +3,16 @@
 import { useState } from 'react'
 import { Phone, Mail, User, MapPin, ArrowRight, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTrustedForm, getTrustedFormCertUrl, getLeadIdToken } from '@/hooks/useTrustedForm'
+
+/**
+ * The TCPA disclosure rendered above the submit button. Submitting the form is
+ * the consent action, so this exact string is persisted with the lead — the
+ * retained record has to say what the person actually agreed to, not just that
+ * they agreed. Keep it byte-identical to the rendered copy below.
+ */
+const CONSENT_DISCLOSURE =
+  'By submitting this form, you agree to be contacted by licensed Medicare advisors. Your information is secure and will never be sold.'
 
 interface MedicareLeadFormProps {
   calculatorResults?: {
@@ -25,6 +35,12 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Enabled unconditionally: this form renders its fields immediately at both
+  // mount points (calculator results and the mid-scroll article unit), so the
+  // hidden xxTrustedFormCertUrl input is in the DOM as soon as the component is.
+  // The hook polls for that field anyway, so it is safe either way.
+  useTrustedForm({ enabled: true })
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -70,11 +86,39 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
       const utmStorage = sessionStorage.getItem('seniorsimple_utm')
       const utmParams = utmStorage ? JSON.parse(utmStorage) : {}
 
+      // Poll for the TrustedForm certificate before submitting. The script
+      // populates the hidden field asynchronously, so a straight read right
+      // after a fast submit usually comes back empty. Same 15 × 500ms budget
+      // the reverse-mortgage calculator uses.
+      let trustedFormCertUrl: string | null = null
+      for (let attempt = 0; attempt < 15; attempt++) {
+        trustedFormCertUrl = getTrustedFormCertUrl()
+        if (trustedFormCertUrl) break
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+      const jornayaLeadId = getLeadIdToken()
+
+      if (!trustedFormCertUrl) {
+        // Never block the lead on a missing cert — consent was still given and
+        // the disclosure text is persisted regardless. Log it so a systematic
+        // script failure is visible rather than silent.
+        console.warn('⚠️ Medicare lead: TrustedForm certificate not captured after polling', {
+          fieldExists: !!document.querySelector('input[name="xxTrustedFormCertUrl"]'),
+          scriptExists: !!document.querySelector('script[src*="trustedform.com"]'),
+        })
+      }
+
       const payload = {
         ...formData,
         calculatorResults,
         source: 'medicare_calculator',
         landingPage: window.location.href,
+        // Consent is given by the act of submitting under the disclosure below.
+        consent: true,
+        consentDisclosure: CONSENT_DISCLOSURE,
+        consentTimestamp: new Date().toISOString(),
+        trustedFormCertUrl,
+        jornayaLeadId,
         ...utmParams
       }
 
@@ -152,6 +196,12 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* CRITICAL: TrustedForm hidden input — NO value attribute.
+            Must stay UNCONTROLLED so the TrustedForm script can set it;
+            value="" makes it controlled and React blocks the external write. */}
+        <input type="hidden" name="xxTrustedFormCertUrl" id="xxTrustedFormCertUrl" />
+        {/* LeadID/Jornaya token input */}
+        <input type="hidden" name="leadid_token" id="leadid_token" />
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             {error}
@@ -287,10 +337,9 @@ export default function MedicareLeadForm({ calculatorResults, onSuccess }: Medic
           )}
         </button>
 
-        <p className="text-xs text-gray-500 text-center">
-          By submitting this form, you agree to be contacted by licensed Medicare advisors.
-          Your information is secure and will never be sold.
-        </p>
+        {/* Rendered from the same constant that is persisted with the lead, so
+            the retained consent record can never drift from the shown copy. */}
+        <p className="text-xs text-gray-500 text-center">{CONSENT_DISCLOSURE}</p>
       </form>
     </div>
   )

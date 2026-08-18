@@ -98,13 +98,24 @@ async function upsertContact(email: string, firstName: string | null, lastName: 
 }
 
 // Helper function to upsert lead
+interface ConsentRecord {
+  consent: boolean;
+  consentDisclosure: string | null;
+  consentTimestamp: string | null;
+  trustedFormCertUrl: string | null;
+  jornayaLeadId: string | null;
+  landingPage: string | null;
+  ipAddress: string | null;
+}
+
 async function upsertLead(
   contactId: string,
   sessionId: string | null,
   quizAnswers: any,
   calculatorResults: any,
   utmParams: any,
-  zipCode: string | null
+  zipCode: string | null,
+  consentRecord: ConsentRecord
 ) {
   // Generate session ID if not provided
   const finalSessionId = sessionId || crypto.randomUUID();
@@ -132,11 +143,18 @@ async function upsertLead(
     contact_id: contactId,
     session_id: finalSessionId,
     funnel_type: 'Medicare',
+    site_key: 'seniorsimple',
     status: 'new',
     is_verified: true, // No OTP required for calculator leads
     quiz_answers: {
       ...quizAnswers,
-      calculator_results: calculatorResults
+      calculator_results: calculatorResults,
+      // The disclosure text + timestamp live in quiz_answers because `leads`
+      // has no column for them; the buyer-facing proof is the cert URL and the
+      // consent boolean, which are top-level columns.
+      consent_disclosure: consentRecord.consentDisclosure,
+      consent_timestamp: consentRecord.consentTimestamp,
+      trusted_form_cert_url: consentRecord.trustedFormCertUrl,
     },
     zip_code: zipCode,
     utm_source: utmSource,
@@ -145,17 +163,35 @@ async function upsertLead(
     utm_term: utmTerm,
     utm_content: utmContent,
     verified_at: new Date().toISOString(),
+    consent: consentRecord.consent,
+    trustedform_cert_url: consentRecord.trustedFormCertUrl,
+    jornaya_lead_id: consentRecord.jornayaLeadId,
+    landing_page: consentRecord.landingPage,
+    ip_address: consentRecord.ipAddress,
   };
 
   if (existingLead?.id) {
-    // Update existing lead
+    // Never let a re-submit that failed to capture a cert erase consent proof
+    // we already hold for this lead. Consent itself is sticky for the same
+    // reason — it was given once, under a disclosure we already recorded.
+    if (!leadData.trustedform_cert_url && existingLead.trustedform_cert_url) {
+      leadData.trustedform_cert_url = existingLead.trustedform_cert_url;
+      leadData.quiz_answers.trusted_form_cert_url = existingLead.trustedform_cert_url;
+    }
+    if (!leadData.jornaya_lead_id && existingLead.jornaya_lead_id) {
+      leadData.jornaya_lead_id = existingLead.jornaya_lead_id;
+    }
+    if (!leadData.consent && existingLead.consent) {
+      leadData.consent = existingLead.consent;
+    }
+
     const { data: updatedLead, error } = await callreadyQuizDb
       .from('leads')
       .update(leadData)
       .eq('id', existingLead.id)
       .select('*')
       .single();
-    
+
     if (error) throw error;
     return updatedLead;
   }
@@ -178,17 +214,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📥 Request Body:', JSON.stringify({ ...body, phone: '***' }, null, 2));
     
-    const { 
-      firstName, 
-      lastName, 
-      email, 
-      phone, 
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
       zipCode,
       preferredContact,
       calculatorResults,
       source,
       landingPage,
       sessionId,
+      consent,
+      consentDisclosure,
+      consentTimestamp,
+      trustedFormCertUrl,
+      jornayaLeadId,
       ...utmParams
     } = body;
 
@@ -200,6 +241,27 @@ export async function POST(request: NextRequest) {
     console.log('👤 Upserting contact...');
     const contact = await upsertContact(email, firstName, lastName, phone);
     console.log('✅ Contact upserted:', contact.id);
+
+    // Consent proof travels with the lead. `consent` is only ever true when the
+    // client says the disclosure was rendered and submitted under — we never
+    // infer it from the mere presence of a phone number.
+    const consentRecord: ConsentRecord = {
+      consent: consent === true,
+      consentDisclosure: consentDisclosure || null,
+      consentTimestamp: consentTimestamp || new Date().toISOString(),
+      trustedFormCertUrl: trustedFormCertUrl || null,
+      jornayaLeadId: jornayaLeadId || null,
+      landingPage: landingPage || null,
+      ipAddress:
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
+    };
+
+    if (!consentRecord.consent) {
+      console.warn('⚠️ Medicare lead submitted without a consent flag — check the form wiring');
+    }
+    if (!consentRecord.trustedFormCertUrl) {
+      console.warn('⚠️ Medicare lead has no TrustedForm certificate');
+    }
 
     // Find or create lead
     console.log('📋 Upserting lead...');
@@ -216,7 +278,8 @@ export async function POST(request: NextRequest) {
       },
       calculatorResults,
       utmParams,
-      zipCode || null
+      zipCode || null,
+      consentRecord
     );
     console.log('✅ Lead upserted:', lead.id);
 
@@ -234,6 +297,10 @@ export async function POST(request: NextRequest) {
       funnelType: 'Medicare',
       leadId: lead.id,
       sessionId: lead.session_id,
+      // Mirror the consent proof into GHL so reps working the contact can see
+      // it. Supabase remains the system of record — this is a convenience copy.
+      consent: lead.consent,
+      trustedFormCertUrl: lead.trustedform_cert_url || '',
       ...utmParams
     };
 
