@@ -1,4 +1,5 @@
-import { getArticle, getRelatedArticles } from '../../../lib/articles'
+import { getArticle, getClusterContext, getRelatedArticles } from '../../../lib/articles'
+import ClusterPillarLink from '@/components/articles/ClusterPillarLink'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -40,12 +41,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     console.log(`[Article ${slug}] html_body length:`, article.html_body?.length || 0)
   }
 
-  // Get related articles
-  const { articles: relatedArticles } = await getRelatedArticles(
-    article.id, 
-    article.category_id, 
-    3
-  )
+  // Cluster context first (WO-722): when this page belongs to a pillar
+  // cluster, the pillar and its siblings are far more relevant than
+  // category+recency matches — and linking them is what pulls the cluster out
+  // of orphan status. Only fall back to category-based related posts when the
+  // page has no cluster at all.
+  const { cluster } = await getClusterContext(article, 6)
+  const hasCluster = cluster.related.length > 0 || cluster.pillar !== null
+
+  const { articles: categoryRelated } = hasCluster
+    ? { articles: [] }
+    : await getRelatedArticles(article.id, article.category_id, 3)
+
+  const relatedArticles = hasCluster ? cluster.related : categoryRelated
+  const relatedHeading = hasCluster
+    ? cluster.isPillar
+      ? 'Explore this guide'
+      : 'More in this series'
+    : 'Related Articles'
 
   // Resolve phone number (article -> domain -> default)
   const phoneNumber = 
@@ -335,12 +348,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </section>
       )}
 
+      {/* Up-link to the cluster pillar (WO-722) */}
+      {cluster.pillar && (
+        <ClusterPillarLink
+          slug={cluster.pillar.slug}
+          title={cluster.pillar.title}
+          excerpt={cluster.pillar.excerpt}
+        />
+      )}
+
       {/* Related Articles */}
       {relatedArticles && relatedArticles.length > 0 && (
         <section className="py-16 px-6 bg-[#F5F5F0]">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-serif font-semibold text-[#36596A] text-center mb-12">
-              Related Articles
+              {relatedHeading}
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedArticles.map((relatedArticle) => (

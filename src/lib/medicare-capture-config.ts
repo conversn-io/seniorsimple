@@ -3,13 +3,14 @@ export type MagnetId =
   | 'tool-result'
   | 'starter-guide'
   | 'fe-buyers-guide'
+  | 'annuity-dos-donts'
 
 /**
  * Content pillar — determines source_detail prefix, LP category, and where in
  * the site the magnet is offered. `medicare` covers Medicare/Medigap/Advantage/
  * Part D; `final-expense` covers FE/burial/funeral/life-insurance.
  */
-export type Pillar = 'medicare' | 'final-expense'
+export type Pillar = 'medicare' | 'final-expense' | 'annuity'
 export type CaptureVariant =
   | 'inline'
   | 'tool-gate'
@@ -31,6 +32,7 @@ export type TopicTag =
   | 'final-expense'
   | 'burial'
   | 'life-insurance'
+  | 'annuity'
 
 export interface MagnetSpec {
   id: MagnetId
@@ -80,6 +82,9 @@ const ASSETS_BUCKET =
   'https://vpysqshhafthuxvokwqj.supabase.co/storage/v1/object/public/lead-magnets/seniorsimple'
 const ASSETS_MEDICARE = `${ASSETS_BUCKET}/medicare`
 const ASSETS_FE = `${ASSETS_BUCKET}/final-expense`
+// The annuity magnet predates the storage-bucket convention — it ships in the
+// repo under /public and is served straight off the site origin.
+const ASSETS_ANNUITY = ''
 
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
@@ -192,6 +197,41 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
       "Simplified issue vs. guaranteed issue — who each is right for",
       "The graded-benefit period explained (and when it matters)",
       "Current average U.S. funeral cost + what a $10K/$15K/$25K policy covers",
+    ],
+  },
+  // WO-722 — the annuity pillar's own magnet. Until this existed every annuity
+  // page (56 of them after the consolidation) fell through
+  // `resolveDefaultForSlug` to `decision-kit` and offered a *Medicare* guide to
+  // a reader researching annuities: the wrong-vertical mismatch this file's own
+  // CTA doctrine calls a defect. The asset was already written and live at
+  // /downloads/ebook/annuity-dos-donts.pdf — it just was never registered.
+  'annuity-dos-donts': {
+    id: 'annuity-dos-donts',
+    pillar: 'annuity',
+    assetKey: 'annuity-dos-donts',
+    lpSlug: 'annuity-dos-and-donts',
+    defaultArticleSlug:
+      'what-is-an-annuity-complete-guide-retirement-income-planning-2026',
+    title: 'Annuity Do’s & Don’ts',
+    fileName: 'seniorsimple-annuity-dos-and-donts.pdf',
+    downloadPath: `${ASSETS_ANNUITY}/downloads/ebook/annuity-dos-donts.pdf`,
+    coverImagePath: `${ASSETS_ANNUITY}/images/ebook/cover-dosdonts-3d.png`,
+    emailSubject: 'Your Annuity Do’s & Don’ts guide is inside',
+    successHeadline: 'Your Annuity guide is on the way.',
+    successBody:
+      "Check your inbox — we've sent the SeniorSimple Annuity Do's & Don'ts guide. You can also download it now.",
+    ctaLabel: 'Send Me the Annuity Guide',
+    adHeadline: 'Thinking About an Annuity? Read This First.',
+    adSubhead:
+      'The questions to ask before you sign — surrender charges, income riders, and the fees that rarely come up at the seminar.',
+    lpHeadline: 'Annuities, explained before someone tries to sell you one.',
+    lpSubhead:
+      "A SeniorSimple guide to what annuities actually do. How each type pays, what a rider really costs, and the terms worth pushing back on — written for the reader getting a second opinion.",
+    lpBullets: [
+      "Fixed, indexed, variable, and immediate — what each one is actually for",
+      "Surrender charges: how long your money is locked and what it costs to leave",
+      "Income riders — the fee, the roll-up rate, and when they earn their keep",
+      "15 questions to ask before signing anything",
     ],
   },
 }
@@ -416,14 +456,35 @@ export function resolveBucketForTopic(topicTag: TopicTag): QuizBucket | null {
 
 /**
  * Slug patterns that route to the Final Expense pillar's default magnet in the
- * sidebar / mobile-inline ad. Anything else falls back to the site-wide
- * Medicare default (decision-kit). Extend when new pillars come online.
+ * sidebar / mobile-inline ad. Checked after ANNUITY_SLUG_PATTERNS; anything
+ * matching neither falls back to the site-wide Medicare default
+ * (decision-kit). Extend when new pillars come online.
  */
 const FE_SLUG_PATTERNS: RegExp[] = [
   /final-expense/i,
   /burial/i,
   /funeral/i,
   /life-insurance/i,
+]
+
+/**
+ * WO-722 — annuity pillar slugs. Covers the product-type explainers, the
+ * "best X" comparison listicles, and the carrier/product reviews (which often
+ * name only the carrier and product, e.g. `athene-agility-10-annuity-review`
+ * or `best-qlac-providers-2026`).
+ *
+ * Checked BEFORE the FE patterns: `fixed-index-annuity-vs-variable-annuity`
+ * must not be captured by /life-insurance/ style overlap, and annuity reviews
+ * are the more specific match wherever both could apply.
+ */
+const ANNUITY_SLUG_PATTERNS: RegExp[] = [
+  /annuit/i,
+  /\bmyga\b/i,
+  /-myga-/i,
+  /\bspia\b/i,
+  /\bqlac\b/i,
+  /\brila\b/i,
+  /income-rider/i,
 ]
 
 /**
@@ -434,6 +495,9 @@ export function resolveDefaultForSlug(slug: string): {
   magnetId: MagnetId
   topicTag: TopicTag
 } {
+  if (ANNUITY_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
+    return { magnetId: 'annuity-dos-donts', topicTag: 'annuity' }
+  }
   if (FE_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
     return { magnetId: 'fe-buyers-guide', topicTag: 'final-expense' }
   }

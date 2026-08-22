@@ -70,6 +70,11 @@ const FALLBACK_COPY: Record<Pillar, CtaCopy> = {
     subhead:
       "A plain-English guide to burial and final expense coverage — what each policy actually pays, and the traps to avoid. Educational only, nobody will call you.",
   },
+  annuity: {
+    heading: 'Take the guide with you',
+    subhead:
+      "A plain-English guide to annuities — how each type pays, what the riders actually cost, and the terms worth questioning before you sign. Educational only, nobody will call you.",
+  },
 }
 
 export interface ArticleInlineMagnetCTAProps {

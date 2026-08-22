@@ -21,6 +21,8 @@ export interface Article {
   persona?: string
   seo_score?: number
   readability_score?: number
+  /** Cluster parent. Set on satellites; null on pillars and standalones. */
+  parent_pillar_article_id?: string | null
 }
 
 export interface Category {
@@ -161,6 +163,96 @@ export async function getRelatedArticles(currentArticleId: string, categoryId?: 
     }
   } catch (error) {
     return { articles: [], error: error instanceof Error ? error : new Error(String(error)) }
+  }
+}
+
+/**
+ * Pillar <-> satellite context for an article, driven by
+ * `articles.parent_pillar_article_id`.
+ *
+ * The CMS has carried this relation for a long time (every annuity satellite
+ * points at the "What Is an Annuity?" pillar, for example) but nothing ever
+ * rendered it — `getRelatedArticles` matches on category + recency, so a
+ * carrier review and an unrelated Medicare post could sit next to each other
+ * while the pillar and its 50+ siblings stayed mutually invisible. That is
+ * what left the annuity library orphaned (WO-722).
+ *
+ * Returns the pillar to link up to, and the siblings/satellites to link
+ * across. Callers fall back to category-based related posts when a page has
+ * no cluster.
+ */
+export interface ClusterContext {
+  /** The cluster pillar, when the current article is a satellite. */
+  pillar: Article | null
+  /** Siblings (when a satellite) or children (when a pillar). */
+  related: Article[]
+  /** True when the current article is itself a cluster pillar. */
+  isPillar: boolean
+}
+
+export async function getClusterContext(
+  article: Pick<Article, 'id' | 'parent_pillar_article_id'>,
+  limit: number = 6,
+): Promise<{ cluster: ClusterContext; error: Error | null }> {
+  const empty: ClusterContext = { pillar: null, related: [], isPillar: false }
+
+  try {
+    const pillarId = article.parent_pillar_article_id
+
+    if (pillarId) {
+      // Satellite: fetch the pillar plus the other satellites beneath it.
+      const [pillarRes, siblingsRes] = await Promise.all([
+        supabase
+          .from('articles')
+          .select('*')
+          .eq('id', pillarId)
+          .eq('status', 'published')
+          .eq('site_id', 'seniorsimple')
+          .maybeSingle(),
+        supabase
+          .from('articles')
+          .select('*')
+          .eq('parent_pillar_article_id', pillarId)
+          .eq('status', 'published')
+          .eq('site_id', 'seniorsimple')
+          .neq('id', article.id)
+          .order('published_at', { ascending: false })
+          .limit(limit),
+      ])
+
+      const error = pillarRes.error || siblingsRes.error || null
+      return {
+        cluster: {
+          pillar: (pillarRes.data as Article) ?? null,
+          related: (siblingsRes.data as Article[]) ?? [],
+          isPillar: false,
+        },
+        error,
+      }
+    }
+
+    // Not a satellite — it may still be a pillar with children of its own.
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('parent_pillar_article_id', article.id)
+      .eq('status', 'published')
+      .eq('site_id', 'seniorsimple')
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    const children = (data as Article[]) ?? []
+    if (children.length === 0) return { cluster: empty, error }
+
+    return {
+      cluster: { pillar: null, related: children, isPillar: true },
+      error,
+    }
+  } catch (error) {
+    return {
+      cluster: empty,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
 
