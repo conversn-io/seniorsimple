@@ -180,6 +180,17 @@ export async function getRelatedArticles(currentArticleId: string, categoryId?: 
  * Returns the pillar to link up to, and the siblings/satellites to link
  * across. Callers fall back to category-based related posts when a page has
  * no cluster.
+ *
+ * Children are resolved BEFORE the parent edge, deliberately. The CMS's
+ * clustering pass nests pillars under other pillars — on seniorsimple all
+ * eight secondary pillars (annuity, tax-free income, independent living,
+ * social security, estate planning, reverse mortgage, LTC, senior discounts)
+ * currently hang off the Medicare guide, so the whole library is one tree
+ * rooted at `how-to-choose-a-medicare-plan`. Following the parent edge first
+ * would make the annuity pillar advertise itself as "part of" a Medicare
+ * guide and surface Medicare siblings instead of its own 55 annuity
+ * satellites — a cross-vertical mislink on the most valuable page in the
+ * cluster. A page with children is a pillar, whatever sits above it.
  */
 export interface ClusterContext {
   /** The cluster pillar, when the current article is a satellite. */
@@ -197,42 +208,8 @@ export async function getClusterContext(
   const empty: ClusterContext = { pillar: null, related: [], isPillar: false }
 
   try {
-    const pillarId = article.parent_pillar_article_id
-
-    if (pillarId) {
-      // Satellite: fetch the pillar plus the other satellites beneath it.
-      const [pillarRes, siblingsRes] = await Promise.all([
-        supabase
-          .from('articles')
-          .select('*')
-          .eq('id', pillarId)
-          .eq('status', 'published')
-          .eq('site_id', 'seniorsimple')
-          .maybeSingle(),
-        supabase
-          .from('articles')
-          .select('*')
-          .eq('parent_pillar_article_id', pillarId)
-          .eq('status', 'published')
-          .eq('site_id', 'seniorsimple')
-          .neq('id', article.id)
-          .order('published_at', { ascending: false })
-          .limit(limit),
-      ])
-
-      const error = pillarRes.error || siblingsRes.error || null
-      return {
-        cluster: {
-          pillar: (pillarRes.data as Article) ?? null,
-          related: (siblingsRes.data as Article[]) ?? [],
-          isPillar: false,
-        },
-        error,
-      }
-    }
-
-    // Not a satellite — it may still be a pillar with children of its own.
-    const { data, error } = await supabase
+    // 1. Children first — a page with satellites is a pillar (see note above).
+    const { data: childData, error: childError } = await supabase
       .from('articles')
       .select('*')
       .eq('parent_pillar_article_id', article.id)
@@ -241,12 +218,46 @@ export async function getClusterContext(
       .order('published_at', { ascending: false })
       .limit(limit)
 
-    const children = (data as Article[]) ?? []
-    if (children.length === 0) return { cluster: empty, error }
+    const children = (childData as Article[]) ?? []
+    if (children.length > 0) {
+      // Pillar: link down to its own satellites, and deliberately do NOT
+      // surface whatever pillar the clustering pass parented it to.
+      return {
+        cluster: { pillar: null, related: children, isPillar: true },
+        error: childError,
+      }
+    }
+
+    // 2. Otherwise a leaf — link up to its pillar and across to its siblings.
+    const pillarId = article.parent_pillar_article_id
+    if (!pillarId) return { cluster: empty, error: childError }
+
+    const [pillarRes, siblingsRes] = await Promise.all([
+      supabase
+        .from('articles')
+        .select('*')
+        .eq('id', pillarId)
+        .eq('status', 'published')
+        .eq('site_id', 'seniorsimple')
+        .maybeSingle(),
+      supabase
+        .from('articles')
+        .select('*')
+        .eq('parent_pillar_article_id', pillarId)
+        .eq('status', 'published')
+        .eq('site_id', 'seniorsimple')
+        .neq('id', article.id)
+        .order('published_at', { ascending: false })
+        .limit(limit),
+    ])
 
     return {
-      cluster: { pillar: null, related: children, isPillar: true },
-      error,
+      cluster: {
+        pillar: (pillarRes.data as Article) ?? null,
+        related: (siblingsRes.data as Article[]) ?? [],
+        isPillar: false,
+      },
+      error: pillarRes.error || siblingsRes.error || null,
     }
   } catch (error) {
     return {
