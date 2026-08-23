@@ -4,13 +4,22 @@ export type MagnetId =
   | 'starter-guide'
   | 'fe-buyers-guide'
   | 'annuity-dos-donts'
+  | 'cost-of-care-guide'
 
 /**
  * Content pillar — determines source_detail prefix, LP category, and where in
  * the site the magnet is offered. `medicare` covers Medicare/Medigap/Advantage/
- * Part D; `final-expense` covers FE/burial/funeral/life-insurance.
+ * Part D; `final-expense` covers FE/burial/funeral/life-insurance; `annuity`
+ * covers the annuity cluster (product explainers, carrier reviews, MYGA/SPIA/
+ * QLAC/RILA); `long-term-care` covers the senior-living / care cluster
+ * (assisted living, memory care, nursing homes, in-home care, aging in place,
+ * LTC insurance).
  */
-export type Pillar = 'medicare' | 'final-expense' | 'annuity'
+export type Pillar =
+  | 'medicare'
+  | 'final-expense'
+  | 'annuity'
+  | 'long-term-care'
 export type CaptureVariant =
   | 'inline'
   | 'tool-gate'
@@ -33,6 +42,8 @@ export type TopicTag =
   | 'burial'
   | 'life-insurance'
   | 'annuity'
+  | 'long-term-care'
+  | 'senior-living'
 
 export interface MagnetSpec {
   id: MagnetId
@@ -85,6 +96,10 @@ const ASSETS_FE = `${ASSETS_BUCKET}/final-expense`
 // The annuity magnet predates the storage-bucket convention — it ships in the
 // repo under /public and is served straight off the site origin.
 const ASSETS_ANNUITY = ''
+// WO-800 hosted the LTC guide under `/care/`, not the `/ltc/` path its scope
+// line predicted. Verified against storage.objects before wiring — don't
+// "correct" this to /ltc/ without moving the object first.
+const ASSETS_CARE = `${ASSETS_BUCKET}/care`
 
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
@@ -232,6 +247,40 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
       "Surrender charges: how long your money is locked and what it costs to leave",
       "Income riders — the fee, the roll-up rate, and when they earn their keep",
       "15 questions to ask before signing anything",
+    ],
+  },
+  // WO-800 / WO-801 — the care cluster's first magnet. Before this the cluster
+  // had no registered magnet at all, so every care page fell through
+  // `resolveDefaultForSlug` to the Medicare Decision Kit — the same
+  // live-but-unregistered defect that hit the annuity guide.
+  // Figures below are CareScout's 2025 Cost of Care survey (the current
+  // release), verified in WO-800. Update them here and in the PDF together.
+  'cost-of-care-guide': {
+    id: 'cost-of-care-guide',
+    pillar: 'long-term-care',
+    assetKey: 'cost-of-care-guide',
+    lpSlug: 'cost-of-care-guide',
+    defaultArticleSlug: 'long-term-care-planning-guide',
+    title: 'Cost of Long-Term Care by State (2026)',
+    fileName: 'seniorsimple-cost-of-care-guide.pdf',
+    downloadPath: `${ASSETS_CARE}/cost-of-care-guide.pdf`,
+    coverImagePath: `${ASSETS_CARE}/covers/cost-of-care-guide-cover.png`,
+    emailSubject: 'Your Cost of Long-Term Care guide is inside',
+    successHeadline: 'Your Cost of Care guide is on the way.',
+    successBody:
+      "Check your inbox — we've sent the Cost of Long-Term Care guide. You can also download it now.",
+    ctaLabel: 'Send Me the Cost of Care Guide',
+    adHeadline: 'What Does Care Actually Cost Where You Live?',
+    adSubhead:
+      'Assisted living, in-home care, memory care and nursing homes — current costs by state, plus the four ways families pay for it.',
+    lpHeadline: 'The real cost of long-term care — by state, in plain numbers.',
+    lpSubhead:
+      "A SeniorSimple guide to what care costs today and how families actually pay for it. Educational only — no agent will contact you.",
+    lpBullets: [
+      "National medians: $6,200/mo assisted living, $9,581/mo nursing home (semi-private), $10,798/mo private room",
+      "In-home care at $35/hour — what 20, 40, and 44 hours a week really costs",
+      "The four ways families pay: savings, Medicaid, VA benefits, and LTC insurance",
+      "When long-term care insurance is worth buying — and the age where it stops being",
     ],
   },
 }
@@ -396,6 +445,8 @@ export function resolveCaptureMagnet(config: PageCaptureConfig): {
  *  - `simple-life` → SeniorSimple newsletter sticky bar
  *  - `sidebar-ad`  → ResourceAdCard rendered in the article right rail
  *  - `inline-ad`   → ResourceAdCard rendered inline on mobile
+ *  - `quote`       → MedicareLeadForm in the mid-scroll article quote card
+ *                    (phone-bearing quote request, not an email magnet)
  */
 export type CaptureSurface =
   | 'resource'
@@ -403,6 +454,7 @@ export type CaptureSurface =
   | 'simple-life'
   | 'sidebar-ad'
   | 'inline-ad'
+  | 'quote'
 
 /**
  * Build the source_detail string per the CallReady capture contract:
@@ -448,6 +500,13 @@ const TOPIC_TO_BUCKET: Partial<Record<TopicTag, QuizBucket>> = {
   'final-expense': 'life-insurance',
   burial: 'life-insurance',
   'life-insurance': 'life-insurance',
+  // `long-term-care` / `senior-living` are deliberately absent. WO-800's
+  // handoff asked for quiz_bucket='care', but the
+  // `newsletter_subscribers_quiz_bucket_check` constraint only accepts
+  // advantage / medigap / dual / working / college / life-insurance — sending
+  // 'care' would reject the INSERT and lose the capture. Care leads carry
+  // their segmentation in tags + quiz_context.pillar instead until the
+  // constraint gains a care bucket (see WO-791 LTC offer routing).
 }
 
 export function resolveBucketForTopic(topicTag: TopicTag): QuizBucket | null {
@@ -488,6 +547,107 @@ const ANNUITY_SLUG_PATTERNS: RegExp[] = [
 ]
 
 /**
+ * WO-801 — the SeniorSimple care cluster, as published in the CMS
+ * (`articles.cluster_id IN ('ss-senior-living-care','ss-long-term-care')`,
+ * site_id='seniorsimple', status='published', 34 pages as of 2026-08-23).
+ *
+ * Held as an explicit list rather than inferred at request time: the config is
+ * a static module with no DB access, and an exact set is what makes the routing
+ * auditable against the cluster. Refresh it with:
+ *
+ *   select slug from articles
+ *   where site_id='seniorsimple' and status='published'
+ *     and cluster_id in ('ss-senior-living-care','ss-long-term-care')
+ *   order by slug;
+ *
+ * `CARE_SLUG_PATTERNS` below covers care pages published after this snapshot,
+ * so a new care article still routes correctly before anyone edits this file.
+ */
+export const CARE_CLUSTER_SLUGS: readonly string[] = [
+  'aging-in-place-guide',
+  'aging-in-place-home-modification-checklist',
+  'assisted-living-vs-independent-living-key-differences-explained',
+  'assisted-living-vs-memory-care-which-is-right-for-your-loved-one',
+  'best-aging-in-place-technology-2026',
+  'best-assisted-living-options-by-state-2026',
+  'best-caregiver-support-resources-2026',
+  'best-home-care-agencies-for-seniors-2026',
+  'best-medical-alert-systems-2026',
+  'best-medical-alert-systems-seniors-2026',
+  'best-short-term-care-insurance-2026',
+  'complete-guide-to-assisted-living-everything-you-need-to-know',
+  'complete-guide-to-hospice-care-end-of-life-support-and-comfort',
+  'complete-guide-to-in-home-care-aging-in-place-with-support',
+  'complete-guide-to-independent-living-for-seniors',
+  'complete-guide-to-memory-care-understanding-alzheimer-s-and-dementia-care',
+  'complete-guide-to-nursing-homes-when-skilled-nursing-is-needed',
+  'home-modification-planner-strategy-guide',
+  'how-much-does-in-home-care-cost-hourly-and-monthly-rates',
+  'how-much-does-memory-care-cost-pricing-guide-for-2025',
+  'in-home-care-vs-assisted-living-cost-and-care-comparison',
+  'long-term-care-insurance-best-policies-2026',
+  'long-term-care-insurance-explained-2026',
+  'long-term-care-insurance-worth-it-checklist',
+  'long-term-care-planning-guide',
+  'long-term-care-planning-strategy-guide',
+  'memory-care-vs-nursing-home-understanding-the-differences',
+  'nursing-home-vs-assisted-living-when-to-choose-each',
+  'questions-to-ask-when-touring-memory-care-facilities',
+  'senior-living-costs-2026',
+  'senior-living-costs-by-state-2026',
+  'veterans-benefits-seniors-never-claim',
+  'veterans-long-term-care-benefits-2026',
+  'when-to-move-from-independent-to-assisted-living',
+]
+
+const CARE_CLUSTER_SLUG_SET = new Set(CARE_CLUSTER_SLUGS)
+
+/** Forward-compat routing for care pages published after the snapshot above. */
+const CARE_SLUG_PATTERNS: RegExp[] = [
+  /long-term-care/i,
+  /short-term-care/i,
+  /assisted-living/i,
+  /independent-living/i,
+  /senior-living/i,
+  /memory-care/i,
+  /nursing-home/i,
+  /home-care/i,
+  /hospice/i,
+  /aging-in-place/i,
+  /caregiver/i,
+  /medical-alert/i,
+  /home-modification/i,
+]
+
+/**
+ * Medicare/Medicaid pages that happen to mention a care setting stay on the
+ * Medicare pillar — `medicare-and-assisted-living-what-s-covered-and-what-s-not`
+ * and `medicaid-and-assisted-living-eligibility-and-coverage-by-state` are
+ * coverage questions, not LTC-insurance shopping. Only applies to the pattern
+ * fallback; an explicit CARE_CLUSTER_SLUGS membership or a
+ * MEDICARE_CAPTURE_CONFIG entry still wins.
+ */
+const MEDICARE_GUARD = /medicare|medicaid/i
+
+function isCareSlug(slug: string): boolean {
+  if (CARE_CLUSTER_SLUG_SET.has(slug)) return true
+  if (MEDICARE_GUARD.test(slug)) return false
+  return CARE_SLUG_PATTERNS.some((rx) => rx.test(slug))
+}
+
+/**
+ * Topic tag for a care page. LTC-insurance pages get `long-term-care`; the
+ * rest of the cluster (settings, costs, caregiving, aging in place) gets
+ * `senior-living`, so downstream tag segmentation can tell shopping intent
+ * from research intent.
+ */
+function careTopicTag(slug: string): TopicTag {
+  return /(long|short)-term-care-insurance/i.test(slug)
+    ? 'long-term-care'
+    : 'senior-living'
+}
+
+/**
  * Pillar routing for slugs without an explicit MEDICARE_CAPTURE_CONFIG entry.
  * Returns the default magnet + topicTag to show in the sidebar/inline ad slot.
  */
@@ -500,6 +660,12 @@ export function resolveDefaultForSlug(slug: string): {
   }
   if (FE_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
     return { magnetId: 'fe-buyers-guide', topicTag: 'final-expense' }
+  }
+  if (isCareSlug(slug)) {
+    return {
+      magnetId: 'cost-of-care-guide',
+      topicTag: careTopicTag(slug),
+    }
   }
   return {
     magnetId: DEFAULT_SIDEBAR_MAGNET_ID,
@@ -543,6 +709,10 @@ export const MID_ARTICLE_MAGNET_SLUGS: readonly string[] = [
   'medicare-part-d-changes-2027-what-seniors-should-know',
   'best-final-expense-insurance-companies-2026',
   'medicare-part-d-drug-plans-ranked-2026',
+  // WO-801 — the whole care cluster. Unlike WO-666's measured five, this is a
+  // full-cluster mount: the cluster was capturing at 1.2% with no magnet
+  // registered at all, so there is no in-body surface here to regress.
+  ...CARE_CLUSTER_SLUGS,
 ]
 
 export function hasMidArticleMagnet(slug: string): boolean {

@@ -56,6 +56,56 @@ const COPY_BY_SLUG: Record<string, CtaCopy> = {
     subhead:
       'The free 2026 Medicare Decision Kit breaks down Part D tiers, the coverage gap, and the one question that saves seniors around $700 a year.',
   },
+
+  // --- WO-801: care cluster ---------------------------------------------
+  // Bespoke copy for the cost- and shopping-intent pages, where the guide is
+  // the literal next step. The rest of the cluster uses the long-term-care
+  // fallback below.
+  'senior-living-costs-by-state-2026': {
+    heading: 'See what care costs in your state',
+    subhead:
+      'The free Cost of Long-Term Care guide puts assisted living, memory care, in-home care and nursing homes side by side — state by state, with the four ways families pay for it.',
+  },
+  'senior-living-costs-2026': {
+    heading: 'Take the cost comparison with you',
+    subhead:
+      'The free Cost of Long-Term Care guide has all seven care types priced out, plus what changes the number most — location, hours, and level of care. No agent, no sales call.',
+  },
+  'how-much-does-in-home-care-cost-hourly-and-monthly-rates': {
+    heading: 'Work out what in-home care will really cost',
+    subhead:
+      'At the current $35/hour median, the monthly number moves fast with hours. The free Cost of Long-Term Care guide does the math at 20, 40 and 44 hours a week — and shows how it compares to assisted living.',
+  },
+  'how-much-does-memory-care-cost-pricing-guide-for-2025': {
+    heading: 'Plan for what memory care costs over time',
+    subhead:
+      'Memory care runs well above standard assisted living, and the gap widens as needs grow. The free Cost of Long-Term Care guide has current costs by state plus how families cover them.',
+  },
+  'in-home-care-vs-assisted-living-cost-and-care-comparison': {
+    heading: 'Compare the two on paper, not from memory',
+    subhead:
+      'The free Cost of Long-Term Care guide puts in-home care and assisted living side by side with current numbers, and the break-even point where one overtakes the other.',
+  },
+  'best-assisted-living-options-by-state-2026': {
+    heading: 'Know the price before you tour',
+    subhead:
+      'The free Cost of Long-Term Care guide has assisted living costs by state, what the monthly fee usually excludes, and the four ways families pay. Educational only — nobody will call you.',
+  },
+  'long-term-care-insurance-explained-2026': {
+    heading: 'Start with the number the policy has to cover',
+    subhead:
+      'Whether LTC insurance is worth it depends on what care actually costs where you live. The free Cost of Long-Term Care guide has those numbers, plus the four ways families pay without a policy.',
+  },
+  'long-term-care-insurance-worth-it-checklist': {
+    heading: 'Run the checklist against real numbers',
+    subhead:
+      'The free Cost of Long-Term Care guide gives you the current cost of each care type by state — the figure every question on this checklist ultimately turns on.',
+  },
+  'long-term-care-planning-guide': {
+    heading: 'Put a number on the plan',
+    subhead:
+      'The free Cost of Long-Term Care guide prices out every care setting by state and lays out the four ways families pay: savings, Medicaid, VA benefits, and LTC insurance.',
+  },
 }
 
 /** Used for any slug added to the allowlist before it gets bespoke copy. */
@@ -74,6 +124,11 @@ const FALLBACK_COPY: Record<Pillar, CtaCopy> = {
     heading: 'Take the guide with you',
     subhead:
       "A plain-English guide to annuities — how each type pays, what the riders actually cost, and the terms worth questioning before you sign. Educational only, nobody will call you.",
+  },
+  'long-term-care': {
+    heading: 'Take the cost numbers with you',
+    subhead:
+      'The free Cost of Long-Term Care guide prices out assisted living, memory care, in-home care and nursing homes by state — plus the four ways families pay for it. Educational only, nobody will call you.',
   },
 }
 
