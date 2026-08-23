@@ -107,7 +107,7 @@ const COPY_BY_SLUG: Record<string, CtaCopy> = {
       'The free Cost of Long-Term Care guide prices out every care setting by state and lays out the four ways families pay: savings, Medicaid, VA benefits, and LTC insurance.',
   },
 
-  // --- WO-802: Social Security cluster -----------------------------------
+  // --- WO-668: Social Security cluster -----------------------------------
   // Bespoke copy for the claiming-decision and 2026-numbers pages, where the
   // guide is the literal next step. The rest of the cluster uses the
   // social-security fallback below.

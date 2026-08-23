@@ -695,7 +695,7 @@ function careTopicTag(slug: string): TopicTag {
 }
 
 /**
- * WO-802 — the SeniorSimple Social Security cluster, as published in the CMS
+ * WO-668 — the SeniorSimple Social Security cluster, as published in the CMS
  * (`articles.cluster_id = 'social-security'`, site_id='seniorsimple',
  * status='published', 12 pages as of 2026-08-23). Same explicit-set approach as
  * CARE_CLUSTER_SLUGS: the config is a static module with no DB access, and an
@@ -836,7 +836,7 @@ export const MID_ARTICLE_MAGNET_SLUGS: readonly string[] = [
   // full-cluster mount: the cluster was capturing at 1.2% with no magnet
   // registered at all, so there is no in-body surface here to regress.
   ...CARE_CLUSTER_SLUGS,
-  // WO-802 — the whole Social Security cluster, on the same reasoning: no
+  // WO-668 — the whole Social Security cluster, on the same reasoning: no
   // magnet was registered for it, so there is no in-body surface to regress.
   // (`how-are-social-security-benefits-calculated-guide` is already listed
   // above from WO-666; the dedupe below keeps the mount idempotent.)
