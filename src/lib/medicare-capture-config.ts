@@ -5,6 +5,7 @@ export type MagnetId =
   | 'fe-buyers-guide'
   | 'annuity-dos-donts'
   | 'cost-of-care-guide'
+  | 'social-security-guide'
 
 /**
  * Content pillar — determines source_detail prefix, LP category, and where in
@@ -13,13 +14,15 @@ export type MagnetId =
  * covers the annuity cluster (product explainers, carrier reviews, MYGA/SPIA/
  * QLAC/RILA); `long-term-care` covers the senior-living / care cluster
  * (assisted living, memory care, nursing homes, in-home care, aging in place,
- * LTC insurance).
+ * LTC insurance); `social-security` covers the claiming cluster (benefit
+ * calculation, FRA, 62/67/70 timing, spousal + survivor, the earnings test).
  */
 export type Pillar =
   | 'medicare'
   | 'final-expense'
   | 'annuity'
   | 'long-term-care'
+  | 'social-security'
 export type CaptureVariant =
   | 'inline'
   | 'tool-gate'
@@ -44,6 +47,7 @@ export type TopicTag =
   | 'annuity'
   | 'long-term-care'
   | 'senior-living'
+  | 'social-security'
 
 export interface MagnetSpec {
   id: MagnetId
@@ -100,6 +104,9 @@ const ASSETS_ANNUITY = ''
 // line predicted. Verified against storage.objects before wiring — don't
 // "correct" this to /ltc/ without moving the object first.
 const ASSETS_CARE = `${ASSETS_BUCKET}/care`
+// WO-667's guide + cover, uploaded 2026-08-17. Paths verified against
+// storage.objects and fetched over the public URL before wiring.
+const ASSETS_SS = `${ASSETS_BUCKET}/social-security`
 
 export const MAGNETS: Record<MagnetId, MagnetSpec> = {
   'decision-kit': {
@@ -283,6 +290,43 @@ export const MAGNETS: Record<MagnetId, MagnetSpec> = {
       "When long-term care insurance is worth buying — and the age where it stops being",
     ],
   },
+  // WO-667 built this guide and shipped it to storage on 2026-08-17, but
+  // nothing ever referenced it — the third instance of the live-but-unregistered
+  // defect after the annuity guide (WO-722) and the LTC guide (WO-801). Until
+  // now every Social Security page fell through `resolveDefaultForSlug` to the
+  // Medicare Decision Kit, and the calculation guide carried an explicit
+  // interim pointer at the Medicare Starter Guide.
+  // Figures below are the official 2026 SSA amounts as printed in the PDF —
+  // update them here and in the guide together.
+  'social-security-guide': {
+    id: 'social-security-guide',
+    pillar: 'social-security',
+    assetKey: 'social-security-guide',
+    lpSlug: 'social-security-guide',
+    defaultArticleSlug: 'how-are-social-security-benefits-calculated-guide',
+    title: 'The Social Security Guide',
+    fileName: 'seniorsimple-social-security-guide.pdf',
+    downloadPath: `${ASSETS_SS}/social-security-guide.pdf`,
+    coverImagePath: `${ASSETS_SS}/covers/social-security-guide-cover.png`,
+    emailSubject: 'Your Social Security Guide is inside',
+    successHeadline: 'Your Social Security Guide is on the way.',
+    successBody:
+      "Check your inbox — we've sent The Social Security Guide. You can also download it now.",
+    ctaLabel: 'Send Me the Social Security Guide',
+    adHeadline: 'Claim at 62, 67, or 70? See What Each One Pays.',
+    adSubhead:
+      'How your benefit is actually calculated, what waiting adds, and the 2026 numbers — in plain English.',
+    lpHeadline:
+      'The most permanent decision in your retirement, explained in plain English.',
+    lpSubhead:
+      "A SeniorSimple guide to how your Social Security benefit is calculated and what your claiming age does to it for the rest of your life. Educational — nobody will call you.",
+    lpBullets: [
+      "The 3-step formula behind your check — your 35 highest years, the 2026 bend points, and your PIA",
+      "Your Full Retirement Age by birth year, and what 62 vs. 67 vs. 70 pays on the same benefit",
+      "The 2026 numbers: a 2.8% COLA, $4,152 max at FRA, $5,181 at 70, and the $24,480 earnings test",
+      "Spousal and survivor benefits — and why the higher earner delaying protects the survivor for life",
+    ],
+  },
 }
 
 export function getMagnetByLpSlug(lpSlug: string): MagnetSpec | null {
@@ -387,15 +431,14 @@ export const MEDICARE_CAPTURE_CONFIG: Record<string, PageCaptureConfig> = {
     magnetId: 'fe-buyers-guide',
     topicTag: 'final-expense',
   },
-  // Asset gap: no retirement/Social-Security magnet exists yet (WO-667 builds
-  // it). Interim = the plain-English Medicare Starter Guide, the closest
-  // intent match for a reader working out their benefit math pre-65/at-65.
-  // Swap `magnetId` here once the SS/retirement guide ships.
+  // The pillar page of the Social Security cluster, and the magnet's own
+  // `defaultArticleSlug`. Explicit rather than left to the cluster default so
+  // the flagship page's routing is visible in this file.
   'how-are-social-security-benefits-calculated-guide': {
     slug: 'how-are-social-security-benefits-calculated-guide',
     variants: ['inline'],
-    magnetId: 'starter-guide',
-    topicTag: 'open-enrollment',
+    magnetId: 'social-security-guide',
+    topicTag: 'social-security',
   },
 }
 
@@ -507,6 +550,10 @@ const TOPIC_TO_BUCKET: Partial<Record<TopicTag, QuizBucket>> = {
   // 'care' would reject the INSERT and lose the capture. Care leads carry
   // their segmentation in tags + quiz_context.pillar instead until the
   // constraint gains a care bucket (see WO-791 LTC offer routing).
+  //
+  // `social-security` is absent for the same reason — the constraint has no
+  // Social Security bucket, and 'working' describes a Medicare persona
+  // (still-employed at 65), not a claiming-age reader.
 }
 
 export function resolveBucketForTopic(topicTag: TopicTag): QuizBucket | null {
@@ -648,6 +695,72 @@ function careTopicTag(slug: string): TopicTag {
 }
 
 /**
+ * WO-802 — the SeniorSimple Social Security cluster, as published in the CMS
+ * (`articles.cluster_id = 'social-security'`, site_id='seniorsimple',
+ * status='published', 12 pages as of 2026-08-23). Same explicit-set approach as
+ * CARE_CLUSTER_SLUGS: the config is a static module with no DB access, and an
+ * exact set is what makes the routing auditable against the cluster. Refresh
+ * it with:
+ *
+ *   select slug from articles
+ *   where site_id='seniorsimple' and status='published'
+ *     and cluster_id = 'social-security'
+ *   order by slug;
+ */
+export const SOCIAL_SECURITY_CLUSTER_SLUGS: readonly string[] = [
+  'early-vs-full-retirement-benefits',
+  'how-are-social-security-benefits-calculated-guide',
+  'social-security-benefits-calculator',
+  'social-security-benefits-maximize-2026',
+  'social-security-changes-2026',
+  'social-security-claiming-age-timing-strategy',
+  'social-security-claiming-strategies-for-couples-2026',
+  'social-security-cola-2027',
+  'social-security-optimization-calculator',
+  'social-security-spousal-benefits',
+  'social-security-spousal-benefits-guide',
+  'when-to-claim-social-security-62-vs-67-vs-70',
+]
+
+const SOCIAL_SECURITY_CLUSTER_SLUG_SET = new Set(SOCIAL_SECURITY_CLUSTER_SLUGS)
+
+/**
+ * Forward-compat routing for claiming-intent pages published after the
+ * snapshot above, and for the Social Security pages that live outside the
+ * cluster — `social-security-optimization-strategy-guide` sits in
+ * `retirement-income` and is squarely this guide's subject.
+ *
+ * Deliberately NOT extended to the rest of the 35-page `retirement-income`
+ * cluster. That cluster is RMDs, Roth conversions, withdrawal sequencing and
+ * HSA/tax planning; this guide is 11 pages of Social Security only (benefit
+ * formula, FRA, 62/67/70, earnings test, spousal/survivor, taxation of
+ * benefits). Routing all of retirement-income here would trade one
+ * wrong-offer mismatch for another — those pages need their own
+ * retirement-income magnet, tracked separately.
+ */
+const SOCIAL_SECURITY_SLUG_PATTERNS: RegExp[] = [
+  /social-security/i,
+  /full-retirement-age/i,
+  /early-vs-full-retirement/i,
+  /when-to-claim/i,
+  /claiming-age/i,
+  /claiming-strateg/i,
+  /spousal-benefit/i,
+  /survivor-benefit/i,
+]
+
+/**
+ * Pattern fallback only — an explicit SOCIAL_SECURITY_CLUSTER_SLUGS membership
+ * still wins (checked first in `resolveDefaultForSlug`). MEDICARE_GUARD keeps a
+ * Medicare-cluster page that merely coordinates with Social Security — e.g. a
+ * "when to start Medicare vs. when to claim" explainer — on the Decision Kit.
+ */
+function matchesSocialSecurityPattern(slug: string): boolean {
+  if (MEDICARE_GUARD.test(slug)) return false
+  return SOCIAL_SECURITY_SLUG_PATTERNS.some((rx) => rx.test(slug))
+}
+
+/**
  * Pillar routing for slugs without an explicit MEDICARE_CAPTURE_CONFIG entry.
  * Returns the default magnet + topicTag to show in the sidebar/inline ad slot.
  */
@@ -655,11 +768,21 @@ export function resolveDefaultForSlug(slug: string): {
   magnetId: MagnetId
   topicTag: TopicTag
 } {
+  // The published Social Security cluster is an exact set, so it resolves
+  // ahead of the pattern chain — no cluster page depends on pattern
+  // precedence. The SS *pattern* fallback runs after annuity/FE below, where a
+  // product-shopping slug should still win over a claiming-research match.
+  if (SOCIAL_SECURITY_CLUSTER_SLUG_SET.has(slug)) {
+    return { magnetId: 'social-security-guide', topicTag: 'social-security' }
+  }
   if (ANNUITY_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
     return { magnetId: 'annuity-dos-donts', topicTag: 'annuity' }
   }
   if (FE_SLUG_PATTERNS.some((rx) => rx.test(slug))) {
     return { magnetId: 'fe-buyers-guide', topicTag: 'final-expense' }
+  }
+  if (matchesSocialSecurityPattern(slug)) {
+    return { magnetId: 'social-security-guide', topicTag: 'social-security' }
   }
   if (isCareSlug(slug)) {
     return {
@@ -713,8 +836,17 @@ export const MID_ARTICLE_MAGNET_SLUGS: readonly string[] = [
   // full-cluster mount: the cluster was capturing at 1.2% with no magnet
   // registered at all, so there is no in-body surface here to regress.
   ...CARE_CLUSTER_SLUGS,
+  // WO-802 — the whole Social Security cluster, on the same reasoning: no
+  // magnet was registered for it, so there is no in-body surface to regress.
+  // (`how-are-social-security-benefits-calculated-guide` is already listed
+  // above from WO-666; the dedupe below keeps the mount idempotent.)
+  ...SOCIAL_SECURITY_CLUSTER_SLUGS,
 ]
 
+/** Deduped — `how-are-social-security-benefits-calculated-guide` appears both
+ * in WO-666's five and in the Social Security cluster spread. */
+const MID_ARTICLE_MAGNET_SLUG_SET = new Set(MID_ARTICLE_MAGNET_SLUGS)
+
 export function hasMidArticleMagnet(slug: string): boolean {
-  return MID_ARTICLE_MAGNET_SLUGS.includes(slug)
+  return MID_ARTICLE_MAGNET_SLUG_SET.has(slug)
 }

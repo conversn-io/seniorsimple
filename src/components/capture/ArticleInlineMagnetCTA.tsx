@@ -37,9 +37,9 @@ const COPY_BY_SLUG: Record<string, CtaCopy> = {
       'The free 2026 Medicare Decision Kit lays out Part D and Advantage drug coverage side by side, so you can see where GLP-1s land on your plan. No agent, no sales call.',
   },
   'how-are-social-security-benefits-calculated-guide': {
-    heading: 'Now that you have the math, plan the next step',
+    heading: 'Now that you have the math, take it with you',
     subhead:
-      'When you claim Social Security and when you start Medicare are the same decision. The free Medicare Starter Guide walks through both in plain English — no jargon, no agent.',
+      'The free Social Security Guide has the same three-step formula on paper, plus your Full Retirement Age by birth year and what 62, 67 and 70 each pay on the same benefit.',
   },
   'medicare-part-d-changes-2027-what-seniors-should-know': {
     heading: 'See what the 2027 Part D changes mean for you',
@@ -106,6 +106,56 @@ const COPY_BY_SLUG: Record<string, CtaCopy> = {
     subhead:
       'The free Cost of Long-Term Care guide prices out every care setting by state and lays out the four ways families pay: savings, Medicaid, VA benefits, and LTC insurance.',
   },
+
+  // --- WO-802: Social Security cluster -----------------------------------
+  // Bespoke copy for the claiming-decision and 2026-numbers pages, where the
+  // guide is the literal next step. The rest of the cluster uses the
+  // social-security fallback below.
+  'when-to-claim-social-security-62-vs-67-vs-70': {
+    heading: 'Take the claiming comparison with you',
+    subhead:
+      'The free Social Security Guide puts 62, 67 and 70 side by side on the same benefit — roughly 70%, 100% and 124% — plus the health and household questions that decide which one fits.',
+  },
+  'social-security-claiming-age-timing-strategy': {
+    heading: 'Decide your claiming age against the real numbers',
+    subhead:
+      'The free Social Security Guide shows what each year of waiting adds, where delayed retirement credits stop, and how the earnings test affects claiming early while you still work.',
+  },
+  'social-security-benefits-maximize-2026': {
+    heading: 'Keep the 2026 figures on hand',
+    subhead:
+      'The free Social Security Guide has the official 2026 numbers — a 2.8% COLA, $4,152 max at Full Retirement Age, $5,181 at 70 — alongside the formula that produces your own.',
+  },
+  'social-security-changes-2026': {
+    heading: 'See what changed, and what it means for your check',
+    subhead:
+      "The free Social Security Guide lays out the 2026 figures — COLA, the earnings test limits, and the taxable maximum — and how each one feeds the benefit you'll actually receive.",
+  },
+  'social-security-cola-2027': {
+    heading: 'Put the COLA in context',
+    subhead:
+      'A cost-of-living adjustment moves a number the benefit formula already set. The free Social Security Guide explains how that number is calculated and what your claiming age does to it.',
+  },
+  'social-security-claiming-strategies-for-couples-2026': {
+    heading: 'Plan it as a household, not two decisions',
+    subhead:
+      'The free Social Security Guide covers spousal benefits up to 50% of the higher earner, survivor benefits up to 100%, and why the higher earner delaying protects the survivor for life.',
+  },
+  'social-security-spousal-benefits': {
+    heading: 'Check the spousal math before you claim',
+    subhead:
+      'The free Social Security Guide explains when a spousal benefit beats your own, what claiming before your Full Retirement Age costs, and how survivor benefits change the picture.',
+  },
+  'social-security-spousal-benefits-guide': {
+    heading: 'Take the spousal and survivor rules with you',
+    subhead:
+      'The free Social Security Guide has both in plain English — up to 50% of the higher earner while both are living, and up to 100% for the survivor afterward.',
+  },
+  'early-vs-full-retirement-benefits': {
+    heading: 'See what claiming early actually costs',
+    subhead:
+      'The free Social Security Guide shows the reduction at 62, your Full Retirement Age by birth year, and the roughly 8% a year that waiting past it adds — permanently.',
+  },
 }
 
 /** Used for any slug added to the allowlist before it gets bespoke copy. */
@@ -129,6 +179,11 @@ const FALLBACK_COPY: Record<Pillar, CtaCopy> = {
     heading: 'Take the cost numbers with you',
     subhead:
       'The free Cost of Long-Term Care guide prices out assisted living, memory care, in-home care and nursing homes by state — plus the four ways families pay for it. Educational only, nobody will call you.',
+  },
+  'social-security': {
+    heading: 'Take the Social Security numbers with you',
+    subhead:
+      'The free Social Security Guide explains how your benefit is calculated, what 62 vs. 67 vs. 70 pays, and the 2026 figures behind it — including spousal and survivor benefits. Educational only, nobody will call you.',
   },
 }
 
