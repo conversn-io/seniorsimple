@@ -44,7 +44,10 @@ const FAQ = [
   },
   {
     q: 'Can I be turned down?',
-    a: 'Yes. Not all applicants qualify, and eligibility depends on your health answers, your age, your state and the carrier. Anyone promising you cannot be denied is not describing these products accurately.',
+    // Deliberately avoids the literal banned phrasing even in refutation —
+    // an automated compliance scan or a Meta reviewer skimming a fragment
+    // should not have to parse a negation to clear this page.
+    a: 'Yes. Not all applicants qualify, and eligibility depends on your health answers, your age, your state and the carrier. Any advertisement promising that no applicant is ever turned down is not describing these products accurately.',
   },
   {
     q: 'What is a graded or limited benefit period?',

@@ -16,7 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 import {
   sendMetaCAPIEvent,
   createCustomEvent,
@@ -94,14 +94,18 @@ export async function POST(req: NextRequest) {
 
   /* ---------------- 1. Supabase ledger ---------------- */
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  // Service role: RLS is on and the anon key silently drops inserts.
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (url && key) {
+  // CRM, not CMS. `analytics_events` lives in the CallReady CRM project
+  // (jqjftrlnyysqcwbbigpw), which this repo reaches via callreadyQuizDb /
+  // SUPABASE_QUIZ_*. NEXT_PUBLIC_SUPABASE_URL points at the CMS project and
+  // writing there silently no-ops — the table does not exist.
+  // callreadyQuizDb is already service-role, which RLS requires.
+  // Tracked so the response can report it. The 202-always contract is right
+  // for a beacon, but it hid a wrong-database bug during WO-843 verification —
+  // so the write result is now visible to anyone probing this endpoint.
+  let ledgerOk = false;
+  {
     try {
-      const supabase = createClient(url, key, { auth: { persistSession: false } });
-      const { error } = await supabase.from('analytics_events').insert({
+      const { error } = await callreadyQuizDb.from('analytics_events').insert({
         event_name: event,
         event_category: 'fe_gateway',
         event_label: meta.path,
@@ -130,12 +134,11 @@ export async function POST(req: NextRequest) {
           detail: body.detail ?? {},
         },
       });
+      ledgerOk = !error;
       if (error) console.warn('[fe-gateway/event] ledger insert failed', error.message);
     } catch (err) {
       console.warn('[fe-gateway/event] ledger threw', err);
     }
-  } else {
-    console.warn('[fe-gateway/event] missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
   }
 
   /* ---------------- 2. Server-side CAPI ---------------- */
@@ -183,5 +186,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, eventId: eventId ?? null }, { status: 202 });
+  return NextResponse.json(
+    { ok: true, eventId: eventId ?? null, ledger: ledgerOk },
+    { status: 202 },
+  );
 }

@@ -17,7 +17,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { callreadyQuizDb } from '@/lib/callready-quiz-db';
 
 import { GATEWAYS } from '@/lib/fe-gateway/config';
 
@@ -100,16 +100,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'consent_required' }, { status: 400 });
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  // Service role — RLS is on and the anon key silently drops inserts.
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    console.error('[fe-gateway/lead] missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-    return NextResponse.json({ ok: false, error: 'not_configured' }, { status: 500 });
-  }
-
-  const supabase = createClient(url, key, { auth: { persistSession: false } });
-
+  // CRM, not CMS. `leads` lives in the CallReady CRM project
+  // (jqjftrlnyysqcwbbigpw) — the same client the existing FE quiz submit path
+  // uses. NEXT_PUBLIC_SUPABASE_URL points at the CMS project, where this table
+  // does not exist. callreadyQuizDb is service-role, which RLS requires.
   const params = body.params ?? {};
   const visitorId = body.visitorId || `fev_${Date.now().toString(36)}`;
   const leadId = `fe_c_${visitorId}_${Date.now().toString(36)}`;
@@ -117,7 +111,7 @@ export async function POST(req: NextRequest) {
 
   /* ---------------- 1. Insert lead ---------------- */
 
-  const { data: lead, error } = await supabase
+  const { data: lead, error } = await callreadyQuizDb
     .from('leads')
     .insert({
       lead_id: leadId,
@@ -196,7 +190,7 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    await supabase
+    await callreadyQuizDb
       .from('leads')
       .update({
         ghl_status: {
