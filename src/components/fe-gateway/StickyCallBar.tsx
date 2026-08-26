@@ -14,7 +14,7 @@ import { useGateway } from './GatewayProvider';
 import { BRAND, COMPLIANCE } from '@/lib/fe-gateway/config';
 
 export default function StickyCallBar() {
-  const { number, track } = useGateway();
+  const { number, track, disqualified } = useGateway();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -23,6 +23,9 @@ export default function StickyCallBar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // A disqualified visitor gets no persistent call CTA.
+  if (disqualified) return null;
 
   return (
     <div

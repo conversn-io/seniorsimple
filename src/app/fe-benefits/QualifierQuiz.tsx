@@ -71,7 +71,7 @@ const DQ_AGES = new Set(['under_45', 'over_85']);
 type Phase = 'quiz' | 'checking' | 'reveal' | 'dq';
 
 export default function QualifierQuiz() {
-  const { track } = useGateway();
+  const { track, setDisqualified } = useGateway();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [phase, setPhase] = useState<Phase>('quiz');
@@ -97,6 +97,9 @@ export default function QualifierQuiz() {
 
     if (q.id === 'age_range' && DQ_AGES.has(value)) {
       setPhase('dq');
+      // Also pull the sticky call bar — otherwise the page tells them not to
+      // call while still showing a Call button.
+      setDisqualified(true);
       track('quiz_complete', { outcome: 'dq', reason: 'age_out_of_range', ...next });
       return;
     }

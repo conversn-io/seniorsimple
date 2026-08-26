@@ -138,7 +138,7 @@ function buildSteps(segment: Segment): Step[] {
 type Phase = 'form' | 'submitting' | 'reveal' | 'dq';
 
 export default function QualifyFlow({ segment }: { segment: Segment }) {
-  const { track, bundle } = useGateway();
+  const { track, bundle, setDisqualified } = useGateway();
 
   const steps = useMemo(() => buildSteps(segment), [segment]);
   const [idx, setIdx] = useState(0);
@@ -173,6 +173,7 @@ export default function QualifyFlow({ segment }: { segment: Segment }) {
 
     if (step.id === 'age_range' && DQ_AGES.has(value)) {
       setPhase('dq');
+      setDisqualified(true);
       track('quiz_complete', { outcome: 'dq', reason: 'age_out_of_range', segment: segment.id });
       return;
     }

@@ -28,7 +28,9 @@ import {
 import { BRAND, OFFER, COMPLIANCE } from '@/lib/fe-gateway/config';
 
 export const metadata: Metadata = {
-  title: 'Final Expense Coverage for Seniors | SeniorSimple',
+  // Root layout applies the `%s | SeniorSimple` template — do not repeat the
+  // brand here or the tab reads "… | SeniorSimple | SeniorSimple".
+  title: 'Final Expense Coverage for Seniors',
   description:
     'Final expense coverage designed to cover funeral and burial costs. No medical exam — just a few health questions. Speak with a licensed agent.',
   // Paid-traffic lander — never index.

@@ -26,7 +26,8 @@ import { BRAND, OFFER } from '@/lib/fe-gateway/config';
 import QualifierQuiz from './QualifierQuiz';
 
 export const metadata: Metadata = {
-  title: 'Final Expense Coverage Many Seniors Never Find Out About | SeniorSimple',
+  // Root layout applies the `%s | SeniorSimple` template.
+  title: 'Final Expense Coverage Many Seniors Never Find Out About',
   description:
     'Many adults between 45 and 85 qualify for final expense coverage and never find out. Answer three questions to see whether it is worth a conversation.',
   robots: { index: false, follow: false },

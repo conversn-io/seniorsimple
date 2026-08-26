@@ -30,7 +30,8 @@ import QualifyFlow from './QualifyFlow';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'See If You Qualify for Final Expense Coverage | SeniorSimple',
+  // Root layout applies the `%s | SeniorSimple` template.
+  title: 'See If You Qualify for Final Expense Coverage',
   description:
     'Answer a few questions to see whether there is final expense coverage available in your state. No medical exam — just a few health questions.',
   robots: { index: false, follow: false },

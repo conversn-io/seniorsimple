@@ -40,6 +40,14 @@ interface GatewayContextValue {
   number: ResolvedNumber;
   /** True until attribution + DNI have settled. */
   loading: boolean;
+  /**
+   * Set when a quiz answer puts the visitor outside what the licensed line
+   * can write. Suppresses every persistent call CTA — a DQ that still shows a
+   * Call button contradicts its own copy and sends an unwritable caller to a
+   * paid line.
+   */
+  disqualified: boolean;
+  setDisqualified: (v: boolean) => void;
   track: (
     event: FeEventName,
     detail?: Record<string, unknown>,
@@ -66,6 +74,7 @@ export default function GatewayProvider({ gateway, extraTags, children }: Props)
   const [bundle, setBundle] = useState<AttributionBundle | null>(null);
   const [number, setNumber] = useState<ResolvedNumber>(FALLBACK_RESOLVED);
   const [loading, setLoading] = useState(true);
+  const [disqualified, setDisqualified] = useState(false);
 
   const meta = GATEWAYS[gateway];
 
@@ -118,12 +127,14 @@ export default function GatewayProvider({ gateway, extraTags, children }: Props)
       bundle,
       number,
       loading,
+      disqualified,
+      setDisqualified,
       track: (event, detail, contact) => {
         if (!bundle) return null;
         return trackFeEvent({ event, gateway, bundle, detail, contact });
       },
     }),
-    [gateway, bundle, number, loading],
+    [gateway, bundle, number, loading, disqualified],
   );
 
   return <GatewayContext.Provider value={value}>{children}</GatewayContext.Provider>;
