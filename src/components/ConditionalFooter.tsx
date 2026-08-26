@@ -5,6 +5,7 @@ import Footer from './Footer';
 import FunnelFooter from './FunnelFooter';
 import MinimalFunnelFooter from './MinimalFunnelFooter';
 import { useFooter } from '../contexts/FooterContext';
+import { isGatewayPath } from '@/lib/fe-gateway/config';
 
 const ConditionalFooter = () => {
   const { footerType, footerVariant } = useFooter();
@@ -20,6 +21,12 @@ const ConditionalFooter = () => {
   // vercel.json — so if someone lands there, the /lp/ prefix guard below
   // still hides the site footer correctly.
   if (pathname?.startsWith('/lp/')) {
+    return null;
+  }
+  // WO-843: the FE inbound-call gateways (/fe-benefits, /fe-coverage,
+  // /fe-qualify) render their own shared ComplianceFooter — the site footer
+  // would duplicate the disclosures and dilute the single primary action.
+  if (isGatewayPath(pathname)) {
     return null;
   }
   if (footerType === 'none') return null;

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { FunnelHeader } from './FunnelHeader';
 import { useHeader } from '../../contexts/FooterContext';
+import { isGatewayPath } from '@/lib/fe-gateway/config';
 
 const ConditionalHeader = () => {
   const { headerType } = useHeader();
@@ -16,6 +17,11 @@ const ConditionalHeader = () => {
   // redirect to `/lp/senior-benefits-2026` via vercel.json, so the /lp/
   // prefix guard covers post-redirect too.
   if (pathname?.startsWith('/lp/')) {
+    return null;
+  }
+  // WO-843: FE gateways render their own Masthead — no site nav, so the page
+  // keeps one primary action (call) with nothing to click away to.
+  if (isGatewayPath(pathname)) {
     return null;
   }
   if (headerType === 'none') return null;

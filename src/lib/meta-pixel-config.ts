@@ -24,8 +24,12 @@ export function isFEXFunnel(pathname: string): boolean {
     '/new-burial-life-insurance-quote',
     '/appointment-follow-up',
     '/burial-insurance-guide',
+    // WO-843 — FE inbound-call gateway landers (A / B / C).
+    '/fe-benefits',
+    '/fe-coverage',
+    '/fe-qualify',
   ];
-  
+
   return fexFunnelPaths.some(path => pathname.startsWith(path));
 }
 
