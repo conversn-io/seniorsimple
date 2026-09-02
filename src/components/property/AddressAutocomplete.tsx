@@ -1,16 +1,15 @@
 /**
  * Google Places Address Autocomplete Component (Property Lookup)
+ *
+ * Uses PlaceAutocompleteElement from the Places API (New). The legacy
+ * `google.maps.places.Autocomplete` widget this replaced has been closed to new customers
+ * since 2025-03-01 and no longer gets bug fixes (WO-1013).
  */
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
-declare global {
-  interface Window {
-    google: any
-  }
-}
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { loadPlacesLibrary } from '@/lib/google-maps-loader'
 
 export interface AddressComponents {
   formatted_address: string
@@ -27,14 +26,71 @@ interface AddressAutocompleteProps {
   className?: string
 }
 
+/** New Places components carry `longText`/`shortText` where the legacy API had long_name/short_name. */
+interface NewAddressComponent {
+  types: string[]
+  longText?: string
+  shortText?: string
+}
+
+const parseAddressComponents = (
+  components: NewAddressComponent[],
+  formattedAddress: string,
+  placeId?: string
+): AddressComponents => {
+  let street = ''
+  let city = ''
+  let state = ''
+  let zip = ''
+  let zipSuffix = ''
+
+  components.forEach((component) => {
+    const types = component.types
+    const long = component.longText || ''
+    const short = component.shortText || ''
+
+    if (types.includes('street_number')) {
+      street = `${long} `
+    }
+    if (types.includes('route')) {
+      street += long
+    }
+    if (types.includes('locality') || types.includes('postal_town')) {
+      city = long
+    }
+    if (!city && types.includes('sublocality_level_1')) {
+      city = long
+    }
+    if (!city && types.includes('administrative_area_level_2')) {
+      city = long
+    }
+    if (types.includes('administrative_area_level_1')) {
+      state = short
+    }
+    if (types.includes('postal_code')) {
+      zip = long
+    }
+    if (types.includes('postal_code_suffix')) {
+      zipSuffix = long
+    }
+  })
+
+  return {
+    formatted_address: formattedAddress,
+    street: street.trim(),
+    city,
+    state,
+    zip: zip && zipSuffix ? `${zip}-${zipSuffix}` : zip,
+    place_id: placeId,
+  }
+}
+
 export function AddressAutocomplete({
   onAddressSelect,
   placeholder = 'Enter property address',
   className = '',
 }: AddressAutocompleteProps) {
-  const [address, setAddress] = useState('')
-  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   // Manual entry fallback for when Google autocomplete fails (extensions, network,
   // unrecognized addresses, or component binding issues).
   const [manualMode, setManualMode] = useState(false)
@@ -43,6 +99,13 @@ export function AddressAutocomplete({
   const [manualState, setManualState] = useState('')
   const [manualZip, setManualZip] = useState('')
   const [manualError, setManualError] = useState('')
+
+  // Keep the latest callback reachable from the element listener without re-creating the
+  // widget every time the parent re-renders.
+  const onAddressSelectRef = useRef(onAddressSelect)
+  useEffect(() => {
+    onAddressSelectRef.current = onAddressSelect
+  }, [onAddressSelect])
 
   const submitManual = () => {
     const street = manualStreet.trim()
@@ -72,100 +135,68 @@ export function AddressAutocomplete({
     })
   }
 
-  // Load Google Maps API
-  useEffect(() => {
-    const apiKey =
-      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-      process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
-    if (!apiKey) {
-      console.warn('⚠️ Google Maps API key not configured')
-      return
-    }
-
-    if (window.google?.maps?.places) {
-      setIsGoogleLoaded(true)
-      return
-    }
-
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
-    if (existingScript) {
-      existingScript.addEventListener('load', () => setIsGoogleLoaded(true))
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
-    script.async = true
-    script.defer = true
-    script.onload = () => setIsGoogleLoaded(true)
-    document.head.appendChild(script)
+  // If Places can't be used at all, drop the user straight into manual entry rather than
+  // leaving them staring at an input that will never suggest anything.
+  const fallBackToManual = useCallback((reason: string, detail?: unknown) => {
+    console.warn(`⚠️ Places autocomplete unavailable (${reason}) — falling back to manual entry`, detail)
+    setManualMode(true)
   }, [])
 
-  // Initialize autocomplete
   useEffect(() => {
-    if (isGoogleLoaded && inputRef.current && window.google) {
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
-        componentRestrictions: { country: 'us' },
-      })
+    if (manualMode) return
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
+    let cancelled = false
+    let element: HTMLElement | null = null
 
-        if (place.formatted_address && place.address_components) {
-          let street = ''
-          let city = ''
-          let state = ''
-          let zip = ''
-          let zipSuffix = ''
-
-          place.address_components.forEach((component: any) => {
-            const types = component.types
-            if (types.includes('street_number')) {
-              street = `${component.long_name} `
-            }
-            if (types.includes('route')) {
-              street += component.long_name
-            }
-            if (types.includes('locality') || types.includes('postal_town')) {
-              city = component.long_name
-            }
-            if (!city && types.includes('sublocality_level_1')) {
-              city = component.long_name
-            }
-            if (!city && types.includes('administrative_area_level_2')) {
-              city = component.long_name
-            }
-            if (types.includes('administrative_area_level_1')) {
-              state = component.short_name
-            }
-            if (types.includes('postal_code')) {
-              zip = component.long_name
-            }
-            if (types.includes('postal_code_suffix')) {
-              zipSuffix = component.long_name
-            }
-          })
-
-          if (zip && zipSuffix) {
-            zip = `${zip}-${zipSuffix}`
-          }
-
-          const parsedAddress: AddressComponents = {
-            formatted_address: place.formatted_address,
-            street: street.trim(),
-            city,
-            state,
-            zip,
-            place_id: place.place_id,
-          }
-
-          setAddress(place.formatted_address)
-          onAddressSelect(parsedAddress)
+    loadPlacesLibrary()
+      .then((places: any) => {
+        if (cancelled) return
+        const container = containerRef.current
+        if (!container) return
+        if (!places?.PlaceAutocompleteElement) {
+          fallBackToManual('PlaceAutocompleteElement missing from the places library')
+          return
         }
+
+        element = new places.PlaceAutocompleteElement({
+          includedRegionCodes: ['us'],
+          includedPrimaryTypes: ['street_address', 'subpremise', 'premise'],
+        }) as HTMLElement
+
+        // `placeholder` is a property on the element, not a constructor-only option.
+        ;(element as any).placeholder = placeholder
+
+        element.addEventListener('gmp-select', async (event: any) => {
+          try {
+            const place = event.placePrediction.toPlace()
+            await place.fetchFields({ fields: ['formattedAddress', 'addressComponents'] })
+            if (!place.formattedAddress || !place.addressComponents) return
+            onAddressSelectRef.current(
+              parseAddressComponents(place.addressComponents, place.formattedAddress, place.id)
+            )
+          } catch (error) {
+            console.error('❌ Failed to resolve the selected place', error)
+          }
+        })
+
+        // Fired when the Places request itself is rejected — a key without Places API (New)
+        // enabled, a referrer restriction, or billing. Manual entry keeps the funnel alive.
+        element.addEventListener('gmp-error', (event: any) => {
+          fallBackToManual('gmp-error from the Places request', event)
+        })
+
+        container.appendChild(element)
       })
+      .catch((error) => {
+        if (cancelled) return
+        fallBackToManual('places library failed to load', error)
+      })
+
+    return () => {
+      cancelled = true
+      element?.remove()
     }
-  }, [isGoogleLoaded, onAddressSelect])
+  }, [manualMode, placeholder, fallBackToManual])
 
   if (manualMode) {
     return (
@@ -240,21 +271,16 @@ export function AddressAutocomplete({
 
   return (
     <div className="space-y-2">
-      <input
-        ref={inputRef}
-        type="text"
-        value={address}
-        onChange={(e) => setAddress(e.target.value)}
-        placeholder={placeholder}
-        className={className}
-      />
+      {/* The widget renders its own input inside a shadow root; `ss-place-autocomplete`
+          carries the field chrome and strips the widget's own — see globals.css. */}
+      <div ref={containerRef} className={`ss-place-autocomplete ${className}`} />
       <div className="text-center">
         <button
           type="button"
           onClick={() => setManualMode(true)}
           className="text-sm font-medium text-[#36596A] hover:underline"
         >
-          Don't see your address? Enter manually
+          Don&apos;t see your address? Enter manually
         </button>
       </div>
     </div>

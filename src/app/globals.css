@@ -509,3 +509,39 @@ input:focus-visible {
     animation: none;
   }
 }
+
+/* Google Places Autocomplete (New) — WO-1013.
+   PlaceAutocompleteElement renders its input inside a shadow root, so the wrapper carries the
+   field chrome (border, radius, padding from the caller's className) and the widget's own
+   input is stripped back to inherit it. */
+.ss-place-autocomplete {
+  display: block;
+}
+
+.ss-place-autocomplete:focus-within {
+  border-color: #36596a;
+  box-shadow: 0 0 0 4px rgba(54, 89, 106, 0.2);
+}
+
+.ss-place-autocomplete gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  background: transparent;
+}
+
+.ss-place-autocomplete gmp-place-autocomplete::part(input) {
+  width: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+
+.ss-place-autocomplete gmp-place-autocomplete::part(input-container) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
