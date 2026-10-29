@@ -139,6 +139,8 @@ async function upsertLead(
   const utmTerm = utmParams?.utm_term || null;
   const utmContent = utmParams?.utm_content || null;
   
+  const normalizedPhone = quizAnswers?.phone ? formatE164(quizAnswers.phone) : null;
+
   const leadData: any = {
     contact_id: contactId,
     session_id: finalSessionId,
@@ -146,6 +148,18 @@ async function upsertLead(
     site_key: 'seniorsimple',
     status: 'new',
     is_verified: true, // No OTP required for calculator leads
+    // Identity has to live in the `contact` JSONB as well as the contacts FK,
+    // because that column is what every reader actually reads: the Slack lead
+    // alerts (notify_lead_default) and leads_set_lead_hash() both go through
+    // contact->>'first_name' / 'email' / 'phone'. Without it the alert posts
+    // "(no name)" and lead_hash stays null, so SDS never sees the lead.
+    contact: {
+      email: quizAnswers?.email ? String(quizAnswers.email).toLowerCase() : null,
+      phone: normalizedPhone,
+      first_name: quizAnswers?.firstName || null,
+      last_name: quizAnswers?.lastName || null,
+      zip_code: zipCode || quizAnswers?.zipCode || null,
+    },
     quiz_answers: {
       ...quizAnswers,
       calculator_results: calculatorResults,
