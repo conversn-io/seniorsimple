@@ -7,7 +7,7 @@
 // 3. Shows AgentAssignmentPage instead of redirecting
 // 4. Updates GHL payload with IP, phone last 4, coverage_amount, and address fields
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
@@ -147,8 +147,11 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
   // Step tracking state for time-on-step analytics
-  const [previousStep, setPreviousStep] = useState<string | null>(null);
-  const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
+  // Refs, not state: these were effect deps that the effect itself set, which
+  // re-ran it every render (~100 quiz_step_viewed/sec per session, WO-1442).
+  const previousStepRef = useRef<string | null>(null);
+  const stepStartTimeRef = useRef<number>(Date.now());
+  const lastTrackedStepRef = useRef<number | null>(null);
 
   const getSessionId = (): string => {
     if (typeof window !== 'undefined') {
@@ -179,11 +182,11 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
 
   // Track quiz step views for analytics with time tracking
   useEffect(() => {
-    if (currentStep >= 0 && currentStep < questions.length) {
+    if (currentStep >= 0 && currentStep < questions.length && lastTrackedStepRef.current !== currentStep) {
       const currentQuestion = questions[currentStep];
       const sessionId = getSessionId();
-      const timeOnPrevious = previousStep 
-        ? Math.round((Date.now() - stepStartTime) / 1000) 
+      const timeOnPrevious = previousStepRef.current
+        ? Math.round((Date.now() - stepStartTimeRef.current) / 1000) 
         : null;
       
       if (sessionId) {
@@ -191,14 +194,15 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
           stepNumber: currentStep + 1,
           stepName: currentQuestion.id,
           funnelType: 'annuity-quote',
-          previousStep: previousStep,
+          previousStep: previousStepRef.current,
           timeOnPreviousStep: timeOnPrevious,
           sessionId: sessionId
         });
         
         // Update tracking state for next step
-        setPreviousStep(currentQuestion.id);
-        setStepStartTime(Date.now());
+        previousStepRef.current = currentQuestion.id;
+        stepStartTimeRef.current = Date.now();
+        lastTrackedStepRef.current = currentStep;
         
         console.log('📊 Quiz Step Tracked:', {
           step: currentStep + 1,
@@ -209,7 +213,7 @@ export const AnnuityQuoteQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuote
         });
       }
     }
-  }, [currentStep, questions, previousStep, stepStartTime]);
+  }, [currentStep, questions]);
 
   useEffect(() => {
     const sessionId = `annuity_quote_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

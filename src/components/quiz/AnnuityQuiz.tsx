@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { QuizProgress } from './QuizProgress';
 import { QuizQuestion } from './QuizQuestion';
 import { QuizResults } from './QuizResults';
@@ -222,8 +222,11 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
   const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParameters | null>(null);
   // Step tracking state for time-on-step analytics
-  const [previousStep, setPreviousStep] = useState<string | null>(null);
-  const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
+  // Refs, not state: these were effect deps that the effect itself set, which
+  // re-ran it every render (~100 quiz_step_viewed/sec per session, WO-1442).
+  const previousStepRef = useRef<string | null>(null);
+  const stepStartTimeRef = useRef<number>(Date.now());
+  const lastTrackedStepRef = useRef<number | null>(null);
 
   // Helper function to get session ID - prioritizes sessionStorage (sess_ format from trackPageView)
   // This ensures leads link correctly to analytics_events table
@@ -262,11 +265,11 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
 
   // Track quiz step views for analytics with time tracking
   useEffect(() => {
-    if (currentStep >= 0 && currentStep < questions.length) {
+    if (currentStep >= 0 && currentStep < questions.length && lastTrackedStepRef.current !== currentStep) {
       const currentQuestion = questions[currentStep];
       const sessionId = getSessionId();
-      const timeOnPrevious = previousStep 
-        ? Math.round((Date.now() - stepStartTime) / 1000) 
+      const timeOnPrevious = previousStepRef.current
+        ? Math.round((Date.now() - stepStartTimeRef.current) / 1000) 
         : null;
       
       if (sessionId) {
@@ -274,14 +277,15 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
           stepNumber: currentStep + 1,
           stepName: currentQuestion.id,
           funnelType: funnelType === 'primary' ? 'primary' : 'secondary',
-          previousStep: previousStep,
+          previousStep: previousStepRef.current,
           timeOnPreviousStep: timeOnPrevious,
           sessionId: sessionId
         });
         
         // Update tracking state for next step
-        setPreviousStep(currentQuestion.id);
-        setStepStartTime(Date.now());
+        previousStepRef.current = currentQuestion.id;
+        stepStartTimeRef.current = Date.now();
+        lastTrackedStepRef.current = currentStep;
         
         console.log('📊 Quiz Step Tracked:', {
           step: currentStep + 1,
@@ -292,7 +296,7 @@ export const AnnuityQuiz = ({ skipOTP = false, onStepChange }: AnnuityQuizProps)
         });
       }
     }
-  }, [currentStep, questions, funnelType, previousStep, stepStartTime]);
+  }, [currentStep, questions, funnelType]);
 
   useEffect(() => {
     // Generate unique session ID for tracking
