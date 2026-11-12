@@ -415,6 +415,15 @@ export function MegaMenu() {
             </div>
           </NavigationMenuItem>
         ))}
+        {/* WO-1507 chassis: article directory entry point (spec §5) */}
+        <NavigationMenuItem>
+          <Link
+            href="/articles"
+            className="h-8 px-4 py-2 inline-flex items-center text-sm text-gray-600 hover:text-[#36596A] transition-colors font-medium"
+          >
+            Articles
+          </Link>
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   )

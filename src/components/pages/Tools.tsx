@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Calculator, PiggyBank, Home, Heart, DollarSign, Shield } from "lucide-react";
-import Footer from "../Footer";
 
 
 const Tools = () => {
@@ -96,8 +95,8 @@ const Tools = () => {
           </div>
         </div>
       </section>
-      
-      <Footer />
+
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from 'next/link';
 import { BookOpen, Clock, Users, Search, Filter } from "lucide-react";
-import Footer from "../Footer";
 
 const Guides = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -194,8 +193,7 @@ const Guides = () => {
           </button>
         </div>
       </section>
-
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

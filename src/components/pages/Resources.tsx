@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { BookOpen, Calculator, FileText, Video, Download, ExternalLink } from 'lucide-react';
-import Footer from '../Footer';
 
 const Resources = () => {
   const resources = [
@@ -187,8 +186,7 @@ const Resources = () => {
           </button>
         </div>
       </section>
-
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

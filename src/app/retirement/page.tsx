@@ -1,10 +1,16 @@
+import JsonLd, { hubMetadata } from '@/components/publisher/JsonLd'
+import { hubJsonLd } from '@/lib/publisher/schema'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calculator, BookOpen, TrendingUp, DollarSign, FileText, Video } from 'lucide-react'
 
+// WO-1507 chassis: per-hub title/description (D5) + CollectionPage/Breadcrumb JSON-LD (D1)
+export const metadata = hubMetadata('retirement')
+
 export default function RetirementPage() {
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
+      <JsonLd data={hubJsonLd('retirement')} />
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-[#36596A] to-[#82A6B1] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

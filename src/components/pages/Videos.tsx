@@ -1,5 +1,4 @@
 
-import Footer from "../Footer";
 
 const Videos = () => {
   const videos = [
@@ -123,7 +122,7 @@ const Videos = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

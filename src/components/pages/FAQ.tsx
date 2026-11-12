@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp, Shield, Phone, Mail } from 'lucide-react';
-import Footer from "../Footer";
 
 const FAQ = () => {
   const [openItems, setOpenItems] = useState<number[]>([]);
@@ -153,8 +152,7 @@ const FAQ = () => {
           </div>
         </div>
       </section>
-      
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

@@ -118,6 +118,15 @@ export function MobileMenu() {
                       </div>
                     </div>
                   ))}
+                  <div className="px-4">
+                    <Link
+                      href="/articles"
+                      className="block py-3 text-lg font-medium text-[#36596A] hover:text-[#2a4a5a] transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      All Articles
+                    </Link>
+                  </div>
                 </nav>
               </div>
 

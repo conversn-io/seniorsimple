@@ -5,7 +5,7 @@ import { getFeaturedArticles } from '../lib/articles'
 import TopicCard from '../components/TopicCard'
 import NewsletterSignup from '../components/NewsletterSignup'
 import { generateSEOTitle, generateSEODescription, generateSemanticKeywords } from '../lib/seo-templates'
-import StructuredData, { organizationStructuredData, websiteStructuredData, faqStructuredData } from '../components/seo/StructuredData'
+import StructuredData, { faqStructuredData } from '../components/seo/StructuredData'
 import { 
   CheckCircle, 
   Lightbulb, 
@@ -130,8 +130,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Structured Data */}
-      <StructuredData type="Organization" data={organizationStructuredData} />
-      <StructuredData type="WebSite" data={websiteStructuredData} />
+      {/* Organization + WebSite JSON-LD now render sitewide from the root layout (WO-1507) */}
       <StructuredData type="FAQPage" data={faqStructuredData(faqData)} />
       
       <div className="min-h-screen bg-[#F5F5F0]">

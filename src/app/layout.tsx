@@ -7,6 +7,8 @@ import ConditionalFooter from "../components/ConditionalFooter";
 import { LayoutProvider } from "../contexts/FooterContext";
 import { MetaPixelInitializer } from "../components/tracking/MetaPixelInitializer";
 import { TrackerBoot } from "@/lib/callready-tracker/TrackerBoot";
+import JsonLd from "@/components/publisher/JsonLd";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/publisher/schema";
 // TrustedForm removed from global layout - loaded per-page when forms exist
 // import { TrustedForm } from "../components/tracking/TrustedForm";
 
@@ -110,6 +112,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/images/logos/senior-simple-logo-circle-mark-favicon.png" />
         
         {/* Critical scripts only - analytics deferred to afterInteractive */}
+        {/* WO-1507 chassis: sitewide Organization + WebSite JSON-LD (audit D1) */}
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

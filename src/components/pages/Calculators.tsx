@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Calculator, TrendingUp, DollarSign, Home, Heart, Shield } from "lucide-react";
-import Footer from "../Footer";
 
 
 const Calculators = () => {
@@ -111,8 +110,7 @@ const Calculators = () => {
           </div>
         </div>
       </section>
-      
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };

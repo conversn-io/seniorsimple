@@ -1,5 +1,4 @@
 import React from 'react';
-import Footer from '../Footer';
 
 const PhotoGalleryPage: React.FC = () => {
   return (
@@ -36,8 +35,7 @@ const PhotoGalleryPage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
+      {/* Site footer comes from the root layout (was rendered twice — WO-1507) */}
     </div>
   );
 };
