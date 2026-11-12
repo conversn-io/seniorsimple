@@ -19,6 +19,7 @@ export function organizationJsonLd() {
     logo: SITE.logo,
     description: SITE.description,
     email: SITE.email,
+    telephone: SITE.phoneE164,
     address: {
       '@type': 'PostalAddress',
       streetAddress: SITE.address.street,

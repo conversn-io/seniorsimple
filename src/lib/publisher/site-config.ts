@@ -33,7 +33,9 @@ export const SITE = {
   tagline: 'Plain-English retirement, Medicare, and estate guidance for people 55+.',
   description:
     'Free retirement planning help for seniors. Expert guidance on annuities, taxes, estate planning, reverse mortgages, Medicare, and more.',
-  phoneDisplay: '(888) 440-9669',
+  /** GHL SeniorSimple location default number (toll-free), confirmed 2026-11-12. */
+  phoneDisplay: '(888) 423-0069',
+  phoneE164: '+18884230069',
   email: 'support@seniorsimple.org',
   /** Physical mailing address — CAN-SPAM + Organization schema. */
   address: { street: '1026 40th St', city: 'San Diego', region: 'CA', postalCode: '92102', country: 'US' },

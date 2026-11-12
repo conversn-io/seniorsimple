@@ -98,6 +98,7 @@ const Footer = () => {
             </ul>
             <address className="not-italic">
               {SITE.address.street}, {SITE.address.city}, {SITE.address.region} {SITE.address.postalCode} ·{' '}
+              <a href={`tel:${SITE.phoneE164}`} className="hover:text-[#36596A]">{SITE.phoneDisplay}</a> ·{' '}
               <a href={`mailto:${SITE.email}`} className="hover:text-[#36596A]">{SITE.email}</a>
             </address>
           </div>

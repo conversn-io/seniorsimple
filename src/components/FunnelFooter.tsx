@@ -12,7 +12,7 @@ const FunnelFooter = () => {
               <Link href="/contact" className="block hover:text-[#36596A] transition-colors">
                 Contact Us
               </Link>
-              {/* <p>Phone: (888) 440-9669</p> */}
+              {/* <p>Phone: (888) 423-0069</p> */}
               <p>Email: support@seniorsimple.org</p>
             </div>
           </div>
