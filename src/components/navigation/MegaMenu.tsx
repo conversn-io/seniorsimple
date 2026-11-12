@@ -415,11 +415,12 @@ export function MegaMenu() {
             </div>
           </NavigationMenuItem>
         ))}
-        {/* WO-1507 chassis: article directory entry point (spec §5) */}
+        {/* WO-1507 chassis: article directory entry point (spec §5). xl-only — the
+            desktop nav already overflows at md–lg; mobile menu + footer carry it there. */}
         <NavigationMenuItem>
           <Link
             href="/articles"
-            className="h-8 px-4 py-2 inline-flex items-center text-sm text-gray-600 hover:text-[#36596A] transition-colors font-medium"
+            className="hidden xl:inline-flex h-8 px-4 py-2 items-center text-sm text-gray-600 hover:text-[#36596A] transition-colors font-medium"
           >
             Articles
           </Link>
