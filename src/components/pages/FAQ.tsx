@@ -145,7 +145,7 @@ const FAQ = () => {
                 </div>
                 <div className="flex items-center">
                   <Mail className="h-5 w-5 mr-2" />
-                  info@seniorsimple.com
+                  support@seniorsimple.org
                 </div>
               </div>
             </div>

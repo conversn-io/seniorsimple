@@ -19,7 +19,7 @@ export function generateContentMetadata(article: EnhancedArticle): Metadata {
       title,
       description,
       type: 'article',
-      url: `https://seniorsimple.org/content/${article.slug}`,
+      url: `https://www.seniorsimple.org/content/${article.slug}`,
       siteName: 'SeniorSimple',
       publishedTime: article.created_at,
       modifiedTime: article.updated_at,
@@ -47,7 +47,7 @@ export function generateContentMetadata(article: EnhancedArticle): Metadata {
       images: article.featured_image_url ? [article.featured_image_url] : ['/images/webp/hero/couple-share-coffee-meeting-home-couch.webp'],
     },
     alternates: {
-      canonical: `https://seniorsimple.org/content/${article.slug}`,
+      canonical: `https://www.seniorsimple.org/content/${article.slug}`,
     },
     robots: {
       index: true,
@@ -81,7 +81,7 @@ export function generateListingMetadata(
       title,
       description: metaDescription,
       type: 'website',
-      url: `https://seniorsimple.org/${category || 'content'}`,
+      url: `https://www.seniorsimple.org/${category || 'content'}`,
       siteName: 'SeniorSimple',
       images: [
         {
@@ -99,7 +99,7 @@ export function generateListingMetadata(
       images: ['/images/webp/hero/couple-share-coffee-meeting-home-couch.webp'],
     },
     alternates: {
-      canonical: `https://seniorsimple.org/${category || 'content'}`,
+      canonical: `https://www.seniorsimple.org/${category || 'content'}`,
     },
     robots: {
       index: true,
@@ -133,7 +133,7 @@ export function generateCalculatorMetadata(
       title,
       description: metaDescription,
       type: 'website',
-      url: `https://seniorsimple.org/calculators/${calculatorName.toLowerCase().replace(/\s+/g, '-')}`,
+      url: `https://www.seniorsimple.org/calculators/${calculatorName.toLowerCase().replace(/\s+/g, '-')}`,
       siteName: 'SeniorSimple',
       images: [
         {
@@ -151,7 +151,7 @@ export function generateCalculatorMetadata(
       images: ['/images/webp/hero/couple-share-coffee-meeting-home-couch.webp'],
     },
     alternates: {
-      canonical: `https://seniorsimple.org/calculators/${calculatorName.toLowerCase().replace(/\s+/g, '-')}`,
+      canonical: `https://www.seniorsimple.org/calculators/${calculatorName.toLowerCase().replace(/\s+/g, '-')}`,
     },
     robots: {
       index: true,
@@ -171,7 +171,7 @@ export function generateCalculatorMetadata(
 export function generateBreadcrumbs(path: string, title: string) {
   const segments = path.split('/').filter(Boolean)
   const breadcrumbs = [
-    { name: 'Home', url: 'https://seniorsimple.org' }
+    { name: 'Home', url: 'https://www.seniorsimple.org' }
   ]
 
   let currentPath = ''
@@ -181,7 +181,7 @@ export function generateBreadcrumbs(path: string, title: string) {
     const name = isLast ? title : segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
     breadcrumbs.push({
       name,
-      url: `https://seniorsimple.org${currentPath}`
+      url: `https://www.seniorsimple.org${currentPath}`
     })
   })
 
@@ -215,7 +215,7 @@ export function generateSitemapData(pages: Array<{
   priority: number
 }>) {
   return pages.map(page => ({
-    url: `https://seniorsimple.org${page.url}`,
+    url: `https://www.seniorsimple.org${page.url}`,
     lastModified: page.lastModified,
     changeFrequency: page.changeFrequency,
     priority: page.priority

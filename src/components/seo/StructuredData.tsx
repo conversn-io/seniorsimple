@@ -27,8 +27,8 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
 export const organizationStructuredData = {
   name: "SeniorSimple",
   description: "Free retirement planning help for seniors. Expert guidance on annuities, taxes, estate planning, reverse mortgages, and more.",
-  url: "https://seniorsimple.org",
-  logo: "https://seniorsimple.org/images/logo.png",
+  url: "https://www.seniorsimple.org",
+  logo: "https://www.seniorsimple.org/images/logo.png",
   sameAs: [
     "https://twitter.com/SeniorSimple",
     "https://facebook.com/SeniorSimple",
@@ -49,10 +49,10 @@ export const organizationStructuredData = {
 export const websiteStructuredData = {
   name: "SeniorSimple",
   description: "Free retirement planning help for seniors. Expert guidance on annuities, taxes, estate planning, reverse mortgages, and more.",
-  url: "https://seniorsimple.org",
+  url: "https://www.seniorsimple.org",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://seniorsimple.org/search?q={search_term_string}",
+    target: "https://www.seniorsimple.org/search?q={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 }
@@ -100,7 +100,7 @@ export const articleStructuredData = (article: {
     name: "SeniorSimple",
     logo: {
       "@type": "ImageObject",
-      url: "https://seniorsimple.org/images/logo.png"
+      url: "https://www.seniorsimple.org/images/logo.png"
     }
   },
   ...(article.image && {

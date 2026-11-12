@@ -13,7 +13,7 @@ const FunnelFooter = () => {
                 Contact Us
               </Link>
               {/* <p>Phone: (888) 440-9669</p> */}
-              <p>Email: info@seniorsimple.com</p>
+              <p>Email: support@seniorsimple.org</p>
             </div>
           </div>
           <div>

@@ -198,7 +198,7 @@ const Contact = () => {
                     <Mail className="h-6 w-6 text-[#36596A] mt-1" />
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">Email</h3>
-                      <p className="text-gray-600">info@seniorsimple.com</p>
+                      <p className="text-gray-600">support@seniorsimple.org</p>
                       <p className="text-sm text-gray-500">We respond within 24 hours</p>
                     </div>
                   </div>
@@ -208,9 +208,8 @@ const Contact = () => {
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">Office Address</h3>
                       <p className="text-gray-600">
-                        123 Financial Plaza<br />
-                        Suite 400<br />
-                        Retirement City, RC 12345
+                        1026 40th St<br />
+                        San Diego, CA 92102
                       </p>
                     </div>
                   </div>

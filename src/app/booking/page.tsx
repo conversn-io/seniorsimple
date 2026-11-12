@@ -73,7 +73,7 @@ function BookingPageContent() {
         // If the widget's native redirect overrides URL parameters, you may need to update the
         // redirect URL in the Conversn.io dashboard settings for widget ID: 8ATad4yjNpsCln3IEYom
         const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
-        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.seniorsimple.org'
         const redirectUrl = `${siteUrl}/quiz-submitted`
         
         let urlParams = new URLSearchParams()
@@ -149,7 +149,7 @@ function BookingPageContent() {
 
         // Build calendar URL with email + redirect params
         const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
-        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+        const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.seniorsimple.org'
         const redirectUrl = `${siteUrl}/quiz-submitted`
         const urlParams = new URLSearchParams()
         urlParams.append('email', email)
@@ -196,7 +196,7 @@ function BookingPageContent() {
       
       // Build calendar URL with redirect params (no email pre-fill)
       const baseUrl = 'https://link.conversn.io/widget/booking/8ATad4yjNpsCln3IEYom'
-      const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seniorsimple.org'
+      const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.seniorsimple.org'
       const redirectUrl = `${siteUrl}/quiz-submitted`
       const urlParams = new URLSearchParams()
       

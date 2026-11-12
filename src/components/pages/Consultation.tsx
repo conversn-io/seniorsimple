@@ -256,7 +256,7 @@ const Consultation = () => {
                   </div>
                   <div className="flex items-center">
                     <Mail className="h-5 w-5 text-[#E4CDA1] mr-3" />
-                    <span>info@seniorsimple.com</span>
+                    <span>support@seniorsimple.org</span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-5 w-5 text-[#E4CDA1] mr-3" />

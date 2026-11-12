@@ -23,7 +23,7 @@ export function generateArticleStructuredData(article: {
       "@type": "Article",
       "headline": article.title,
       "description": article.description,
-      "image": article.image || "https://seniorsimple.org/images/default-article.jpg",
+      "image": article.image || "https://www.seniorsimple.org/images/default-article.jpg",
       "author": {
         "@type": "Person",
         "name": article.author
@@ -33,7 +33,7 @@ export function generateArticleStructuredData(article: {
         "name": "SeniorSimple",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://seniorsimple.org/logo.png"
+          "url": "https://www.seniorsimple.org/logo.png"
         }
       },
       "datePublished": article.publishedDate,
@@ -75,7 +75,7 @@ export function generateHowToStructuredData(guide: {
       "@type": "HowTo",
       "name": guide.title,
       "description": guide.description,
-      "image": "https://seniorsimple.org/images/howto-default.jpg",
+      "image": "https://www.seniorsimple.org/images/howto-default.jpg",
       "totalTime": guide.totalTime || "PT30M",
       "estimatedCost": guide.estimatedCost || "Free",
       "supply": [],
@@ -238,8 +238,8 @@ export function generateOrganizationStructuredData(): StructuredDataConfig {
       "@type": "Organization",
       "name": "SeniorSimple",
       "description": "Your trusted partner in retirement planning and financial security for seniors and baby boomers.",
-      "url": "https://seniorsimple.org",
-      "logo": "https://seniorsimple.org/logo.png",
+      "url": "https://www.seniorsimple.org",
+      "logo": "https://www.seniorsimple.org/logo.png",
       "sameAs": [
         "https://facebook.com/seniorsimple",
         "https://twitter.com/seniorsimple",
@@ -277,12 +277,12 @@ export function generateWebsiteStructuredData(): StructuredDataConfig {
       "@type": "WebSite",
       "name": "SeniorSimple",
       "description": "Comprehensive retirement planning resources, calculators, and guides for seniors and baby boomers.",
-      "url": "https://seniorsimple.org",
+      "url": "https://www.seniorsimple.org",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": "https://seniorsimple.org/search?q={search_term_string}"
+          "urlTemplate": "https://www.seniorsimple.org/search?q={search_term_string}"
         },
         "query-input": "required name=search_term_string"
       },

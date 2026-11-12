@@ -96,9 +96,10 @@ const Footer = () => {
                 <li key={l.href}><Link href={l.href} className="hover:text-[#36596A]">{l.name}</Link></li>
               ))}
             </ul>
-            <p>
-              {SITE.phoneDisplay} · {SITE.email}
-            </p>
+            <address className="not-italic">
+              {SITE.address.street}, {SITE.address.city}, {SITE.address.region} {SITE.address.postalCode} ·{' '}
+              <a href={`mailto:${SITE.email}`} className="hover:text-[#36596A]">{SITE.email}</a>
+            </address>
           </div>
           <p>© {year} {SITE.name}, a {NETWORK.name} property. All rights reserved.</p>
         </div>

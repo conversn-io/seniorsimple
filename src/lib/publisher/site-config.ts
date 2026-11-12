@@ -28,13 +28,15 @@ export interface PublisherTopic {
 export const SITE = {
   key: 'seniorsimple',
   name: 'SeniorSimple',
-  url: 'https://seniorsimple.org',
-  logo: 'https://seniorsimple.org/images/logos/senior-simple-logo-circle-mark-favicon.png',
+  url: 'https://www.seniorsimple.org',
+  logo: 'https://www.seniorsimple.org/images/logos/senior-simple-logo-circle-mark-favicon.png',
   tagline: 'Plain-English retirement, Medicare, and estate guidance for people 55+.',
   description:
     'Free retirement planning help for seniors. Expert guidance on annuities, taxes, estate planning, reverse mortgages, Medicare, and more.',
   phoneDisplay: '(888) 440-9669',
-  email: 'info@seniorsimple.com',
+  email: 'support@seniorsimple.org',
+  /** Physical mailing address — CAN-SPAM + Organization schema. */
+  address: { street: '1026 40th St', city: 'San Diego', region: 'CA', postalCode: '92102', country: 'US' },
   sameAs: [] as string[],
   /** The site's money action — mega menu button, sidebar card, footer. */
   primaryCta: { label: 'Take the Retirement Rescue™ Quiz', href: '/quiz' },

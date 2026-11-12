@@ -46,11 +46,11 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://seniorsimple.org'),
+  metadataBase: new URL('https://www.seniorsimple.org'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://seniorsimple.org',
+    url: 'https://www.seniorsimple.org',
     siteName: 'SeniorSimple',
     title: 'SeniorSimple - Retirement Rescue™ Made Simple',
     description: 'Free retirement planning help for seniors. Get expert guidance on annuities, taxes, estate planning, reverse mortgages, and more.',

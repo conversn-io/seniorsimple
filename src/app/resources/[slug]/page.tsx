@@ -29,7 +29,7 @@ export async function generateMetadata({
   const { slug } = await params
   const magnet = getMagnetByLpSlug(slug)
   if (!magnet) return {}
-  const canonical = `https://seniorsimple.org/resources/${magnet.lpSlug}`
+  const canonical = `https://www.seniorsimple.org/resources/${magnet.lpSlug}`
   return {
     title: `${magnet.title} — SeniorSimple`,
     description: magnet.lpSubhead,

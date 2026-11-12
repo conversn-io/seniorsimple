@@ -18,6 +18,15 @@ export function organizationJsonLd() {
     url: SITE.url,
     logo: SITE.logo,
     description: SITE.description,
+    email: SITE.email,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: SITE.address.street,
+      addressLocality: SITE.address.city,
+      addressRegion: SITE.address.region,
+      postalCode: SITE.address.postalCode,
+      addressCountry: SITE.address.country,
+    },
     parentOrganization: { '@type': 'Organization', name: 'Simple Media Network', url: 'https://www.simplemedianetwork.com' },
     ...(SITE.sameAs.length ? { sameAs: SITE.sameAs } : {}),
   }

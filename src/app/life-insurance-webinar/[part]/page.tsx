@@ -14,7 +14,7 @@ const VIDEO_IDS = [
 
 const TOTAL = VIDEO_IDS.length
 const QUOTE_HREF = '/final-expense-quote'
-const CANONICAL_BASE = 'https://seniorsimple.org/life-insurance-webinar'
+const CANONICAL_BASE = 'https://www.seniorsimple.org/life-insurance-webinar'
 
 interface Params {
   part: string

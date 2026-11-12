@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     title: generateSEOTitle(pageTitle),
     description: generateSEODescription(pageDescription),
     type: 'website',
-    url: 'https://seniorsimple.org',
+    url: 'https://www.seniorsimple.org',
     siteName: 'SeniorSimple',
     images: [
       {
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     images: ['/images/webp/hero/couple-share-coffee-meeting-home-couch.webp'],
   },
   alternates: {
-    canonical: 'https://seniorsimple.org',
+    canonical: 'https://www.seniorsimple.org',
   },
   robots: {
     index: true,

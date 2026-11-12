@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import WebinarOptinPage from './WebinarOptinPage'
 
-const CANONICAL = 'https://seniorsimple.org/life-insurance-webinar'
+const CANONICAL = 'https://www.seniorsimple.org/life-insurance-webinar'
 const TITLE = 'Life Insurance Webinar — Understand Your Options'
 const DESCRIPTION =
   'A free five-part video series that explains life insurance later in life — final expense, whole, and term — in plain language, at your pace.'
