@@ -25,6 +25,27 @@ export interface PublisherTopic {
   match: RegExp
 }
 
+/**
+ * Public phone number. Set per site via the Vercel env var NEXT_PUBLIC_SITE_PHONE
+ * (any US format: "+18884230069", "(888) 423-0069"…); inlined at build time, so a
+ * change needs a redeploy. A missing or malformed value falls back to the confirmed
+ * GHL default so the footer/schema never render blank. Display + tel: link both
+ * derive from this one value, so they cannot drift.
+ */
+const PHONE_FALLBACK = '+18884230069' // GHL SeniorSimple location default (toll-free), confirmed 2026-11-12
+
+function resolvePhone(raw: string | undefined) {
+  let digits = (raw ?? '').replace(/\D/g, '')
+  if (digits.length === 10) digits = `1${digits}`
+  if (!/^1\d{10}$/.test(digits)) digits = PHONE_FALLBACK.slice(1)
+  return {
+    e164: `+${digits}`,
+    display: `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`,
+  }
+}
+
+const PHONE = resolvePhone(process.env.NEXT_PUBLIC_SITE_PHONE)
+
 export const SITE = {
   key: 'seniorsimple',
   name: 'SeniorSimple',
@@ -33,9 +54,8 @@ export const SITE = {
   tagline: 'Plain-English retirement, Medicare, and estate guidance for people 55+.',
   description:
     'Free retirement planning help for seniors. Expert guidance on annuities, taxes, estate planning, reverse mortgages, Medicare, and more.',
-  /** GHL SeniorSimple location default number (toll-free), confirmed 2026-11-12. */
-  phoneDisplay: '(888) 423-0069',
-  phoneE164: '+18884230069',
+  phoneDisplay: PHONE.display,
+  phoneE164: PHONE.e164,
   email: 'support@seniorsimple.org',
   /** Physical mailing address — CAN-SPAM + Organization schema. */
   address: { street: '1026 40th St', city: 'San Diego', region: 'CA', postalCode: '92102', country: 'US' },
