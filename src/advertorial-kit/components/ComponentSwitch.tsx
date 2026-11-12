@@ -70,6 +70,16 @@ export interface ComponentItem {
   component_type: string | null
   component_props: Record<string, unknown> | null
   variant_key: string | null
+  /**
+   * Position-Optimization Phase 2 (SPEC 2026-07-29, added 2026-07-30):
+   * canonical DB ids for the item row + its slot. Threaded onto every
+   * rendered item's outer element via `data-advertorial-item-id` +
+   * `data-advertorial-slot-id` so the client-side IntersectionObserver
+   * (KitImpressionTracker) can attribute each impression back to its
+   * source row without needing to re-fetch the item on click.
+   */
+  id?: string | null
+  slot_uuid?: string | null
 }
 
 interface ComponentSwitchProps {
@@ -155,6 +165,26 @@ export function ComponentSwitch({
     inboundSubs,
   })
 
+  // Position-Optimization Phase 2 (SPEC 2026-07-29): attribute set stamped
+  // on every rendered item's outer element. KitImpressionTracker's
+  // IntersectionObserver picks these up to write one row to
+  // advertorial_impressions per (session_id, item_id). `data-advertorial-
+  // rank` is the reader-visible listicleNumber (post-suppression); we
+  // fall back to item.position for non-numbered types so the observer
+  // still gets a stable key. Empty strings on nullable slots keep the
+  // HTML valid (React drops undefined attributes but string '' renders
+  // as `data-advertorial-slot-id=""`, which is what the observer expects).
+  const impressionMarker: Record<string, string | number> = item.id
+    ? {
+        'data-advertorial-item-id': item.id,
+        'data-advertorial-rank': listicleNumber ?? item.position,
+        'data-advertorial-position': item.position,
+        'data-advertorial-slot-id': item.slot_uuid ?? '',
+        'data-advertorial-component-type': componentType,
+        'data-advertorial-variant-key': item.variant_key ?? '',
+      }
+    : {}
+
   switch (componentType) {
     case 'lead_in': {
       const p = (item.component_props ?? {}) as {
@@ -163,14 +193,20 @@ export function ComponentSwitch({
         headerSrc?: string
         caption?: string
       }
+      // Wrap in a marker div — LeadIn is a pure primitive with no outer
+      // data-attrs of its own, so KitImpressionTracker needs a wrapping
+      // element to observe. `display:contents` isn't an option (IO needs a
+      // real box). Wrapper is a plain block with no styling of its own.
       return (
-        <LeadIn
-          headline={item.heading ?? ''}
-          bylineText={p.bylineText ?? 'By the Editorial Team · Updated this week'}
-          dek={p.dek}
-          headerSrc={p.headerSrc ?? item.image_url ?? undefined}
-          caption={p.caption}
-        />
+        <div {...impressionMarker}>
+          <LeadIn
+            headline={item.heading ?? ''}
+            bylineText={p.bylineText ?? 'By the Editorial Team · Updated this week'}
+            dek={p.dek}
+            headerSrc={p.headerSrc ?? item.image_url ?? undefined}
+            caption={p.caption}
+          />
+        </div>
       )
     }
 
@@ -185,6 +221,7 @@ export function ComponentSwitch({
       const displayNumber = listicleNumber ?? item.position
       return (
         <section
+          {...impressionMarker}
           data-item-type={item.item_type}
           data-position={item.position}
           data-component="section"
@@ -219,6 +256,7 @@ export function ComponentSwitch({
       const bodyHtml = renderMarkdown(item.body_md)
       return (
         <div
+          {...impressionMarker}
           data-position={item.position}
           data-component="editors_pick"
           onClick={(e) => {
@@ -268,11 +306,13 @@ export function ComponentSwitch({
       }
       const items = Array.isArray(p.items) ? p.items.map(String) : []
       return (
-        <QualifyChecklist
-          intro={p.intro ?? item.heading ?? ''}
-          items={items}
-          pointLabel={p.pointLabel}
-        />
+        <div {...impressionMarker}>
+          <QualifyChecklist
+            intro={p.intro ?? item.heading ?? ''}
+            items={items}
+            pointLabel={p.pointLabel}
+          />
+        </div>
       )
     }
 
@@ -286,7 +326,11 @@ export function ComponentSwitch({
         )
         return null
       }
-      return <Quote quote={quoteText} attribution={p.attribution} />
+      return (
+        <div {...impressionMarker}>
+          <Quote quote={quoteText} attribution={p.attribution} />
+        </div>
+      )
     }
 
     // -----------------------------------------------------------------------
@@ -313,7 +357,7 @@ export function ComponentSwitch({
       }
       const options = Array.isArray(p.options) ? p.options : []
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'image_quiz',
         children: (
           <ImageQuiz
@@ -343,7 +387,7 @@ export function ComponentSwitch({
       }
       const options = Array.isArray(p.options) ? p.options : []
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'multi_select_quiz',
         children: (
           <MultiSelectQuiz
@@ -374,7 +418,7 @@ export function ComponentSwitch({
       }
       const options = Array.isArray(p.options) ? p.options : []
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'state_selector',
         children: (
           <StateSelector
@@ -409,7 +453,7 @@ export function ComponentSwitch({
         return null
       }
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'state_map',
         children: (
           <StateMap
@@ -443,7 +487,7 @@ export function ComponentSwitch({
       // separate `component_type: 'social_proof'` item after the calculator
       // when proof belongs here — and it defaults to bullets, not logos.
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'savings_calculator',
         children: (
           <SavingsCalculator
@@ -461,7 +505,7 @@ export function ComponentSwitch({
       // editorial bullets (editorial-native doctrine); logo showcase is
       // an explicit opt-in via `component_props.variant: 'logos'`.
       const p = (item.component_props ?? {}) as SocialProofProps
-      return renderSocialProof(p, item.position)
+      return renderSocialProof(p, item.position, impressionMarker)
     }
 
     case 'clickable_image': {
@@ -482,7 +526,7 @@ export function ComponentSwitch({
       // scheme composition as the other interactive components (adds
       // source_id + sub5=slug to the outbound URL).
       return renderInteractive({
-        item, slug, brand, effectiveVariant, outHref,
+        item, slug, brand, effectiveVariant, outHref, impressionMarker,
         componentType: 'clickable_image',
         children: (
           <ClickableImage
@@ -509,7 +553,11 @@ export function ComponentSwitch({
         return null
       }
       const stars = typeof p.starsFilled === 'number' ? p.starsFilled : 0
-      return <Rating starsFilled={stars} attribution={p.attribution} />
+      return (
+        <div {...impressionMarker}>
+          <Rating starsFilled={stars} attribution={p.attribution} />
+        </div>
+      )
     }
 
     case 'trust_bar': {
@@ -523,10 +571,12 @@ export function ComponentSwitch({
       // TrustBar expects ApcBrand[] — pass through as-is when shape matches.
       // We accept any array; downstream component handles empty gracefully.
       return (
-        <TrustBar
-          label={p.label ?? item.heading ?? 'Trusted by:'}
-          brands={brands as never}
-        />
+        <div {...impressionMarker}>
+          <TrustBar
+            label={p.label ?? item.heading ?? 'Trusted by:'}
+            brands={brands as never}
+          />
+        </div>
       )
     }
 
@@ -553,6 +603,7 @@ export function ComponentSwitch({
 
       return (
         <section
+          {...impressionMarker}
           data-item-type={item.item_type}
           data-position={item.position}
           data-component={componentType}
@@ -777,6 +828,7 @@ interface SocialProofProps {
 function renderSocialProof(
   props: SocialProofProps,
   position: number,
+  impressionMarker?: Record<string, string | number>,
 ): React.ReactNode {
   const variant = props.variant === 'logos' ? 'logos' : 'bullets'
 
@@ -792,6 +844,7 @@ function renderSocialProof(
     }
     return (
       <section
+        {...(impressionMarker ?? {})}
         data-component="social_proof"
         data-variant="bullets"
         data-position={position}
@@ -823,6 +876,7 @@ function renderSocialProof(
   }
   return (
     <section
+      {...(impressionMarker ?? {})}
       data-component="social_proof"
       data-variant="logos"
       data-position={position}
@@ -849,6 +903,12 @@ interface RenderInteractiveArgs {
   outHref: string
   componentType: string
   children: React.ReactNode
+  /**
+   * Position-Optimization Phase 2 marker attrs. Spread onto the wrapping
+   * div so IntersectionObserver (KitImpressionTracker) picks up interactive
+   * components the same way it picks up listicle_entry / section items.
+   */
+  impressionMarker?: Record<string, string | number>
 }
 
 // ---------------------------------------------------------------------------
@@ -997,7 +1057,7 @@ function renderImageAnchor(args: RenderImageAnchorArgs) {
  *     every keypress on a calculator input.
  */
 function renderInteractive({
-  item, slug, brand, effectiveVariant, outHref, componentType, children,
+  item, slug, brand, effectiveVariant, outHref, componentType, children, impressionMarker,
 }: RenderInteractiveArgs) {
   const subs: CtaSubs = {
     source_id: brand.siteId,
@@ -1020,6 +1080,7 @@ function renderInteractive({
 
   return (
     <div
+      {...(impressionMarker ?? {})}
       data-position={item.position}
       data-component={componentType}
       className="mt-10 pt-8 border-t border-slate-200 first:border-t-0 first:pt-0 first:mt-0"
