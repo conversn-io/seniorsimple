@@ -47,6 +47,7 @@ const Footer = () => {
               <li key={h.key}><Link href={h.href} className={linkCls}>{h.name}</Link></li>
             ))}
             <li><Link href={SITE.directory.href} className={`${linkCls} font-medium`}>{SITE.directory.name} →</Link></li>
+            <li><a href={SITE.careDirectory.href} className={`${linkCls} font-medium`}>{SITE.careDirectory.name} →</a></li>
           </ul>
         </nav>
         <nav aria-label="Popular guides">

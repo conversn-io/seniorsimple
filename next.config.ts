@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const SMN_PUBLISHER = "https://smn-publisher.vercel.app";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -59,6 +61,13 @@ const nextConfig: NextConfig = {
         source: `/${indexNowKey}.txt`,
         destination: '/api/indexnow/key',
       },
+      // WO-1548 — the Senior Care Directory is a section of seniorsimple.org served by
+      // smn-publisher (SMN multi-tenant publisher, tenant `seniorsimple`). Only /providers* is
+      // forwarded; the domain, funnels, APIs and cookies stay on this app. /providers has no
+      // route here and the middleware matcher (/quiz, /lp/*) never sees it.
+      // Reserved slug — do not create pages or funnels under /providers.
+      { source: '/providers', destination: `${SMN_PUBLISHER}/_t/seniorsimple/providers` },
+      { source: '/providers/:path*', destination: `${SMN_PUBLISHER}/_t/seniorsimple/providers/:path*` },
       {
         source: '/newsletters',
         destination: 'https://vpysqshhafthuxvokwqj.supabase.co/functions/v1/serve-newsletter-archive?site_id=seniorsimple',

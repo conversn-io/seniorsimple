@@ -63,6 +63,8 @@ export const SITE = {
   /** The site's money action — mega menu button, sidebar card, footer. */
   primaryCta: { label: 'Take the Retirement Rescue™ Quiz', href: '/quiz' },
   directory: { href: '/articles', name: 'All Articles' },
+  /** Local provider directory, served by smn-publisher through the /providers rewrite (WO-1548). */
+  careDirectory: { href: '/providers', name: 'Senior Care Directory' },
 } as const
 
 export const HUBS: PublisherHub[] = [
