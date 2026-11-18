@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { submitUrlToIndexNow, submitUrlsToIndexNow } from '@/lib/indexnow'
+import { canonicalizeUrl, submitUrlToIndexNow, submitUrlsToIndexNow } from '@/lib/indexnow'
 
 /**
  * IndexNow Submission API Route
@@ -9,10 +9,13 @@ import { submitUrlToIndexNow, submitUrlsToIndexNow } from '@/lib/indexnow'
  * Submit URLs to IndexNow for instant search engine notification
  * 
  * Body (single URL):
- * { "url": "https://seniorsimple.org/articles/my-article" }
+ * { "url": "https://www.seniorsimple.org/articles/my-article" }
  * 
  * Body (multiple URLs):
- * { "urls": ["https://seniorsimple.org/articles/article1", "https://seniorsimple.org/articles/article2"] }
+ * { "urls": ["https://www.seniorsimple.org/articles/article1", "https://www.seniorsimple.org/articles/article2"] }
+ *
+ * URLs may use seniorsimple.org or www.seniorsimple.org; both are submitted as the canonical
+ * www URL. Anything else is rejected.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -36,19 +39,20 @@ export async function POST(request: NextRequest) {
 
     // Submit single URL
     if (url) {
-      if (typeof url !== 'string' || !url.startsWith('https://seniorsimple.org')) {
+      const canonical = canonicalizeUrl(url)
+      if (!canonical) {
         return NextResponse.json(
-          { error: 'Invalid URL. Must be a string starting with https://seniorsimple.org' },
+          { error: 'Invalid URL. Must be an https://www.seniorsimple.org (or https://seniorsimple.org) URL' },
           { status: 400 }
         )
       }
 
-      const results = await submitUrlToIndexNow(url)
+      const results = await submitUrlToIndexNow(canonical)
       const successCount = results.filter((r) => r.success).length
 
       return NextResponse.json({
         success: successCount > 0,
-        url,
+        url: canonical,
         results,
         submittedTo: `${successCount}/${results.length} search engines`,
       })
@@ -71,23 +75,22 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate all URLs
-      const invalidUrls = urls.filter(
-        (u: any) => typeof u !== 'string' || !u.startsWith('https://seniorsimple.org')
-      )
+      const invalidUrls = urls.filter((u: unknown) => canonicalizeUrl(u) === null)
 
       if (invalidUrls.length > 0) {
         return NextResponse.json(
-          { error: 'All URLs must be strings starting with https://seniorsimple.org', invalidUrls },
+          { error: 'All URLs must be https://www.seniorsimple.org (or https://seniorsimple.org) URLs', invalidUrls },
           { status: 400 }
         )
       }
 
-      const results = await submitUrlsToIndexNow(urls)
+      const canonicalUrls = Array.from(new Set(urls.map((u: unknown) => canonicalizeUrl(u) as string)))
+      const results = await submitUrlsToIndexNow(canonicalUrls)
       const successCount = results.filter((r) => r.success).length
 
       return NextResponse.json({
         success: successCount > 0,
-        urlCount: urls.length,
+        urlCount: canonicalUrls.length,
         results,
         submittedTo: `${successCount}/${results.length} search engines`,
       })
