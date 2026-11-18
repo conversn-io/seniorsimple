@@ -20,6 +20,7 @@
  */
 
 import type { Metadata } from 'next';
+import { Fragment } from 'react';
 import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
@@ -36,6 +37,8 @@ import { getAdvertorialBrand } from '@/advertorial-kit/lib/brand-config';
 import { renderMarkdown } from '@/advertorial-kit/lib/markdown';
 import { maybeBuildPreview } from '@/advertorial-kit/lib/preview-fixture';
 import { pickVariant, itemMatchesVariant } from '@/advertorial-kit/lib/variant';
+import { checkTapOnly } from '@/advertorial-kit/lib/tap-only';
+import { checkItemStrings } from '@/advertorial-kit/lib/block-line';
 import {
   resolveLocation,
   substituteLocation,
@@ -161,6 +164,7 @@ async function renderKitAdvertorial(
   variantContext: { chosen: string | null; source: string },
   location: KitLocation,
   inboundSubs: InboundSubsServer,
+  debugMode: boolean = false,
 ) {
   const supabase = getAdvertorialSupabase();
   const { data: rawItems } = await supabase
@@ -289,17 +293,97 @@ async function renderKitAdvertorial(
           />
         ) : null}
         {(() => {
-          // Reader-visible numbering: only numbered types (listicle_entry,
-          // section) consume a slot in the "#N" sequence. Interactive
-          // components (image_quiz, state_map, savings_calculator, etc.) and
-          // CTA components (editors_pick, primary_cta, ...) render between
-          // numbered items without incrementing the counter — so readers see
-          // a contiguous #1, #2, #3, ... regardless of how many interactive
-          // qualifiers are interspersed. Rows with a null component_type
-          // fall through to the default listicle_entry render and are
-          // counted here for consistency with that fall-through.
+          // Pre-filter items (2026-07-27 fix — WO "silent suppression +
+          // broken numbering"). Prior behavior: ComponentSwitch ran its
+          // tap-only + block-line guards at render time and silently
+          // returned null on failure, but numbering was assigned BEFORE
+          // the render — so a suppressed pos-1 + pos-2 could leave the
+          // first VISIBLE item rendered as "#3" with #1/#2 nowhere in the
+          // DOM. That failure mode ate hours on the RM funnel because the
+          // page looked "cut off" with no error.
+          //
+          // Fix: evaluate every item up-front. Suppressed items are
+          //   (a) logged to the Vercel function log (greppable),
+          //   (b) emitted as a <div hidden data-advertorial-suppressed …>
+          //       marker in the HTML (view-source discoverable — search
+          //       "advertorial-suppressed" to find every dropped item + its
+          //       rule + reason), and
+          //   (c) shown inline as a red alert badge when ?debug=1 is on
+          //       (QA-only; users never see it).
+          // Numbering iterates over the visible-only list, so "#N" always
+          // corresponds to the reader-visible sequence.
+          type ItemEval =
+            | { visible: true; item: ComponentItem }
+            | { visible: false; item: ComponentItem; ruleId: string; reason: string }
+
+          const evaluated: ItemEval[] = componentItems.map((item) => {
+            const tap = checkTapOnly({
+              component_type: item.component_type,
+              component_props: item.component_props,
+            })
+            if (!tap.ok) {
+              console.warn(
+                `[advertorial-kit] pos ${item.position} SUPPRESSED by tap-only (${tap.offendingPath ?? '?'}): ${tap.reason}`,
+              )
+              return {
+                visible: false,
+                item,
+                ruleId: 'tap_only',
+                reason: tap.reason ?? 'unknown',
+              }
+            }
+            const bl = checkItemStrings({
+              heading: item.heading,
+              body_md: item.body_md,
+              cta_text: item.cta_text,
+              component_props: item.component_props,
+            })
+            if (!bl.ok) {
+              console.warn(
+                `[advertorial-kit] pos ${item.position} SUPPRESSED by block-line ${bl.ruleId}: ${bl.reason} — matched: "${bl.matched}"`,
+              )
+              return {
+                visible: false,
+                item,
+                ruleId: bl.ruleId ?? 'block_line',
+                reason: `${bl.reason ?? 'unknown'} — matched: "${bl.matched ?? ''}"`,
+              }
+            }
+            return { visible: true, item }
+          })
+
           let running = 0
-          return componentItems.map((item) => {
+          return evaluated.map((ev) => {
+            if (!ev.visible) {
+              return (
+                <Fragment key={`suppressed-${ev.item.position}`}>
+                  {/* View-source discoverable: search for
+                      `data-advertorial-suppressed` in the HTML source to
+                      surface every dropped item + its rule + reason. */}
+                  <div
+                    hidden
+                    data-advertorial-suppressed
+                    data-position={ev.item.position}
+                    data-component={ev.item.component_type ?? 'null'}
+                    data-rule={ev.ruleId}
+                    data-reason={ev.reason}
+                  />
+                  {debugMode ? (
+                    <div
+                      role="alert"
+                      className="my-4 p-3 border border-red-400 bg-red-50 text-sm text-red-900 rounded"
+                    >
+                      <strong>⚠ Suppressed item #{ev.item.position}</strong>{' '}
+                      <span className="text-red-700">
+                        ({ev.item.component_type ?? 'null'})
+                      </span>{' '}
+                      — rule <code className="font-mono">{ev.ruleId}</code>: {ev.reason}
+                    </div>
+                  ) : null}
+                </Fragment>
+              )
+            }
+            const { item } = ev
             const type = (item.component_type ?? 'listicle_entry').toLowerCase()
             const isNumbered = type === 'listicle_entry' || type === 'section'
             const listicleNumber = isNumbered ? ++running : null
@@ -378,6 +462,12 @@ export default async function Page({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = await searchParams;
   const previewFlag = query.preview === '1' || query.preview === 'true';
+  // ?debug=1 opts into inline suppression alerts (WO 2026-07-27 fix). Off
+  // for users, on for QA — every suppressed advertorial_item renders as a
+  // red alert badge naming the offending rule + reason so authors can see
+  // exactly why block-line / tap-only dropped their content instead of
+  // chasing a "cache bug" for hours. Silent HTML markers ship regardless.
+  const debugMode = query.debug === '1' || query.debug === 'true';
 
   // W3 — read the sticky seed cookie stamped by middleware and the optional
   // ?variant=<key> override. `pickVariant` will decide whether either matters
@@ -440,7 +530,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     return renderKitAdvertorial(previewAdvertorial, slug, {
       chosen: previewPick.variant,
       source: previewPick.source,
-    }, location, inboundSubs);
+    }, location, inboundSubs, debugMode);
   }
 
   // --- DB-driven path (kit) ---
@@ -464,7 +554,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       return renderKitAdvertorial(advertorial, slug, {
         chosen: pick.variant,
         source: pick.source,
-      }, location, inboundSubs);
+      }, location, inboundSubs, debugMode);
     }
   } catch (err) {
     // Env not configured (e.g. ADVERTORIAL_SITE_ID missing) — fall through
