@@ -20,15 +20,19 @@
 import { CtaProvider, type CtaSubs } from '@/components/advertorial-library'
 import libStyles from '@/components/advertorial-library/advertorial.module.css'
 import { KitTracker } from './KitTracker'
+import { KitImpressionTracker } from './KitImpressionTracker'
 
 interface KitCtaShellProps {
   slug: string
   siteId: string
+  /** Position-Optimization Phase 2 — advertorial.id, plumbed through so
+   * KitImpressionTracker can attribute impressions without a client fetch. */
+  advertorialId?: string | null
   variant?: string | null
   children: React.ReactNode
 }
 
-export default function KitCtaShell({ slug, siteId, variant, children }: KitCtaShellProps) {
+export default function KitCtaShell({ slug, siteId, advertorialId, variant, children }: KitCtaShellProps) {
   const subs: CtaSubs = {
     source_id: siteId,
     sub1: '',
@@ -41,6 +45,16 @@ export default function KitCtaShell({ slug, siteId, variant, children }: KitCtaS
     <CtaProvider base={`/lp/${encodeURIComponent(slug)}`} subs={subs}>
       {/* Fires lp_view + provides handles for CTA/tap events (W2 analytics). */}
       <KitTracker slug={slug} brand={siteId} variant={variant ?? null} />
+      {/* Position-Optimization Phase 2 (SPEC 2026-07-29): IntersectionObserver
+          fires one impression per (session_id, item_id) → /api/advertorial-
+          impressions. Skipped when advertorialId is missing (preview fixtures
+          or misconfigured mounts) — no client-side crashes. */}
+      {advertorialId ? (
+        <KitImpressionTracker
+          advertorialId={advertorialId}
+          chosenVariant={variant ?? null}
+        />
+      ) : null}
       {/* Scope the advertorial CSS variables (--cta, --blue, --rule, --sel, ...)
           onto this subtree so every library primitive dispatched by
           ComponentSwitch (ImageQuiz tiles, MultiSelectQuiz pills, SavingsCalculator,
