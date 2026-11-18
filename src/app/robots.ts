@@ -29,7 +29,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'Meta-ExternalAgent', allow: '/' },
       { userAgent: 'Bytespider', allow: '/' },
     ],
-    sitemap: [`${siteUrl}/sitemap.xml`],
+    // /providers/sitemap.xml is served by smn-publisher via the /providers rewrite (WO-1548).
+    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/providers/sitemap.xml`],
     host: siteUrl,
   }
 }
