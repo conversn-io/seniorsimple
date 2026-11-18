@@ -10,6 +10,38 @@
 // You can generate a secure key using: openssl rand -hex 16
 const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'seniorsimple-indexnow-key-2024'
 
+// Canonical origin. seniorsimple.org 307-redirects to www, so every URL we submit (and the
+// key file, which must sit on the same host as the URLs) uses www.
+export const SITE_ORIGIN = 'https://www.seniorsimple.org'
+const SITE_HOST = 'www.seniorsimple.org'
+const SITE_HOSTS = new Set(['seniorsimple.org', SITE_HOST])
+
+// Key file at the site root, the spec's default location (next.config rewrites
+// /<key>.txt → /api/indexnow/key). Not under /api/, which robots.txt disallows.
+// Note: a 32-hex INDEXNOW_KEY would be caught by the vercel.json /<32-hex>.txt rewrite
+// (SEO-agency key route) instead — keep the key non-hex or register it there.
+const KEY_LOCATION = `${SITE_ORIGIN}/${INDEXNOW_KEY}.txt`
+
+/**
+ * Canonical www form of a seniorsimple.org URL (apex or www, https), or null if the URL is
+ * not on this site. IndexNow only accepts URLs on the host the key is verified for.
+ */
+export function canonicalizeUrl(input: unknown): string | null {
+  if (typeof input !== 'string') return null
+  let u: URL
+  try {
+    u = new URL(input)
+  } catch {
+    return null
+  }
+  if (u.protocol !== 'https:' || !SITE_HOSTS.has(u.hostname.toLowerCase()) || u.port) return null
+  u.hostname = SITE_HOST
+  u.hash = ''
+  const out = u.toString()
+  // Bare origin: drop the trailing slash URL() adds, to match the canonical homepage URL.
+  return u.pathname === '/' && !u.search ? SITE_ORIGIN : out
+}
+
 // Supported search engines that support IndexNow
 const INDEXNOW_ENDPOINTS = [
   'https://api.indexnow.org/indexnow',
@@ -30,9 +62,12 @@ interface IndexNowResponse {
  */
 export async function submitUrlToIndexNow(url: string): Promise<IndexNowResponse[]> {
   const results: IndexNowResponse[] = []
-  const encodedUrl = encodeURIComponent(url)
-  // Key file location - accessible via API route
-  const keyLocation = `https://seniorsimple.org/api/indexnow/key`
+  const canonical = canonicalizeUrl(url)
+  if (!canonical) {
+    return [{ success: false, engine: 'none', status: 0, message: `Not a seniorsimple.org URL: ${url}` }]
+  }
+  const encodedUrl = encodeURIComponent(canonical)
+  const keyLocation = KEY_LOCATION
 
   for (const endpoint of INDEXNOW_ENDPOINTS) {
     try {
@@ -80,14 +115,19 @@ export async function submitUrlsToIndexNow(
     return []
   }
 
-  // Limit to 10,000 URLs per request as per IndexNow spec
-  const urlBatch = urls.slice(0, 10000)
+  // Canonicalize to www, drop off-site URLs and duplicates, then cap at the spec's 10,000.
+  const canonical = Array.from(
+    new Set(urls.map(canonicalizeUrl).filter((u): u is string => u !== null))
+  )
+  if (canonical.length === 0) {
+    return []
+  }
+  const urlBatch = canonical.slice(0, 10000)
   const results: IndexNowResponse[] = []
-  // Key file location - accessible via API route
-  const keyLocation = `https://seniorsimple.org/api/indexnow/key`
+  const keyLocation = KEY_LOCATION
 
   const payload = {
-    host: 'seniorsimple.org',
+    host: SITE_HOST,
     key: INDEXNOW_KEY,
     keyLocation: keyLocation,
     urlList: urlBatch,
@@ -133,7 +173,7 @@ export async function notifyIndexNowForContent(
   slug: string,
   contentType: 'article' | 'content' = 'article'
 ): Promise<void> {
-  const url = `https://seniorsimple.org/${contentType === 'article' ? 'articles' : 'content'}/${slug}`
+  const url = `${SITE_ORIGIN}/${contentType === 'article' ? 'articles' : 'content'}/${slug}`
   
   try {
     const results = await submitUrlToIndexNow(url)
@@ -154,12 +194,12 @@ export async function notifyIndexNowForContent(
  */
 export async function notifyIndexNowForHomepage(): Promise<void> {
   const keyPages = [
-    'https://seniorsimple.org',
-    'https://seniorsimple.org/retirement',
-    'https://seniorsimple.org/estate',
-    'https://seniorsimple.org/tax',
-    'https://seniorsimple.org/insurance',
-    'https://seniorsimple.org/housing',
+    SITE_ORIGIN,
+    `${SITE_ORIGIN}/retirement`,
+    `${SITE_ORIGIN}/estate`,
+    `${SITE_ORIGIN}/tax`,
+    `${SITE_ORIGIN}/insurance`,
+    `${SITE_ORIGIN}/housing`,
   ]
 
   try {
@@ -178,8 +218,8 @@ export async function notifyIndexNowForHomepage(): Promise<void> {
  */
 export async function submitArticleToIndexNow(slug: string): Promise<{ success: boolean; errors: string[] }> {
   const urls = [
-    `https://seniorsimple.org/articles/${slug}`,
-    `https://seniorsimple.org/content/${slug}`,
+    `${SITE_ORIGIN}/articles/${slug}`,
+    `${SITE_ORIGIN}/content/${slug}`,
   ]
   
   try {
